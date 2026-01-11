@@ -1,12 +1,14 @@
-import { Bell, Search, Menu } from 'lucide-react';
+import { Bell, Search, Menu, Bot } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 
 interface TopBarProps {
     onMenuClick: () => void;
+    onAIToggle: () => void;
+    isAIOpen: boolean;
 }
 
-export const TopBar = ({ onMenuClick }: TopBarProps) => {
+export const TopBar = ({ onMenuClick, onAIToggle, isAIOpen }: TopBarProps) => {
     return (
         <header className="h-16 border-b border-white/5 bg-background/80 backdrop-blur-md flex items-center justify-between px-4 sticky top-0 z-20">
             <div className="flex items-center gap-4 md:hidden">
@@ -30,6 +32,16 @@ export const TopBar = ({ onMenuClick }: TopBarProps) => {
             </div>
 
             <div className="flex items-center gap-3">
+                <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={onAIToggle}
+                    className={`hidden lg:flex items-center gap-2 ${isAIOpen ? 'text-brand-lime bg-brand-lime/10' : 'text-muted-foreground hover:text-white'}`}
+                >
+                    <Bot className="h-5 w-5" />
+                    <span className="hidden xl:inline">{isAIOpen ? 'Asistente' : 'Activar IA'}</span>
+                </Button>
+
                 <Button variant="ghost" size="icon" className="relative hover:bg-white/5 text-muted-foreground hover:text-white">
                     <Bell className="h-5 w-5" />
                     <span className="absolute top-2 right-3 h-2 w-2 rounded-full bg-brand-lime shadow-[0_0_8px_#82FF1F]" />

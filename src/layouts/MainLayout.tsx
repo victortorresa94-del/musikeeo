@@ -7,9 +7,11 @@ import { AIContextPanel } from '../components/layout/AIContextPanel';
 
 export const MainLayout = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+    const [isAIPanelOpen, setIsAIPanelOpen] = useState(true);
 
     // In a real implementation, we would toggle a mobile sidebar or drawer here
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
+    const toggleAIPanel = () => setIsAIPanelOpen(!isAIPanelOpen);
 
     return (
         <div className="flex min-h-screen bg-background text-foreground overflow-hidden selection:bg-brand-cyan/30">
@@ -18,7 +20,7 @@ export const MainLayout = () => {
 
             {/* Middle Column: Main Content */}
             <div className="flex-1 flex flex-col min-w-0 relative">
-                <TopBar onMenuClick={toggleMobileMenu} />
+                <TopBar onMenuClick={toggleMobileMenu} onAIToggle={toggleAIPanel} isAIOpen={isAIPanelOpen} />
 
                 {/* Scrollable Content Area */}
                 <main className="flex-1 overflow-y-auto scroll-smooth pb-24 md:pb-6 relative z-0">
@@ -32,7 +34,7 @@ export const MainLayout = () => {
             </div>
 
             {/* Right Column: AI Context Panel (Hidden on tablet, visible on large desktop) */}
-            <AIContextPanel />
+            <AIContextPanel isOpen={isAIPanelOpen} />
         </div>
     );
 };
