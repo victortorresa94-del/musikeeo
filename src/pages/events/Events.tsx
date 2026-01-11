@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { MapPin, Plus, Mic, Sparkles, X, Music, Users } from 'lucide-react';
+import { MOCK_EVENTS } from '../../services/mockData';
 
 export default function Events() {
     const [isWizardOpen, setIsWizardOpen] = useState(false);
@@ -124,37 +125,37 @@ export default function Events() {
 
             {/* Events Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                {[1, 2, 3, 4, 5].map((i) => (
-                    <Card key={i} className="bg-card border-white/5 hover:border-white/10 transition-all group cursor-pointer">
+                {MOCK_EVENTS.map((event) => (
+                    <Card key={event.id} className="bg-card border-white/5 hover:border-white/10 transition-all group cursor-pointer">
                         <div className="h-40 bg-zinc-900 relative overflow-hidden">
                             <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10" />
                             <img
-                                src={`https://images.unsplash.com/photo-${1500000000000 + i}?w=800&q=80`}
-                                alt="Event"
+                                src={event.imageUrl}
+                                alt={event.title}
                                 className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                             />
                             <div className="absolute bottom-3 left-4 z-20">
-                                <span className="text-[10px] font-bold text-brand-lime uppercase tracking-wider mb-1 block">Live Music</span>
-                                <h3 className="text-white font-bold leading-tight">Jam Session Abierta</h3>
+                                <span className="text-[10px] font-bold text-brand-lime uppercase tracking-wider mb-1 block">{event.type}</span>
+                                <h3 className="text-white font-bold leading-tight">{event.title}</h3>
                             </div>
                             <div className="absolute top-3 right-3 z-20 bg-black/50 backdrop-blur-md px-2 py-1 rounded text-xs font-bold text-white border border-white/10">
-                                24 MAR
+                                {new Date(event.date).getDate()} {new Date(event.date).toLocaleString('default', { month: 'short' }).toUpperCase()}
                             </div>
                         </div>
                         <CardContent className="p-4 space-y-3">
                             <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                 <MapPin className="h-4 w-4 text-brand-cyan" />
-                                <span className="truncate">Sala Bóveda, Barcelona</span>
+                                <span className="truncate">{event.location}</span>
                             </div>
                             <div className="flex items-center justify-between pt-2 border-t border-white/5">
                                 <div className="flex -space-x-2">
                                     {[1, 2, 3].map(u => (
                                         <div key={u} className="h-6 w-6 rounded-full bg-zinc-800 border border-black flex items-center justify-center text-[10px] text-white">
-                                            {u}
+                                            U{u}
                                         </div>
                                     ))}
                                 </div>
-                                <span className="text-xs text-brand-cyan hover:underline">Ver detalles</span>
+                                <span className="text-xs text-brand-cyan hover:underline">{event.organizerName}</span>
                             </div>
                         </CardContent>
                     </Card>

@@ -1,46 +1,38 @@
+import { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Sparkles, MapPin, Calendar, ArrowRight } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
-
-const MOCK_OPPORTUNITIES = [
-    {
-        id: 1,
-        title: "Buscamos Bajista para Tour",
-        author: "La Radio Band",
-        location: "Madrid, ES",
-        date: "Verano 2026",
-        image: "https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?w=800&q=80",
-        tag: "Gira"
-    },
-    {
-        id: 2,
-        title: "Sesión de Grabación (Trumpet)",
-        author: "Sonic Studios",
-        location: "Barcelona, Gràcia",
-        date: "12 Mar, 10:00",
-        image: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=800&q=80",
-        tag: "Session"
-    },
-    {
-        id: 3,
-        title: "Técnico de Monitores",
-        author: "Sala Apolo",
-        location: "Barcelona, Poble Sec",
-        date: "Fines de Semana",
-        image: "https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=800&q=80",
-        tag: "Work"
-    }
-];
-
-const MOCK_NEARBY = [
-    { id: 1, name: "Lucas Guitar", role: "Guitarrista", dist: "0.5km", img: "https://i.pravatar.cc/150?u=1" },
-    { id: 2, name: "Ana Vocals", role: "Cantante", dist: "1.2km", img: "https://i.pravatar.cc/150?u=2" },
-    { id: 3, name: "David Drums", role: "Batería", dist: "2.0km", img: "https://i.pravatar.cc/150?u=3" },
-    { id: 4, name: "Studio 54", role: "Local Ensayo", dist: "2.1km", img: "https://i.pravatar.cc/150?u=4" },
-];
+import { userService } from '../../services/userService';
+import { MOCK_EVENTS } from '../../services/mockData';
+import { type User, type Event } from '../../types';
 
 export default function Feed() {
+    const [nearbyUsers, setNearbyUsers] = useState<(User & { distance: string })[]>([]);
+    const [opportunities, setOpportunities] = useState<Event[]>([]);
+    const [loading, setLoading] = useState(true);
+
+    useEffect(() => {
+        const loadData = async () => {
+            try {
+                const users = await userService.getNearbyUsers();
+                setNearbyUsers(users);
+                // Simulate fetching events
+                setOpportunities(MOCK_EVENTS);
+            } catch (error) {
+                console.error("Failed to load feed data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        loadData();
+    }, []);
+
+    if (loading) {
+        return <div className="p-10 text-center text-muted-foreground animate-pulse">Cargando tu control room...</div>;
+    }
+
     return (
         <div className="space-y-8 pb-20 md:pb-0">
             {/* AI Welcome Section */}
@@ -62,7 +54,7 @@ export default function Feed() {
                     <h1 className="text-3xl md:text-4xl font-heading font-bold text-white mb-4 leading-tight">
                         Buen día, <span className="text-transparent bg-clip-text bg-gradient-to-r from-brand-cyan to-white">Juan</span>.
                         <br />
-                        Hay 3 nuevas oportunidades cerca.
+                        Hay {opportunities.length} nuevas oportunidades cerca.
                     </h1>
 
                     <div className="flex flex-wrap gap-4 mt-6">
@@ -84,24 +76,24 @@ export default function Feed() {
                 </div>
 
                 <div className="flex gap-4 overflow-x-auto pb-4 snap-x hide-scrollbar">
-                    {MOCK_OPPORTUNITIES.map((item) => (
+                    {opportunities.map((item) => (
                         <Card key={item.id} className="min-w-[280px] md:min-w-[320px] bg-card border-white/5 overflow-hidden group hover:border-brand-cyan/30 transition-all snap-start">
                             <div className="h-32 w-full overflow-hidden relative">
-                                <img src={item.image} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                <img src={item.imageUrl} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
                                 <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-[10px] uppercase font-bold text-white border border-white/10">
-                                    {item.tag}
+                                    {item.tags?.[0] || 'Evento'}
                                 </div>
                             </div>
                             <CardContent className="p-4">
                                 <h3 className="font-heading font-bold text-lg text-white mb-1 truncate">{item.title}</h3>
-                                <p className="text-sm text-brand-cyan mb-3">{item.author}</p>
+                                <p className="text-sm text-brand-cyan mb-3">{item.organizerName}</p>
 
                                 <div className="flex flex-col gap-2 text-xs text-muted-foreground">
                                     <div className="flex items-center gap-2">
                                         <MapPin className="h-3 w-3" /> {item.location}
                                     </div>
                                     <div className="flex items-center gap-2">
-                                        <Calendar className="h-3 w-3" /> {item.date}
+                                        <Calendar className="h-3 w-3" /> {new Date(item.date).toLocaleDateString()}
                                     </div>
                                 </div>
                             </CardContent>
@@ -114,19 +106,19 @@ export default function Feed() {
             <section>
                 <h2 className="text-xl font-heading font-bold text-white mb-4">Talento cerca de Gràcia</h2>
                 <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                    {MOCK_NEARBY.map((user) => (
+                    {nearbyUsers.map((user) => (
                         <motion.div
-                            key={user.id}
+                            key={user.uid}
                             whileHover={{ y: -5 }}
                             className="flex flex-col items-center bg-white/5 p-4 rounded-2xl border border-white/5 cursor-pointer hover:bg-white/10 hover:border-brand-lime/30 transition-all"
                         >
                             <div className="relative mb-3">
-                                <img src={user.img} alt={user.name} className="h-16 w-16 rounded-full object-cover border-2 border-transparent group-hover:border-brand-lime" />
+                                <img src={user.photoURL} alt={user.displayName} className="h-16 w-16 rounded-full object-cover border-2 border-transparent group-hover:border-brand-lime" />
                                 <div className="absolute bottom-0 right-0 h-4 w-4 bg-brand-lime rounded-full border-2 border-black" title="Online"></div>
                             </div>
-                            <h4 className="font-bold text-white text-sm truncate w-full text-center">{user.name}</h4>
-                            <p className="text-xs text-muted-foreground mb-1">{user.role}</p>
-                            <span className="text-[10px] text-brand-cyan bg-brand-cyan/10 px-2 py-0.5 rounded-full">{user.dist}</span>
+                            <h4 className="font-bold text-white text-sm truncate w-full text-center">{user.displayName}</h4>
+                            <p className="text-xs text-muted-foreground mb-1 capitalize">{user.role}</p>
+                            <span className="text-[10px] text-brand-cyan bg-brand-cyan/10 px-2 py-0.5 rounded-full">{user.distance}</span>
                         </motion.div>
                     ))}
                 </div>

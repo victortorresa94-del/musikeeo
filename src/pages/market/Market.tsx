@@ -3,21 +3,14 @@ import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 
+import { MOCK_MARKET_ITEMS } from '../../services/mockData';
+
 const CATEGORIES = [
     { id: 'all', label: 'Todo' },
     { id: 'instruments', label: 'Instrumentos' },
     { id: 'recording', label: 'Estudio' },
     { id: 'services', label: 'Servicios' },
     { id: 'venues', label: 'Salas' },
-];
-
-const MOCK_ITEMS = [
-    { id: 1, title: 'Fender Telecaster 1978', price: '1,200€', image: 'https://images.unsplash.com/photo-1541689592655-f5f52825a3b8?w=800&q=80', rating: 4.8, category: 'Instrumentos' },
-    { id: 2, title: 'Estudio de Grabación (Hora)', price: '35€/h', image: 'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=800&q=80', rating: 5.0, category: 'Estudio' },
-    { id: 3, title: 'Clases de Batería', price: '25€/h', image: 'https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?w=800&q=80', rating: 4.9, category: 'Servicios' },
-    { id: 4, title: 'Pedalera Boss GT-1', price: '150€', image: 'https://images.unsplash.com/photo-1525201548942-d8732f4e9a20?w=800&q=80', rating: 4.5, category: 'Instrumentos' },
-    { id: 5, title: 'Micrófono Shure SM7B', price: '380€', image: 'https://images.unsplash.com/photo-1590602847861-f357a9332bbc?w=800&q=80', rating: 4.9, category: 'Audio' },
-    { id: 6, title: 'Sala La Nau (Alquiler)', price: '400€', image: 'https://images.unsplash.com/photo-1514525253440-b393452e8d2e?w=800&q=80', rating: 4.7, category: 'Salas' },
 ];
 
 export default function Market() {
@@ -57,7 +50,7 @@ export default function Market() {
 
             {/* Grid */}
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-6">
-                {MOCK_ITEMS.map((item) => (
+                {MOCK_MARKET_ITEMS.map((item) => (
                     <Card key={item.id} className="bg-card border-white/5 hover:border-brand-cyan/50 transition-all group cursor-pointer overflow-hidden">
                         <div className="aspect-square bg-zinc-900 relative">
                             <img src={item.image} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
@@ -68,12 +61,12 @@ export default function Market() {
                                 </span>
                             </div>
 
-                            {item.category === 'Instrumentos' && (
+                            {item.category === 'instrument' && (
                                 <div className="absolute bottom-2 left-2 bg-brand-petrol/80 backdrop-blur-md text-white p-1.5 rounded-full">
                                     <Music className="h-3 w-3" />
                                 </div>
                             )}
-                            {item.category === 'Audio' && (
+                            {item.category === 'service' && (
                                 <div className="absolute bottom-2 left-2 bg-purple-500/80 backdrop-blur-md text-white p-1.5 rounded-full">
                                     <Mic className="h-3 w-3" />
                                 </div>
@@ -85,7 +78,7 @@ export default function Market() {
                                 <span className="text-xs text-muted-foreground bg-white/5 px-2 py-0.5 rounded flex items-center gap-1">
                                     <Tag className="h-3 w-3" /> {item.category}
                                 </span>
-                                <span className="font-bold text-brand-cyan text-lg">{item.price}</span>
+                                <span className="font-bold text-brand-cyan text-lg">{item.price}€</span>
                             </div>
                             <Button className="w-full mt-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 h-8 text-xs">
                                 Ver Detalles
