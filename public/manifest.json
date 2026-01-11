@@ -1,0 +1,29 @@
+{
+    "name": "Musikeeo",
+    "short_name": "Musikeeo",
+    "description": "Conecta músicos, locales, técnicos y tiendas de música. Crea eventos, contrata y colabora.",
+    "start_url": "/",
+    "scope": "/",
+    "display": "standalone",
+    "orientation": "portrait",
+    "background_color": "#0f1c23",
+    "theme_color": "#005C8A",
+    "icons": [
+        {
+            "src": "/icons/icon-192x192.png",
+            "sizes": "192x192",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/icon-512x512.png",
+            "sizes": "512x512",
+            "type": "image/png"
+        },
+        {
+            "src": "/icons/maskable-icon.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "maskable"
+        }
+    ]
+}
