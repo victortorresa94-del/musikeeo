@@ -1,0 +1,220 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Account Settings</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#005c8a", // Petroleum Blue
+                        "primary-light": "#0277bd",
+                        "accent-lime": "#bef264", // Lime green for toggles
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1c23",
+                        "surface-dark": "#162229",
+                        "surface-light": "#ffffff",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Toggle Switch Styles */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #bef264;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #bef264;
+        }
+        .toggle-checkbox:checked + .toggle-label:before {
+            transform: translateX(100%);
+        }
+        
+        /* Material Symbols overrides for size */
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display min-h-screen flex flex-col items-center">
+<!-- Main Container -->
+<div class="w-full max-w-md mx-auto relative flex flex-col min-h-screen pb-8">
+<!-- Header -->
+<div class="sticky top-0 z-50 bg-background-light/80 dark:bg-background-dark/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
+<div class="flex items-center justify-between px-4 py-3">
+<button class="flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-primary dark:text-white">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold tracking-tight text-center flex-1 pr-8">Account Settings</h1>
+</div>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 px-4 py-6 space-y-6">
+<!-- Verify Identity Card -->
+<div class="relative overflow-hidden rounded-xl bg-surface-light dark:bg-surface-dark shadow-sm dark:shadow-none border border-gray-100 dark:border-gray-800 p-0">
+<div class="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full -mr-10 -mt-10 blur-2xl"></div>
+<div class="p-5 flex flex-col gap-4 relative z-10">
+<div class="flex items-start justify-between">
+<div class="flex flex-col gap-1">
+<div class="flex items-center gap-2 mb-1">
+<span class="bg-orange-500/10 text-orange-500 text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wider">Acción Requerida</span>
+</div>
+<h2 class="text-lg font-bold leading-tight">Verificar Identidad</h2>
+<p class="text-gray-500 dark:text-gray-400 text-sm leading-snug max-w-[240px]">
+                                Completa la verificación para desbloquear todas las funciones premium.
+                            </p>
+</div>
+<div class="h-12 w-12 rounded-full bg-primary/10 dark:bg-primary/20 flex items-center justify-center text-primary dark:text-sky-400 shrink-0">
+<span class="material-symbols-outlined text-2xl">verified_user</span>
+</div>
+</div>
+<button class="w-full mt-2 bg-primary hover:bg-primary-light text-white text-sm font-semibold h-10 rounded-lg transition-colors flex items-center justify-center gap-2">
+<span>Comenzar</span>
+<span class="material-symbols-outlined text-lg">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Section 1: Mi Cuenta -->
+<div class="flex flex-col gap-3">
+<h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">Mi Cuenta</h3>
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm dark:shadow-none">
+<!-- List Item: Edit Profile -->
+<button class="w-full flex items-center gap-4 p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors group text-left">
+<div class="flex items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 shrink-0 size-10 text-primary dark:text-sky-400">
+<span class="material-symbols-outlined text-[20px]">person</span>
+</div>
+<div class="flex-1 flex flex-col">
+<span class="text-base font-medium text-slate-900 dark:text-white">Editar Perfil</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">Nombre, Email, Bio</span>
+</div>
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</button>
+<div class="h-px bg-gray-100 dark:bg-gray-800 mx-4"></div>
+<!-- List Item: Password -->
+<button class="w-full flex items-center gap-4 p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors group text-left">
+<div class="flex items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 shrink-0 size-10 text-primary dark:text-sky-400">
+<span class="material-symbols-outlined text-[20px]">lock</span>
+</div>
+<div class="flex-1">
+<span class="text-base font-medium text-slate-900 dark:text-white">Cambiar Contraseña</span>
+</div>
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Section 2: Métodos de Pago -->
+<div class="flex flex-col gap-3">
+<h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">Métodos de Pago</h3>
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm dark:shadow-none">
+<!-- List Item: Cards -->
+<button class="w-full flex items-center gap-4 p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors group text-left">
+<div class="flex items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 shrink-0 size-10 text-primary dark:text-sky-400">
+<span class="material-symbols-outlined text-[20px]">credit_card</span>
+</div>
+<div class="flex-1 flex flex-col">
+<span class="text-base font-medium text-slate-900 dark:text-white">Mis Tarjetas</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">Visa terminada en 4242</span>
+</div>
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</button>
+<div class="h-px bg-gray-100 dark:bg-gray-800 mx-4"></div>
+<!-- List Item: Billing -->
+<button class="w-full flex items-center gap-4 p-4 hover:bg-black/5 dark:hover:bg-white/5 transition-colors group text-left">
+<div class="flex items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 shrink-0 size-10 text-primary dark:text-sky-400">
+<span class="material-symbols-outlined text-[20px]">receipt_long</span>
+</div>
+<div class="flex-1">
+<span class="text-base font-medium text-slate-900 dark:text-white">Historial de Pagos</span>
+</div>
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</button>
+</div>
+</div>
+<!-- Section 3: Privacidad (With Toggles) -->
+<div class="flex flex-col gap-3">
+<h3 class="text-sm font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider ml-1">Privacidad</h3>
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl overflow-hidden border border-gray-100 dark:border-gray-800 shadow-sm dark:shadow-none">
+<!-- Toggle Item: Public Profile -->
+<div class="flex items-center gap-4 p-4 justify-between">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 shrink-0 size-10 text-primary dark:text-sky-400">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</div>
+<div class="flex flex-col">
+<span class="text-base font-medium text-slate-900 dark:text-white">Perfil Público</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">Visible para todos</span>
+</div>
+</div>
+<!-- Toggle Switch -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-accent-lime"></div>
+</label>
+</div>
+<div class="h-px bg-gray-100 dark:bg-gray-800 mx-4"></div>
+<!-- Toggle Item: Data Sharing -->
+<div class="flex items-center gap-4 p-4 justify-between">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 shrink-0 size-10 text-primary dark:text-sky-400">
+<span class="material-symbols-outlined text-[20px]">share</span>
+</div>
+<div class="flex flex-col">
+<span class="text-base font-medium text-slate-900 dark:text-white">Compartir Datos</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">Mejora la experiencia</span>
+</div>
+</div>
+<!-- Toggle Switch (OFF) -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-accent-lime"></div>
+</label>
+</div>
+<div class="h-px bg-gray-100 dark:bg-gray-800 mx-4"></div>
+<!-- Toggle Item: 2FA -->
+<div class="flex items-center gap-4 p-4 justify-between">
+<div class="flex items-center gap-4">
+<div class="flex items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 shrink-0 size-10 text-primary dark:text-sky-400">
+<span class="material-symbols-outlined text-[20px]">shield</span>
+</div>
+<div class="flex flex-col">
+<span class="text-base font-medium text-slate-900 dark:text-white">Autenticación 2FA</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">Seguridad extra</span>
+</div>
+</div>
+<!-- Toggle Switch (ON) -->
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-accent-lime"></div>
+</label>
+</div>
+</div>
+</div>
+<!-- Bottom Actions -->
+<div class="pt-4 flex flex-col items-center">
+<button class="text-red-500 hover:text-red-400 text-sm font-medium py-2 px-4 rounded-lg transition-colors">
+                    Cerrar Sesión
+                </button>
+<p class="text-xs text-gray-600 dark:text-gray-500 mt-2">Versión 5.0.0 (Build 2024)</p>
+</div>
+</div>
+</div>
+</body></html>

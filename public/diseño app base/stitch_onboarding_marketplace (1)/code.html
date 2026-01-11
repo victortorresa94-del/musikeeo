@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Musician Profile</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#005c8a",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1c23",
+                        "surface-dark": "#1a2c35",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }.no-scrollbar {
+            -ms-overflow-style: none;scrollbar-width: none;}
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased selection:bg-primary selection:text-white">
+<div class="relative flex min-h-screen w-full flex-col overflow-x-hidden pb-32">
+<div class="relative w-full">
+<div class="absolute top-0 left-0 z-20 flex w-full items-center justify-between p-4 pt-12">
+<button class="flex size-10 items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white transition hover:bg-black/40">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex gap-3">
+<button class="flex size-10 items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white transition hover:bg-black/40">
+<span class="material-symbols-outlined">favorite</span>
+</button>
+<button class="flex size-10 items-center justify-center rounded-full bg-black/20 backdrop-blur-md text-white transition hover:bg-black/40">
+<span class="material-symbols-outlined">share</span>
+</button>
+</div>
+</div>
+<div class="h-64 w-full bg-cover bg-center bg-no-repeat relative" data-alt="Dark moody image of a recording studio with guitars and equipment" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDQUysxkzV_05QNLh5IkCYOWlzc9kH4wVk7odDL8s39tSKJiQMs6MSxJekhU6FFtRGJLAyjleSjIzF7Xyynj-823hTQSGKDhyT0xbebccFprcECLUo17aeRFlCCqD9X9m0bS08OuPUkeNrnpLpnKasunmOCC2jUyh9ox8XGIprPCeKd5LUeKodYiuhJISkKGvTKL205It02utg-vQV-Q6MICj-FswX64CmEGj4tt6qjHHrpOq7jXbKk1GfNyGaPnEFKtGi2Z7CQQg4Z");'>
+<div class="absolute inset-0 bg-gradient-to-b from-black/40 via-transparent to-background-dark"></div>
+</div>
+</div>
+<div class="px-4 relative -mt-12 mb-6">
+<div class="flex flex-col items-start">
+<div class="relative mb-4">
+<div class="size-28 rounded-full border-4 border-background-light dark:border-background-dark bg-cover bg-center shadow-lg" data-alt="Portrait of a male musician holding a guitar smiling" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB49L0j9tSsF-PwM-9opHxxC6LYG7Lykqr-siENFOpytc7BwHVPiMELdh43Zivo4LcoSE3Sf8Mv8EFtKdC_ctmA7xrgAJn7dIpHBCTtsUXeAo4EwTguaWGoz9frLa8zAMAXzJCXSUXNh_jya0XF35lKfL9m8ydIzLesdDdFvCakyCp05sfLEg1zFhjeOMS_iizLFGVTcsRxzpAVLsCW0LttzBNFuiYCB6sK9S7lAXR3w9Q3A_3qiUNTMxDBj33gN4tWtigUSTQEj_-x");'></div>
+</div>
+<div class="flex flex-col gap-1 w-full">
+<div class="flex items-center flex-wrap gap-2">
+<h1 class="text-3xl font-bold leading-tight tracking-tight">Alex Guitarra</h1>
+<div class="flex items-center gap-1 rounded-full bg-primary/20 border border-primary/30 pl-1 pr-2 py-0.5">
+<span class="material-symbols-outlined text-primary text-[18px]">verified_user</span>
+<span class="text-xs font-bold text-primary">TrustScore 98</span>
+</div>
+</div>
+<p class="text-slate-500 dark:text-slate-400 text-base font-medium">Professional Classical &amp; Jazz Guitarist</p>
+<div class="flex items-center gap-1 text-slate-400 dark:text-slate-500 text-sm mt-1">
+<span class="material-symbols-outlined text-[16px]">location_on</span>
+<span>Madrid, Spain</span>
+</div>
+</div>
+</div>
+</div>
+<div class="px-4 mb-8">
+<p class="text-slate-600 dark:text-slate-300 text-sm leading-relaxed line-clamp-3">
+                Versatile guitarist with over 10 years of experience performing at weddings, corporate events, and jazz festivals. Berklee College of Music alumni specializing in atmospheric background music and lively upbeat sets.
+            </p>
+</div>
+<div class="px-4 mb-8">
+<div class="grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-1 rounded-2xl bg-white dark:bg-surface-dark p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center gap-2 mb-1 text-primary">
+<span class="material-symbols-outlined">music_note</span>
+<p class="text-xs font-bold uppercase tracking-wider">Bolos</p>
+</div>
+<p class="text-3xl font-bold text-slate-900 dark:text-white">124</p>
+<p class="text-xs text-slate-500 dark:text-slate-400">Realizados</p>
+</div>
+<div class="flex flex-col gap-1 rounded-2xl bg-white dark:bg-surface-dark p-5 border border-slate-200 dark:border-slate-800 shadow-sm">
+<div class="flex items-center gap-2 mb-1 text-primary">
+<span class="material-symbols-outlined">star</span>
+<p class="text-xs font-bold uppercase tracking-wider">Reseñas</p>
+</div>
+<div class="flex items-baseline gap-1">
+<p class="text-3xl font-bold text-slate-900 dark:text-white">4.9</p>
+<span class="text-sm text-slate-400">/5</span>
+</div>
+<p class="text-xs text-slate-500 dark:text-slate-400">Based on 58 reviews</p>
+</div>
+</div>
+</div>
+<div class="flex flex-col w-full mb-8">
+<div class="flex items-center justify-between px-4 pb-4">
+<h3 class="text-lg font-bold leading-tight">Clips destacadas</h3>
+<button class="text-primary text-sm font-medium">Ver todo</button>
+</div>
+<div class="flex w-full overflow-x-auto no-scrollbar px-4 pb-4 snap-x snap-mandatory">
+<div class="flex gap-4">
+<div class="snap-start shrink-0 relative flex flex-col gap-2 w-36 group cursor-pointer">
+<div class="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-slate-800">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Close up of a jazz band performing on a dark stage" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAOIlP8XJTSrZY4pHdsCqQXmL-6Ft5fsck6XoxLL_euhGlMoI-s8O6vRIDO0MTZMEKfuG2X_2_6MWuXKYDBDbt8kWSlxfHkBBzANsjjzhE9ZnvmV_avy2rQTIShHuTCHXXecT-U-lRqo2sR3kjr7yXtEkkqx5_pD2YHJNj31zZYyCmhj0dY6uSgHvcFrOKfXlK57ykZ82xyIyFdFXjwBIC3VILLFM6_2CH0nsi1RqR1rhMCaD_03yNqQHUHAqKFvDbOtAbH9MSXds1d");'></div>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="size-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/40">
+<span class="material-symbols-outlined text-white" style="font-size: 24px;">play_arrow</span>
+</div>
+</div>
+</div>
+<p class="text-sm font-medium text-slate-900 dark:text-white truncate">Jazz Fest 2023</p>
+</div>
+<div class="snap-start shrink-0 relative flex flex-col gap-2 w-36 group cursor-pointer">
+<div class="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-slate-800">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Acoustic guitar player at an outdoor wedding ceremony" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCDzKMUiQZhzmx4FnWB9KXnWmw5SFzyVHCap3Cf5C9MEuGAv1ayutTmQAnsh51YIeI8LOR27nm_rwC6RCPH6nBno3pFII-YPst7TfFi9TI2BQ0qWmeQ7mEkQ-mDV5iwMk7tq0xxkiGtOV5xP674Sdgd7n4t59Lnj8KV4nafOinhM-7htwW_xb3y-LEmt3o9hvvkANbTpQi7oBVfkliePPCakISFYSnHioXcFNDO7Wma8skMRzAwilEE2UF-eleto5W9s84R8F4reOok");'></div>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="size-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/40">
+<span class="material-symbols-outlined text-white" style="font-size: 24px;">play_arrow</span>
+</div>
+</div>
+</div>
+<p class="text-sm font-medium text-slate-900 dark:text-white truncate">Wedding Set</p>
+</div>
+<div class="snap-start shrink-0 relative flex flex-col gap-2 w-36 group cursor-pointer">
+<div class="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-slate-800">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Musician working in a dimly lit recording studio" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCiKa5ZQnAlItYfYsakHzl-4f9b2vL9aRQ22TbqJK3WLlZ9jYqQtddi_SrD8q-AOMTZL7aEs6SbPULtC3sedZxxzI7gKxOz20cl6skgLPg6whxyRW6UYzIkGgKMFWAfR81AIgBLMiAqMgKIkjPJPRDOPChOoafI1_gDiG2Gvc5YfNfYt5y6SYxqdUBkSzD09C4iadStYlipoU6vFr84d0d3idijMYno8mI7dIhj55hwTNKSWqgPkp1JZnceD-XU0rHbz5wfSf2rEdwh");'></div>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="size-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/40">
+<span class="material-symbols-outlined text-white" style="font-size: 24px;">play_arrow</span>
+</div>
+</div>
+</div>
+<p class="text-sm font-medium text-slate-900 dark:text-white truncate">Studio Session</p>
+</div>
+<div class="snap-start shrink-0 relative flex flex-col gap-2 w-36 group cursor-pointer">
+<div class="relative w-full aspect-[3/4] rounded-xl overflow-hidden bg-slate-800">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110" data-alt="Live concert crowd view with stage lights" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDo99FQqzf8DnG8tJcFJPTp5mbppG8AfojigCLakesKB98aCDyml6rcN7mBkJlD8n9jlj0eTEMcM4at4xStn0Lpwf_IYuWGYXSylgLNobXcOxFxwLSsQsEiuZUDYqqf5bhP7tQ8m1XHKoczyhHOlTDvg-ocj-XBh2pbksR593ZrvTrTkRy12-BwkmPl1X4esJsUQu2X4jPzPKm9K6nhu3kaNQMwHnvJj41j5aAZc48FQRl3locmkxp4gMWfylt3arCd7hHibQeIFBlI");'></div>
+<div class="absolute inset-0 bg-black/20 group-hover:bg-black/40 transition-colors"></div>
+<div class="absolute inset-0 flex items-center justify-center">
+<div class="size-10 rounded-full bg-white/20 backdrop-blur-sm flex items-center justify-center border border-white/40">
+<span class="material-symbols-outlined text-white" style="font-size: 24px;">play_arrow</span>
+</div>
+</div>
+</div>
+<p class="text-sm font-medium text-slate-900 dark:text-white truncate">Live Concert</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 right-0 z-50 w-full border-t border-slate-200 dark:border-slate-800 bg-white/90 dark:bg-surface-dark/95 backdrop-blur-lg px-4 pt-4 pb-8">
+<button class="w-full bg-primary hover:bg-[#004a70] text-white font-bold text-lg rounded-xl h-14 flex items-center justify-between px-6 shadow-xl shadow-primary/20 transition-all active:scale-[0.98]">
+<span class="flex items-center gap-2">
+<span class="material-symbols-outlined">calendar_add_on</span>
+                Contratar
+            </span>
+<span class="text-white text-base font-semibold">desde $150/h</span>
+</button>
+</div>
+</body></html>

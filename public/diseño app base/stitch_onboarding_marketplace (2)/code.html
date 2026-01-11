@@ -1,0 +1,287 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Musikeeo Marketplace Explore</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#005c8a",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1c23",
+                        "surface-dark": "#1a262e",
+                        "lime-accent": "#CCFF00",
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.5rem", "lg": "1rem", "xl": "1.5rem", "2xl": "2rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white pb-24">
+<!-- Top Header -->
+<header class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-800">
+<div class="px-4 py-3 flex items-center justify-between">
+<h1 class="text-xl font-bold tracking-tight">Musikeeo</h1>
+<button class="relative p-2 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full"></span>
+</button>
+</div>
+<!-- Search Bar -->
+<div class="px-4 pb-3">
+<div class="flex items-center gap-3">
+<div class="flex-1 relative">
+<div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+<span class="material-symbols-outlined text-gray-400">search</span>
+</div>
+<input class="block w-full pl-10 pr-3 py-3 rounded-xl border-none bg-white dark:bg-surface-dark text-sm placeholder-gray-400 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-surface-dark transition-all shadow-sm" placeholder="Buscar amplificadores, guitarras..." type="text"/>
+</div>
+<button class="flex items-center justify-center w-11 h-11 rounded-xl bg-white dark:bg-surface-dark text-gray-600 dark:text-gray-300 shadow-sm hover:text-primary transition-colors">
+<span class="material-symbols-outlined">tune</span>
+</button>
+</div>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-2 px-4 pb-3 overflow-x-auto no-scrollbar">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-primary text-white px-4 shadow-sm transition-transform active:scale-95">
+<span class="text-sm font-medium">Todo</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-surface-dark px-4 border border-gray-100 dark:border-gray-800 shadow-sm transition-transform active:scale-95">
+<span class="material-symbols-outlined text-lg">music_note</span>
+<span class="text-sm font-medium">Guitarras</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-surface-dark px-4 border border-gray-100 dark:border-gray-800 shadow-sm transition-transform active:scale-95">
+<span class="material-symbols-outlined text-lg">speaker</span>
+<span class="text-sm font-medium">Amplificadores</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-surface-dark px-4 border border-gray-100 dark:border-gray-800 shadow-sm transition-transform active:scale-95">
+<span class="material-symbols-outlined text-lg">mic</span>
+<span class="text-sm font-medium">Micrófonos</span>
+</button>
+</div>
+</header>
+<!-- Main Content: Image Grid -->
+<main class="p-4">
+<div class="grid grid-cols-2 gap-4">
+<!-- Card 1: IA Recommended -->
+<div class="group relative flex flex-col gap-2">
+<div class="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-gray-100 dark:bg-surface-dark shadow-md">
+<!-- Image -->
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Close up of a Marshall amplifier control panel" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCXXKpLas0k74H8NK1StRU5MvIOkp7tLauguGYL6qG5MMjNRmLdLGSS5RiOPduVmF_gwUGWBjBu36_r91putfRwYMDpaXd_8l-w9fP7-J_cwT5uV33buMQo9mVAFHhqmo4C3Ixw1q2iD64AbEYRTAvH6fNGOM4IgaP4lt2JFMXGUpWCzMW5ad7siZF2IwOJkyMCEWZicgAgfTuDJ3hZSovdB3kRgr6St6BKjwoZ8NErtXZORbwyCXAnfzHjQHNjdTUHpAdfALoffiNS');">
+</div>
+<!-- Overlay Gradient -->
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<!-- IA Badge -->
+<div class="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-lime-accent px-2 py-1 shadow-lg backdrop-blur-sm">
+<span class="material-symbols-outlined text-black text-[16px]">auto_awesome</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-black">IA Pick</span>
+</div>
+<!-- Card Content Overlay -->
+<div class="absolute bottom-0 left-0 w-full p-3 text-white">
+<div class="flex items-center justify-between mb-1">
+<span class="font-bold text-lg">$50<span class="text-xs font-normal opacity-80">/día</span></span>
+<div class="flex items-center gap-0.5 text-xs font-medium text-gray-300 bg-black/40 px-1.5 py-0.5 rounded-md backdrop-blur-sm">
+<span class="material-symbols-outlined text-[14px]">near_me</span>
+                                2.5 km
+                            </div>
+</div>
+</div>
+</div>
+<div class="flex flex-col px-1">
+<h3 class="font-bold leading-tight text-slate-800 dark:text-slate-100 line-clamp-1">Marshall JCM800 Lead</h3>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-amber-400 text-sm fill-1">star</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">4.9 (120)</span>
+</div>
+</div>
+</div>
+<!-- Card 2 -->
+<div class="group relative flex flex-col gap-2">
+<div class="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-gray-100 dark:bg-surface-dark shadow-md">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Electric guitar body sunburst finish close up" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDeau2O-nlseoSNx2079nrWBPHQZbJyLfVRqxw7k_DYKZvLqPNr8X9Djv-DXdhFnFD0wEY8jHBh2S0lxK8viCQIib6iC0sSO6EJ3jsB-jvTMaiAQt63xtBxjCa6XLNGDnGZ6Ypc_H3L2iiSNTIvRDZ1HHa2vXFPHO3ollqb4aJzwvFV15_rE_LgR-cWTZ-mmgaOBsh2JTxbR_9cKjwFkrrz9jN4SseCqaePzQBPbfIWLdjSbUGAhW6w-I_9OQLs_cMGZX_gb7xAUK13');">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 w-full p-3 text-white">
+<div class="flex items-center justify-between mb-1">
+<span class="font-bold text-lg">$35<span class="text-xs font-normal opacity-80">/día</span></span>
+<div class="flex items-center gap-0.5 text-xs font-medium text-gray-300 bg-black/40 px-1.5 py-0.5 rounded-md backdrop-blur-sm">
+<span class="material-symbols-outlined text-[14px]">near_me</span>
+                                500m
+                            </div>
+</div>
+</div>
+</div>
+<div class="flex flex-col px-1">
+<h3 class="font-bold leading-tight text-slate-800 dark:text-slate-100 line-clamp-1">Fender Strat - Sunburst</h3>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-amber-400 text-sm fill-1">star</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">4.7 (45)</span>
+</div>
+</div>
+</div>
+<!-- Card 3 -->
+<div class="group relative flex flex-col gap-2">
+<div class="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-gray-100 dark:bg-surface-dark shadow-md">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Professional studio microphone on stand" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAJml66odZG_9JTcCazZESfMHYmriGFJF-tjGagSvfMnw0nUax33GWzJCG5DZdYb8o8ZfD9NJgKqbjmGGCJxAHHPo79oY_upVLlUlZA_rB6HmahPig3WAjniFw9ZUccWEve9I43O7-tZQnA5oJi2vF6GzoUKpKuAIqmpZvzv-Z2GO7QfBhVaAiCTsFM2AeOd_VEItMcuTjoq7RFWk8we0I4cDY_zjepSc55z4VuQodsEEx4wCGv2m4s1t-3UMqytkEz2AT1n_zMsIO6');">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 w-full p-3 text-white">
+<div class="flex items-center justify-between mb-1">
+<span class="font-bold text-lg">$25<span class="text-xs font-normal opacity-80">/día</span></span>
+<div class="flex items-center gap-0.5 text-xs font-medium text-gray-300 bg-black/40 px-1.5 py-0.5 rounded-md backdrop-blur-sm">
+<span class="material-symbols-outlined text-[14px]">near_me</span>
+                                1.2 km
+                            </div>
+</div>
+</div>
+</div>
+<div class="flex flex-col px-1">
+<h3 class="font-bold leading-tight text-slate-800 dark:text-slate-100 line-clamp-1">Shure SM7B Vocal Mic</h3>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-amber-400 text-sm fill-1">star</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">5.0 (203)</span>
+</div>
+</div>
+</div>
+<!-- Card 4: IA Recommended -->
+<div class="group relative flex flex-col gap-2">
+<div class="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-gray-100 dark:bg-surface-dark shadow-md">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Black drum set kit with cymbals" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDExWx_JjSLpz8kXwN3BBcArsYCfW9PaNkZICHLtURhf4T0grkfBmeJfa0O1DgphnZFZAi65GZho_Eayy9AdQrDz3lqENQ8G2qoS9nFXAEMmUF4CIxaUVw3gAaGpW_cPvfrNXugLLXbD5Esdy0hRR2pAJQov6mkoqwYOBzBgl2DbtIsmNcRFzdXj-1TOafT3RXt6Bu45YLnloFBgBTZ3O80mk7CbMP99cY4Jky8d41LOzDrCepZFKmF9Xhod1n38BLSQKFIr2o0gNLM');">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<!-- IA Badge -->
+<div class="absolute top-3 right-3 flex items-center gap-1 rounded-full bg-lime-accent px-2 py-1 shadow-lg backdrop-blur-sm">
+<span class="material-symbols-outlined text-black text-[16px]">auto_awesome</span>
+<span class="text-[10px] font-bold uppercase tracking-wider text-black">IA Pick</span>
+</div>
+<div class="absolute bottom-0 left-0 w-full p-3 text-white">
+<div class="flex items-center justify-between mb-1">
+<span class="font-bold text-lg">$85<span class="text-xs font-normal opacity-80">/día</span></span>
+<div class="flex items-center gap-0.5 text-xs font-medium text-gray-300 bg-black/40 px-1.5 py-0.5 rounded-md backdrop-blur-sm">
+<span class="material-symbols-outlined text-[14px]">near_me</span>
+                                8 km
+                            </div>
+</div>
+</div>
+</div>
+<div class="flex flex-col px-1">
+<h3 class="font-bold leading-tight text-slate-800 dark:text-slate-100 line-clamp-1">Yamaha Stage Custom</h3>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-amber-400 text-sm fill-1">star</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">4.8 (12)</span>
+</div>
+</div>
+</div>
+<!-- Card 5 -->
+<div class="group relative flex flex-col gap-2">
+<div class="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-gray-100 dark:bg-surface-dark shadow-md">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Synthesizer keyboard with knobs and keys" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCSD1OdYAyXin1wj3ytGr99PoBxzNAptpptRPdf1idBWv1VFbkPCpTLksjf2hF3_CBHCqbLu_IWuWTER_f-pR334VO827JJs85W_CIj72GE4W9ar9Y7KQLUQaSAEh_znJCDREn1I2LOD8Cosina30Xp_U_QwD3l5UbqXqpszEaS-YmSMXWtD006VYRoZf5kryJYLz0vCe1QFhP75BrgjkH9TYNqgMUdwuo8w0zOjWZ1pU_9sqfU_7uV9lhMOz-4zP3wibZrbVod_SL3');">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 w-full p-3 text-white">
+<div class="flex items-center justify-between mb-1">
+<span class="font-bold text-lg">$40<span class="text-xs font-normal opacity-80">/día</span></span>
+<div class="flex items-center gap-0.5 text-xs font-medium text-gray-300 bg-black/40 px-1.5 py-0.5 rounded-md backdrop-blur-sm">
+<span class="material-symbols-outlined text-[14px]">near_me</span>
+                                3.1 km
+                            </div>
+</div>
+</div>
+</div>
+<div class="flex flex-col px-1">
+<h3 class="font-bold leading-tight text-slate-800 dark:text-slate-100 line-clamp-1">Korg Minilogue XD</h3>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-amber-400 text-sm fill-1">star</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">4.6 (56)</span>
+</div>
+</div>
+</div>
+<!-- Card 6 -->
+<div class="group relative flex flex-col gap-2">
+<div class="relative aspect-[3/4] w-full overflow-hidden rounded-2xl bg-gray-100 dark:bg-surface-dark shadow-md">
+<div class="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-105" data-alt="Professional mixing console faders" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuCeyYCv5S-LtrL9O03yWcb9BnsvPlGBzOV9urYPByJthLK4lZ93vl22OaKIexEhzfnweo0-RO5WGgBB4Z37Lbum8BmiidSHeqjGOkJ4EXX0xqSPmZpk80vvX3o4QfaWhfkHA91GPxsp8tLhGj9rsbbA4LenilH8YW_JVFlVI7RSlgljUU2hzk8gtasUJaC8HcscJaZJv-ey40x0IrWYc7MPOW-rgEZ7I6Mr_p9FbrbzPb_bDh6JSRfXcKNiy-uOgi72MSAstoPlCwNM');">
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent"></div>
+<div class="absolute bottom-0 left-0 w-full p-3 text-white">
+<div class="flex items-center justify-between mb-1">
+<span class="font-bold text-lg">$110<span class="text-xs font-normal opacity-80">/día</span></span>
+<div class="flex items-center gap-0.5 text-xs font-medium text-gray-300 bg-black/40 px-1.5 py-0.5 rounded-md backdrop-blur-sm">
+<span class="material-symbols-outlined text-[14px]">near_me</span>
+                                12 km
+                            </div>
+</div>
+</div>
+</div>
+<div class="flex flex-col px-1">
+<h3 class="font-bold leading-tight text-slate-800 dark:text-slate-100 line-clamp-1">Allen &amp; Heath ZED-10</h3>
+<div class="flex items-center gap-1 mt-1">
+<span class="material-symbols-outlined text-amber-400 text-sm fill-1">star</span>
+<span class="text-xs text-gray-500 dark:text-gray-400">4.9 (89)</span>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Floating Action Button (FAB) -->
+<div class="fixed bottom-24 right-4 z-40">
+<button class="flex items-center gap-2 bg-primary text-white rounded-2xl px-5 py-4 shadow-xl hover:bg-primary/90 transition-all active:scale-95 group">
+<span class="material-symbols-outlined group-hover:rotate-90 transition-transform duration-300">add</span>
+<span class="font-bold text-sm">Publicar Artículo</span>
+</button>
+</div>
+<!-- Bottom Navigation Bar -->
+<nav class="fixed bottom-0 w-full z-50 bg-white dark:bg-surface-dark border-t border-gray-200 dark:border-gray-800 pb-5 pt-3 px-6">
+<ul class="flex justify-between items-center">
+<li>
+<a class="flex flex-col items-center gap-1 text-primary" href="#">
+<span class="material-symbols-outlined fill-1">explore</span>
+<span class="text-[10px] font-medium">Explorar</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" href="#">
+<span class="material-symbols-outlined">favorite</span>
+<span class="text-[10px] font-medium">Favoritos</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" href="#">
+<span class="material-symbols-outlined">chat_bubble</span>
+<span class="text-[10px] font-medium">Mensajes</span>
+</a>
+</li>
+<li>
+<a class="flex flex-col items-center gap-1 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300" href="#">
+<span class="material-symbols-outlined">person</span>
+<span class="text-[10px] font-medium">Perfil</span>
+</a>
+</li>
+</ul>
+</nav>
+</body></html>

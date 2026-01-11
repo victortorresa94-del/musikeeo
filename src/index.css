@@ -1,0 +1,103 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Space+Grotesk:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    /* Base: #FFFFFF (White) */
+    --background: 0 0% 100%;
+    /* Text: #0A0A0A (Black) */
+    --foreground: 0 0% 4%;
+
+    /* Petrol: #005C8A -> 200 100% 27% */
+    --primary: 200 100% 27%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Cyan: #37B7F6 -> 200 91% 59% */
+    --accent: 200 91% 59%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Light Grey Surface: #EAEAEA -> 0 0% 92% */
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 4%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 0 0% 4%;
+
+    --secondary: 210 40% 96.1%;
+    --secondary-foreground: 222.2 47.4% 11.2%;
+
+    --muted: 210 40% 96.1%;
+    --muted-foreground: 215.4 16.3% 46.9%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 210 40% 98%;
+
+    --border: 214.3 31.8% 91.4%;
+    --input: 214.3 31.8% 91.4%;
+    --ring: 200 100% 27%;
+
+    --radius: 1rem;
+  }
+
+  .dark {
+    /* Dark Base: #0A0A0A -> 0 0% 4% */
+    --background: 0 0% 4%;
+    /* Text: #EAEAEA -> 0 0% 92% */
+    --foreground: 0 0% 92%;
+
+    /* Petrol: #005C8A */
+    --primary: 200 100% 27%;
+    --primary-foreground: 0 0% 100%;
+
+    /* Cyan: #37B7F6 */
+    --accent: 200 91% 59%;
+    --accent-foreground: 0 0% 100%;
+
+    /* Surface: Dark Blue #002C45 or very dark grey */
+    --card: 222 47% 11%;
+    --card-foreground: 0 0% 92%;
+
+    --popover: 0 0% 4%;
+    --popover-foreground: 0 0% 92%;
+
+    --secondary: 217.2 32.6% 17.5%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 217.2 32.6% 17.5%;
+    --muted-foreground: 215 20.2% 65.1%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 217.2 32.6% 17.5%;
+    --input: 217.2 32.6% 17.5%;
+    --ring: 200 91% 59%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+  }
+}
+
+@layer utilities {
+  .font-heading {
+    font-family: 'Space Grotesk', sans-serif;
+  }
+
+  .glass-panel {
+    @apply bg-card/60 backdrop-blur-md border border-white/5;
+  }
+
+  .text-glow {
+    text-shadow: 0 0 10px hsla(var(--accent) / 0.5);
+  }
+}

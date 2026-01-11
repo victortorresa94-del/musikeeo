@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Musikeeo Smart Chat</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#005c8a",
+                        "background-light": "#f5f7f8",
+                        "background-dark": "#0f1c23",
+                        "surface-dark": "#18262e",
+                        "bubble-rec": "#27343a",
+                        "accent-lime": "#bef264", // Lime green for AI
+                    },
+                    fontFamily: {
+                        "display": ["Space Grotesk", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.5rem",
+                        "lg": "1rem",
+                        "xl": "1.5rem",
+                        "2xl": "2rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar for horizontal scroll areas */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display h-screen flex flex-col overflow-hidden text-gray-900 dark:text-white">
+<!-- Top App Bar -->
+<header class="shrink-0 bg-background-light dark:bg-background-dark border-b border-gray-200 dark:border-gray-800 pt-10 pb-3 px-4 flex items-center justify-between sticky top-0 z-20">
+<div class="flex items-center gap-3">
+<button class="text-gray-600 dark:text-gray-300 hover:text-primary transition-colors rounded-full p-1">
+<span class="material-symbols-outlined !text-[24px]">arrow_back_ios_new</span>
+</button>
+<div class="relative">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-primary/20" data-alt="Portrait of Ana Singer, a musician with wavy hair" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuApvldaIQdaxRqUeQV2JGx8zLQ7wMjgKl0mItq8nz6RiRHY64t3crN5Ze-rZgjK8KmzBWciP_UDqD28lrxcqwS7A4lT2DBugVJOy8cBTPmrAp72x3WcEvVf5NXwdEvVVix9mtol4h4CgWR1REEKvMrlxv1zK63wtuyEvRIktuVwiPKhkLckdmel7MpivnaqiahC5CwGQl5SvgBrg5VIJlVYOUOcqbW9Zq0BCF2HDSldb3woCvRmcOVPBRzGIVaHTSwJF8vX9E8tDPD7");'>
+</div>
+<div class="absolute bottom-0 right-0 bg-green-500 size-3 rounded-full border-2 border-white dark:border-background-dark"></div>
+</div>
+<div class="flex flex-col">
+<div class="flex items-center gap-1">
+<h2 class="text-lg font-bold leading-tight">Ana Singer</h2>
+<span class="material-symbols-outlined text-primary !text-[18px] filled" style="font-variation-settings: 'FILL' 1;">verified</span>
+</div>
+<p class="text-xs text-gray-500 dark:text-gray-400 font-medium">Online now</p>
+</div>
+</div>
+<div class="flex items-center gap-1">
+<button class="size-10 flex items-center justify-center text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined">videocam</span>
+</button>
+<button class="size-10 flex items-center justify-center text-gray-600 dark:text-gray-300 rounded-full hover:bg-gray-200 dark:hover:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined">more_vert</span>
+</button>
+</div>
+</header>
+<!-- Chat Stream -->
+<main class="flex-1 overflow-y-auto p-4 space-y-6 scroll-smooth pb-32" id="chat-container">
+<!-- Timestamp -->
+<div class="flex justify-center w-full">
+<span class="text-xs font-medium text-gray-400 dark:text-gray-600 bg-gray-100 dark:bg-surface-dark px-3 py-1 rounded-full">Today, 10:23 AM</span>
+</div>
+<!-- Message: Ana Singer -->
+<div class="flex items-end gap-3 group">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-8 shrink-0 mb-1" data-alt="Portrait of Ana Singer" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCHLjjSNwLPbo9DxC_kRVyKfa0cIlw3pLS6nZbWPT-BYaafhWegUDmowJOlI-HVxWFzPL1T83nrV01jnCJPxVHn67CJ9QwVIojHb_ishI62FzDZF_EQuVi6pJ0vzabf3SZ_QVeeXHOKLMqYfOEQH7DNlYQXFdm_p-XmRVODSqnuXRbSQclt72PzBYRK-pFX9CaGOUO3xpgGFi7faBg_kLqaDt_4Y38NT1YvYKMDgX7KVR3AM045b8-V5rurcrWkTcmfYvHc2ORv2gl9");'>
+</div>
+<div class="flex flex-col gap-1 max-w-[80%]">
+<div class="bg-gray-200 dark:bg-bubble-rec text-gray-900 dark:text-white px-5 py-3 rounded-2xl rounded-bl-sm shadow-sm">
+<p class="text-base font-normal leading-relaxed">Hey! Did you get a chance to review the rider for the festival?</p>
+</div>
+<span class="text-[11px] text-gray-400 pl-1 opacity-0 group-hover:opacity-100 transition-opacity">10:23 AM</span>
+</div>
+</div>
+<!-- Message: User -->
+<div class="flex items-end gap-3 justify-end group">
+<div class="flex flex-col gap-1 items-end max-w-[80%]">
+<div class="bg-primary text-white px-5 py-3 rounded-2xl rounded-br-sm shadow-md">
+<p class="text-base font-normal leading-relaxed">Yes, looking at it now.</p>
+</div>
+<span class="text-[11px] text-gray-400 pr-1 opacity-0 group-hover:opacity-100 transition-opacity">10:24 AM</span>
+</div>
+</div>
+<!-- Message: User -->
+<div class="flex items-end gap-3 justify-end group">
+<div class="flex flex-col gap-1 items-end max-w-[80%]">
+<div class="bg-primary text-white px-5 py-3 rounded-2xl rounded-br-sm shadow-md">
+<p class="text-base font-normal leading-relaxed">We might need to adjust the soundcheck time.</p>
+</div>
+<div class="flex items-center gap-1 pr-1">
+<span class="text-[11px] text-gray-400 opacity-0 group-hover:opacity-100 transition-opacity">10:25 AM</span>
+<span class="material-symbols-outlined !text-[14px] text-primary" style="font-variation-settings: 'FILL' 1;">done_all</span>
+</div>
+</div>
+</div>
+<!-- Message: Ana Singer -->
+<div class="flex items-end gap-3 group">
+<div class="bg-center bg-no-repeat bg-cover rounded-full size-8 shrink-0 mb-1" data-alt="Portrait of Ana Singer" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuClrcLtuuqql0QPV9Pa_eFNGNR7yqNuNeES4YKgMl_0jA6N2TZGrSsONp5t2kysIRgb_JphdIAgt8FSgPB_GFnesOS9zOZFlW7ITxhHE_WKg8Y9aPumSXV7-T5nc4bV-ygfnVETTDZ_LVnfzGR4-pn8JPDbzvII8QB6b40gwwtfpIAs0nvdS_ra_yx54uYCLpCKpz8d4la9A_pDXT6yhyop6Hp39f_UKSaEtmXJJZv73sweSFYbRsQxLcLR17_8BFsZERNaUMTlskmd");'>
+</div>
+<div class="flex flex-col gap-1 max-w-[80%]">
+<div class="bg-gray-200 dark:bg-bubble-rec text-gray-900 dark:text-white px-5 py-3 rounded-2xl rounded-bl-sm shadow-sm flex items-center gap-3">
+<!-- Typing indicator simulation for a brief moment in real app, here static content -->
+<p class="text-base font-normal leading-relaxed">No problem. Send over the new proposal.</p>
+</div>
+<span class="text-[11px] text-gray-400 pl-1 opacity-0 group-hover:opacity-100 transition-opacity">10:28 AM</span>
+</div>
+</div>
+</main>
+<!-- Bottom Action Area -->
+<div class="absolute bottom-0 w-full bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark dark:to-transparent z-10 pb-6 pt-12">
+<!-- AI Suggestions Rail -->
+<div class="w-full overflow-x-auto no-scrollbar px-4 mb-3">
+<div class="flex gap-2">
+<button class="shrink-0 flex items-center gap-1 bg-accent-lime text-black px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-accent-lime/10 hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined !text-[16px]">smart_toy</span>
+                    Confirmar bolo
+                </button>
+<button class="shrink-0 flex items-center gap-1 bg-accent-lime text-black px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-accent-lime/10 hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined !text-[16px]">description</span>
+                    Enviar contrato
+                </button>
+<button class="shrink-0 flex items-center gap-1 bg-accent-lime text-black px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-accent-lime/10 hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined !text-[16px]">schedule</span>
+                    Sugerir horário
+                </button>
+<button class="shrink-0 flex items-center gap-1 bg-accent-lime text-black px-4 py-2 rounded-xl text-sm font-bold shadow-lg shadow-accent-lime/10 hover:brightness-110 active:scale-95 transition-all">
+<span class="material-symbols-outlined !text-[16px]">queue_music</span>
+                    Gerar Setlist
+                </button>
+</div>
+</div>
+<!-- Input Area -->
+<div class="px-4 flex items-end gap-3">
+<button class="size-10 mb-1 flex items-center justify-center text-gray-400 hover:text-primary transition-colors bg-gray-200/50 dark:bg-surface-dark rounded-full shrink-0">
+<span class="material-symbols-outlined">add</span>
+</button>
+<div class="flex-1 bg-white dark:bg-surface-dark rounded-[24px] px-4 py-3 shadow-sm border border-transparent focus-within:border-primary/50 transition-colors flex items-center gap-2">
+<input class="w-full bg-transparent border-none p-0 text-base text-gray-900 dark:text-white placeholder-gray-500 focus:ring-0 font-body" placeholder="Type a message..." type="text"/>
+<button class="text-gray-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">mood</span>
+</button>
+</div>
+<!-- Floating Mic Button -->
+<button class="size-12 mb-0.5 flex items-center justify-center bg-primary text-white rounded-full shadow-lg shadow-primary/30 hover:bg-primary/90 active:scale-95 transition-all shrink-0">
+<span class="material-symbols-outlined !text-[24px]">mic</span>
+</button>
+</div>
+</div>
+<!-- Home Indicator Area (Safe Area) -->
+<div class="h-6 w-full bg-background-light dark:bg-background-dark"></div>
+</body></html>
