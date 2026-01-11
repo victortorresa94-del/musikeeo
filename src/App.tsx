@@ -8,6 +8,7 @@ import Messages from './pages/messages/Messages';
 import Market from './pages/market/Market';
 import Projects from './pages/projects/Projects';
 import Profile from './pages/profile/Profile';
+import Onboarding from './pages/onboarding/Onboarding';
 import { MainLayout } from './layouts/MainLayout';
 import { Loader2 } from 'lucide-react';
 
@@ -59,6 +60,7 @@ function App() {
             <Route path="/market" element={<Market />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/onboarding" element={<Onboarding />} />
           </Route>
 
           {/* Fallback */}

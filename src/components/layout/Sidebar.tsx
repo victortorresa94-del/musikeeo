@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Calendar, MessageSquare, ShoppingBag, Radio, User, Settings, LogOut } from 'lucide-react';
+import { Home, Calendar, MessageSquare, ShoppingBag, Radio, User, LogOut } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
