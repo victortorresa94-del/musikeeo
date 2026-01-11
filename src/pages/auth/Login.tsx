@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { signInWithEmailAndPassword, signInWithPopup, GoogleAuthProvider } from 'firebase/auth';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../../lib/firebase';
 import { useAuth } from '../../context/AuthContext';
 import { AuthLayout } from '../../layouts/AuthLayout';
@@ -47,30 +47,19 @@ export default function Login() {
         }
     };
 
+    const { loginWithGoogle } = useAuth();
+
     const handleGoogleLogin = async () => {
         setIsLoading(true);
         setError(null);
         try {
-            const provider = new GoogleAuthProvider();
-            await signInWithPopup(auth, provider);
+            await loginWithGoogle();
             navigate('/');
         } catch (err: any) {
             setError('Falló el inicio de sesión con Google');
         } finally {
             setIsLoading(false);
         }
-    };
-
-    const { mockLogin } = useAuth() as any; // Temporary cast if context type update hasn't propagated or just to be safe quickly
-
-    const handleMockLogin = () => {
-        setIsLoading(true);
-        // Simulate a small delay for realism/UX
-        setTimeout(() => {
-            mockLogin();
-            navigate('/');
-            setIsLoading(false);
-        }, 800);
     };
 
     return (
@@ -116,25 +105,6 @@ export default function Login() {
                     Iniciar Sesión
                 </Button>
 
-                <div className="relative my-2">
-                    <div className="absolute inset-0 flex items-center">
-                        <span className="w-full border-t border-muted"></span>
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                        <span className="bg-background px-2 text-muted-foreground bg-card font-mono">Modo Dev</span>
-                    </div>
-                </div>
-
-                <Button
-                    type="button"
-                    variant="secondary"
-                    className="w-full bg-emerald-500/10 text-emerald-600 hover:bg-emerald-500/20 border-emerald-500/20 shadow-none hover:shadow-md transition-all font-semibold"
-                    onClick={handleMockLogin}
-                    disabled={isLoading}
-                >
-                    {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    🚀 Entrar Ya (Mock Login)
-                </Button>
             </form>
 
             <div className="relative my-6">

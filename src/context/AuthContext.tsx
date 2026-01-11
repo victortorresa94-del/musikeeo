@@ -1,66 +1,71 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { type User, onAuthStateChanged } from "firebase/auth";
-import { auth } from "../lib/firebase";
+import { type User, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { auth, db } from "../lib/firebase";
+import { doc, setDoc, getDoc } from "firebase/firestore";
 
 interface AuthContextType {
     user: User | null;
     loading: boolean;
-    mockLogin: () => void;
+    loginWithGoogle: () => Promise<void>;
+    logout: () => Promise<void>;
 }
 
-const AuthContext = createContext<AuthContextType>({ user: null, loading: true, mockLogin: () => { } });
+const AuthContext = createContext<AuthContextType>({
+    user: null,
+    loading: true,
+    loginWithGoogle: async () => { },
+    logout: async () => { }
+});
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const mockLogin = () => {
-        const mockUser = {
-            uid: 'mock-user-123',
-            displayName: 'Músico Dev',
-            email: 'musician@dev.com',
-            emailVerified: true,
-            isAnonymous: false,
-            metadata: {},
-            providerData: [],
-            refreshToken: '',
-            tenantId: null,
-            delete: async () => { },
-            getIdToken: async () => 'mock-token',
-            getIdTokenResult: async () => ({
-                token: 'mock-token',
-                claims: { role: 'musician' }, // Mock custom claim
-                authTime: Date.now().toString(),
-                issuedAtTime: Date.now().toString(),
-                expirationTime: (Date.now() + 3600000).toString(),
-                signInProvider: 'custom',
-                signInSecondFactor: null,
-            }),
-            reload: async () => { },
-            toJSON: () => ({}),
-            phoneNumber: null,
-            photoURL: null,
-        } as unknown as User;
+    const loginWithGoogle = async () => {
+        try {
+            const provider = new GoogleAuthProvider();
+            const result = await signInWithPopup(auth, provider);
+            const user = result.user;
 
-        setUser(mockUser);
+            // Check if user exists in Firestore, if not create basic profile
+            const userRef = doc(db, "users", user.uid);
+            const userSnap = await getDoc(userRef);
+
+            if (!userSnap.exists()) {
+                await setDoc(userRef, {
+                    uid: user.uid,
+                    displayName: user.displayName,
+                    email: user.email,
+                    photoURL: user.photoURL,
+                    role: 'musician', // Default role
+                    createdAt: new Date().toISOString()
+                });
+            }
+        } catch (error) {
+            console.error("Error signing in with Google", error);
+            throw error;
+        }
+    };
+
+    const logout = async () => {
+        try {
+            await signOut(auth);
+            setUser(null);
+        } catch (error) {
+            console.error("Error signing out", error);
+        }
     };
 
     useEffect(() => {
-        // Safety check: specific to the modular SDK, we can check if the auth object has a 'currentUser' property 
-        // or simply wrapping the subscription in a try-catch isn't enough because onAuthStateChanged validation happens synchronously.
-
         let unsubscribe: () => void = () => { };
 
         try {
-            // If auth is strictly empty object (due to our fallback), onAuthStateChanged might throw.
-            // We'll attempt to standard check.
             unsubscribe = onAuthStateChanged(auth, (authUser) => {
                 setUser(authUser);
                 setLoading(false);
             });
         } catch (error) {
             console.error("AuthContext: Failed to subscribe to auth state changes.", error);
-            // If subscription fails (e.g. bad config), we assume no user and stop loading to show UI.
             setLoading(false);
         }
 
@@ -70,7 +75,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }, []);
 
     return (
-        <AuthContext.Provider value={{ user, loading, mockLogin }}>
+        <AuthContext.Provider value={{ user, loading, loginWithGoogle, logout }}>
             {!loading && children}
         </AuthContext.Provider>
     );

@@ -25,7 +25,30 @@ export const userService = {
         }
     },
 
+    getUserProfile: async (uid: string): Promise<User | null> => {
+        try {
+            const user = await firestoreService.getById<User>('users', uid);
+            if (!user) {
+                // Fallback to mock if not found (or return null in prod)
+                console.warn("User not found in Firestore, returning mock for dev.");
+                return {
+                    uid,
+                    email: 'mock@musikeeo.com',
+                    displayName: 'Mock User',
+                    role: 'musician',
+                    stats: { gigs: 0, rating: 0, reviews: 0 }
+                } as User;
+            }
+            return user;
+        } catch (error) {
+            console.error("Error fetching user profile:", error);
+            throw error;
+        }
+    },
+
     getCurrentUser: async (): Promise<User> => {
+        // Deprecated: prefer getUserProfile with auth.uid
+        console.warn("Using deprecated getCurrentUser mock.");
         await new Promise(resolve => setTimeout(resolve, 300));
         return {
             uid: 'current_user',
@@ -36,5 +59,15 @@ export const userService = {
             photoURL: 'https://i.pravatar.cc/150?u=0',
             stats: { gigs: 10, rating: 5.0, reviews: 3 }
         };
+    },
+
+    updateProfile: async (uid: string, data: Partial<User>) => {
+        try {
+            await firestoreService.update('users', uid, data);
+            return true;
+        } catch (error) {
+            console.error("Error updating profile:", error);
+            throw error;
+        }
     }
 };

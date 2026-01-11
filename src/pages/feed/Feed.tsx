@@ -34,7 +34,23 @@ export default function Feed() {
     }
 
     return (
-        <div className="space-y-8 pb-20 md:pb-0">
+        <div className="max-w-5xl mx-auto p-4 md:p-6 space-y-8 animate-fade-in-up">
+            {/* Header Section */}
+            <header className="flex items-center justify-between mb-8">
+                <div>
+                    <h1 className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-white to-white/60">
+                        Control Room
+                    </h1>
+                    <p className="text-muted-foreground mt-1">
+                        Resumen de actividad y oportunidades cercanas
+                    </p>
+                </div>
+                <div className="flex items-center gap-2 text-sm text-brand-cyan bg-brand-cyan/10 px-3 py-1 rounded-full border border-brand-cyan/20">
+                    <MapPin className="w-4 h-4" />
+                    <span>Madrid, ES</span>
+                </div>
+            </header>
+
             {/* AI Welcome Section */}
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
@@ -79,14 +95,14 @@ export default function Feed() {
                     {opportunities.map((item) => (
                         <Card key={item.id} className="min-w-[280px] md:min-w-[320px] bg-card border-white/5 overflow-hidden group hover:border-brand-cyan/30 transition-all snap-start">
                             <div className="h-32 w-full overflow-hidden relative">
-                                <img src={item.imageUrl} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                <img src={item.imageUrl || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=500&q=80"} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
                                 <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-1 rounded-md text-[10px] uppercase font-bold text-white border border-white/10">
-                                    {item.tags?.[0] || 'Evento'}
+                                    {item.type === 'gig' ? 'Bolo' : 'Colab'}
                                 </div>
                             </div>
                             <CardContent className="p-4">
                                 <h3 className="font-heading font-bold text-lg text-white mb-1 truncate">{item.title}</h3>
-                                <p className="text-sm text-brand-cyan mb-3">{item.organizerName}</p>
+                                <p className="text-sm text-brand-cyan mb-3">{item.organizerId}</p>
 
                                 <div className="flex flex-col gap-2 text-xs text-muted-foreground">
                                     <div className="flex items-center gap-2">
@@ -118,7 +134,7 @@ export default function Feed() {
                             </div>
                             <h4 className="font-bold text-white text-sm truncate w-full text-center">{user.displayName}</h4>
                             <p className="text-xs text-muted-foreground mb-1 capitalize">{user.role}</p>
-                            <span className="text-[10px] text-brand-cyan bg-brand-cyan/10 px-2 py-0.5 rounded-full">{user.distance}</span>
+                            <span className="text-[10px] text-brand-cyan bg-brand-cyan/10 px-2 py-0.5 rounded-full">{user.distance} distance</span>
                         </motion.div>
                     ))}
                 </div>

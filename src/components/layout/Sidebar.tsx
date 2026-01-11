@@ -3,13 +3,13 @@ import { Home, Calendar, MessageSquare, ShoppingBag, Radio, User, LogOut } from 
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
-import { signOut } from 'firebase/auth';
-import { auth } from '../../lib/firebase';
 
 export const Sidebar = () => {
-    const { user } = useAuth();
+    const { user, logout } = useAuth();
 
-    const handleLogout = () => signOut(auth);
+    const handleLogout = async () => {
+        await logout();
+    };
 
     const navItems = [
         { icon: Home, label: 'Feed', path: '/' },

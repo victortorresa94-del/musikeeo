@@ -1,4 +1,4 @@
-import { collection, getDocs, doc, getDoc, addDoc, type DocumentData } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, addDoc, setDoc, type DocumentData } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 export const firestoreService = {
@@ -38,6 +38,18 @@ export const firestoreService = {
             return docRef.id;
         } catch (error) {
             console.error(`Error adding to ${collectionName}:`, error);
+            throw error;
+        }
+    },
+
+    // Generic Update
+    update: async (collectionName: string, id: string, data: any): Promise<void> => {
+        try {
+            if (!db) throw new Error("Database not initialized");
+            const docRef = doc(db, collectionName, id);
+            await setDoc(docRef, data, { merge: true });
+        } catch (error) {
+            console.error(`Error updating document ${collectionName}/${id}:`, error);
             throw error;
         }
     }

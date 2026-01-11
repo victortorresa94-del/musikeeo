@@ -8,6 +8,8 @@ export interface User {
     role: UserRole;
     location?: string;
     bio?: string;
+    skills?: string[];
+    genres?: string[];
     tags?: string[];
     stats?: {
         gigs: number;
