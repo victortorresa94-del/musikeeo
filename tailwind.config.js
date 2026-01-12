@@ -44,11 +44,12 @@ export default {
                 },
                 // Stitch Specific
                 brand: {
-                    petrol: "#005C8A",
-                    cyan: "#37B7F6",
-                    lime: "#82FF1F",
-                    dark: "#0A0A0A",
-                    surface: "#EAEAEA",
+                    yellow: "#FFD84D",
+                    warm: "#FFC300",
+                    black: "#0A0A0A",
+                    charcoal: "#1E1E1E",
+                    white: "#F5F5F5",
+                    blue: "#1F6FEB"
                 }
             },
             borderRadius: {
@@ -59,9 +60,9 @@ export default {
                 '2xl': "1.5rem",
             },
             fontFamily: {
-                heading: ["'Space Grotesk'", "sans-serif"],
-                sans: ["'Inter'", "sans-serif"],
-                mono: ["'JetBrains Mono'", "monospace"],
+                heading: ["'Space Grotesk'", "sans-serif"], // Titulares
+                sans: ["'Inter'", "sans-serif"], // Texto de cuerpo
+                mono: ["'Rubik Mono One'", "monospace"], // Microtexto
             },
             keyframes: {
                 "accordion-down": {

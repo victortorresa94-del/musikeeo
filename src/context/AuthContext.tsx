@@ -8,13 +8,15 @@ interface AuthContextType {
     loading: boolean;
     loginWithGoogle: () => Promise<void>;
     logout: () => Promise<void>;
+    loginWithDev: () => void;
 }
 
 const AuthContext = createContext<AuthContextType>({
     user: null,
     loading: true,
     loginWithGoogle: async () => { },
-    logout: async () => { }
+    logout: async () => { },
+    loginWithDev: () => { }
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
@@ -74,8 +76,29 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         };
     }, []);
 
+    const loginWithDev = () => {
+        setUser({
+            uid: 'dev-user-id',
+            email: 'dev@musikeeo.local',
+            displayName: 'Usuario Dev',
+            emailVerified: true,
+            isAnonymous: false,
+            metadata: {},
+            providerData: [],
+            refreshToken: '',
+            tenantId: null,
+            delete: async () => { },
+            getIdToken: async () => '',
+            getIdTokenResult: async () => ({} as any),
+            reload: async () => { },
+            toJSON: () => ({}),
+            phoneNumber: null,
+            photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Dev',
+        } as unknown as User);
+    };
+
     return (
-        <AuthContext.Provider value={{ user, loading, loginWithGoogle, logout }}>
+        <AuthContext.Provider value={{ user, loading, loginWithGoogle, logout, loginWithDev }}>
             {!loading && children}
         </AuthContext.Provider>
     );

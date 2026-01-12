@@ -1,0 +1,61 @@
+{
+    "components": {
+        "buttons": {
+            "cta_primary": {
+                "background": "#FFD84D",
+                "text_color": "#0A0A0A",
+                "font": "Space Grotesk (Large) / Inter (Small)",
+                "hover": "#FFC300 + subtle neon shadow",
+                "micro_animation": "Parpadeo amarillo / Halo tenue",
+                "sound": "Click de púa (opcional)"
+            },
+            "secondary": {
+                "background": "#1E1E1E",
+                "text_color": "#F5F5F5",
+                "border": "None or subtle",
+                "hover": "Lighter charcoal"
+            }
+        },
+        "cards": {
+            "event_card": {
+                "background": "#1E1E1E",
+                "shadow": "Focus light (soft)",
+                "content": [
+                    "Image",
+                    "Title (H3)",
+                    "Location/Date",
+                    "CTA Button"
+                ],
+                "interaction": "Glow fade on hover"
+            },
+            "profile_card": {
+                "layout": "Circular photo + Blur background",
+                "style": "Dark mode integrated"
+            }
+        },
+        "layout": {
+            "navigation": {
+                "type": "Floating bottom bar",
+                "items": 5,
+                "style": "Dark with active yellow accent"
+            },
+            "top_bar": {
+                "style": "Subtle shadow separator"
+            },
+            "modals": {
+                "background": "#1E1E1E",
+                "transition": "Glow fade"
+            }
+        },
+        "feedback": {
+            "loading": {
+                "style": "Dark background with yellow sparkles/flashes",
+                "sound": "Ambient loop (fade-in)"
+            },
+            "success": {
+                "animation": "Micro rhythmic (e.g., stage lights flickering)",
+                "haptics": "Subtle vibration"
+            }
+        }
+    }
+}

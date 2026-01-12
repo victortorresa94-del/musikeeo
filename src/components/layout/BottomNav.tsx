@@ -1,14 +1,14 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Calendar, MessageSquare, ShoppingBag, User } from 'lucide-react';
+import { Home, Calendar, ShoppingBag, User, Search } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
 
 export const BottomNav = () => {
     const navItems = [
         { icon: Home, label: 'Feed', path: '/' },
+        { icon: Search, label: 'Descubrir', path: '/discover' },
         { icon: Calendar, label: 'Eventos', path: '/events' },
         { icon: ShoppingBag, label: 'Tienda', path: '/market' },
-        { icon: MessageSquare, label: 'Chat', path: '/messages' },
         { icon: User, label: 'Perfil', path: '/profile' },
     ];
 

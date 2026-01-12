@@ -1,0 +1,51 @@
+{
+    "colors": {
+        "base_palette": {
+            "scenic_black": {
+                "hex": "#0A0A0A",
+                "description": "Fondo principal, sensación de escenario oscuro antes del show",
+                "usage": "Fondo global"
+            },
+            "musikeeo_yellow": {
+                "hex": "#FFD84D",
+                "description": "Color protagonista, transmite energía, confianza y urgencia",
+                "usage": "Acentos y CTAs"
+            },
+            "warm_yellow_secondary": {
+                "hex": "#FFC300",
+                "description": "Para degradados, brillos o acentos suaves",
+                "usage": "Hover o pulsación"
+            },
+            "charcoal_grey": {
+                "hex": "#1E1E1E",
+                "description": "Paneles, sombras, backgrounds alternos",
+                "usage": "Sombras internas y botones pasivos, Cards y modales"
+            },
+            "smoke_white": {
+                "hex": "#F5F5F5",
+                "description": "Texto sobre fondos oscuros o para resaltar info técnica",
+                "usage": "Tipografía principal"
+            },
+            "trust_blue_optional": {
+                "hex": "#1F6FEB",
+                "description": "Para CTAs secundarios o links informativos",
+                "usage": "CTAs secundarios (opcional)"
+            }
+        },
+        "gradients": {
+            "warm_gradient": {
+                "start": "#FFD84D",
+                "end": "#FFC300",
+                "description": "Transición cálida, degradados opcionales"
+            }
+        },
+        "ui_specifics": {
+            "background": "#0A0A0A",
+            "cards": "#1E1E1E",
+            "text_primary": "#F5F5F5",
+            "primary_cta": "#FFD84D",
+            "hover_cta": "#FFC300",
+            "separators": "rgba(255,255,255,0.06)"
+        }
+    }
+}

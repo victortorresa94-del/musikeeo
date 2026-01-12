@@ -41,7 +41,10 @@ export interface MarketItem {
     category: 'instrument' | 'service' | 'space' | 'other';
     image: string;
     location: string;
+    description?: string;
+    seller?: string;
     rating?: number;
+    reviews?: number;
 }
 
 export interface ChatMessage {
@@ -50,4 +53,34 @@ export interface ChatMessage {
     text: string;
     timestamp: number;
     isSystem?: boolean;
+    read?: boolean;
+}
+
+export type FeedPostType = 'post' | 'event_highlight' | 'market_highlight' | 'milestone' | 'announcement';
+
+export interface FeedPost {
+    id: string;
+    type: FeedPostType;
+    authorId: string;
+    authorName: string;
+    authorPhoto: string;
+    authorRole: UserRole;
+    authorVerified?: boolean;
+    content: string;
+    images?: string[];
+    videoUrl?: string;
+    timestamp: number;
+    likes: number;
+    comments: number;
+    shares: number;
+    isLiked?: boolean;
+    // For event highlights
+    eventId?: string;
+    eventData?: Partial<Event>;
+    // For market highlights
+    marketItemId?: string;
+    marketData?: Partial<MarketItem>;
+    // For milestones
+    milestoneType?: 'gig_completed' | 'new_collab' | 'achievement';
+    tags?: string[];
 }

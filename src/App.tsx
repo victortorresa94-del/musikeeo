@@ -1,5 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
+import { useState } from 'react';
 import Login from './pages/auth/Login';
 import Register from './pages/auth/Register';
 import Feed from './pages/feed/Feed';
@@ -11,6 +12,13 @@ import Profile from './pages/profile/Profile';
 import Onboarding from './pages/onboarding/Onboarding';
 import { MainLayout } from './layouts/MainLayout';
 import { Loader2 } from 'lucide-react';
+import ProductDetail from './pages/market/ProductDetail';
+import CreateListing from './pages/market/CreateListing';
+import PublicProfile from './pages/profile/PublicProfile';
+import EventDetail from './pages/events/EventDetail';
+import Discover from './pages/discover/Discover';
+import Reels from './pages/reels/Reels';
+import SplashScreen from './components/layout/SplashScreen';
 
 // Guard Component
 const RequireAuth = () => {
@@ -42,8 +50,12 @@ const RequireAnon = () => {
 };
 
 function App() {
+  // Estado para controlar el Splash Screen
+  const [showSplash, setShowSplash] = useState(true);
+
   return (
     <AuthProvider>
+      {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
       <Router>
         <Routes>
           {/* Public Routes */}
@@ -55,12 +67,19 @@ function App() {
           {/* Protected Routes */}
           <Route element={<RequireAuth />}>
             <Route path="/" element={<Feed />} />
+            <Route path="/discover" element={<Discover />} />
             <Route path="/events" element={<Events />} />
+            <Route path="/events/:id" element={<EventDetail />} />
             <Route path="/messages" element={<Messages />} />
             <Route path="/market" element={<Market />} />
+            <Route path="/market/:id" element={<ProductDetail />} />
+            <Route path="/market/create" element={<CreateListing />} />
             <Route path="/projects" element={<Projects />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/profile/:id" element={<PublicProfile />} />
             <Route path="/onboarding" element={<Onboarding />} />
+            <Route path="/reels" element={<Reels />} />
+            <Route path="/reels/:id" element={<Reels />} />
           </Route>
 
           {/* Fallback */}

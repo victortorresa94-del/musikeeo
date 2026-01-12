@@ -50,7 +50,7 @@ export default function Events() {
                     <h1 className="text-3xl font-heading font-bold text-white">Eventos & Gigs</h1>
                     <p className="text-muted-foreground">Gestiona tu agenda y crea nuevas oportunidades.</p>
                 </div>
-                <Button onClick={() => setIsWizardOpen(true)} className="bg-brand-lime text-black hover:bg-brand-lime/90 font-bold shadow-[0_0_15px_rgba(130,255,31,0.4)]">
+                <Button onClick={() => setIsWizardOpen(true)} className="bg-brand-yellow text-brand-black hover:bg-brand-warm font-bold shadow-[0_0_15px_rgba(255,216,77,0.4)]">
                     <Plus className="h-4 w-4 mr-2" />
                     Crear Evento IA
                 </Button>
@@ -81,8 +81,8 @@ export default function Events() {
                             </Button>
 
                             <div className="p-8 pb-0 text-center">
-                                <div className="h-12 w-12 bg-brand-lime/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-lime/20">
-                                    <Sparkles className="h-6 w-6 text-brand-lime" />
+                                <div className="h-12 w-12 bg-brand-yellow/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-brand-yellow/20">
+                                    <Sparkles className="h-6 w-6 text-brand-yellow" />
                                 </div>
                                 <h2 className="text-2xl font-heading font-bold text-white">Asistente de Eventos</h2>
                                 <p className="text-sm text-muted-foreground mt-2">Cuéntame qué necesitas y lo organizaré por ti.</p>
@@ -115,12 +115,12 @@ export default function Events() {
                                             <div className="flex justify-between items-start">
                                                 <div>
                                                     <h3 className="font-bold text-white">Concierto de Jazz</h3>
-                                                    <p className="text-xs text-brand-cyan">Viernes, 14 Abr • 22:00h</p>
+                                                    <p className="text-xs text-brand-yellow">Viernes, 14 Abr • 22:00h</p>
                                                 </div>
-                                                <span className="bg-brand-lime text-black text-[10px] font-bold px-2 py-1 rounded">Borrador</span>
+                                                <span className="bg-brand-yellow text-brand-black text-[10px] font-bold px-2 py-1 rounded">Borrador</span>
                                             </div>
                                             <div className="flex gap-2 text-sm text-muted-foreground">
-                                                <MapPin className="h-4 w-4 text-brand-cyan" /> Gràcia, Barcelona
+                                                <MapPin className="h-4 w-4 text-brand-yellow" /> Gràcia, Barcelona
                                             </div>
                                             <div className="flex gap-2 text-sm text-muted-foreground">
                                                 <Music className="h-4 w-4 text-purple-400" /> Se busca: Banda Completa
@@ -132,7 +132,35 @@ export default function Events() {
 
                                         <div className="flex gap-3 pt-2">
                                             <Button variant="outline" className="flex-1" onClick={() => setWizardStep(1)}>Editar</Button>
-                                            <Button className="flex-1 bg-brand-cyan text-white hover:bg-brand-cyan/90 border-none" onClick={() => setIsWizardOpen(false)}>Publicar</Button>
+                                            <Button
+                                                className="flex-1 bg-brand-yellow text-brand-black hover:bg-brand-warm border-none"
+                                                onClick={async () => {
+                                                    setLoading(true); // Re-use loading state or add specific one
+                                                    try {
+                                                        await eventService.createEvent({
+                                                            title: "Concierto de Jazz", // This would come from AI parsing in real app
+                                                            organizerId: "current_user_id", // We'd get this from AuthContext
+                                                            organizerName: "Usuario",
+                                                            date: new Date().toISOString(),
+                                                            location: "Gràcia, Barcelona",
+                                                            description: transcript,
+                                                            type: 'gig',
+                                                            imageUrl: "https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=800&q=80"
+                                                        });
+                                                        // Refresh events
+                                                        const data = await eventService.getUpcomingEvents();
+                                                        setEvents(data);
+                                                        setIsWizardOpen(false);
+                                                        setWizardStep(1);
+                                                    } catch (e) {
+                                                        console.error(e);
+                                                    } finally {
+                                                        setLoading(false);
+                                                    }
+                                                }}
+                                            >
+                                                Publicar
+                                            </Button>
                                         </div>
                                     </div>
                                 )}
@@ -161,7 +189,7 @@ export default function Events() {
                                     className="h-full w-full object-cover group-hover:scale-110 transition-transform duration-500"
                                 />
                                 <div className="absolute bottom-3 left-4 z-20">
-                                    <span className="text-[10px] font-bold text-brand-lime uppercase tracking-wider mb-1 block">{event.type}</span>
+                                    <span className="text-[10px] font-bold text-brand-yellow uppercase tracking-wider mb-1 block">{event.type}</span>
                                     <h3 className="text-white font-bold leading-tight">{event.title}</h3>
                                 </div>
                                 <div className="absolute top-3 right-3 z-20 bg-black/50 backdrop-blur-md px-2 py-1 rounded text-xs font-bold text-white border border-white/10">
@@ -170,7 +198,7 @@ export default function Events() {
                             </div>
                             <CardContent className="p-4 space-y-3">
                                 <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                                    <MapPin className="h-4 w-4 text-brand-cyan" />
+                                    <MapPin className="h-4 w-4 text-brand-yellow" />
                                     <span className="truncate">{event.location}</span>
                                 </div>
                                 <div className="flex items-center justify-between pt-2 border-t border-white/5">
@@ -181,7 +209,7 @@ export default function Events() {
                                             </div>
                                         ))}
                                     </div>
-                                    <span className="text-xs text-brand-cyan hover:underline">{event.organizerName}</span>
+                                    <span className="text-xs text-brand-yellow hover:underline">{event.organizerName}</span>
                                 </div>
                             </CardContent>
                         </Card>

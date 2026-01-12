@@ -26,5 +26,15 @@ export const eventService = {
             await new Promise(resolve => setTimeout(resolve, 1000));
             return 'mock_event_id_' + Date.now();
         }
+    },
+
+    getEventById: async (id: string): Promise<Event | null> => {
+        try {
+            const event = await firestoreService.getById<Event>('events', id);
+            return event;
+        } catch (error) {
+            console.warn("Using Mock Event for ID:", id);
+            return MOCK_EVENTS.find(e => e.id === id) || null;
+        }
     }
 };

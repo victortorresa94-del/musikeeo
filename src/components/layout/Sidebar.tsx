@@ -1,5 +1,5 @@
 import { NavLink } from 'react-router-dom';
-import { Home, Calendar, MessageSquare, ShoppingBag, Radio, User, LogOut } from 'lucide-react';
+import { Home, Calendar, ShoppingBag, Radio, User, LogOut, Search } from 'lucide-react';
 import { Button } from '../ui/button';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
@@ -13,8 +13,8 @@ export const Sidebar = () => {
 
     const navItems = [
         { icon: Home, label: 'Feed', path: '/' },
+        { icon: Search, label: 'Descubrir', path: '/discover' },
         { icon: Calendar, label: 'Eventos', path: '/events' },
-        { icon: MessageSquare, label: 'Mensajes', path: '/messages' },
         { icon: ShoppingBag, label: 'Mercado', path: '/market' },
         { icon: Radio, label: 'Proyectos', path: '/projects' },
     ];
@@ -24,7 +24,7 @@ export const Sidebar = () => {
             {/* Brand */}
             <div className="p-6 flex items-center gap-3">
                 <div className="relative h-10 w-10">
-                    <img src="/logo-musikeeo.png" alt="M" className="h-full w-full object-contain" />
+                    <img src="/logo-musikeeo.png" alt="M" className="h-full w-full object-contain rounded-xl" />
                     <div className="absolute inset-0 bg-brand-cyan blur-xl opacity-20 rounded-full"></div>
                 </div>
                 <span className="text-2xl font-heading font-bold text-white tracking-wide">
@@ -64,16 +64,18 @@ export const Sidebar = () => {
             {/* User Footer */}
             <div className="p-4 border-t border-white/5 mx-4 mb-4 bg-white/5 rounded-2xl">
                 <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-brand-petrol to-brand-lime p-[2px]">
-                        <div className="h-full w-full rounded-full bg-black flex items-center justify-center overflow-hidden">
-                            {user?.photoURL ? <img src={user.photoURL} alt={user.displayName || 'User'} /> : <User className="h-5 w-5" />}
+                    <NavLink to="/profile" className="flex items-center gap-3 flex-1 overflow-hidden group">
+                        <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-brand-petrol to-brand-lime p-[2px]">
+                            <div className="h-full w-full rounded-full bg-black flex items-center justify-center overflow-hidden">
+                                {user?.photoURL ? <img src={user.photoURL} alt={user.displayName || 'User'} className="h-full w-full object-cover" /> : <User className="h-5 w-5" />}
+                            </div>
                         </div>
-                    </div>
-                    <div className="flex-1 overflow-hidden">
-                        <p className="text-sm font-bold text-white truncate">{user?.displayName || 'Usuario'}</p>
-                        <p className="text-xs text-brand-lime truncate">Músico Pro</p>
-                    </div>
-                    <Button variant="ghost" size="icon" onClick={handleLogout} className="text-muted-foreground hover:text-destructive">
+                        <div className="flex-1 overflow-hidden">
+                            <p className="text-sm font-bold text-white truncate group-hover:text-brand-cyan transition-colors">{user?.displayName || 'Usuario'}</p>
+                            <p className="text-xs text-brand-lime truncate">Músico Pro</p>
+                        </div>
+                    </NavLink>
+                    <Button variant="ghost" size="icon" onClick={handleLogout} className="text-muted-foreground hover:text-destructive shrink-0">
                         <LogOut className="h-4 w-4" />
                     </Button>
                 </div>

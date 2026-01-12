@@ -1,0 +1,70 @@
+/* Musikeeo Typography System */
+
+/* Font Families */
+:root {
+    --font-headlines: 'Space Grotesk', 'Archivo Black', sans-serif;
+    --font-body: 'Inter', 'Manrope', sans-serif;
+    --font-micro: 'Rubik Mono One', monospace;
+}
+
+/* Base Styles */
+body {
+    font-family: var(--font-body);
+    color: var(--color-smoke-white);
+    background-color: var(--color-scenic-black);
+}
+
+/* Headings */
+h1,
+h2,
+h3 {
+    font-family: var(--font-headlines);
+    font-weight: 700;
+    /* Bold/Heavy */
+    text-transform: uppercase;
+    letter-spacing: -0.02em;
+    /* Ligera condensación */
+}
+
+/* Contextual Uses */
+.headline-hero {
+    font-family: var(--font-headlines);
+    font-size: 3rem;
+    line-height: 1.1;
+}
+
+.text-body {
+    font-family: var(--font-body);
+    font-size: 1rem;
+    line-height: 1.5;
+}
+
+.micro-tag {
+    font-family: var(--font-micro);
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+/* Specific UI Typography */
+.btn-large {
+    font-family: var(--font-headlines);
+    font-weight: 600;
+}
+
+.btn-small {
+    font-family: var(--font-body);
+    font-weight: 500;
+}
+
+/* Social Media Typography */
+.social-headline {
+    font-family: 'Space Grotesk', sans-serif;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+.social-copy {
+    font-family: 'Inter', sans-serif;
+    font-weight: 400;
+}

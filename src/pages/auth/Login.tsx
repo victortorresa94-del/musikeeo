@@ -47,7 +47,7 @@ export default function Login() {
         }
     };
 
-    const { loginWithGoogle } = useAuth();
+    const { loginWithGoogle, loginWithDev } = useAuth();
 
     const handleGoogleLogin = async () => {
         setIsLoading(true);
@@ -122,6 +122,19 @@ export default function Login() {
                 </svg>
                 Google
             </Button>
+
+            {import.meta.env.DEV && (
+                <Button
+                    variant="ghost"
+                    className="w-full mt-4 border border-dashed border-muted-foreground/50 text-muted-foreground hover:text-foreground hover:bg-muted/50"
+                    onClick={() => {
+                        loginWithDev();
+                        navigate('/');
+                    }}
+                >
+                    🔧 Modo Dev (Sin Login)
+                </Button>
+            )}
 
             <div className="mt-6 text-center text-sm">
                 ¿No tienes cuenta?{' '}

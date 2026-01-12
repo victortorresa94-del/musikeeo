@@ -35,5 +35,25 @@ export const marketService = {
             }
             return items;
         }
+    },
+
+    getItemById: async (id: string): Promise<MarketItem | null> => {
+        try {
+            const item = await firestoreService.getById<MarketItem>('market_items', id);
+            return item;
+        } catch (error) {
+            console.warn("Using Mock Market Item for ID:", id);
+            return MOCK_MARKET_ITEMS.find(i => i.id === id) || null;
+        }
+    },
+
+    createItem: async (item: Omit<MarketItem, 'id'>): Promise<string> => {
+        try {
+            const id = await firestoreService.add('market_items', item);
+            return id;
+        } catch (error) {
+            console.error("Error creating market item", error);
+            throw error;
+        }
     }
 };
