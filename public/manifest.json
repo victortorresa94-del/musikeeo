@@ -2,13 +2,13 @@
     "name": "Musikeeo",
     "short_name": "Musikeeo",
     "id": "/",
-    "description": "Conecta músicos, locales, técnicos y tiendas de música. Crea eventos, contrata y colabora.",
+    "description": "Conecta, alquila y contrata músicos en vivo.",
     "start_url": "/",
     "scope": "/",
     "display": "standalone",
     "orientation": "portrait",
-    "background_color": "#0f1c23",
-    "theme_color": "#005C8A",
+    "background_color": "#0A0A0A",
+    "theme_color": "#FFD84D",
     "icons": [
         {
             "src": "/icons/icon-192x192.png",
