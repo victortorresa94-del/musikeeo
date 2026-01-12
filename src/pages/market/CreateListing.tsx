@@ -26,10 +26,10 @@ export default function CreateListing() {
     const [isLoading, setIsLoading] = useState(false);
 
     // Mock image for MVP
-    const [activeImage, setActiveImage] = useState("https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=500&q=80");
+    const [activeImage] = useState("https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=500&q=80");
 
     const { register, handleSubmit, formState: { errors } } = useForm<ListingForm>({
-        resolver: zodResolver(listingSchema),
+        resolver: zodResolver(listingSchema) as any,
         defaultValues: {
             category: 'instruments'
         }
@@ -41,11 +41,12 @@ export default function CreateListing() {
         try {
             await marketService.createItem({
                 ...data,
+                category: data.category as any,
                 image: activeImage,
                 rating: 5.0, // Default for new
+                sellerId: user.uid,
                 seller: user.displayName || 'Usuario Anónimo',
                 reviews: 0,
-                // In a real app we'd add sellerId: user.uid
             });
             navigate('/market');
         } catch (error) {

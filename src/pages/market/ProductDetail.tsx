@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
-import { ArrowLeft, MapPin, Tag, Star, Music, MessageSquare, Share2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Tag, Star, MessageSquare, Share2 } from 'lucide-react';
 import { marketService } from '../../services/marketService';
 import { type MarketItem } from '../../types';
-import { cn } from '../../lib/utils';
 import { Loader2 } from 'lucide-react';
 
 export default function ProductDetail() {
@@ -114,11 +113,11 @@ export default function ProductDetail() {
                     {/* Seller Card */}
                     <div className="border border-white/5 rounded-xl p-4 flex items-center gap-4 bg-black/20">
                         <div className="h-12 w-12 rounded-full bg-zinc-800 flex items-center justify-center border border-white/10">
-                            <span className="font-bold text-white uppercase">{item.seller.substring(0, 2)}</span>
+                            <span className="font-bold text-white uppercase">{(item.seller || 'U').substring(0, 2)}</span>
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground">Vendido por</p>
-                            <p className="font-bold text-white">{item.seller}</p>
+                            <p className="font-bold text-white">{item.seller || 'Usuario'}</p>
                         </div>
                         <Button size="sm" variant="ghost" className="ml-auto text-brand-cyan hover:text-brand-cyan/80">
                             Ver Perfil

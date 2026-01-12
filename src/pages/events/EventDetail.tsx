@@ -1,16 +1,15 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
-import { ArrowLeft, MapPin, Calendar, Clock, Music, Users, Send } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Clock, Music, Send } from 'lucide-react';
 import { eventService } from '../../services/eventService';
 import { type Event } from '../../types';
 import { Loader2 } from 'lucide-react';
-import { useAuth } from '../../context/AuthContext';
 
 export default function EventDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const { user } = useAuth();
+    // Hook removed
     const [event, setEvent] = useState<Event | null>(null);
     const [loading, setLoading] = useState(true);
     const [isApplied, setIsApplied] = useState(false);

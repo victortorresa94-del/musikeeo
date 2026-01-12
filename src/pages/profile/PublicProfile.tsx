@@ -40,7 +40,7 @@ export default function PublicProfile() {
         fetchProfile();
     }, [id]);
 
-    const handleOpenReel = (reel: Reel, index: number) => {
+    const handleOpenReel = (reel: Reel) => {
         navigate(`/reels/${reel.id}`, {
             state: {
                 source: 'profile',
@@ -220,10 +220,10 @@ export default function PublicProfile() {
                     {/* Videos Grid - Estilo Instagram/TikTok */}
                     {activeTab === 'videos' && (
                         <div className="grid grid-cols-3 gap-1">
-                            {userReels.map((reel, index) => (
+                            {userReels.map((reel) => (
                                 <button
                                     key={reel.id}
-                                    onClick={() => handleOpenReel(reel, index)}
+                                    onClick={() => handleOpenReel(reel)}
                                     className="aspect-[9/16] bg-zinc-900 rounded-lg overflow-hidden relative group"
                                 >
                                     <img
