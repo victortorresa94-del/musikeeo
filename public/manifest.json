@@ -1,6 +1,7 @@
 {
     "name": "Musikeeo",
     "short_name": "Musikeeo",
+    "id": "/",
     "description": "Conecta músicos, locales, técnicos y tiendas de música. Crea eventos, contrata y colabora.",
     "start_url": "/",
     "scope": "/",
