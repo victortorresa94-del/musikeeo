@@ -2,17 +2,24 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 import { ArrowLeft, MapPin, Calendar, Clock, Music, Send } from 'lucide-react';
+import { toast } from 'sonner';
 import { eventService } from '../../services/eventService';
+import { chatService } from '../../services/chatService';
 import { type Event } from '../../types';
 import { Loader2 } from 'lucide-react';
+
+import { useAuth } from '../../context/AuthContext';
+import { applicationService } from '../../services/applicationService';
 
 export default function EventDetail() {
     const { id } = useParams();
     const navigate = useNavigate();
-    // Hook removed
     const [event, setEvent] = useState<Event | null>(null);
     const [loading, setLoading] = useState(true);
+
+    const { user } = useAuth();
     const [isApplied, setIsApplied] = useState(false);
+    const [applying, setApplying] = useState(false);
 
     useEffect(() => {
         const fetchEvent = async () => {
@@ -20,6 +27,12 @@ export default function EventDetail() {
             try {
                 const data = await eventService.getEventById(id);
                 setEvent(data);
+
+                // Check application status if user is logged in
+                if (user) {
+                    const applied = await applicationService.hasApplied(id, user.uid);
+                    setIsApplied(applied);
+                }
             } catch (error) {
                 console.error("Failed to load event", error);
             } finally {
@@ -27,11 +40,27 @@ export default function EventDetail() {
             }
         };
         fetchEvent();
-    }, [id]);
+    }, [id, user]);
 
-    const handleApply = () => {
-        setIsApplied(true);
-        // Here we would call eventService.applyToEvent(eventId, userId)
+    const handleApply = async () => {
+        if (!user) {
+            toast.error("Debes iniciar sesión para postularte");
+            navigate('/login');
+            return;
+        }
+        if (!event) return;
+
+        setApplying(true);
+        try {
+            await applicationService.apply(event.id, user.uid);
+            setIsApplied(true);
+            toast.success("¡Solicitud enviada con éxito!");
+        } catch (error) {
+            console.error("Error applying:", error);
+            toast.error("Error al enviar solicitud. Inténtalo de nuevo.");
+        } finally {
+            setApplying(false);
+        }
     };
 
     if (loading) {
@@ -101,10 +130,11 @@ export default function EventDetail() {
                             <Button
                                 className={`h-12 px-6 font-bold ${isApplied ? 'bg-zinc-700 text-white' : 'bg-brand-cyan text-black hover:bg-brand-cyan/90'}`}
                                 onClick={handleApply}
-                                disabled={isApplied}
+                                disabled={isApplied || applying}
                             >
-                                {isApplied ? "Solicitud Enviada" : "Postularme"}
-                                {!isApplied && <Send className="w-4 h-4 ml-2" />}
+                                {applying ? <Loader2 className="h-4 w-4 animate-spin" /> :
+                                    isApplied ? "Solicitud Enviada" : "Postularme"}
+                                {!isApplied && !applying && <Send className="w-4 h-4 ml-2" />}
                             </Button>
                         </div>
                     </div>
@@ -146,7 +176,32 @@ export default function EventDetail() {
                                 <p className="text-xs text-muted-foreground">Promotor Verificado</p>
                             </div>
                         </div>
-                        <Button variant="outline" className="w-full border-white/10 hover:bg-white/5 text-xs" onClick={() => navigate('/messages')}>
+                        <Button
+                            variant="outline"
+                            className="w-full border-white/10 hover:bg-white/5 text-xs"
+                            onClick={async () => {
+                                if (!user) {
+                                    toast.error("Debes iniciar sesión");
+                                    navigate('/login');
+                                    return;
+                                }
+                                try {
+                                    // Assuming event.organizerId exists. If not available in Event type, we might need to fetch it or ensure it's there.
+                                    // The mock/type definition usually has organizerId.
+                                    // Checking 'Event' type might be good, but for now assuming standard field.
+                                    if (event.organizerId) {
+                                        toast.info("Iniciando chat...");
+                                        const chatId = await chatService.createChat(user.uid, event.organizerId);
+                                        navigate('/messages', { state: { selectedChatId: chatId } });
+                                    } else {
+                                        toast.error("No se puede contactar al organizador (ID desconocido)");
+                                    }
+                                } catch (err) {
+                                    console.error(err);
+                                    toast.error("Error al iniciar chat");
+                                }
+                            }}
+                        >
                             Enviar Mensaje
                         </Button>
                     </div>

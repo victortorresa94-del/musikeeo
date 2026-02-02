@@ -3,16 +3,32 @@ import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 import { ArrowLeft, MessageSquare, MapPin, Music, Play, Grid3X3, Film, BadgeCheck } from 'lucide-react';
 import { userService } from '../../services/userService';
-import { type User } from '../../types';
+import { getArtistByUserId } from '../../services/artistService';
+import { type UserProfile } from '../../types';
 import { type Reel } from '../../types/reels';
 import { getReelsByUser, MOCK_REELS } from '../../services/reelsData';
 import { Loader2 } from 'lucide-react';
+
+// Combined profile type for display
+interface DisplayProfile extends Omit<Partial<UserProfile>, 'role'> {
+    role: string;
+    location?: string;
+    bio?: string;
+    skills?: string[];
+    genres?: string[];
+    stats?: {
+        gigs: number;
+        rating: number;
+        reviews: number;
+    };
+    verified?: boolean;
+}
 
 export default function PublicProfile() {
     const { id } = useParams();
     const navigate = useNavigate();
     const location = useLocation();
-    const [profile, setProfile] = useState<User | null>(null);
+    const [profile, setProfile] = useState<DisplayProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'portfolio' | 'videos'>('videos');
     const [userReels, setUserReels] = useState<Reel[]>([]);
@@ -21,16 +37,46 @@ export default function PublicProfile() {
         const fetchProfile = async () => {
             if (!id) return;
             try {
-                const data = await userService.getUserProfile(id);
-                setProfile(data);
+                // Fetch basic user profile
+                const userData = await userService.getUserProfile(id);
+
+                // Fetch artist profile
+                const artistData = await getArtistByUserId(id);
+
+                if (!userData && !artistData) {
+                    setProfile(null);
+                    return;
+                }
+
+                // Merge data for display
+                const displayData: DisplayProfile = {
+                    ...userData,
+                    uid: userData?.uid || artistData?.userId || id,
+                    displayName: artistData?.artistName || userData?.displayName || 'Usuario',
+                    photoURL: artistData?.profilePhoto || userData?.photoURL,
+                    role: artistData ? 'Músico' : (userData?.primaryMode || 'Usuario'),
+                    location: artistData?.city || '',
+                    bio: artistData?.bio || '',
+                    skills: artistData?.tags || [],
+                    genres: artistData?.genres || [],
+                    verified: artistData?.isVerified || false,
+                    stats: {
+                        gigs: artistData?.gigsCompleted || 0,
+                        rating: artistData?.rating || 0,
+                        reviews: artistData?.reviewCount || 0
+                    }
+                };
+
+                setProfile(displayData);
 
                 // Cargar reels del usuario
-                let reels = getReelsByUser(id);
-                // Si no hay reels específicos, usar algunos mock
-                if (reels.length === 0) {
-                    reels = MOCK_REELS.slice(0, 4);
+                const reels = getReelsByUser(id);
+                if (reels.length > 0) {
+                    setUserReels(reels);
+                } else {
+                    // Solo cargar mocks si no hay nada
+                    setUserReels(MOCK_REELS.slice(0, 4));
                 }
-                setUserReels(reels);
             } catch (error) {
                 console.error("Error loading profile", error);
             } finally {

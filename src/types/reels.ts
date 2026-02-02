@@ -1,23 +1,28 @@
-import { type UserRole } from './index';
+import { type UserMode } from './index';
 
 export interface Reel {
     id: string;
     videoUrl: string;
     thumbnailUrl: string;
+    description: string;
+
     authorId: string;
     authorName: string;
     authorPhoto: string;
-    authorRole: UserRole;
+    authorRole: UserMode;
     authorVerified?: boolean;
-    description: string;
+
     songTitle?: string;
     songArtist?: string;
+
     likes: number;
     comments: number;
     shares: number;
     views: number;
+
     isLiked?: boolean;
     isSaved?: boolean;
+
     timestamp: number;
     tags?: string[];
     duration: number; // in seconds

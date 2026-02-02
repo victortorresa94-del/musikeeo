@@ -7,14 +7,15 @@ import { Card, CardContent } from '../../components/ui/card';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
 import { useAuth } from '../../context/AuthContext';
-import { userService } from '../../services/userService';
+import { getArtistByUserId, createArtist, updateArtist } from '../../services/artistService';
+import { type Artist } from '../../types';
 
 import { useNavigate } from 'react-router-dom';
 import { type Reel } from '../../types/reels';
 import { getReelsByUser } from '../../services/reelsData';
 
 export default function Profile() {
-    const { user } = useAuth();
+    const { user, userProfile } = useAuth();
     const navigate = useNavigate();
 
     // State for interactive uploads & Edit Mode
@@ -22,40 +23,57 @@ export default function Profile() {
     const [avatar, setAvatar] = useState<string>(user?.photoURL || "/avatar.png");
     const [cover, setCover] = useState<string>("/cover.png");
     const [isLoading, setIsLoading] = useState(false);
+    const [artistId, setArtistId] = useState<string | null>(null);
 
 
     // Profile Data State
     const [profile, setProfile] = useState({
-        name: user?.displayName || "Alex Guitarra",
-        role: "Professional Classical & Jazz Guitarist",
+        name: user?.displayName || "Tu Nombre",
+        role: "Músico",
         location: "Madrid, Spain",
-        about: "Versatile guitarist with over 10 years of experience...",
+        about: "Cuéntanos sobre ti...",
         stats: {
-            gigs: 124,
-            rating: 4.9,
-            reviews: 58
+            gigs: 0,
+            rating: 0,
+            reviews: 0
         },
-        trustScore: 98,
-        skills: ["Spanish Guitar", "Jazz Improvisation", "Sight Reading", "Acoustic", "Loop Station"],
-        genres: ["Bossa Nova", "Flamenco Fusion", "Jazz Standard", "Bolero"]
+        trustScore: 80,
+        skills: [] as string[],
+        genres: [] as string[]
     });
 
     useEffect(() => {
         const loadProfile = async () => {
             if (user?.uid) {
                 try {
-                    const data = await userService.getUserProfile(user.uid);
-                    if (data) {
+                    const artistData = await getArtistByUserId(user.uid);
+
+                    if (artistData) {
+                        setArtistId(artistData.id);
                         setProfile(prev => ({
                             ...prev,
-                            name: data.displayName || prev.name,
-                            role: data.role || prev.role,
-                            location: data.location || prev.location,
-                            about: data.bio || prev.about,
-                            skills: data.skills || prev.skills,
-                            // Maintain other stats for now as they might not be fully in DB yet
+                            name: artistData.artistName || user.displayName || prev.name,
+                            role: "Músico", // Fixed for now
+                            location: artistData.city || prev.location,
+                            about: artistData.bio || prev.about,
+                            skills: artistData.tags || prev.skills,
+                            genres: artistData.genres || prev.genres,
+                            stats: {
+                                gigs: artistData.gigsCompleted,
+                                rating: artistData.rating,
+                                reviews: artistData.reviewCount
+                            }
                         }));
-                        if (data.photoURL) setAvatar(data.photoURL);
+                        if (artistData.profilePhoto) setAvatar(artistData.profilePhoto);
+                        if (artistData.coverPhoto) setCover(artistData.coverPhoto);
+                    } else {
+                        // Initialize empty state if no profile yet
+                        if (userProfile) {
+                            setProfile(prev => ({
+                                ...prev,
+                                name: userProfile.displayName || prev.name
+                            }));
+                        }
                     }
                 } catch (error) {
                     console.error("Failed to load profile", error);
@@ -63,7 +81,7 @@ export default function Profile() {
             }
         };
         loadProfile();
-    }, [user]);
+    }, [user, userProfile]);
 
     const [userReels, setUserReels] = useState<Reel[]>([]);
 
@@ -114,13 +132,22 @@ export default function Profile() {
             // Saving...
             setIsLoading(true);
             try {
-                await userService.updateProfile(user.uid, {
-                    displayName: profile.name,
-                    role: profile.role as any,
-                    location: profile.location,
+                const artistData: Partial<Artist> = {
+                    artistName: profile.name,
+                    city: profile.location,
                     bio: profile.about,
-                    skills: profile.skills
-                });
+                    tags: profile.skills,
+                    genres: profile.genres,
+                    profilePhoto: avatar,
+                    coverPhoto: cover
+                };
+
+                if (artistId) {
+                    await updateArtist(artistId, artistData);
+                } else {
+                    const newArtist = await createArtist(user.uid, artistData);
+                    setArtistId(newArtist.id);
+                }
             } catch (error) {
                 console.error("Failed to save profile", error);
             } finally {

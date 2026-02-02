@@ -1,0 +1,30 @@
+
+> musikeeo_bootstrap@0.0.0 build
+> tsc -b && vite build
+
+src/components/home/Navbar.tsx(3,78): error TS6133: 'Repeat' is declared but its value is never read.
+src/components/layout/ErrorBoundary.tsx(1,8): error TS6133: 'React' is declared but its value is never read.
+src/components/layout/ErrorBoundary.tsx(1,28): error TS1484: 'ErrorInfo' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/components/layout/ErrorBoundary.tsx(1,39): error TS1484: 'ReactNode' is a type and must be imported using a type-only import when 'verbatimModuleSyntax' is enabled.
+src/pages/events/CreateEvent.tsx(29,34): error TS2339: Property 'eventCreatorProfileId' does not exist on type 'User'.
+src/pages/events/Events.tsx(139,59): error TS2322: Type 'MusikeeoEvent' is not assignable to type 'Event'.
+  Types of property 'type' are incompatible.
+    Type '"Festival" | "Boda / Social" | "Evento Privado" | "Residencia / Bar" | "Otro" | "Gig" | "Jam" | "Session"' is not assignable to type '"gig" | "jam" | "session" | "festival"'.
+      Type '"Festival"' is not assignable to type '"gig" | "jam" | "session" | "festival"'. Did you mean '"festival"'?
+src/pages/events/EventsV2.tsx(25,12): error TS6133: 'loading' is declared but its value is never read.
+src/pages/events/EventsV2.tsx(85,57): error TS2339: Property 'createdAt' does not exist on type 'Event'.
+src/pages/events/EventsV2.tsx(85,101): error TS2339: Property 'createdAt' does not exist on type 'Event'.
+src/pages/events/publish/steps/Step3Review.tsx(58,40): error TS2322: Type 'MusikeeoEvent' is not assignable to type 'Event'.
+  Types of property 'type' are incompatible.
+    Type '"Festival" | "Boda / Social" | "Evento Privado" | "Residencia / Bar" | "Otro" | "Gig" | "Jam" | "Session"' is not assignable to type '"gig" | "jam" | "session" | "festival"'.
+      Type '"Festival"' is not assignable to type '"gig" | "jam" | "session" | "festival"'. Did you mean '"festival"'?
+src/pages/feed/Feed.tsx(12,15): error TS2305: Module '"../../types"' has no exported member 'UserProfile'.
+src/pages/feed/Feed.tsx(299,49): error TS2339: Property 'getNearbyUsers' does not exist on type '{ createUserProfile: (uid: string, data: Partial<User>) => Promise<User>; getUserProfile: (uid: string) => Promise<User | null>; updateProfile: (uid: string, data: Partial<...>) => Promise<...>; activateMode: (uid: string, mode: UserMode, setAsPrimary?: boolean) => Promise<...>; switchPrimaryMode: (uid: string, mode...'.
+src/pages/onboarding/Onboarding.tsx(4,24): error TS6133: 'Store' is declared but its value is never read.
+src/pages/onboarding/Onboarding.tsx(5,1): error TS6133: 'Button' is declared but its value is never read.
+src/pages/onboarding/Onboarding.tsx(45,12): error TS6133: 'isSubmitting' is declared but its value is never read.
+src/pages/profile/PublicProfile.tsx(7,15): error TS2305: Module '"../../types"' has no exported member 'UserProfile'.
+src/pages/profile/PublicProfile.tsx(57,62): error TS2339: Property 'role' does not exist on type 'User'.
+src/services/applicationService.ts(3,1): error TS6133: 'Event' is declared but its value is never read.
+src/services/applicationService.ts(53,37): error TS6133: 'eventId' is declared but its value is never read.
+src/services/reelsData.ts(139,9): error TS2322: Type '"technician"' is not assignable to type 'UserMode'.

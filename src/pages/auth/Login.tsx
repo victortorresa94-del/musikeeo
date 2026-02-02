@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -11,7 +11,6 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { AlertCircle, Loader2 } from 'lucide-react';
 
-// Shadcn-like naive UI components (inline for now until fully scaffolded)
 const Label = ({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) => (
     <label htmlFor={htmlFor} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mb-2 block">
         {children}
@@ -30,6 +29,25 @@ export default function Login() {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
+    // Auth context
+    const { loginWithGoogle, loginWithDev, userProfile } = useAuth();
+
+    // Effect to redirect based on onboarding status once profile is loaded
+    useEffect(() => {
+        if (userProfile) {
+            if (userProfile.onboardingCompleted) {
+                // Redirect to the dashboard of their primary mode
+                // TODO: Update this when specific mode routes are set up
+                if (userProfile.primaryMode === 'musician') navigate('/panel/perfil');
+                else if (userProfile.primaryMode === 'provider') navigate('/panel/servicios'); // Pending provider
+                else if (userProfile.primaryMode === 'organizer') navigate('/eventos2'); // Pending organizer
+                else navigate('/');
+            } else {
+                navigate('/onboarding');
+            }
+        }
+    }, [userProfile, navigate]);
+
     const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
         resolver: zodResolver(loginSchema),
     });
@@ -39,25 +57,22 @@ export default function Login() {
         setError(null);
         try {
             await signInWithEmailAndPassword(auth, data.email, data.password);
-            navigate('/');
+            // Navigation handled by useEffect
         } catch (err: any) {
+            console.error(err);
             setError('Error al iniciar sesión. Verifica tus credenciales.');
-        } finally {
             setIsLoading(false);
         }
     };
-
-    const { loginWithGoogle, loginWithDev } = useAuth();
 
     const handleGoogleLogin = async () => {
         setIsLoading(true);
         setError(null);
         try {
             await loginWithGoogle();
-            navigate('/');
+            // Navigation handled by useEffect
         } catch (err: any) {
             setError('Falló el inicio de sesión con Google');
-        } finally {
             setIsLoading(false);
         }
     };
@@ -129,7 +144,7 @@ export default function Login() {
                     className="w-full mt-4 border border-dashed border-muted-foreground/50 text-muted-foreground hover:text-foreground hover:bg-muted/50"
                     onClick={() => {
                         loginWithDev();
-                        navigate('/');
+                        // Navigation handled by useEffect
                     }}
                 >
                     🔧 Modo Dev (Sin Login)

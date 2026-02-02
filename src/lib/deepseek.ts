@@ -1,8 +1,12 @@
-const API_KEY = import.meta.env.VITE_DEEPSEEK_API_KEY || "";
+const getApiKey = () => {
+    return import.meta.env.VITE_DEEPSEEK_API_KEY || "";
+};
+
+const API_KEY = getApiKey();
 const BASE_URL = "https://api.deepseek.com/chat/completions";
 
 if (!API_KEY) {
-    console.warn("⚠️ VITE_DEEPSEEK_API_KEY is not set in .env.local");
+    console.warn("⚠️ VITE_DEEPSEEK_API_KEY is not set in environment");
 }
 
 export async function generateDeepSeekContent(

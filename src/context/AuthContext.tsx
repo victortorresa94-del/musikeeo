@@ -1,47 +1,79 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { type User, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
+import { type User as FirebaseUser, onAuthStateChanged, GoogleAuthProvider, signInWithPopup, signOut } from "firebase/auth";
 import { auth, db } from "../lib/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
+import type { User } from "../types";
 
 interface AuthContextType {
-    user: User | null;
+    user: FirebaseUser | null;     // Firebase Auth User
+    userProfile: User | null;      // Firestore User Profile (custom data)
     loading: boolean;
     loginWithGoogle: () => Promise<void>;
     logout: () => Promise<void>;
     loginWithDev: () => void;
+    refreshProfile: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType>({
     user: null,
+    userProfile: null,
     loading: true,
     loginWithGoogle: async () => { },
     logout: async () => { },
-    loginWithDev: () => { }
+    loginWithDev: () => { },
+    refreshProfile: async () => { }
 });
 
 export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
-    const [user, setUser] = useState<User | null>(null);
+    const [user, setUser] = useState<FirebaseUser | null>(null);
+    const [userProfile, setUserProfile] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+
+    const fetchUserProfile = async (uid: string) => {
+        try {
+            const userRef = doc(db, "users", uid);
+            const userSnap = await getDoc(userRef);
+            if (userSnap.exists()) {
+                setUserProfile(userSnap.data() as User);
+            } else {
+                setUserProfile(null);
+            }
+        } catch (error) {
+            console.error("Error fetching user profile:", error);
+            setUserProfile(null);
+        }
+    };
 
     const loginWithGoogle = async () => {
         try {
             const provider = new GoogleAuthProvider();
             const result = await signInWithPopup(auth, provider);
-            const user = result.user;
+            const firebaseUser = result.user;
 
-            // Check if user exists in Firestore, if not create basic profile
-            const userRef = doc(db, "users", user.uid);
+            // Check if user exists in Firestore
+            const userRef = doc(db, "users", firebaseUser.uid);
             const userSnap = await getDoc(userRef);
 
             if (!userSnap.exists()) {
-                await setDoc(userRef, {
-                    uid: user.uid,
-                    displayName: user.displayName,
-                    email: user.email,
-                    photoURL: user.photoURL,
-                    role: 'musician', // Default role
-                    createdAt: new Date().toISOString()
-                });
+                // Initialize new user with NO active modes and incomplete onboarding
+                const newUser: User = {
+                    uid: firebaseUser.uid,
+                    displayName: firebaseUser.displayName || 'Usuario',
+                    email: firebaseUser.email || '',
+                    photoURL: firebaseUser.photoURL || undefined,
+                    createdAt: new Date().toISOString(),
+                    onboardingCompleted: false,
+                    primaryMode: 'musician', // Default fallback, effectively inactive until onboarding
+                    activeModes: {
+                        musician: false,
+                        organizer: false,
+                        provider: false
+                    }
+                };
+                await setDoc(userRef, newUser);
+                setUserProfile(newUser);
+            } else {
+                setUserProfile(userSnap.data() as User);
             }
         } catch (error) {
             console.error("Error signing in with Google", error);
@@ -53,8 +85,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         try {
             await signOut(auth);
             setUser(null);
+            setUserProfile(null);
         } catch (error) {
             console.error("Error signing out", error);
+        }
+    };
+
+    const refreshProfile = async () => {
+        if (user) {
+            await fetchUserProfile(user.uid);
         }
     };
 
@@ -62,8 +101,13 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         let unsubscribe: () => void = () => { };
 
         try {
-            unsubscribe = onAuthStateChanged(auth, (authUser) => {
+            unsubscribe = onAuthStateChanged(auth, async (authUser) => {
                 setUser(authUser);
+                if (authUser) {
+                    await fetchUserProfile(authUser.uid);
+                } else {
+                    setUserProfile(null);
+                }
                 setLoading(false);
             });
         } catch (error) {
@@ -77,28 +121,46 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     }, []);
 
     const loginWithDev = () => {
-        setUser({
+        // Dev user for testing without Firebase
+        const devAuthUser = {
             uid: 'dev-user-id',
             email: 'dev@musikeeo.local',
             displayName: 'Usuario Dev',
             emailVerified: true,
             isAnonymous: false,
-            metadata: {},
-            providerData: [],
-            refreshToken: '',
-            tenantId: null,
-            delete: async () => { },
-            getIdToken: async () => '',
-            getIdTokenResult: async () => ({} as any),
-            reload: async () => { },
-            toJSON: () => ({}),
-            phoneNumber: null,
             photoURL: 'https://api.dicebear.com/7.x/avataaars/svg?seed=Dev',
-        } as unknown as User);
+        } as unknown as FirebaseUser;
+
+        const devProfile: User = {
+            uid: 'dev-user-id',
+            displayName: 'Usuario Dev',
+            email: 'dev@musikeeo.local',
+            createdAt: new Date().toISOString(),
+            onboardingCompleted: true,
+            primaryMode: 'musician',
+            activeModes: {
+                musician: true,
+                organizer: false,
+                provider: false
+            }
+        };
+
+        setUser(devAuthUser);
+        setUserProfile(devProfile);
     };
 
+    const value = React.useMemo(() => ({
+        user,
+        userProfile,
+        loading,
+        loginWithGoogle,
+        logout,
+        loginWithDev,
+        refreshProfile
+    }), [user, userProfile, loading]);
+
     return (
-        <AuthContext.Provider value={{ user, loading, loginWithGoogle, logout, loginWithDev }}>
+        <AuthContext.Provider value={value}>
             {!loading && children}
         </AuthContext.Provider>
     );

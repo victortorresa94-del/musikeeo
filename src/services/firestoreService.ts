@@ -1,4 +1,4 @@
-import { collection, getDocs, doc, getDoc, addDoc, setDoc, type DocumentData } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, addDoc, setDoc, query, where, type DocumentData, type WhereFilterOp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 export const firestoreService = {
@@ -50,6 +50,19 @@ export const firestoreService = {
             await setDoc(docRef, data, { merge: true });
         } catch (error) {
             console.error(`Error updating document ${collectionName}/${id}:`, error);
+            throw error;
+        }
+    },
+
+    // Generic Query
+    getWhere: async <T>(collectionName: string, field: string, operator: WhereFilterOp, value: any): Promise<T[]> => {
+        try {
+            if (!db) throw new Error("Database not initialized");
+            const q = query(collection(db, collectionName), where(field, operator, value));
+            const querySnapshot = await getDocs(q);
+            return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as T));
+        } catch (error) {
+            console.error(`Error querying collection ${collectionName}:`, error);
             throw error;
         }
     }

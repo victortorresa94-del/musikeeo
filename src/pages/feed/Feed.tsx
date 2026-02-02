@@ -8,8 +8,8 @@ import {
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
 import { userService } from '../../services/userService';
-import { MOCK_EVENTS, MOCK_FEED_POSTS, getMoreFeedPosts } from '../../services/mockData';
-import { type User, type Event, type FeedPost } from '../../types';
+// Removed mock imports as we are moving to real services
+import { type UserProfile, type Event, type FeedPost } from '../../types';
 import { useNavigate, useLocation } from 'react-router-dom';
 
 // Componente para mostrar tiempo relativo
@@ -283,13 +283,13 @@ const CreatePostCard = () => {
 export default function Feed() {
     const navigate = useNavigate();
     const location = useLocation();
-    const [nearbyUsers, setNearbyUsers] = useState<(User & { distance: string })[]>([]);
+    const [nearbyUsers, setNearbyUsers] = useState<(UserProfile & { distance: string })[]>([]);
     const [opportunities, setOpportunities] = useState<Event[]>([]);
     const [feedPosts, setFeedPosts] = useState<FeedPost[]>([]);
     const [loading, setLoading] = useState(true);
     const [loadingMore, setLoadingMore] = useState(false);
-    const [page, setPage] = useState(0);
-    const [hasMore, setHasMore] = useState(true);
+    // const [page, setPage] = useState(0); // Unused
+    const [hasMore, setHasMore] = useState(false); // No more posts to load for now
     const observerRef = useRef<IntersectionObserver | null>(null);
     const loadMoreRef = useRef<HTMLDivElement>(null);
 
@@ -298,8 +298,10 @@ export default function Feed() {
             try {
                 const users = await userService.getNearbyUsers();
                 setNearbyUsers(users);
-                setOpportunities(MOCK_EVENTS);
-                setFeedPosts(MOCK_FEED_POSTS);
+                // setOpportunities(MOCK_EVENTS); // Removed
+                setOpportunities([]);
+                // setFeedPosts(MOCK_FEED_POSTS); // Removed
+                setFeedPosts([]);
             } catch (error) {
                 console.error("Failed to load feed data", error);
             } finally {
@@ -318,17 +320,17 @@ export default function Feed() {
         // Optimized loading: Removed artificial delay
         // await new Promise(resolve => setTimeout(resolve, 800));
 
-        const newPage = page + 1;
-        const newPosts = getMoreFeedPosts(newPage);
+        // const newPage = page + 1;
+        // const newPosts = getMoreFeedPosts(newPage); // Removed mock call
 
-        if (newPage >= 3) {
-            setHasMore(false);
-        }
+        // if (newPage >= 3) {
+        setHasMore(false);
+        // }
 
-        setFeedPosts(prev => [...prev, ...newPosts]);
-        setPage(newPage);
+        // setFeedPosts(prev => [...prev, ...newPosts]);
+        // setPage(newPage);
         setLoadingMore(false);
-    }, [page, loadingMore, hasMore]);
+    }, [loadingMore, hasMore]);
 
     useEffect(() => {
         if (loading) return;
@@ -426,25 +428,31 @@ export default function Feed() {
                 </div>
 
                 <div className="flex gap-3 overflow-x-auto pb-2 snap-x hide-scrollbar -mx-4 px-4">
-                    {opportunities.map((item) => (
-                        <Card
-                            key={item.id}
-                            className="min-w-[240px] md:min-w-[280px] bg-card border-white/5 overflow-hidden group hover:border-brand-cyan/30 transition-all snap-start cursor-pointer shrink-0"
-                            onClick={() => navigate(`/events/${item.id}`)}
-                        >
-                            <div className="h-28 w-full overflow-hidden relative">
-                                <img src={item.imageUrl || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=500&q=80"} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                                <div className="absolute bottom-2 left-2 right-2">
-                                    <h3 className="font-heading font-bold text-sm text-white truncate">{item.title}</h3>
-                                    <p className="text-[11px] text-brand-cyan">{item.organizerName}</p>
+                    {opportunities.length === 0 ? (
+                        <div className="w-full text-center text-muted-foreground py-4 text-sm">
+                            No hay eventos destacados por ahora.
+                        </div>
+                    ) : (
+                        opportunities.map((item) => (
+                            <Card
+                                key={item.id}
+                                className="min-w-[240px] md:min-w-[280px] bg-card border-white/5 overflow-hidden group hover:border-brand-cyan/30 transition-all snap-start cursor-pointer shrink-0"
+                                onClick={() => navigate(`/events/${item.id}`)}
+                            >
+                                <div className="h-28 w-full overflow-hidden relative">
+                                    <img src={item.imageUrl || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=500&q=80"} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
+                                    <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
+                                    <div className="absolute bottom-2 left-2 right-2">
+                                        <h3 className="font-heading font-bold text-sm text-white truncate">{item.title}</h3>
+                                        <p className="text-[11px] text-brand-cyan">{item.organizerName}</p>
+                                    </div>
+                                    <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[9px] uppercase font-bold text-white border border-white/10">
+                                        {item.type === 'gig' ? 'Bolo' : 'Colab'}
+                                    </div>
                                 </div>
-                                <div className="absolute top-2 right-2 bg-black/60 backdrop-blur-md px-2 py-0.5 rounded text-[9px] uppercase font-bold text-white border border-white/10">
-                                    {item.type === 'gig' ? 'Bolo' : 'Colab'}
-                                </div>
-                            </div>
-                        </Card>
-                    ))}
+                            </Card>
+                        ))
+                    )}
                 </div>
             </section>
 
@@ -454,22 +462,28 @@ export default function Feed() {
                     <h2 className="text-lg font-heading font-bold text-white">Talento cerca de ti</h2>
                 </div>
                 <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar -mx-4 px-4">
-                    {nearbyUsers.map((user) => (
-                        <motion.div
-                            key={user.uid}
-                            whileHover={{ scale: 1.05 }}
-                            className="flex flex-col items-center shrink-0 cursor-pointer"
-                            onClick={() => navigate(`/profile/${user.uid}`)}
-                        >
-                            <div className="relative mb-1">
-                                <div className="h-16 w-16 rounded-full p-[2px] bg-gradient-to-br from-brand-lime to-brand-cyan">
-                                    <img src={user.photoURL} alt={user.displayName} className="h-full w-full rounded-full object-cover border-2 border-background" />
+                    {nearbyUsers.length === 0 ? (
+                        <div className="w-full text-center text-muted-foreground py-4 text-sm">
+                            Buscando talento cercano...
+                        </div>
+                    ) : (
+                        nearbyUsers.map((user) => (
+                            <motion.div
+                                key={user.uid}
+                                whileHover={{ scale: 1.05 }}
+                                className="flex flex-col items-center shrink-0 cursor-pointer"
+                                onClick={() => navigate(`/profile/${user.uid}`)}
+                            >
+                                <div className="relative mb-1">
+                                    <div className="h-16 w-16 rounded-full p-[2px] bg-gradient-to-br from-brand-lime to-brand-cyan">
+                                        <img src={user.photoURL || 'https://github.com/shadcn.png'} alt={user.displayName} className="h-full w-full rounded-full object-cover border-2 border-background" />
+                                    </div>
+                                    <div className="absolute bottom-0 right-0 h-4 w-4 bg-brand-lime rounded-full border-2 border-background" />
                                 </div>
-                                <div className="absolute bottom-0 right-0 h-4 w-4 bg-brand-lime rounded-full border-2 border-background" />
-                            </div>
-                            <span className="text-xs font-medium text-white truncate max-w-[70px] text-center">{user.displayName.split(' ')[0]}</span>
-                        </motion.div>
-                    ))}
+                                <span className="text-xs font-medium text-white truncate max-w-[70px] text-center">{user.displayName ? user.displayName.split(' ')[0] : 'Usuario'}</span>
+                            </motion.div>
+                        ))
+                    )}
                 </div>
             </section>
 
@@ -481,21 +495,28 @@ export default function Feed() {
                 <h2 className="text-lg font-heading font-bold text-white">Tu Feed</h2>
 
                 <AnimatePresence>
-                    {feedPosts.map((post) => (
-                        <FeedPostCard
-                            key={post.id}
-                            post={post}
-                            onNavigate={navigate}
-                            onOpenReel={(postId) => {
-                                navigate(`/reels/${postId}`, {
-                                    state: {
-                                        source: 'feed',
-                                        from: location.pathname
-                                    }
-                                });
-                            }}
-                        />
-                    ))}
+                    {feedPosts.length === 0 ? (
+                        <div className="text-center py-10 opacity-70">
+                            <p className="text-muted-foreground">No hay publicaciones recientes.</p>
+                            <Button variant="link" className="text-brand-cyan" onClick={() => window.location.reload()}>Recargar</Button>
+                        </div>
+                    ) : (
+                        feedPosts.map((post) => (
+                            <FeedPostCard
+                                key={post.id}
+                                post={post}
+                                onNavigate={navigate}
+                                onOpenReel={(postId) => {
+                                    navigate(`/reels/${postId}`, {
+                                        state: {
+                                            source: 'feed',
+                                            from: location.pathname
+                                        }
+                                    });
+                                }}
+                            />
+                        ))
+                    )}
                 </AnimatePresence>
 
                 {/* Load More Trigger */}
@@ -506,7 +527,7 @@ export default function Feed() {
                             <span>Cargando más publicaciones...</span>
                         </div>
                     )}
-                    {!hasMore && (
+                    {!hasMore && feedPosts.length > 0 && (
                         <p className="text-muted-foreground text-sm">Has llegado al final del feed 🎉</p>
                     )}
                 </div>

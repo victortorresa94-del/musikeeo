@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html class="dark" lang="es"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Publicar Anuncio - Paso 2: Talento</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#FFD84D",
+                        "background-light": "#f8f8f5",
+                        "background-dark": "#0A0A0A",
+                        "surface-dark": "#121212",
+                        "card-dark": "#1A1A1A",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"],
+                        "sans": ["Inter", "sans-serif"],
+                    },
+                    borderRadius: {
+                        "card": "12px",
+                    }
+                },
+            },
+        }
+    </script>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-white antialiased overflow-hidden">
+<div class="flex h-screen w-full flex-col">
+<header class="flex h-16 shrink-0 items-center justify-between border-b border-gray-200 dark:border-[#222] bg-white dark:bg-surface-dark px-6 z-20">
+<div class="flex items-center gap-8">
+<div class="flex items-center gap-3">
+<div class="flex h-8 w-8 items-center justify-center rounded-full bg-primary text-black">
+<span class="material-symbols-outlined !text-[20px] font-bold">music_note</span>
+</div>
+<h2 class="text-xl font-bold tracking-tight dark:text-white">Musikeeo</h2>
+</div>
+</div>
+<div class="flex items-center gap-6">
+<nav class="hidden lg:flex items-center gap-6">
+<a class="text-sm font-medium text-gray-500 hover:text-primary dark:text-gray-400 dark:hover:text-white transition-colors" href="#">Ayuda</a>
+<a class="text-sm font-medium text-white hover:text-primary transition-colors" href="#">Guardar y salir</a>
+</nav>
+</div>
+</header>
+<main class="flex-1 overflow-y-auto bg-gray-50 dark:bg-background-dark flex flex-col items-center py-12">
+<div class="w-full max-w-2xl px-6 mb-12">
+<div class="flex justify-between mb-2 text-sm font-medium text-gray-500 dark:text-gray-400">
+<span>Detalles del evento</span>
+<span class="text-primary">Talento y Presupuesto</span>
+<span>Revisión</span>
+</div>
+<div class="h-1.5 w-full bg-gray-200 dark:bg-[#222] rounded-full overflow-hidden">
+<div class="h-full bg-primary w-2/3 rounded-full"></div>
+</div>
+<div class="mt-2 text-xs text-gray-500 text-right">Paso 2 de 3</div>
+</div>
+<div class="w-full max-w-2xl px-6 pb-20">
+<h1 class="text-3xl font-bold dark:text-white mb-2">Define el talento</h1>
+<p class="text-gray-500 dark:text-gray-400 mb-8">Cuéntanos qué tipo de artista necesitas y cuál es tu oferta.</p>
+<form class="space-y-8">
+<div class="space-y-3">
+<label class="block text-sm font-semibold text-gray-900 dark:text-white">¿Qué buscas?</label>
+<div class="grid grid-cols-2 sm:grid-cols-3 gap-3">
+<label class="cursor-pointer">
+<input class="peer sr-only" name="instrument" type="checkbox" value="banda"/>
+<div class="rounded-lg border border-gray-200 dark:border-[#333] bg-white dark:bg-card-dark p-4 text-center hover:border-primary peer-checked:border-primary peer-checked:bg-primary/10 transition-all">
+<span class="material-symbols-outlined mb-2 block text-gray-400 peer-checked:text-primary">groups</span>
+<span class="text-sm font-medium text-gray-700 dark:text-gray-200 peer-checked:text-primary">Banda</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input checked="" class="peer sr-only" name="instrument" type="checkbox" value="dj"/>
+<div class="rounded-lg border border-primary bg-primary/10 p-4 text-center transition-all">
+<span class="material-symbols-outlined mb-2 block text-primary">album</span>
+<span class="text-sm font-medium text-primary">DJ</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="instrument" type="checkbox" value="solista"/>
+<div class="rounded-lg border border-gray-200 dark:border-[#333] bg-white dark:bg-card-dark p-4 text-center hover:border-primary peer-checked:border-primary peer-checked:bg-primary/10 transition-all">
+<span class="material-symbols-outlined mb-2 block text-gray-400 peer-checked:text-primary">person</span>
+<span class="text-sm font-medium text-gray-700 dark:text-gray-200 peer-checked:text-primary">Solista</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="instrument" type="checkbox" value="mariachi"/>
+<div class="rounded-lg border border-gray-200 dark:border-[#333] bg-white dark:bg-card-dark p-4 text-center hover:border-primary peer-checked:border-primary peer-checked:bg-primary/10 transition-all">
+<span class="material-symbols-outlined mb-2 block text-gray-400 peer-checked:text-primary">music_note</span>
+<span class="text-sm font-medium text-gray-700 dark:text-gray-200 peer-checked:text-primary">Mariachi</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="instrument" type="checkbox" value="jazz"/>
+<div class="rounded-lg border border-gray-200 dark:border-[#333] bg-white dark:bg-card-dark p-4 text-center hover:border-primary peer-checked:border-primary peer-checked:bg-primary/10 transition-all">
+<span class="material-symbols-outlined mb-2 block text-gray-400 peer-checked:text-primary">piano</span>
+<span class="text-sm font-medium text-gray-700 dark:text-gray-200 peer-checked:text-primary">Jazz Trio</span>
+</div>
+</label>
+<label class="cursor-pointer">
+<input class="peer sr-only" name="instrument" type="checkbox" value="otro"/>
+<div class="rounded-lg border border-gray-200 dark:border-[#333] bg-white dark:bg-card-dark p-4 text-center hover:border-primary peer-checked:border-primary peer-checked:bg-primary/10 transition-all">
+<span class="material-symbols-outlined mb-2 block text-gray-400 peer-checked:text-primary">add</span>
+<span class="text-sm font-medium text-gray-700 dark:text-gray-200 peer-checked:text-primary">Otro</span>
+</div>
+</label>
+</div>
+</div>
+<div class="space-y-4 pt-4 border-t border-gray-200 dark:border-[#222]">
+<label class="block text-sm font-semibold text-gray-900 dark:text-white">Presupuesto ofrecido</label>
+<div class="relative">
+<div class="absolute inset-y-0 left-0 flex items-center pl-3">
+<span class="text-gray-500 text-lg">$</span>
+</div>
+<input class="block w-full rounded-lg border-gray-200 dark:border-[#333] bg-white dark:bg-card-dark pl-10 pr-20 py-3 text-lg font-medium dark:text-white focus:border-primary focus:ring-primary placeholder-gray-500" placeholder="0.00" type="number"/>
+<div class="absolute inset-y-0 right-0 flex items-center">
+<select class="h-full rounded-md border-0 bg-transparent py-0 pl-2 pr-7 text-gray-500 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-sm">
+<option>MXN</option>
+<option>USD</option>
+<option>EUR</option>
+</select>
+</div>
+</div>
+<div class="flex items-center justify-between">
+<span class="flex flex-col">
+<span class="text-sm font-medium text-gray-900 dark:text-white">Abierto a negociación</span>
+<span class="text-xs text-gray-500">Permite que los artistas envíen contraofertas.</span>
+</span>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+<div class="space-y-3 pt-4 border-t border-gray-200 dark:border-[#222]">
+<label class="block text-sm font-semibold text-gray-900 dark:text-white">Descripción del bolo</label>
+<p class="text-xs text-gray-500 mb-2">Incluye detalles importantes como el rider técnico disponible, horarios de soundcheck, y el ambiente que buscas.</p>
+<textarea class="block w-full rounded-lg border-gray-200 dark:border-[#333] bg-white dark:bg-card-dark p-4 text-sm dark:text-white focus:border-primary focus:ring-primary placeholder-gray-500" placeholder="Ej: Buscamos un DJ con experiencia en Deep House para un evento corporativo de 4 horas. Contamos con sistema de sonido básico (PA + Monitores), se requiere que traiga su propia controladora..." rows="4"></textarea>
+</div>
+<div class="space-y-3 pt-4 border-t border-gray-200 dark:border-[#222]">
+<label class="block text-sm font-semibold text-gray-900 dark:text-white">Foto del lugar o ambiente</label>
+<div class="mt-2 flex justify-center rounded-lg border border-dashed border-gray-300 dark:border-gray-600 px-6 py-10 hover:border-primary hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors cursor-pointer group">
+<div class="text-center">
+<span class="material-symbols-outlined mx-auto h-12 w-12 text-gray-400 group-hover:text-primary transition-colors">add_photo_alternate</span>
+<div class="mt-4 flex text-sm leading-6 text-gray-600 dark:text-gray-400 justify-center">
+<label class="relative cursor-pointer rounded-md font-semibold text-primary focus-within:outline-none focus-within:ring-2 focus-within:ring-primary focus-within:ring-offset-2 hover:text-yellow-400" for="file-upload">
+<span>Sube un archivo</span>
+<input class="sr-only" id="file-upload" name="file-upload" type="file"/>
+</label>
+<p class="pl-1">o arrastra y suelta</p>
+</div>
+<p class="text-xs leading-5 text-gray-600 dark:text-gray-500">PNG, JPG, GIF hasta 10MB</p>
+</div>
+</div>
+</div>
+<div class="flex items-center justify-between pt-8 border-t border-gray-200 dark:border-[#222]">
+<a class="text-sm font-medium text-gray-500 hover:text-white transition-colors" href="#">Atrás</a>
+<button class="rounded-lg bg-primary px-8 py-3 text-sm font-bold text-black hover:bg-yellow-400 transition-colors uppercase tracking-wide shadow-lg shadow-primary/20" type="button">
+                            Continuar
+                        </button>
+</div>
+</form>
+</div>
+</main>
+</div>
+
+</body></html>

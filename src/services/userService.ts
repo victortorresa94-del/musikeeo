@@ -1,64 +1,56 @@
-import { MOCK_USERS } from './mockData';
-import { type User } from '../types';
+import { type User, type UserMode } from '../types';
 import { firestoreService } from './firestoreService';
+import { doc, getDoc, setDoc, updateDoc } from 'firebase/firestore';
+import { db } from '../lib/firebase';
 
 export const userService = {
-    getNearbyUsers: async (): Promise<(User & { distance: string })[]> => {
+    /**
+     * Creates or updates a user profile in Firestore.
+     * Used during registration or first login.
+     */
+    createUserProfile: async (uid: string, data: Partial<User>) => {
         try {
-            // Attempt to fetch real users from Firestore
-            const realUsers = await firestoreService.getAll<User>('users');
-            if (realUsers && realUsers.length > 0) {
-                return realUsers.map(user => ({
-                    ...user,
-                    distance: '1.5km' // Placeholder distance logic for now
-                }));
+            const userRef = doc(db, 'users', uid);
+            const userSnap = await getDoc(userRef);
+
+            if (!userSnap.exists()) {
+                const newUser: User = {
+                    uid,
+                    email: data.email || '',
+                    displayName: data.displayName || 'Usuario',
+                    photoURL: data.photoURL || '',
+                    primaryMode: 'musician', // Default, will change in onboarding
+                    activeModes: {
+                        musician: false,
+                        organizer: false,
+                        provider: false
+                    },
+                    onboardingCompleted: false,
+                    createdAt: new Date().toISOString(),
+                    ...data
+                };
+                await setDoc(userRef, newUser);
+                return newUser;
+            } else {
+                return userSnap.data() as User;
             }
-            throw new Error("No users found in DB, using mock.");
         } catch (error) {
-            console.warn("Using Mock Data for Users:", error);
-            // Fallback to mock data
-            await new Promise(resolve => setTimeout(resolve, 500));
-            return MOCK_USERS.map(user => ({
-                ...user,
-                distance: user.uid === 'user_1' ? '0.5km' : '1.2km'
-            }));
+            console.error("Error creating user profile:", error);
+            throw error;
         }
     },
 
     getUserProfile: async (uid: string): Promise<User | null> => {
         try {
-            const user = await firestoreService.getById<User>('users', uid);
-            if (!user) {
-                // Fallback to mock if not found (or return null in prod)
-                console.warn("User not found in Firestore, returning mock for dev.");
-                return {
-                    uid,
-                    email: 'mock@musikeeo.com',
-                    displayName: 'Mock User',
-                    role: 'musician',
-                    stats: { gigs: 0, rating: 0, reviews: 0 }
-                } as User;
+            const userSnap = await getDoc(doc(db, 'users', uid));
+            if (userSnap.exists()) {
+                return userSnap.data() as User;
             }
-            return user;
+            return null;
         } catch (error) {
             console.error("Error fetching user profile:", error);
             throw error;
         }
-    },
-
-    getCurrentUser: async (): Promise<User> => {
-        // Deprecated: prefer getUserProfile with auth.uid
-        console.warn("Using deprecated getCurrentUser mock.");
-        await new Promise(resolve => setTimeout(resolve, 300));
-        return {
-            uid: 'current_user',
-            email: 'juan@musikeeo.com',
-            displayName: 'Juan Pérez',
-            role: 'musician',
-            location: 'Barcelona',
-            photoURL: 'https://i.pravatar.cc/150?u=0',
-            stats: { gigs: 10, rating: 5.0, reviews: 3 }
-        };
     },
 
     updateProfile: async (uid: string, data: Partial<User>) => {
@@ -69,5 +61,47 @@ export const userService = {
             console.error("Error updating profile:", error);
             throw error;
         }
+    },
+
+    /**
+     * Activates a specific mode for a user and sets it as primary if requested.
+     */
+    activateMode: async (uid: string, mode: UserMode, setAsPrimary: boolean = false) => {
+        try {
+            const userRef = doc(db, 'users', uid);
+            const updates: any = {
+                [`activeModes.${mode}`]: true
+            };
+            if (setAsPrimary) {
+                updates.primaryMode = mode;
+            }
+            await updateDoc(userRef, updates);
+            return true;
+        } catch (error) {
+            console.error("Error activating mode:", error);
+            throw error;
+        }
+    },
+
+    /**
+     * Switch primary mode (only if the mode is active)
+     */
+    switchPrimaryMode: async (uid: string, mode: UserMode) => {
+        try {
+            const userRef = doc(db, 'users', uid);
+            // Verify if mode is active first could be done here or in UI
+            await updateDoc(userRef, {
+                primaryMode: mode
+            });
+            return true;
+        } catch (error) {
+            console.error("Error switching mode:", error);
+            throw error;
+        }
+    },
+
+    getNearbyUsers: async (): Promise<(User & { distance: string })[]> => {
+        // Mock implementation for feed
+        return [];
     }
 };

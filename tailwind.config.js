@@ -8,61 +8,51 @@ export default {
     theme: {
         extend: {
             colors: {
-                border: "hsl(var(--border))",
-                input: "hsl(var(--input))",
-                ring: "hsl(var(--ring))",
-                background: "hsl(var(--background))",
-                foreground: "hsl(var(--foreground))",
+                border: "rgba(255, 255, 255, 0.1)",
+                input: "hsl(var(--input))", // Keep if used elsewhere
+                ring: "hsl(var(--ring))",   // Keep if used elsewhere
+                background: "#0A0A0A", // Deep Black
+                surface: "#171717",    // Charcoal
+                foreground: "#FFFFFF",
                 primary: {
-                    DEFAULT: "hsl(var(--primary))",
-                    foreground: "hsl(var(--primary-foreground))",
-                    dark: "#002C45", // Deep Petrol
+                    DEFAULT: "#FFD84D", // Electric Yellow
+                    hover: "#FFC800",
+                    foreground: "#0A0A0A",
+                    dark: "#002C45", // Keep for backward compat if needed
                 },
                 secondary: {
-                    DEFAULT: "hsl(var(--secondary))",
-                    foreground: "hsl(var(--secondary-foreground))",
+                    DEFAULT: "#FFFFFF",
+                    foreground: "#0A0A0A",
+                },
+                muted: {
+                    DEFAULT: "#B0B0B0",
+                    foreground: "#A3A3A3", // Fixed: Light grey for visibility on dark backgrounds
                 },
                 destructive: {
                     DEFAULT: "hsl(var(--destructive))",
                     foreground: "hsl(var(--destructive-foreground))",
                 },
-                muted: {
-                    DEFAULT: "hsl(var(--muted))",
-                    foreground: "hsl(var(--muted-foreground))",
-                },
-                accent: {
-                    DEFAULT: "hsl(var(--accent))",
-                    foreground: "hsl(var(--accent-foreground))",
-                },
-                popover: {
-                    DEFAULT: "hsl(var(--popover))",
-                    foreground: "hsl(var(--popover-foreground))",
-                },
-                card: {
-                    DEFAULT: "hsl(var(--card))",
-                    foreground: "hsl(var(--card-foreground))",
-                },
-                // Stitch Specific
+                // Brand specific specific object
                 brand: {
                     yellow: "#FFD84D",
-                    warm: "#FFC300",
                     black: "#0A0A0A",
-                    charcoal: "#1E1E1E",
-                    white: "#F5F5F5",
-                    blue: "#1F6FEB"
+                    charcoal: "#171717",
+                    white: "#FFFFFF",
+                    gray: "#B0B0B0"
                 }
             },
-            borderRadius: {
-                lg: "var(--radius)",
-                md: "calc(var(--radius) - 2px)",
-                sm: "calc(var(--radius) - 4px)",
-                xl: "1rem",
-                '2xl': "1.5rem",
-            },
             fontFamily: {
-                heading: ["'Space Grotesk'", "sans-serif"], // Titulares
-                sans: ["'Inter'", "sans-serif"], // Texto de cuerpo
-                mono: ["'Rubik Mono One'", "monospace"], // Microtexto
+                heading: ["'Inter'", "sans-serif"], // Changed to Inter as requested
+                sans: ["'Inter'", "sans-serif"],
+                mono: ["'Rubik Mono One'", "monospace"],
+            },
+            borderRadius: {
+                lg: "0.5rem",
+                md: "0.375rem",
+                sm: "0.25rem",
+                xl: "0.75rem",
+                '2xl': "1rem",
+                '3xl': "1.5rem",
             },
             keyframes: {
                 "accordion-down": {

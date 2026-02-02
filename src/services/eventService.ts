@@ -1,4 +1,3 @@
-import { MOCK_EVENTS } from './mockData';
 import { type Event } from '../types';
 import { firestoreService } from './firestoreService';
 
@@ -6,14 +5,10 @@ export const eventService = {
     getUpcomingEvents: async (): Promise<Event[]> => {
         try {
             const realEvents = await firestoreService.getAll<Event>('events');
-            if (realEvents && realEvents.length > 0) {
-                return realEvents;
-            }
-            throw new Error("No events in DB");
+            return realEvents || [];
         } catch (error) {
-            console.warn("Using Mock Events:", error);
-            await new Promise(resolve => setTimeout(resolve, 600)); // Simulate net lag
-            return MOCK_EVENTS;
+            console.error("Error fetching events:", error);
+            return [];
         }
     },
 
@@ -22,9 +17,8 @@ export const eventService = {
             const id = await firestoreService.add('events', eventData);
             return id;
         } catch (error) {
-            console.warn("Mock Create Event:", error);
-            await new Promise(resolve => setTimeout(resolve, 1000));
-            return 'mock_event_id_' + Date.now();
+            console.error("Error creating event:", error);
+            throw error;
         }
     },
 
@@ -33,8 +27,20 @@ export const eventService = {
             const event = await firestoreService.getById<Event>('events', id);
             return event;
         } catch (error) {
-            console.warn("Using Mock Event for ID:", id);
-            return MOCK_EVENTS.find(e => e.id === id) || null;
+            console.error("Error fetching event:", error);
+            return null;
+        }
+    },
+
+    getEventsByOrganizer: async (organizerId: string): Promise<Event[]> => {
+        try {
+            // This assumes firestoreService has a method for where queries or we add one
+            // If not, we might need raw firestore query here
+            const events = await firestoreService.getWhere<Event>('events', 'organizerId', '==', organizerId);
+            return events;
+        } catch (error) {
+            console.error("Error fetching organizer events:", error);
+            return [];
         }
     }
 };

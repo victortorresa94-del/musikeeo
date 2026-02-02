@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Search, Phone, Video, MoreVertical, Send, Mic } from 'lucide-react';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
@@ -8,30 +9,33 @@ import { useAuth } from '../../context/AuthContext';
 import { chatService, type ChatPreview } from '../../services/chatService';
 import { userService } from '../../services/userService';
 import { type ChatMessage } from '../../types';
-import { MOCK_CHATS_DATA, MOCK_MESSAGES_DATA } from '../../services/mockChatData';
 
 export default function Messages() {
     const { user } = useAuth();
+    const location = useLocation();
     const [chats, setChats] = useState<ChatPreview[]>([]);
     const [selectedChat, setSelectedChat] = useState<ChatPreview | null>(null);
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [inputText, setInputText] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
 
-    // Subscribe to Chats - or use Mock if empty/error
+    // Handle navigation from other pages with a pre-selected chat
     useEffect(() => {
-        // NOTE: For UI Verification, we will mix real and mock data or fallback to mock
-        if (!user) {
-            // Demo mode if no user (should rely on auth context, but for dev safety)
-            setChats(MOCK_CHATS_DATA);
-            if (!selectedChat) setSelectedChat(MOCK_CHATS_DATA[0]);
-            return;
+        if (location.state?.selectedChatId && chats.length > 0) {
+            const target = chats.find(c => c.id === location.state.selectedChatId);
+            if (target) {
+                setSelectedChat(target);
+            }
         }
+    }, [location.state, chats]);
+
+    // Subscribe to Chats
+    useEffect(() => {
+        if (!user) return;
 
         const unsubscribe = chatService.subscribeToChats(user.uid, async (chatList) => {
             if (chatList.length === 0) {
-                setChats(MOCK_CHATS_DATA);
-                if (!selectedChat) setSelectedChat(MOCK_CHATS_DATA[0]);
+                setChats([]);
                 return;
             }
 
@@ -55,25 +59,24 @@ export default function Messages() {
                 }
                 return { ...chat, otherUser };
             }));
+
             setChats(enriched);
-            if (!selectedChat && enriched.length > 0) {
-                setSelectedChat(enriched[0]);
+
+            // If no chat selected, and we have a target from navigation, it will be handled by the other effect.
+            // If no target `state`, maybe we don't auto-select to keep it clean, or select latest.
+            // For now, let's NOT auto-select the first one unless we want to.
+            // But let's keep the behavior if we are not navigating.
+            if (!location.state?.selectedChatId && !selectedChat && enriched.length > 0) {
+                // Optional: Auto-select latest
+                // setSelectedChat(enriched[0]);
             }
         });
         return () => unsubscribe();
-    }, [user]);
+    }, [user, location.state]);
 
     // Subscribe to Messages
     useEffect(() => {
         if (!selectedChat) return;
-
-        // Check if it's a mock chat
-        if (MOCK_MESSAGES_DATA[selectedChat.id]) {
-            setMessages(MOCK_MESSAGES_DATA[selectedChat.id]);
-            // Scroll to bottom
-            setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
-            return;
-        }
 
         const unsubscribe = chatService.subscribeToMessages(selectedChat.id, (msgs) => {
             setMessages(msgs);

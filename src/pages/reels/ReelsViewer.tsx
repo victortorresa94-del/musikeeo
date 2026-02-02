@@ -90,8 +90,8 @@ const ReelItem = ({
 
     return (
         <div className="relative h-full w-full bg-black snap-start snap-always">
-            {/* Video Player - Gumlet Embed */}
-            <div className="absolute inset-0">
+            {/* Video Player - Hybrid (Gumlet / Native) */}
+            <div className="absolute inset-0 bg-black">
                 {/* Loading overlay */}
                 {isLoading && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black z-10">
@@ -99,24 +99,38 @@ const ReelItem = ({
                     </div>
                 )}
 
-                {/* Thumbnail como fallback/placeholder */}
+                {/* Thumbnail como fallback/placeholder - solo visible mientras carga */}
                 <img
                     src={reel.thumbnailUrl}
                     alt=""
                     className={`absolute inset-0 h-full w-full object-cover transition-opacity duration-500 ${isActive && !isLoading ? 'opacity-0' : 'opacity-100'}`}
                 />
 
-                {/* Gumlet iframe player */}
+                {/* Player Logic */}
                 {isActive && (
-                    <iframe
-                        ref={iframeRef}
-                        src={getGumletEmbedUrl()}
-                        className="absolute inset-0 h-full w-full"
-                        style={{ border: 'none' }}
-                        allow="autoplay; fullscreen; picture-in-picture"
-                        allowFullScreen
-                        onLoad={() => setIsLoading(false)}
-                    />
+                    <>
+                        {reel.gumletId ? (
+                            <iframe
+                                ref={iframeRef}
+                                src={getGumletEmbedUrl()}
+                                className="absolute inset-0 h-full w-full"
+                                style={{ border: 'none' }}
+                                allow="autoplay; fullscreen; picture-in-picture"
+                                allowFullScreen
+                                onLoad={() => setIsLoading(false)}
+                            />
+                        ) : (
+                            <video
+                                src={reel.videoUrl}
+                                className="absolute inset-0 h-full w-full object-cover"
+                                loop
+                                playsInline
+                                autoPlay
+                                muted // Muted is often required for autoplay
+                                onLoadedData={() => setIsLoading(false)}
+                            />
+                        )}
+                    </>
                 )}
             </div>
 

@@ -136,7 +136,7 @@ export const MOCK_REELS: Reel[] = [
         authorId: 'user_5',
         authorName: 'Marc Sound Tech',
         authorPhoto: 'https://i.pravatar.cc/150?u=5',
-        authorRole: 'technician',
+        authorRole: 'provider',
         authorVerified: true,
         description: '🎚️ Preparando el sonido para el festival de este finde! Todo listo para que suene brutal 🔊 #soundtech #festival',
         songTitle: 'Festival Setup',

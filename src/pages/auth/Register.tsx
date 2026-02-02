@@ -10,6 +10,7 @@ import { AuthLayout } from '../../layouts/AuthLayout';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { AlertCircle, Loader2 } from 'lucide-react';
+import type { User } from '../../types';
 
 const Label = ({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) => (
     <label htmlFor={htmlFor} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mb-2 block">
@@ -21,7 +22,6 @@ const registerSchema = z.object({
     name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
     email: z.string().email('Introduce un email válido'),
     password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
-    role: z.enum(['musician', 'technician', 'promoter']),
 });
 
 type RegisterForm = z.infer<typeof registerSchema>;
@@ -31,14 +31,9 @@ export default function Register() {
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
-    const { register, handleSubmit, watch, formState: { errors } } = useForm<RegisterForm>({
-        resolver: zodResolver(registerSchema),
-        defaultValues: {
-            role: 'musician'
-        }
+    const { register, handleSubmit, formState: { errors } } = useForm<RegisterForm>({
+        resolver: zodResolver(registerSchema)
     });
-
-    const roleValue = watch('role');
 
     const onSubmit = async (data: RegisterForm) => {
         setIsLoading(true);
@@ -46,33 +41,34 @@ export default function Register() {
         try {
             // Create auth user
             const userCredential = await createUserWithEmailAndPassword(auth, data.email, data.password);
-            const user = userCredential.user;
+            const firebaseUser = userCredential.user;
 
             // Update profile
-            await updateProfile(user, {
+            await updateProfile(firebaseUser, {
                 displayName: data.name,
             });
 
-            // Create user document in Firestore
-            await setDoc(doc(db, 'users', user.uid), {
-                uid: user.uid,
-                name: data.name,
+            // Create initial user document in Firestore (No roles yet)
+            const newUser: User = {
+                uid: firebaseUser.uid,
+                displayName: data.name,
                 email: data.email,
-                role: data.role,
                 createdAt: new Date().toISOString(),
-                stats: {
-                    reputation: 0,
-                    projects: 0,
-                    completedGigs: 0
+                onboardingCompleted: false, // Critical: sends them to onboarding
+                primaryMode: 'musician', // Default
+                activeModes: {
+                    musician: false,
+                    organizer: false,
+                    provider: false
                 }
-            });
+            };
 
-            // Force token refresh to get custom claims if we were using them
-            await user.getIdToken(true);
+            await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
 
-            // Navigate to home
-            navigate('/');
+            // Navigate to onboarding
+            navigate('/onboarding');
         } catch (err: any) {
+            console.error(err);
             setError('Error al crear la cuenta. Inténtalo de nuevo.');
         } finally {
             setIsLoading(false);
@@ -124,36 +120,11 @@ export default function Register() {
                     {errors.password && <p className="text-destructive text-xs">{errors.password.message}</p>}
                 </div>
 
-                <div className="space-y-2">
-                    <Label>Soy...</Label>
-                    <div className="grid grid-cols-3 gap-2">
-                        <label className={`
-                            flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all
-                            ${roleValue === 'musician' ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:border-primary/50 text-muted-foreground'}
-                        `}>
-                            <input type="radio" value="musician" className="sr-only" {...register('role')} />
-                            <span className="text-xs font-semibold">Músico</span>
-                        </label>
-                        <label className={`
-                            flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all
-                            ${roleValue === 'technician' ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:border-primary/50 text-muted-foreground'}
-                        `}>
-                            <input type="radio" value="technician" className="sr-only" {...register('role')} />
-                            <span className="text-xs font-semibold">Técnico</span>
-                        </label>
-                        <label className={`
-                            flex flex-col items-center justify-center p-3 rounded-xl border-2 cursor-pointer transition-all
-                            ${roleValue === 'promoter' ? 'border-primary bg-primary/10 text-primary' : 'border-border hover:border-primary/50 text-muted-foreground'}
-                        `}>
-                            <input type="radio" value="promoter" className="sr-only" {...register('role')} />
-                            <span className="text-xs font-semibold">Promotor</span>
-                        </label>
-                    </div>
-                </div>
+                {/* Removed role selection - now handled in Onboarding */}
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                    Registrarse
+                    Continuar a Onboarding
                 </Button>
             </form>
 
