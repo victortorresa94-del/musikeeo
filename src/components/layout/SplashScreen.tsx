@@ -21,7 +21,7 @@ const SplashScreen = ({ onFinish }: { onFinish: () => void }) => {
             <div className="relative flex flex-col items-center">
                 {/* Logo con efecto de pulso/resplandor */}
                 <div className="relative">
-                    <div className="absolute inset-0 bg-brand-yellow blur-[60px] opacity-20 animate-pulse-green rounded-full"></div>
+                    <div className="absolute inset-0 bg-brand-yellow blur-3xl opacity-20 rounded-full"></div>
                     <img
                         src="/logo-musikeeo.png"
                         alt="Musikeeo Isotype"

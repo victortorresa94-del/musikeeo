@@ -7,12 +7,12 @@ export const RodrigoBanner = () => {
             <div className="max-w-[1200px] mx-auto bg-surface border border-white/10 rounded-2xl p-8 md:p-12 relative overflow-hidden flex flex-col md:flex-row items-center gap-10">
 
                 {/* Decorational Glow */}
-                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-[100px] pointer-events-none"></div>
+                <div className="absolute top-0 right-0 w-64 h-64 bg-primary/20 rounded-full blur-3xl pointer-events-none"></div>
 
                 <div className="flex-1 relative z-10">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-white/10 text-white text-xs font-bold tracking-wide uppercase mb-4 border border-white/10">
                         <Sparkles size={14} className="text-primary" />
-                        Asistente Inteligente
+                        Asistente Rodrigo
                     </div>
 
                     <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-heading">
@@ -34,7 +34,7 @@ export const RodrigoBanner = () => {
 
                 <div className="w-full md:w-1/3 flex justify-center relative z-10">
                     <div className="relative w-64 h-64 md:w-80 md:h-80">
-                        <div className="absolute inset-0 bg-primary/20 rounded-full blur-3xl animate-pulse-green"></div>
+                        <div className="absolute inset-0 bg-primary/20 rounded-full blur-2xl animate-pulse-green"></div>
                         <img
                             src="/rodrigo-persona.png"
                             alt="Rodrigo AI Persona"

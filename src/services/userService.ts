@@ -9,6 +9,21 @@ export const userService = {
      * Used during registration or first login.
      */
     createUserProfile: async (uid: string, data: Partial<User>) => {
+        // DEV BYPASS
+        if (uid === 'dev-user-id') {
+            console.log("Dev User: returning mock profile");
+            return {
+                uid,
+                email: 'dev@musikeeo.local',
+                displayName: 'Usuario Dev',
+                createdAt: new Date().toISOString(),
+                onboardingCompleted: true, // Auto-complete for dev
+                primaryMode: 'musician',
+                activeModes: { musician: true, organizer: false, provider: false },
+                ...data
+            } as User;
+        }
+
         try {
             const userRef = doc(db, 'users', uid);
             const userSnap = await getDoc(userRef);
@@ -41,6 +56,17 @@ export const userService = {
     },
 
     getUserProfile: async (uid: string): Promise<User | null> => {
+        if (uid === 'dev-user-id') {
+            return {
+                uid,
+                displayName: 'Usuario Dev',
+                email: 'dev@musikeeo.local',
+                createdAt: new Date().toISOString(),
+                onboardingCompleted: true,
+                primaryMode: 'musician',
+                activeModes: { musician: true, organizer: false, provider: false }
+            } as User;
+        }
         try {
             const userSnap = await getDoc(doc(db, 'users', uid));
             if (userSnap.exists()) {
@@ -54,6 +80,7 @@ export const userService = {
     },
 
     updateProfile: async (uid: string, data: Partial<User>) => {
+        if (uid === 'dev-user-id') return true;
         try {
             await firestoreService.update('users', uid, data);
             return true;
@@ -67,6 +94,7 @@ export const userService = {
      * Activates a specific mode for a user and sets it as primary if requested.
      */
     activateMode: async (uid: string, mode: UserMode, setAsPrimary: boolean = false) => {
+        if (uid === 'dev-user-id') return true;
         try {
             const userRef = doc(db, 'users', uid);
             const updates: any = {
@@ -87,6 +115,7 @@ export const userService = {
      * Switch primary mode (only if the mode is active)
      */
     switchPrimaryMode: async (uid: string, mode: UserMode) => {
+        if (uid === 'dev-user-id') return true;
         try {
             const userRef = doc(db, 'users', uid);
             // Verify if mode is active first could be done here or in UI

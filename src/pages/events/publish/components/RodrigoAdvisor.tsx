@@ -50,6 +50,15 @@ export default function RodrigoAdvisor({ step, data, update }: RodrigoAdvisorPro
         }
 
         if (step === 3) {
+            // Check if already optimized (simple heuristic)
+            if (data.title.includes('✨')) {
+                return {
+                    title: "¡Todo listo!",
+                    text: "Tu anuncio se ve genial. ¡Buenas suerte con la búsqueda!",
+                    type: "default"
+                };
+            }
+
             return {
                 title: "Optimización SEO",
                 text: "He analizado tu anuncio y puedo mejorar el título para aumentar el alcance un 15%.",
@@ -59,6 +68,21 @@ export default function RodrigoAdvisor({ step, data, update }: RodrigoAdvisorPro
         }
 
         return { title: 'Dime qué necesitas', text: 'Estoy aquí para ayudarte.', type: 'default' };
+    };
+
+    const optimizeTitle = () => {
+        // Smart optimization templates
+        const keywords = ['Profesional', 'Urgente', 'Remunerado', 'Top', 'Exclusivo'];
+        const randomKeyword = keywords[Math.floor(Math.random() * keywords.length)];
+
+        let newTitle = data.title;
+        if (!newTitle.includes(randomKeyword)) {
+            newTitle = `✨ ${randomKeyword}: ${newTitle}`;
+        } else {
+            newTitle = `✨ ${newTitle} [Destacado]`;
+        }
+
+        update('title', newTitle);
     };
 
     const advice = getAdvice();
@@ -71,10 +95,10 @@ export default function RodrigoAdvisor({ step, data, update }: RodrigoAdvisorPro
 
             <div className="relative z-10 flex flex-col gap-4">
                 <div className="flex items-center gap-3 mb-2">
-                    <div className="h-10 w-10 rounded-full bg-brand-yellow/10 border border-brand-yellow/30 flex items-center justify-center">
-                        <span className="text-xl">🤖</span>
+                    <div className="h-10 w-10 rounded-full border border-brand-yellow/30 overflow-hidden">
+                        <img src="/rodrigo-persona.png" alt="Rodrigo" className="w-full h-full object-cover" />
                     </div>
-                    <span className="font-bold text-brand-yellow uppercase tracking-wider text-xs">Rodrigo AI Assistant</span>
+                    <span className="font-bold text-brand-yellow uppercase tracking-wider text-xs">RODRIGO</span>
                 </div>
 
                 <div>
@@ -88,7 +112,7 @@ export default function RodrigoAdvisor({ step, data, update }: RodrigoAdvisorPro
 
                 {advice.type === 'suggestion' && (
                     <Button
-                        onClick={() => update('title', `✨ ${data.title} (Optimizado)`)}
+                        onClick={optimizeTitle}
                         className="w-full bg-brand-yellow/20 hover:bg-brand-yellow/30 text-brand-yellow border border-brand-yellow/50 mt-2"
                     >
                         <Sparkles className="w-4 h-4 mr-2" />

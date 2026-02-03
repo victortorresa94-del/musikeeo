@@ -7,6 +7,25 @@ import Step1Details from './steps/Step1Details';
 import Step2Talent from './steps/Step2Talent';
 import Step3Review from './steps/Step3Review';
 import RodrigoAdvisor from './components/RodrigoAdvisor';
+import { eventService } from '../../../services/eventService';
+import { useAuth } from '../../../context/AuthContext';
+import { toast } from 'sonner';
+import { storageService } from '../../../services/storageService';
+
+// Helper to convert base64 to file
+const dataURLtoFile = (dataurl: string, filename: string) => {
+    const arr = dataurl.split(',');
+    const match = arr[0].match(/:(.*?);/);
+    if (!match) throw new Error("Invalid image format");
+    const mime = match[1];
+    const bstr = atob(arr[1]);
+    let n = bstr.length;
+    const u8arr = new Uint8Array(n);
+    while (n--) {
+        u8arr[n] = bstr.charCodeAt(n);
+    }
+    return new File([u8arr], filename, { type: mime });
+};
 
 export type PublishEventState = {
     // Step 1
@@ -38,7 +57,7 @@ const INITIAL_STATE: PublishEventState = {
     location: '',
     artistType: [],
     budget: 0,
-    currency: 'MXN',
+    currency: 'EUR',
     negotiable: false,
     description: '',
     step: 1
@@ -46,6 +65,10 @@ const INITIAL_STATE: PublishEventState = {
 
 export default function PublishEventPage() {
     const navigate = useNavigate();
+    const { user } = useAuth();
+    const [isPublishing, setIsPublishing] = useState(false);
+
+
     const [formData, setFormData] = useState<PublishEventState>(() => {
         const saved = localStorage.getItem('musikeeo_event_draft');
         return saved ? JSON.parse(saved) : INITIAL_STATE;
@@ -69,17 +92,64 @@ export default function PublishEventPage() {
     };
 
     const handlePublish = async () => {
-        // Mock API Call
-        console.log('Publishing event...', formData);
+        if (!user) {
+            toast.error("Debes iniciar sesión para publicar");
+            return;
+        }
 
-        // Simulate API delay
-        await new Promise(resolve => setTimeout(resolve, 1500));
+        setIsPublishing(true);
 
-        // Clear draft
-        localStorage.removeItem('musikeeo_event_draft');
+        try {
+            console.log('Publishing event...', formData);
 
-        // Navigate to success or back to board
-        navigate('/eventos2');
+            let finalImage = formData.image;
+
+            // 1. Upload Image if it's base64 (starts with data:)
+            if (formData.image?.startsWith('data:')) {
+                try {
+                    const file = dataURLtoFile(formData.image, `event-cover-${Date.now()}.jpg`);
+                    // Upload to storage: events/UID/filename
+                    const path = `events/${user.uid}/${file.name}`;
+                    console.log('Uploading image to:', path);
+                    finalImage = await storageService.uploadFile(file, path);
+                    console.log('Image uploaded:', finalImage);
+                } catch (uploadError) {
+                    console.error("Image upload failed:", uploadError);
+                    toast.error("Error al subir la imagen. Se usará una por defecto.");
+                    // Fallback image
+                    finalImage = 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&q=80';
+                }
+            } else if (!finalImage) {
+                finalImage = 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&q=80';
+            }
+
+            // 2. Create Event Object
+            await eventService.createEvent({
+                title: formData.title,
+                description: formData.description,
+                date: formData.date ? `${formData.date}T${formData.startTime || '12:00'}` : new Date().toISOString(),
+                location: formData.location,
+                type: formData.type as any,
+                price: formData.budget,
+                imageUrl: finalImage,
+                organizerId: user.uid,
+                organizerName: user.displayName || 'Organizador',
+                tags: formData.artistType,
+            });
+
+            toast.success("¡Evento publicado con éxito!");
+
+            // Clear draft
+            localStorage.removeItem('musikeeo_event_draft');
+
+            // Navigate to success or back to board
+            navigate('/eventos');
+        } catch (error) {
+            console.error("Failed to publish:", error);
+            toast.error("Error al publicar el evento. Inténtalo de nuevo.");
+        } finally {
+            setIsPublishing(false);
+        }
     };
 
     return (
@@ -139,7 +209,12 @@ export default function PublishEventPage() {
                                 <Step2Talent data={formData} update={updateField} onNext={nextStep} onPrev={prevStep} />
                             )}
                             {formData.step === 3 && (
-                                <Step3Review data={formData} onPublish={handlePublish} onPrev={prevStep} />
+                                <Step3Review
+                                    data={formData}
+                                    onPublish={handlePublish}
+                                    onPrev={prevStep}
+                                    isPublishing={isPublishing}
+                                />
                             )}
                         </motion.div>
                     </AnimatePresence>

@@ -29,7 +29,21 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [userProfile, setUserProfile] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
 
-    const fetchUserProfile = async (uid: string) => {
+    const fetchUserProfile = async (uid: string, authUserFallback?: FirebaseUser) => {
+        // DEV BYPASS
+        if (uid === 'dev-user-id') {
+            setUserProfile({
+                uid,
+                displayName: 'Usuario Dev',
+                email: 'dev@musikeeo.local',
+                createdAt: new Date().toISOString(),
+                onboardingCompleted: true,
+                primaryMode: 'musician',
+                activeModes: { musician: true, organizer: false, provider: false }
+            } as User);
+            return;
+        }
+
         try {
             const userRef = doc(db, "users", uid);
             const userSnap = await getDoc(userRef);
@@ -38,8 +52,35 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             } else {
                 setUserProfile(null);
             }
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error fetching user profile:", error);
+
+            // FIX: Offline Fallback
+            // If offline, we can't get the profile from Firestore.
+            // But we must NOT leave userProfile as null, or the app will redirect to Onboarding loops.
+            if (error?.message?.includes("offline") || error?.code === 'unavailable') {
+                console.warn("Offline detected in AuthContext. Using fallback profile.");
+
+                // Try to recover from localStorage if possible (optional enhancement)
+                // For now, construct a minimal valid profile from the known Auth User
+                // We need the User object here, but it might not be set in state yet if this is called from onAuthStateChanged.
+                // However, onAuthStateChanged passes 'authUser'. We might need to pass it to this function or use current state.
+                // Let's rely on the fact that if we are here, we have a UID.
+
+                const fallbackProfile: User = {
+                    uid,
+                    displayName: authUserFallback?.displayName || 'Usuario (Offline)', // We might update this if we have the auth user object available
+                    email: authUserFallback?.email || '', // We don't have email handy here easily without passing it, but it's optional in some views
+                    photoURL: authUserFallback?.photoURL || undefined,
+                    createdAt: new Date().toISOString(),
+                    onboardingCompleted: true, // ASSUME COMPLETED to bypass onboarding loop
+                    primaryMode: 'musician',
+                    activeModes: { musician: true, organizer: false, provider: false }
+                };
+                setUserProfile(fallbackProfile);
+                return;
+            }
+
             setUserProfile(null);
         }
     };
@@ -102,13 +143,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         try {
             unsubscribe = onAuthStateChanged(auth, async (authUser) => {
+                console.log("AuthContext: Auth State Changed", authUser?.uid);
                 setUser(authUser);
                 if (authUser) {
-                    await fetchUserProfile(authUser.uid);
+                    await fetchUserProfile(authUser.uid, authUser);
                 } else {
                     setUserProfile(null);
                 }
                 setLoading(false);
+                console.log("AuthContext: Loading set to false");
             });
         } catch (error) {
             console.error("AuthContext: Failed to subscribe to auth state changes.", error);

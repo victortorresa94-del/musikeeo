@@ -3,21 +3,18 @@ import { Button } from '../../../../components/ui/button';
 import { EventCard } from '../../../../components/events/EventCard';
 import type { MusikeeoEvent } from '../../../../services/eventsData';
 import { Check, Edit2 } from 'lucide-react';
-import { useState } from 'react';
+// useState removed as isPublishing is now a prop
 
 interface StepProps {
     data: PublishEventState;
     onPublish: () => void;
     onPrev: () => void;
+    isPublishing: boolean;
 }
 
-export default function Step3Review({ data, onPublish, onPrev }: StepProps) {
-    const [isPublishing, setIsPublishing] = useState(false);
+export default function Step3Review({ data, onPublish, onPrev, isPublishing }: StepProps) {
+    // Local state removed, using parent state
 
-    const handlePublish = () => {
-        setIsPublishing(true);
-        onPublish();
-    };
 
     // Transform form data to EventCard preview format
     const previewEvent: MusikeeoEvent = {
@@ -29,8 +26,8 @@ export default function Step3Review({ data, onPublish, onPrev }: StepProps) {
         location: data.location || 'Ubicación',
         city: data.location?.split(',')[0] || 'Ciudad',
         budget: data.budget || 0,
-        currency: data.currency,
-        imageUrl: 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&q=80', // Placeholder
+        currency: 'EUR',
+        imageUrl: data.image || 'https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?auto=format&fit=crop&q=80',
         tags: data.artistType,
         visibilityScore: 100,
         createdAt: new Date().toISOString(),
@@ -79,7 +76,7 @@ export default function Step3Review({ data, onPublish, onPrev }: StepProps) {
                             <div className="flex justify-between border-b border-white/5 pb-2">
                                 <dt className="text-gray-400">Presupuesto</dt>
                                 <dd className="text-white font-medium text-right">
-                                    {data.budget.toLocaleString()} {data.currency}
+                                    {data.budget.toLocaleString()} EUR
                                     {data.negotiable && <span className="block text-xs text-brand-yellow font-normal">Negociable</span>}
                                 </dd>
                             </div>
@@ -105,7 +102,7 @@ export default function Step3Review({ data, onPublish, onPrev }: StepProps) {
 
             <div className="flex justify-end pt-4">
                 <Button
-                    onClick={handlePublish}
+                    onClick={onPublish}
                     disabled={isPublishing}
                     className="w-full md:w-auto bg-brand-yellow text-brand-black font-bold h-14 px-10 text-lg hover:bg-brand-warm shadow-lg shadow-brand-yellow/20"
                 >

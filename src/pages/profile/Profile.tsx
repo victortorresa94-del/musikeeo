@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { motion } from 'framer-motion';
-import { MapPin, Star, Play, Share2, ArrowLeft, Calendar, Music, ShieldCheck, Camera, Plus, X, Edit3, Save } from 'lucide-react';
+import { MapPin, Star, Play, Share2, ArrowLeft, Music, ShieldCheck, Camera, Plus, X, Edit3, Save } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Badge } from '../../components/ui/badge';
 import { Card, CardContent } from '../../components/ui/card';
@@ -39,12 +39,14 @@ export default function Profile() {
         },
         trustScore: 80,
         skills: [] as string[],
-        genres: [] as string[]
+        genres: [] as string[],
+        isPublic: false
     });
 
     useEffect(() => {
         const loadProfile = async () => {
             if (user?.uid) {
+                setIsLoading(true);
                 try {
                     const artistData = await getArtistByUserId(user.uid);
 
@@ -66,6 +68,7 @@ export default function Profile() {
                         }));
                         if (artistData.profilePhoto) setAvatar(artistData.profilePhoto);
                         if (artistData.coverPhoto) setCover(artistData.coverPhoto);
+                        setProfile(prev => ({ ...prev, isPublic: artistData.isPublic }));
                     } else {
                         // Initialize empty state if no profile yet
                         if (userProfile) {
@@ -77,6 +80,8 @@ export default function Profile() {
                     }
                 } catch (error) {
                     console.error("Failed to load profile", error);
+                } finally {
+                    setIsLoading(false);
                 }
             }
         };
@@ -139,7 +144,8 @@ export default function Profile() {
                     tags: profile.skills,
                     genres: profile.genres,
                     profilePhoto: avatar,
-                    coverPhoto: cover
+                    coverPhoto: cover,
+                    isPublic: profile.isPublic
                 };
 
                 if (artistId) {
@@ -168,6 +174,15 @@ export default function Profile() {
     };
 
     // Video navigation functions removed as we use Reels viewer now
+
+    // Loading State
+    if (isLoading && !isEditing) { // Don't show full screen loader if just saving
+        return (
+            <div className="flex items-center justify-center min-h-screen bg-brand-black/90">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-yellow"></div>
+            </div>
+        );
+    }
 
     return (
         <div className="min-h-screen bg-brand-black text-brand-white pb-32 font-sans overflow-x-hidden selection:bg-brand-yellow/30">
@@ -202,22 +217,6 @@ export default function Profile() {
                         <ArrowLeft className="h-6 w-6" />
                     </Button>
                     <div className="flex gap-2">
-                        <Button
-                            variant="ghost"
-                            size="sm"
-                            onClick={toggleEditMode}
-                            disabled={isLoading}
-                            className={`rounded-full backdrop-blur-md border border-white/10 ${isEditing ? 'bg-brand-yellow text-brand-black hover:bg-brand-yellow/90' : 'bg-black/20 text-white hover:bg-white/10'}`}
-                        >
-                            {isLoading ? (
-                                <>Saving...</>
-                            ) : (
-                                <>
-                                    {isEditing ? <Save className="w-4 h-4 mr-2" /> : <Edit3 className="w-4 h-4 mr-2" />}
-                                    {isEditing ? "Guardar" : "Editar"}
-                                </>
-                            )}
-                        </Button>
                         <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full bg-black/20 backdrop-blur-md">
                             <Share2 className="h-6 w-6" />
                         </Button>
@@ -483,17 +482,54 @@ export default function Profile() {
             {/* Video Player Modal is removed as we navigate to dedicated Reels page */}
 
             {/* Fixed CTA (Hidden in Edit Mode) */}
-            {!isEditing && (
-                <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 z-40">
-                    <Button className="w-full h-14 rounded-2xl bg-brand-yellow hover:bg-brand-warm text-brand-black font-bold text-lg shadow-[0_4px_20px_rgba(255,216,77,0.5)] flex items-center justify-between px-6 transition-all ring-1 ring-white/10 active:scale-[0.98]">
-                        <span className="flex items-center gap-2">
-                            <Calendar className="w-5 h-5" />
-                            Contratar
-                        </span>
-                        <span className="text-base font-medium opacity-90">desde $150/h</span>
-                    </Button>
-                </div>
-            )}
+            {/* Fixed CTA for Owner */}
+            <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 z-40">
+                <Button
+                    onClick={async () => {
+                        if (!profile.isPublic) {
+                            // Publish First Time
+                            setIsLoading(true);
+                            try {
+                                if (artistId) {
+                                    await updateArtist(artistId, { isPublic: true });
+                                    setProfile(prev => ({ ...prev, isPublic: true }));
+                                    // Could show success toast here
+                                }
+                            } finally {
+                                setIsLoading(false);
+                            }
+                        } else {
+                            // Update (Toggle Edit Mode)
+                            toggleEditMode();
+                        }
+                    }}
+                    className={`w-full h-14 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all ring-1 ring-white/10 active:scale-[0.98]
+                        ${isEditing
+                            ? "bg-green-500 hover:bg-green-600 text-white shadow-[0_4px_20px_rgba(34,197,94,0.5)]"
+                            : !profile.isPublic
+                                ? "bg-brand-yellow hover:bg-brand-warm text-brand-black shadow-[0_4px_20px_rgba(255,216,77,0.5)]"
+                                : "bg-brand-charcoal border border-white/20 text-white hover:bg-white/10"
+                        }
+                    `}
+                >
+                    {isEditing ? (
+                        <>
+                            <Save className="w-5 h-5" />
+                            Guardar Cambios
+                        </>
+                    ) : !profile.isPublic ? (
+                        <>
+                            <Play className="w-5 h-5 fill-current" />
+                            Publicar mi perfil
+                        </>
+                    ) : (
+                        <>
+                            <Edit3 className="w-5 h-5" />
+                            Actualizar mi perfil
+                        </>
+                    )}
+                </Button>
+            </div>
         </div>
     );
 }

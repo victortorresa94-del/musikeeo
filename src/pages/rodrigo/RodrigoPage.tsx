@@ -276,9 +276,9 @@ export default function RodrigoPage() {
             {/* Floating Chat Button */}
             <button
                 onClick={() => setChatOpen(true)}
-                className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#FFD84D] text-black shadow-[0_4px_20px_rgba(250,208,56,0.4)] transition-transform hover:scale-110 active:scale-95"
+                className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#FFD84D] text-black shadow-[0_4px_20px_rgba(250,208,56,0.4)] transition-transform hover:scale-110 active:scale-95 overflow-hidden border-2 border-[#FFD84D]"
             >
-                <Zap size={24} />
+                <img src={RODRIGO_AVATAR} alt="Rodrigo" className="w-full h-full object-cover" />
             </button>
 
             {/* Functional Chat Modal */}
@@ -299,7 +299,7 @@ export default function RodrigoPage() {
                                     <div className="absolute -bottom-0.5 -right-0.5 size-3 bg-green-500 rounded-full border-2 border-background" />
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="text-sm font-bold">Rodrigo AI</h3>
+                                    <h3 className="text-sm font-bold">Rodrigo</h3>
                                     <p className="text-xs text-[#FFD84D] font-medium">ONLINE</p>
                                 </div>
                                 <button

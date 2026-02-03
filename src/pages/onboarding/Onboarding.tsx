@@ -86,15 +86,22 @@ export const Onboarding = () => {
         try {
             await Promise.race([
                 (async () => {
-                    // 1. Activate mode
+                    // 1. Ensure profile exists (creates it if missing, e.g. from redirect)
+                    await userService.createUserProfile(user.uid, {
+                        email: user.email || '',
+                        displayName: user.displayName || '',
+                        photoURL: user.photoURL || ''
+                    });
+
+                    // 2. Activate mode (now safe as doc exists)
                     await userService.activateMode(user.uid, selectedMode, true);
 
-                    // 2. Mark completed
+                    // 3. Mark completed
                     await userService.updateProfile(user.uid, {
                         onboardingCompleted: true
                     });
 
-                    // 3. Refresh context
+                    // 4. Refresh context
                     await refreshProfile();
                 })(),
                 timeoutPromise
@@ -105,9 +112,21 @@ export const Onboarding = () => {
                 navigateBasedOnRole(selectedMode);
             }, 1000);
 
-        } catch (error) {
+        } catch (error: any) {
             console.error("Error finishing onboarding:", error);
-            setError("Hubo un error al guardar tu perfil. Por favor, recarga la página.");
+
+            // FIX: If offline, assume local writes worked (or will sync) and proceed.
+            // This prevents users from getting stuck if network is flaky.
+            if (error?.message?.includes("offline")) {
+                console.warn("Offline error detected. Proceeding confidently.");
+                setTimeout(() => {
+                    navigateBasedOnRole(selectedMode);
+                }, 1000);
+                return;
+            }
+
+            // DEBUG: Show actual error to user to diagnose
+            setError(`Error: ${error.message || "Unknown error"}`);
             // setIsSubmitting(false); // Stop loop/loader so user sees error
             setStep(1); // Go back to try again
         }

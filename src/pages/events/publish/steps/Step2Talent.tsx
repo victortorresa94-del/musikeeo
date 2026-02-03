@@ -3,9 +3,12 @@ import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import { Textarea } from '../../../../components/ui/textarea';
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '../../../../components/ui/select';
+// Select imports removed as they are no longer used
 import { Switch } from '../../../../components/ui/switch';
-import { DollarSign, Music, Image as ImageIcon } from 'lucide-react';
+import { DollarSign, Music, Image as ImageIcon, Sparkles, Wand2 } from 'lucide-react';
+import { useRef, useState } from 'react';
+import { geminiFlash } from '../../../../lib/gemini';
+import { toast } from 'sonner';
 
 interface StepProps {
     data: PublishEventState;
@@ -17,6 +20,8 @@ interface StepProps {
 const ARTIST_TYPES = ['Banda', 'DJ', 'Solista', 'Mariachi', 'Jazz Trío', 'Orquesta', 'Otro'];
 
 export default function Step2Talent({ data, update, onNext, onPrev }: StepProps) {
+    const fileInputRef = useRef<HTMLInputElement>(null);
+    const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
 
     const isValid = data.artistType.length > 0 && data.budget > 0 && data.description.length >= 10;
 
@@ -27,6 +32,50 @@ export default function Step2Talent({ data, update, onNext, onPrev }: StepProps)
             // Single selection logic for simplicity, or multi if needed. Prompt says multi is possible but usually singular makes sense for main category.
             // Let's allow multi as per prompt hint "Selección múltiple"
             update('artistType', [...data.artistType, type]);
+        }
+    };
+
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        if (file) {
+            const reader = new FileReader();
+            reader.onloadend = () => {
+                update('image', reader.result as string);
+            };
+            reader.readAsDataURL(file);
+        }
+    };
+
+    const enhanceDescription = async () => {
+        if (data.description.length < 5) {
+            toast.error("Escribe al menos unas palabras para que la IA pueda trabajar.");
+            return;
+        }
+
+        setIsGeneratingDesc(true);
+        try {
+            const prompt = `
+                Eres un experto copywriter de eventos musicales. 
+                Mejora la siguiente descripción de un anuncio para buscar músicos.
+                
+                REGLAS:
+                1. Mantén TODOS los detalles originales (géneros, requisitos, ubicación, caché si se menciona).
+                2. Hazlo sonar profesional, atractivo y claro.
+                3. No inventes datos que no estén en el texto original (como fecha u hora si no se dicen).
+                4. Usa un tono cercano pero profesional.
+                5. Devuelve SOLO el texto mejorado, sin introducciones ni comillas.
+
+                Texto original: "${data.description}"
+            `;
+
+            const enhancedText = await geminiFlash(prompt);
+            update('description', enhancedText.trim());
+            toast.success("Descripción mejorada con IA");
+        } catch (error) {
+            console.error("AI Error:", error);
+            toast.error("Error al conectar con la IA de Rodrigo.");
+        } finally {
+            setIsGeneratingDesc(false);
         }
     };
 
@@ -66,21 +115,12 @@ export default function Step2Talent({ data, update, onNext, onPrev }: StepProps)
                             type="number"
                             value={data.budget || ''}
                             onChange={(e) => update('budget', Number(e.target.value))}
-                            placeholder="Monto"
-                            className="pl-10 bg-black/40 border-white/10 text-white h-12 font-mono"
+                            placeholder="Presupuesto"
+                            className="pl-10 bg-black/40 border-white/10 text-white h-12" // Removed font-mono
                         />
                     </div>
-                    <div className="w-32">
-                        <Select onValueChange={(val) => update('currency', val)} value={data.currency}>
-                            <SelectTrigger className="bg-black/40 border-white/10 text-white h-12">
-                                <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent className="bg-zinc-900 border-white/10 text-white">
-                                <SelectItem value="MXN">MXN</SelectItem>
-                                <SelectItem value="EUR">EUR</SelectItem>
-                                <SelectItem value="USD">USD</SelectItem>
-                            </SelectContent>
-                        </Select>
+                    <div className="w-24 flex items-center justify-center bg-white/5 border border-white/10 rounded-md h-12">
+                        <span className="text-gray-400 font-medium">EUR (€)</span>
                     </div>
                 </div>
 
@@ -96,7 +136,19 @@ export default function Step2Talent({ data, update, onNext, onPrev }: StepProps)
 
             {/* Description */}
             <div className="space-y-3">
-                <Label className="text-base text-white">Descripción del Bolo</Label>
+                <div className="flex justify-between items-center">
+                    <Label className="text-base text-white">Descripción del Bolo</Label>
+                    <Button
+                        variant="ghost"
+                        size="sm"
+                        onClick={enhanceDescription}
+                        disabled={isGeneratingDesc}
+                        className="text-brand-cyan hover:text-brand-cyan/80 hover:bg-brand-cyan/10 h-8 gap-2 text-xs"
+                    >
+                        {isGeneratingDesc ? <Sparkles className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
+                        {isGeneratingDesc ? 'Mejorando...' : 'Mejorar con IA'}
+                    </Button>
+                </div>
                 <Textarea
                     value={data.description}
                     onChange={(e) => update('description', e.target.value)}
@@ -109,10 +161,31 @@ export default function Step2Talent({ data, update, onNext, onPrev }: StepProps)
             {/* Image (Mock) */}
             <div className="space-y-3">
                 <Label className="text-base text-white">Imagen de Portada (Opcional)</Label>
-                <div className="border border-dashed border-white/10 rounded-xl p-8 flex flex-col items-center justify-center bg-black/20 hover:bg-white/5 transition-colors cursor-pointer text-gray-500 hover:text-white">
-                    <ImageIcon className="w-8 h-8 mb-2 opacity-50" />
-                    <span className="text-sm">Arrastra una imagen o haz clic para subir</span>
-                    <span className="text-xs text-gray-600 mt-1">PNG, JPG hasta 10MB</span>
+                <div
+                    onClick={() => fileInputRef.current?.click()}
+                    className="border border-dashed border-white/10 rounded-xl p-0 h-48 flex flex-col items-center justify-center bg-black/20 hover:bg-white/5 transition-colors cursor-pointer text-gray-500 hover:text-white overflow-hidden relative group"
+                >
+                    {data.image ? (
+                        <>
+                            <img src={data.image} alt="Preview" className="w-full h-full object-cover" />
+                            <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
+                                <span className="flex items-center gap-2 font-medium text-white"><ImageIcon className="w-5 h-5" /> Cambiar Imagen</span>
+                            </div>
+                        </>
+                    ) : (
+                        <>
+                            <ImageIcon className="w-8 h-8 mb-2 opacity-50" />
+                            <span className="text-sm">Arrastra una imagen o haz clic para subir</span>
+                            <span className="text-xs text-gray-600 mt-1">PNG, JPG hasta 10MB</span>
+                        </>
+                    )}
+                    <input
+                        type="file"
+                        ref={fileInputRef}
+                        className="hidden"
+                        accept="image/*"
+                        onChange={handleImageUpload}
+                    />
                 </div>
             </div>
 

@@ -65,16 +65,38 @@ export default function Events() {
 
             {/* 1. Header Section */}
             <div className="flex flex-col md:flex-row md:items-end justify-between gap-4">
-                <div>
-                    <h1 className="text-3xl font-heading font-bold text-white tracking-tight">
-                        Tablón de Eventos
-                    </h1>
-                    <p className="text-muted-foreground mt-1">
-                        Explora convocatorias, gigs y oportunidades verificadas.
-                    </p>
+                <div className="flex-1">
+                    <div className="flex justify-between items-start">
+                        <div>
+                            <h1 className="text-3xl font-heading font-bold text-white tracking-tight">
+                                Tablón de Eventos
+                            </h1>
+                            <p className="text-muted-foreground mt-1">
+                                Explora convocatorias, gigs y oportunidades verificadas.
+                            </p>
+                        </div>
+
+                        {/* Desktop Publish Button - More Prominent */}
+                        <Button
+                            onClick={() => navigate('/eventos/crear')}
+                            className="hidden md:flex bg-gradient-to-r from-brand-yellow to-yellow-400 text-brand-black hover:from-brand-warm hover:to-yellow-500 font-bold shadow-lg shadow-brand-yellow/20 rounded-xl px-6 h-12 text-base transition-all hover:scale-105 border-b-4 border-yellow-600 active:border-b-0 active:translate-y-1"
+                        >
+                            <Plus className="h-5 w-5 mr-2" />
+                            Publicar Anuncio
+                        </Button>
+                    </div>
                 </div>
 
-                <div className="flex items-center gap-3">
+                <div className="flex items-center gap-3 md:hidden">
+                    {/* Mobile Header Controls */}
+                    <Button
+                        onClick={() => navigate('/eventos/crear')}
+                        className="flex-1 bg-brand-yellow text-brand-black hover:bg-brand-warm font-bold shadow-lg"
+                    >
+                        <Plus className="h-5 w-5 mr-2" />
+                        Publicar
+                    </Button>
+
                     {/* Mobile Filter Toggle */}
                     <Button
                         variant="outline"
@@ -83,14 +105,6 @@ export default function Events() {
                         onClick={() => setIsMobileFiltersOpen(!isMobileFiltersOpen)} // Simple toggle for now, ideally drawer
                     >
                         <Filter className="h-5 w-5" />
-                    </Button>
-
-                    <Button
-                        onClick={() => navigate('/eventos/crear')}
-                        className="bg-brand-yellow text-brand-black hover:bg-brand-warm font-bold shadow-lg shadow-brand-yellow/10"
-                    >
-                        <Plus className="h-5 w-5 mr-2" />
-                        Publicar Anuncio
                     </Button>
                 </div>
             </div>

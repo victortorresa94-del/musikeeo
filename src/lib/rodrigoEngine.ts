@@ -37,15 +37,46 @@ export interface BoloOpportunity {
     link: string;
 }
 
+export interface EventDraft {
+    title: string;
+    date: string;
+    time: string;
+    location: string;
+    description: string;
+    type: string;
+    genres: string[];
+    budget: string;
+}
+
 export interface ParsedResponse {
     text: string;
     artists: ArtistRecommendation[];
     bolos: BoloOpportunity[];
+    publishEvent?: EventDraft;
 }
 
 // ===========================================
 // RESPONSE PARSING
 // ===========================================
+
+function parsePublishEvent(content: string): EventDraft | undefined {
+    const regex = /\[PUBLISH_EVENT\]([\s\S]*?)\[\/PUBLISH_EVENT\]/;
+    const match = regex.exec(content);
+
+    if (!match) return undefined;
+
+    const block = match[1];
+    return {
+        title: extractField(block, 'Título') || 'Evento Nuevo',
+        date: extractField(block, 'Fecha') || '',
+        time: extractField(block, 'Hora') || '',
+        location: extractField(block, 'Ubicación') || '',
+        description: extractField(block, 'Descripción') || '',
+        type: extractField(block, 'Tipo') || 'gig',
+        genres: extractField(block, 'Géneros').split(',').map(g => g.trim()).filter(Boolean),
+        budget: extractField(block, 'Presupuesto') || '',
+    };
+}
 
 function parseArtists(content: string): ArtistRecommendation[] {
     const artists: ArtistRecommendation[] = [];
@@ -100,6 +131,7 @@ function cleanResponseText(content: string): string {
     let cleaned = content
         .replace(/\[ARTISTA\][\s\S]*?\[\/ARTISTA\]/g, '')
         .replace(/\[BOLO\][\s\S]*?\[\/BOLO\]/g, '')
+        .replace(/\[PUBLISH_EVENT\][\s\S]*?\[\/PUBLISH_EVENT\]/g, '')
         .trim();
 
     // Clean up extra newlines
@@ -113,6 +145,7 @@ export function parseResponse(content: string): ParsedResponse {
         text: cleanResponseText(content),
         artists: parseArtists(content),
         bolos: parseBolos(content),
+        publishEvent: parsePublishEvent(content)
     };
 }
 
@@ -125,7 +158,7 @@ export async function generateResponse(
     state: ConversationState
 ): Promise<{ response: ParsedResponse; newState: ConversationState }> {
 
-    // Build messages array for DeepSeek
+    // Build messages array
     const messages: { role: string; content: string }[] = [
         { role: 'system', content: RODRIGO_SYSTEM_PROMPT },
         ...state.messages.map(m => ({ role: m.role, content: m.content })),
@@ -133,6 +166,7 @@ export async function generateResponse(
     ];
 
     try {
+        // Switch to DeepSeek
         const rawResponse = await generateDeepSeekContent(messages);
         const parsedResponse = parseResponse(rawResponse);
 
@@ -147,7 +181,7 @@ export async function generateResponse(
             turnCount: state.turnCount + 1,
         };
 
-        // Detect user role from conversation
+        // Detect user role from conversation (Keep existing logic)
         if (rawResponse.toLowerCase().includes('busco bolos') ||
             rawResponse.toLowerCase().includes('soy músico') ||
             userMessage.toLowerCase().includes('soy músico') ||
@@ -166,7 +200,7 @@ export async function generateResponse(
 
         // Fallback response
         const fallbackResponse: ParsedResponse = {
-            text: 'Perdona, he tenido un problema técnico. ¿Puedes repetirme qué necesitas?',
+            text: 'Perdona, estoy teniendo un momento de "baja cobertura" mental. ¿Me lo puedes repetir?',
             artists: [],
             bolos: [],
         };

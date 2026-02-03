@@ -5,6 +5,8 @@ import { TopBar } from '../components/layout/TopBar';
 import { BottomNav } from '../components/layout/BottomNav';
 import { AIContextPanel } from '../components/layout/AIContextPanel';
 
+import { OnboardingGuide } from '../components/onboarding/OnboardingGuide';
+
 export const MainLayout = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const [isAIPanelOpen, setIsAIPanelOpen] = useState(true);
@@ -35,6 +37,9 @@ export const MainLayout = () => {
 
             {/* Right Column: AI Context Panel (Hidden on tablet, visible on large desktop) */}
             <AIContextPanel isOpen={isAIPanelOpen} />
+
+            {/* Global Onboarding Guide */}
+            <OnboardingGuide />
         </div>
     );
 };

@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { Zap, X, ArrowUp, Mic, Music, Search, Calendar } from 'lucide-react';
+import { X, ArrowUp, Mic, Music, Search, Calendar } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useLocation } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import {
     generateResponse,
     createInitialState,
@@ -41,6 +41,7 @@ export const RodrigoFloatingChat = () => {
     const [isTyping, setIsTyping] = useState(false);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const location = useLocation();
+    const navigate = useNavigate();
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
@@ -103,6 +104,17 @@ export const RodrigoFloatingChat = () => {
             };
 
             setMessages(prev => [...prev, aiMessage]);
+
+            // Handle Event Publication Handoff
+            if (response.publishEvent) {
+                // Short delay to let the user read the confirmation
+                setTimeout(() => {
+                    navigate('/eventos/crear', {
+                        state: { eventDraft: response.publishEvent }
+                    });
+                    setIsOpen(false);
+                }, 2000);
+            }
         } catch (error) {
             console.error('Error sending message:', error);
             const errorMessage: Message = {
@@ -136,10 +148,10 @@ export const RodrigoFloatingChat = () => {
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0, opacity: 0 }}
                         onClick={() => setIsOpen(true)}
-                        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#FFD84D] text-black shadow-[0_4px_20px_rgba(250,208,56,0.4)] transition-transform hover:scale-110 active:scale-95"
+                        className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#FFD84D] text-black shadow-[0_4px_20px_rgba(250,208,56,0.4)] transition-transform hover:scale-110 active:scale-95 overflow-hidden border-2 border-[#FFD84D]"
                         title="Habla con Rodrigo"
                     >
-                        <Zap size={24} />
+                        <img src={RODRIGO_AVATAR} alt="Rodrigo" className="w-full h-full object-cover" />
                     </motion.button>
                 )}
             </AnimatePresence>
@@ -163,7 +175,7 @@ export const RodrigoFloatingChat = () => {
                                 <div className="absolute -bottom-0.5 -right-0.5 size-3 bg-green-500 rounded-full border-2 border-[#0A0A0A]" />
                             </div>
                             <div className="flex-1">
-                                <h3 className="text-sm font-bold text-white">Rodrigo AI</h3>
+                                <h3 className="text-sm font-bold text-white">Rodrigo</h3>
                                 <p className="text-xs text-[#FFD84D] font-medium">ONLINE</p>
                             </div>
                             <button

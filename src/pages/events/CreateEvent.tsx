@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft, Calendar, MapPin, Upload, Sparkles, Mic, Send, Music, Target, Image as ImageIcon, Users } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
@@ -12,6 +12,7 @@ import type { Event } from '../../types';
 
 export default function CreateEvent() {
     const navigate = useNavigate();
+    const location = useLocation();
     const { user, userProfile } = useAuth(); // Use userProfile
 
     const [isLoading, setIsLoading] = useState(false);
@@ -21,31 +22,6 @@ export default function CreateEvent() {
     // Organizer State
     const [organizerName, setOrganizerName] = useState('');
     // const [organizerId, setOrganizerId] = useState('');
-
-    useEffect(() => {
-        const loadOrganizerInfo = async () => {
-            if (user?.uid) {
-                // If user has an organizer profile linked
-                if (userProfile?.eventCreatorProfileId) {
-                    const orgFn = await getOrganizerByUserId(user.uid);
-                    if (orgFn) {
-                        // setOrganizerId(orgFn.id);
-                        setOrganizerName(orgFn.companyName || orgFn.displayName || user.displayName || 'Organizador');
-                        return;
-                    }
-                }
-
-                // Fallback if not fully set up but trying to access (though route should protect)
-                // For now allow creation but warn or use basic user info?
-                // Better: Redirect if not organizer?
-                // Let's assume for this phase we use user ID if no org profile, OR prompt to create one.
-                // For safety:
-                setOrganizerName(user.displayName || 'Usuario');
-            }
-        };
-        loadOrganizerInfo();
-    }, [user, userProfile]);
-
 
     // Form State
     const [formData, setFormData] = useState({
@@ -59,6 +35,70 @@ export default function CreateEvent() {
         budget: '',
         imageUrl: ''
     });
+
+    // Load from LocalStorage or Location State
+    useEffect(() => {
+        // 1. Try Location State (Draft passed from another page)
+        if (location.state?.eventDraft) {
+            const draft = location.state.eventDraft;
+            setFormData(prev => ({
+                ...prev,
+                title: draft.title || '',
+                date: draft.date || '',
+                time: draft.time || '',
+                location: draft.location || '',
+                description: draft.description || '',
+                type: (draft.type as Event['type']) || 'gig',
+                genres: draft.genres || [],
+                budget: draft.budget || '',
+            }));
+            return;
+        }
+
+        // 2. Try LocalStorage (Restoring work in progress)
+        const savedDraft = localStorage.getItem('createEventDraft');
+        if (savedDraft) {
+            try {
+                const parsed = JSON.parse(savedDraft);
+                setFormData(prev => ({ ...prev, ...parsed }));
+            } catch (e) {
+                console.error("Failed to parse saved draft", e);
+            }
+        }
+    }, [location.state]);
+
+    // Save to LocalStorage on change
+    useEffect(() => {
+        const timeout = setTimeout(() => {
+            localStorage.setItem('createEventDraft', JSON.stringify(formData));
+        }, 1000); // Debounce save
+        return () => clearTimeout(timeout);
+    }, [formData]);
+
+    useEffect(() => {
+        const loadOrganizerInfo = async () => {
+            // ... existing logic ...
+            if (user?.uid) {
+                // If user has an organizer profile linked
+                if (userProfile?.eventCreatorProfileId) {
+                    try {
+                        const orgFn = await getOrganizerByUserId(user.uid);
+                        if (orgFn) {
+                            setOrganizerName(orgFn.companyName || orgFn.displayName || user.displayName || 'Organizador');
+                            return;
+                        }
+                    } catch (e) {
+                        console.warn("Failed to load organizer info", e);
+                    }
+                }
+                setOrganizerName(user.displayName || 'Usuario');
+            }
+        };
+        loadOrganizerInfo();
+    }, [user, userProfile]);
+
+
+
 
     // AI Assitant State
     const [aiPrompt, setAiPrompt] = useState('');
@@ -173,11 +213,11 @@ export default function CreateEvent() {
                 {showAi && (
                     <div className="bg-gradient-to-r from-brand-petrol/20 to-brand-cyan/20 border border-brand-cyan/30 rounded-2xl p-6 animate-in slide-in-from-top-4 fade-in duration-300">
                         <div className="flex items-start gap-4 mb-4">
-                            <div className="p-3 bg-brand-cyan/20 rounded-full">
-                                <Sparkles className="h-6 w-6 text-brand-cyan" />
+                            <div className="h-12 w-12 rounded-full border border-brand-yellow/30 overflow-hidden shrink-0">
+                                <img src="/rodrigo-persona.png" alt="Rodrigo" className="w-full h-full object-cover" />
                             </div>
                             <div>
-                                <h3 className="font-bold text-lg text-white">Asistente Inteligente</h3>
+                                <h3 className="font-bold text-lg text-white">Rodrigo</h3>
                                 <p className="text-sm text-gray-400">Describe tu evento y rellenaré los detalles por ti.</p>
                             </div>
                         </div>
