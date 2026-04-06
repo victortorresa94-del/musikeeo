@@ -87,33 +87,42 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 
 ## SESSION LOG
 
-### 2026-04-06
+### 2026-04-06 (Sesión 1 — Cuenta 1)
 
 **Decisiones técnicas tomadas:**
 - Rodrigo migrado de DeepSeek (frontend, key expuesta) → OpenRouter via Vercel serverless `/api/chat`
-- Modelo: `google/gemma-4-26b-a4b-it` (Gemma 4, el `google/gemma-4-e2b-it` del usuario no existía en OpenRouter)
+- Modelo: `google/gemma-4-26b-a4b-it` (Gemma 4)
 - SplashScreen reducido de 2500ms → 600ms
-- AuthContext: `loading` ahora se resuelve al detectar auth state (no espera Firestore profile). `profileLoading` separado para el fetch del perfil.
+- AuthContext: `loading` resuelve al detectar auth state; `profileLoading` separado para Firestore
 - Vite config: chunking manual vendor-react / vendor-firebase / vendor-ui / vendor-utils
-- AIContextPanel eliminado del MainLayout (usaba DeepSeek sin key configurada, label incorrecto "Gemini Pro")
-- Events.tsx (mock) reemplazado por EventsV2 (Firestore real) en ruta `/eventos`
+- AIContextPanel eliminado del MainLayout
+- Events.tsx (mock) → EventsV2 (Firestore real) en ruta `/eventos`
 - FeaturedArtists eliminado del Home (datos hardcoded falsos)
 
-**✅ Completado en esta sesión:**
-- Reducción tiempo de carga: splash 600ms + auth no bloqueante + vite chunks
-- Rodrigo AI: migración completa a OpenRouter (Gemma 4), endpoint `/api/chat` serverless
-- FASE 0 limpieza: Events legacy quitado, FeaturedArtists quitado, AIContextPanel quitado
-- vercel.json creado con build config correcta
+**✅ Completado (Sesión 1):**
+- SPRINT 1: limit(50) en getArtists/getPublicProviders/firestoreService.getAll + lazy loading en imágenes
+- SPRINT 2 Fix A: PanelMultimediaPage — foto upload real con storageService.uploadArtistPhoto()
+- SPRINT 2 Fix B: PanelCalendarPage — FAB "Añadir Fecha de Bloqueo" funcional + modal + sync → Próximamente
 
-**🔧 A medias / en progreso:**
-- SPRINT 1 Performance: Firestore .limit() y img lazy loading — NO iniciado aún
-- SPRINT 2 Perfil: PanelMultimediaPage foto upload, PanelCalendarPage FAB, PanelSettingsPage — NO iniciado
-- SPRINT 3 Marketplace: tipos, CreateListing, Market.tsx, Home CTAs — NO iniciado
+---
 
-**❌ Falta por hacer (plan completo):**
-- Performance: `getArtists()` sin limit(50) | `getPublicProviders()` sin limit(50) | `firestoreService.getAll()` sin limit | 6 img sin loading="lazy"
-- Perfil: foto upload en Multimedia | FAB "Añadir Fecha" en Calendar | Settings guardar datos
-- Marketplace (Listing type → CreateListing rewrite → Market.tsx refactor → Home CTAs)
+### 2026-04-06 (Sesión 2 — Cuenta 2)
+
+**✅ Completado:**
+- SPRINT 2 Fix B: commit de PanelCalendarPage (estaba sin commitear)
+- SPRINT 2 Fix C: PanelSettingsPage — formulario editable displayName + location con userService.updateProfile()
+
+**❌ Falta por hacer:**
+- SPRINT 3 FASE 1: tipo Listing + ListingCategory en src/types/index.ts
+- SPRINT 3 FASE 2: rewrite CreateListing.tsx con image upload real y campos nuevos
+- SPRINT 3 FASE 3: refactor Market.tsx — query Firestore real colección "listings", filtros, contact modal
+- SPRINT 3 FASE 4: Home.tsx — nuevo hero con 3 CTAs + fila categorías rápidas
 
 **➡️ Próxima tarea concreta:**
-SPRINT 1 — Fix 1: añadir `limit(50)` a `getArtists()` en `src/services/artistService.ts:36`
+SPRINT 3 FASE 1 — añadir tipo Listing + ListingCategory en src/types/index.ts
+
+**Decisiones técnicas (Sesión 2):**
+- Marketplace v1: solo contacto (mensajes internos o WhatsApp), sin pagos, sin Stripe
+- Contact modal: [💬 Mensaje en Musikeeo] + [📱 WhatsApp] (solo si userWhatsApp existe)
+- Colección Firestore: "listings" (no "products" ni "market")
+- OPENROUTER_API_KEY: debe estar en Vercel Dashboard env vars (no en repo)
