@@ -1,7 +1,5 @@
 import { Navbar } from '../../components/home/Navbar';
 import { Hero } from '../../components/home/Hero';
-import { HowItWorks } from '../../components/home/HowItWorks';
-import { RodrigoBanner } from '../../components/home/RodrigoBanner';
 import { Footer } from '../../components/layout/Footer';
 
 const Home = () => {
@@ -10,8 +8,6 @@ const Home = () => {
             <Navbar />
             <main>
                 <Hero />
-                <HowItWorks />
-<RodrigoBanner />
             </main>
             <Footer />
         </div>
