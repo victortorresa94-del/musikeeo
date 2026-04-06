@@ -327,6 +327,8 @@ export interface Listing {
 
     urgent: boolean;
     available: boolean;
+    shipping: boolean;
+    sellerType: 'particular' | 'profesional';
 
     images: string[];
 

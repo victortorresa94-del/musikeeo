@@ -46,6 +46,8 @@ export default function CreateListing() {
     const [location, setLocation] = useState(userProfile?.location || '');
     const [whatsApp, setWhatsApp] = useState('');
     const [urgent, setUrgent] = useState(false);
+    const [shipping, setShipping] = useState(false);
+    const [sellerType, setSellerType] = useState<'particular' | 'profesional'>('particular');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
 
@@ -102,6 +104,8 @@ export default function CreateListing() {
                 price: type === 'prestamo' ? 0 : Number(price),
                 priceUnit: type === 'alquiler' ? priceUnit : null,
                 urgent,
+                shipping,
+                sellerType,
                 available: true,
                 images: urls,
                 createdAt: new Date().toISOString(),
@@ -277,6 +281,39 @@ export default function CreateListing() {
                         className="bg-white/5 border-white/10 text-white"
                     />
                 </div>
+
+                {/* Seller type */}
+                <div className="space-y-1">
+                    <label className="text-sm font-medium text-white">Tipo de vendedor</label>
+                    <div className="flex rounded-xl bg-white/5 p-1 gap-1">
+                        {(['particular', 'profesional'] as const).map(t => (
+                            <button
+                                key={t}
+                                type="button"
+                                onClick={() => setSellerType(t)}
+                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors capitalize ${sellerType === t ? 'bg-primary text-black' : 'text-gray-400 hover:text-white'}`}
+                            >
+                                {t === 'particular' ? '👤 Particular' : '🏪 Profesional'}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Shipping toggle */}
+                <button
+                    type="button"
+                    onClick={() => setShipping(v => !v)}
+                    className={`w-full flex items-center gap-3 p-4 rounded-xl border transition-colors ${shipping ? 'border-primary/50 bg-primary/10' : 'border-white/10 bg-white/5'}`}
+                >
+                    <span className="text-lg">{shipping ? '📦' : '📍'}</span>
+                    <div className="text-left">
+                        <p className={`text-sm font-bold ${shipping ? 'text-primary' : 'text-white'}`}>Envío disponible</p>
+                        <p className="text-xs text-gray-500">Puedo enviar el artículo por mensajería</p>
+                    </div>
+                    <div className={`ml-auto w-10 h-6 rounded-full transition-colors flex items-center px-1 ${shipping ? 'bg-primary' : 'bg-white/10'}`}>
+                        <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${shipping ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </div>
+                </button>
 
                 {/* Urgent toggle */}
                 <button

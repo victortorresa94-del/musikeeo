@@ -12,7 +12,7 @@ export const Sidebar = () => {
     };
 
     const navItems = [
-        { icon: Home, label: 'Feed', path: '/' },
+        { icon: Home, label: 'Feed', path: '/feed' },
         { icon: Search, label: 'Descubrir', path: '/discover' },
         { icon: Calendar, label: 'Eventos', path: '/eventos' },
         { icon: ShoppingBag, label: 'Mercado', path: '/market' },

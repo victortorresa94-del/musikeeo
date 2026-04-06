@@ -38,6 +38,16 @@ const TYPE_COLORS: Record<string, string> = {
 
 const PAGE_SIZE = 20;
 
+// Mock listings shown when collection is empty
+const MOCK_LISTINGS: Listing[] = [
+    { id: 'mock1', userId: 'mock', userName: 'Carlos G.', userLocation: 'Barcelona, España', userAvatar: undefined, userWhatsApp: undefined, title: 'Fender Stratocaster American Standard 2019', description: 'Excelente estado, con funda original y correa. Apenas tocada.', category: 'guitarras', condition: 'como_nuevo', type: 'venta', price: 850, urgent: false, available: true, shipping: true, sellerType: 'particular', images: ['https://images.unsplash.com/photo-1525201548942-d8732f6617a0?w=400&q=80'], createdAt: '', updatedAt: '' },
+    { id: 'mock2', userId: 'mock', userName: 'Pro Audio BCN', userLocation: 'Barcelona, España', userAvatar: undefined, userWhatsApp: '34612345678', title: 'Sistema PA QSC K12.2 + Subwoofer KSub', description: 'Alquiler por día o semana. Montaje incluido en zona BCN.', category: 'pa_sonido', condition: 'bueno', type: 'alquiler', price: 120, priceUnit: 'dia', urgent: true, available: true, shipping: false, sellerType: 'profesional', images: ['https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400&q=80'], createdAt: '', updatedAt: '' },
+    { id: 'mock3', userId: 'mock', userName: 'Ana M.', userLocation: 'Madrid, España', userAvatar: undefined, userWhatsApp: undefined, title: 'Korg Minilogue XD — Syntetizador analógico', description: 'En perfectas condiciones. Incluye fuente de alimentación.', category: 'teclados', condition: 'como_nuevo', type: 'venta', price: 480, urgent: false, available: true, shipping: true, sellerType: 'particular', images: ['https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?w=400&q=80'], createdAt: '', updatedAt: '' },
+    { id: 'mock4', userId: 'mock', userName: 'Drum Studio', userLocation: 'Valencia, España', userAvatar: undefined, userWhatsApp: '34698765432', title: 'Pearl Export 5 piezas — Batería completa', description: 'Batería de estudio. Disponible para préstamo a grupos en ensayo.', category: 'bateria', condition: 'bueno', type: 'prestamo', price: 0, urgent: false, available: true, shipping: false, sellerType: 'profesional', images: ['https://images.unsplash.com/photo-1461784180009-21121b2f204c?w=400&q=80'], createdAt: '', updatedAt: '' },
+    { id: 'mock5', userId: 'mock', userName: 'Miguel R.', userLocation: 'Sevilla, España', userAvatar: undefined, userWhatsApp: undefined, title: 'Pedales Boss DS-1 + Boss CH-1 Chorus', description: 'Vendo pack de pedales. Funcionando perfectamente.', category: 'accesorios', condition: 'bueno', type: 'venta', price: 65, urgent: true, available: true, shipping: true, sellerType: 'particular', images: ['https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&q=80'], createdAt: '', updatedAt: '' },
+    { id: 'mock6', userId: 'mock', userName: 'RecordingHouse', userLocation: 'Madrid, España', userAvatar: undefined, userWhatsApp: '34677889900', title: 'Shure SM7B + Interface Focusrite Scarlett 2i2', description: 'Kit completo para grabación vocal. Alquiler por semana.', category: 'recording', condition: 'nuevo', type: 'alquiler', price: 80, priceUnit: 'semana', urgent: false, available: true, shipping: false, sellerType: 'profesional', images: ['https://images.unsplash.com/photo-1615247001958-f4bc92fa6a4a?w=400&q=80'], createdAt: '', updatedAt: '' },
+];
+
 export default function Market() {
     const navigate = useNavigate();
     const location = useLocation();
@@ -108,7 +118,9 @@ export default function Market() {
         if (cat) setCategoryFilter(cat as ListingCategory);
     }, [location.search]);
 
-    const filtered = listings.filter(l => {
+    const displayListings = listings.length === 0 && !loading ? MOCK_LISTINGS : listings;
+
+    const filtered = displayListings.filter(l => {
         if (typeFilter !== 'all' && l.type !== typeFilter) return false;
         if (categoryFilter !== 'all' && l.category !== categoryFilter) return false;
         if (urgentOnly && !l.urgent) return false;
@@ -256,12 +268,9 @@ export default function Market() {
                 </div>
             ) : filtered.length === 0 ? (
                 <div className="text-center py-20 text-gray-500">
-                    <p className="text-4xl mb-3">🎸</p>
-                    <p className="font-medium text-white">No hay anuncios todavía</p>
-                    <p className="text-sm mt-1">¡Sé el primero en publicar!</p>
-                    <Button className="mt-4 bg-primary text-black font-bold" onClick={() => navigate('/market/create')}>
-                        Publicar anuncio
-                    </Button>
+                    <p className="text-4xl mb-3">🔍</p>
+                    <p className="font-medium text-white">Sin resultados para estos filtros</p>
+                    <p className="text-sm mt-1">Prueba con otros criterios</p>
                 </div>
             ) : (
                 <>
@@ -296,6 +305,14 @@ export default function Market() {
                                     <div className="flex items-center gap-1 text-gray-500 text-xs">
                                         <MapPin size={10} />
                                         <span className="truncate">{listing.userLocation}</span>
+                                    </div>
+                                    <div className="flex gap-1 flex-wrap">
+                                        {listing.shipping && (
+                                            <span className="text-[9px] bg-white/10 text-gray-300 px-1.5 py-0.5 rounded-full">📦 Envío</span>
+                                        )}
+                                        {listing.sellerType === 'profesional' && (
+                                            <span className="text-[9px] bg-white/10 text-gray-300 px-1.5 py-0.5 rounded-full">🏪 Pro</span>
+                                        )}
                                     </div>
                                     <div className="flex items-center gap-2 mt-auto pt-1">
                                         {listing.userAvatar ? (
