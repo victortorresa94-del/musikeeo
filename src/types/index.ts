@@ -301,3 +301,35 @@ export interface ArtistSearchFilters {
     isVerified?: boolean;
     sortBy?: 'relevance' | 'rating' | 'price' | 'distance';
 }
+
+
+export type ListingCategory =
+    | 'guitarras' | 'bajos' | 'teclados' | 'bateria' | 'viento'
+    | 'accesorios' | 'pa_sonido' | 'iluminacion' | 'recording'
+    | 'partituras' | 'otros';
+
+export interface Listing {
+    id: string;
+    userId: string;
+    userName: string;
+    userAvatar?: string;
+    userLocation: string;
+    userWhatsApp?: string;
+
+    title: string;
+    description: string;
+    category: ListingCategory;
+    condition: 'nuevo' | 'como_nuevo' | 'bueno' | 'aceptable';
+
+    type: 'venta' | 'alquiler' | 'prestamo';
+    price: number;
+    priceUnit?: 'total' | 'dia' | 'semana';
+
+    urgent: boolean;
+    available: boolean;
+
+    images: string[];
+
+    createdAt: string;
+    updatedAt: string;
+}
