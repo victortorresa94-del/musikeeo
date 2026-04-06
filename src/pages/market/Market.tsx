@@ -1,339 +1,400 @@
-import { useState, useEffect } from 'react';
-import { Search, Filter, ShoppingCart, Star, Tag, Music, Mic, Plus, Zap, Clock, Truck, Building2, ArrowRight } from 'lucide-react';
+import { useState, useEffect, useCallback } from 'react';
+import { useNavigate, useLocation } from 'react-router-dom';
+import {
+    collection, query, where, orderBy, limit,
+    getDocs, startAfter, type QueryDocumentSnapshot
+} from 'firebase/firestore';
+import { db } from '../../lib/firebase';
+import { Search, Plus, Zap, MapPin, MessageSquare, Phone, X, SlidersHorizontal } from 'lucide-react';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
-import { Card, CardContent } from '../../components/ui/card';
-import { marketService } from '../../services/marketService';
-import { type MarketItem } from '../../types';
-import { useNavigate } from 'react-router-dom';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
+import type { Listing, ListingCategory } from '../../types';
 
-const CATEGORIES = [
-    { id: 'all', label: 'Todo' },
-    { id: 'instruments', label: 'Instrumentos' },
-    { id: 'recording', label: 'Estudio' },
-    { id: 'services', label: 'Servicios' },
-    { id: 'venues', label: 'Salas' },
+const CATEGORIES: { value: ListingCategory | 'all'; label: string; emoji: string }[] = [
+    { value: 'all', label: 'Todo', emoji: '🎵' },
+    { value: 'guitarras', label: 'Guitarras', emoji: '🎸' },
+    { value: 'bajos', label: 'Bajos', emoji: '🎸' },
+    { value: 'teclados', label: 'Teclados', emoji: '🎹' },
+    { value: 'bateria', label: 'Batería', emoji: '🥁' },
+    { value: 'pa_sonido', label: 'PA / Sonido', emoji: '🎤' },
+    { value: 'accesorios', label: 'Accesorios', emoji: '🎒' },
+    { value: 'iluminacion', label: 'Iluminación', emoji: '💡' },
+    { value: 'recording', label: 'Grabación', emoji: '🎙️' },
+    { value: 'viento', label: 'Viento', emoji: '🎺' },
+    { value: 'partituras', label: 'Partituras', emoji: '📄' },
+    { value: 'otros', label: 'Otros', emoji: '📦' },
 ];
 
-// Mock data for Express stores
-const EXPRESS_STORES = [
-    {
-        id: 'exp_1',
-        name: 'MusicExpress BCN',
-        image: 'https://images.unsplash.com/photo-1558618666-fcd25c85cd64?w=400&q=80',
-        deliveryTime: '15-30 min',
-        rating: 4.9,
-        categories: ['Cables', 'Pilas', 'Accesorios'],
-        isOpen: true
-    },
-    {
-        id: 'exp_2',
-        name: 'Pro Audio Store',
-        image: 'https://images.unsplash.com/photo-1598653222000-6b7b7a552625?w=400&q=80',
-        deliveryTime: '20-40 min',
-        rating: 4.7,
-        categories: ['Micrófonos', 'Cables XLR', 'Stands'],
-        isOpen: true
-    },
-    {
-        id: 'exp_3',
-        name: 'Guitar Center Express',
-        image: 'https://images.unsplash.com/photo-1510915361894-db8b60106cb1?w=400&q=80',
-        deliveryTime: '25-45 min',
-        rating: 4.8,
-        categories: ['Cuerdas', 'Púas', 'Pedales'],
-        isOpen: false
-    },
-];
+const TYPE_LABELS: Record<string, string> = {
+    venta: 'VENTA', alquiler: 'ALQUILER', prestamo: 'PRÉSTAMO'
+};
 
-// Mock data for Rental companies
-const RENTAL_COMPANIES = [
-    {
-        id: 'rent_1',
-        name: 'SoundRent Pro',
-        image: 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&q=80',
-        priceFrom: 50,
-        rating: 4.9,
-        categories: ['PA Systems', 'Backline', 'Iluminación'],
-        featured: true
-    },
-    {
-        id: 'rent_2',
-        name: 'BackLine Barcelona',
-        image: 'https://images.unsplash.com/photo-1508854710579-5cecc3a9ff17?w=400&q=80',
-        priceFrom: 35,
-        rating: 4.6,
-        categories: ['Amplificadores', 'Baterías', 'Teclados'],
-        featured: false
-    },
-    {
-        id: 'rent_3',
-        name: 'Festival Gear',
-        image: 'https://images.unsplash.com/photo-1470229722913-7c0e2dbbafd3?w=400&q=80',
-        priceFrom: 100,
-        rating: 4.8,
-        categories: ['Escenarios', 'Sonido Festival', 'Generadores'],
-        featured: true
-    },
-];
+const TYPE_COLORS: Record<string, string> = {
+    venta: 'bg-blue-500/20 text-blue-300',
+    alquiler: 'bg-purple-500/20 text-purple-300',
+    prestamo: 'bg-green-500/20 text-green-300',
+};
+
+const PAGE_SIZE = 20;
 
 export default function Market() {
     const navigate = useNavigate();
-    const [items, setItems] = useState<MarketItem[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [activeCategory, setActiveCategory] = useState("all");
+    const location = useLocation();
 
+    const [listings, setListings] = useState<Listing[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [loadingMore, setLoadingMore] = useState(false);
+    const [lastDoc, setLastDoc] = useState<QueryDocumentSnapshot | null>(null);
+    const [hasMore, setHasMore] = useState(true);
+
+    const [searchText, setSearchText] = useState('');
+    const [categoryFilter, setCategoryFilter] = useState<ListingCategory | 'all'>('all');
+    const [typeFilter, setTypeFilter] = useState<'all' | 'venta' | 'alquiler' | 'prestamo'>('all');
+    const [urgentOnly, setUrgentOnly] = useState(false);
+    const [locationFilter, setLocationFilter] = useState('');
+    const [maxPrice, setMaxPrice] = useState('');
+    const [showFilters, setShowFilters] = useState(false);
+
+    const [contactListing, setContactListing] = useState<Listing | null>(null);
+
+    const [toast, setToast] = useState<string>(location.state?.toast || '');
     useEffect(() => {
-        const fetchItems = async () => {
-            setLoading(true);
-            try {
-                const data = await marketService.getItems(activeCategory);
-                setItems(data);
-            } catch (err) {
-                console.error(err);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchItems();
-    }, [activeCategory]);
+        if (toast) {
+            const t = setTimeout(() => setToast(''), 4000);
+            return () => clearTimeout(t);
+        }
+    }, [toast]);
+
+    const fetchListings = useCallback(async (reset = false) => {
+        if (reset) setLoading(true); else setLoadingMore(true);
+        try {
+            const q = reset
+                ? query(
+                    collection(db, 'listings'),
+                    where('available', '==', true),
+                    orderBy('urgent', 'desc'),
+                    orderBy('createdAt', 'desc'),
+                    limit(PAGE_SIZE)
+                )
+                : query(
+                    collection(db, 'listings'),
+                    where('available', '==', true),
+                    orderBy('urgent', 'desc'),
+                    orderBy('createdAt', 'desc'),
+                    startAfter(lastDoc),
+                    limit(PAGE_SIZE)
+                );
+
+            const snap = await getDocs(q);
+            const docs = snap.docs.map(d => ({ id: d.id, ...d.data() } as Listing));
+            setListings(prev => reset ? docs : [...prev, ...docs]);
+            setLastDoc(snap.docs[snap.docs.length - 1] ?? null);
+            setHasMore(snap.docs.length === PAGE_SIZE);
+        } catch (err) {
+            console.error('Error fetching listings:', err);
+        } finally {
+            if (reset) setLoading(false); else setLoadingMore(false);
+        }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [lastDoc]);
+
+    useEffect(() => { fetchListings(true); }, []);
+
+    // Read URL query param for category (from Home quick categories)
+    useEffect(() => {
+        const params = new URLSearchParams(location.search);
+        const cat = params.get('category');
+        if (cat) setCategoryFilter(cat as ListingCategory);
+    }, [location.search]);
+
+    const filtered = listings.filter(l => {
+        if (typeFilter !== 'all' && l.type !== typeFilter) return false;
+        if (categoryFilter !== 'all' && l.category !== categoryFilter) return false;
+        if (urgentOnly && !l.urgent) return false;
+        if (locationFilter && !l.userLocation?.toLowerCase().includes(locationFilter.toLowerCase())) return false;
+        if (maxPrice && l.type !== 'prestamo' && l.price > Number(maxPrice)) return false;
+        if (searchText && !l.title.toLowerCase().includes(searchText.toLowerCase())) return false;
+        return true;
+    });
+
+    const formatPrice = (l: Listing) => {
+        if (l.type === 'prestamo') return 'Préstamo gratuito';
+        const unit = l.type === 'alquiler' && l.priceUnit ? `/${l.priceUnit === 'dia' ? 'día' : 'semana'}` : '';
+        return `${l.price}€${unit}`;
+    };
 
     return (
-        <div className="max-w-5xl mx-auto p-4 md:p-6 space-y-6 animate-fade-in-up">
-            {/* Header - Mobile Optimized */}
-            <div className="space-y-4">
-                <div className="flex items-center justify-between">
-                    <div>
-                        <h1 className="text-2xl md:text-3xl font-bold text-white">Mercado</h1>
-                        <p className="text-sm text-muted-foreground mt-0.5">Equipos, servicios y espacios</p>
-                    </div>
-                    <Button
-                        className="bg-brand-cyan text-black hover:bg-brand-cyan/90 font-bold h-10 px-4"
-                        onClick={() => navigate('/market/create')}
+        <div className="max-w-5xl mx-auto p-4 md:p-6 space-y-5 animate-fade-in-up pb-24">
+            {/* Toast */}
+            <AnimatePresence>
+                {toast && (
+                    <motion.div
+                        initial={{ opacity: 0, y: -20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        className="fixed top-4 left-1/2 -translate-x-1/2 z-50 bg-primary text-black font-bold px-6 py-3 rounded-xl shadow-lg"
                     >
-                        <Plus className="h-4 w-4 mr-1.5" /> Vender
-                    </Button>
-                </div>
+                        {toast}
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-                {/* Search Row */}
-                <div className="flex gap-2">
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Buscar guitarra, micro, sala..."
-                            className="pl-10 bg-white/5 border-white/10 h-11"
-                        />
-                    </div>
-                    <Button variant="outline" size="icon" className="border-white/10 hover:bg-white/5 h-11 w-11 shrink-0">
-                        <Filter className="h-4 w-4" />
-                    </Button>
-                    <Button variant="outline" size="icon" className="border-white/10 hover:bg-white/5 h-11 w-11 shrink-0 relative">
-                        <ShoppingCart className="h-4 w-4" />
-                        <span className="absolute -top-1 -right-1 h-4 w-4 bg-brand-cyan rounded-full border-2 border-background text-[10px] font-bold flex items-center justify-center text-black">2</span>
-                    </Button>
+            {/* Header */}
+            <div className="flex items-center justify-between">
+                <div>
+                    <h1 className="text-2xl md:text-3xl font-bold text-white">Mercado</h1>
+                    <p className="text-sm text-muted-foreground mt-0.5">Compra, alquila o presta equipo</p>
                 </div>
+                <Button
+                    className="bg-primary text-black hover:bg-primary/90 font-bold h-10 px-4"
+                    onClick={() => navigate('/market/create')}
+                >
+                    <Plus className="h-4 w-4 mr-1.5" /> Publicar
+                </Button>
             </div>
 
-            {/* Categories */}
+            {/* Search + filter toggle */}
+            <div className="flex gap-2">
+                <div className="relative flex-1">
+                    <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                    <Input
+                        placeholder="Buscar guitarra, micro, correa..."
+                        className="pl-10 bg-white/5 border-white/10 h-11"
+                        value={searchText}
+                        onChange={e => setSearchText(e.target.value)}
+                    />
+                </div>
+                <Button
+                    variant="outline"
+                    size="icon"
+                    onClick={() => setShowFilters(v => !v)}
+                    className={`border-white/10 h-11 w-11 shrink-0 ${showFilters ? 'bg-primary/10 border-primary/50 text-primary' : 'hover:bg-white/5'}`}
+                >
+                    <SlidersHorizontal className="h-4 w-4" />
+                </Button>
+            </div>
+
+            {/* Category pills */}
             <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar -mx-4 px-4">
-                {CATEGORIES.map((cat) => (
-                    <Button
-                        key={cat.id}
-                        variant={activeCategory === cat.id ? 'glow' : 'outline'}
-                        size="sm"
-                        onClick={() => setActiveCategory(cat.id)}
-                        className={`rounded-full px-4 shrink-0 ${activeCategory !== cat.id ? 'border-white/10 bg-white/5 hover:bg-white/10 text-muted-foreground hover:text-white' : ''}`}
+                {CATEGORIES.map(c => (
+                    <button
+                        key={c.value}
+                        onClick={() => setCategoryFilter(c.value)}
+                        className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors border ${
+                            categoryFilter === c.value
+                                ? 'bg-primary text-black border-primary'
+                                : 'border-white/10 bg-white/5 text-gray-400 hover:text-white'
+                        }`}
                     >
-                        {cat.label}
-                    </Button>
+                        <span>{c.emoji}</span> {c.label}
+                    </button>
                 ))}
             </div>
 
-            {/* Express Section */}
-            <section>
-                <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-yellow-500/20 rounded-lg">
-                            <Zap className="h-4 w-4 text-yellow-400" />
-                        </div>
-                        <div>
-                            <h2 className="text-lg font-bold text-white">Express</h2>
-                            <p className="text-xs text-muted-foreground">Entrega en minutos tipo Glovo</p>
-                        </div>
-                    </div>
-                    <Button variant="link" className="text-brand-cyan p-0 h-auto text-sm">
-                        Ver todo <ArrowRight className="h-3 w-3 ml-1" />
-                    </Button>
-                </div>
-
-                <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar -mx-4 px-4">
-                    {EXPRESS_STORES.map((store) => (
-                        <motion.div
-                            key={store.id}
-                            whileHover={{ scale: 1.02 }}
-                            className="min-w-[200px] md:min-w-[240px] shrink-0 bg-card border border-white/5 rounded-xl overflow-hidden cursor-pointer hover:border-yellow-500/30 transition-all"
-                        >
-                            <div className="relative h-24">
-                                <img src={store.image} alt={store.name} className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                                {store.isOpen ? (
-                                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-green-500/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                        <span className="w-1.5 h-1.5 bg-white rounded-full animate-pulse" />
-                                        Abierto
-                                    </div>
-                                ) : (
-                                    <div className="absolute top-2 right-2 bg-red-500/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                        Cerrado
-                                    </div>
-                                )}
-                                <div className="absolute bottom-2 left-2 right-2">
-                                    <h3 className="font-bold text-white text-sm truncate">{store.name}</h3>
-                                </div>
+            {/* Filters panel */}
+            <AnimatePresence>
+                {showFilters && (
+                    <motion.div
+                        initial={{ opacity: 0, height: 0 }}
+                        animate={{ opacity: 1, height: 'auto' }}
+                        exit={{ opacity: 0, height: 0 }}
+                        className="overflow-hidden"
+                    >
+                        <div className="bg-surface border border-white/10 rounded-xl p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                            <div className="col-span-2 md:col-span-1 space-y-1">
+                                <label className="text-xs font-medium text-gray-400">Tipo</label>
+                                <select
+                                    value={typeFilter}
+                                    onChange={e => setTypeFilter(e.target.value as typeof typeFilter)}
+                                    className="w-full h-9 rounded-lg border border-white/10 bg-white/5 px-2 text-sm text-white focus:outline-none"
+                                >
+                                    <option value="all" className="bg-[#1a1a1a]">Todos</option>
+                                    <option value="venta" className="bg-[#1a1a1a]">Venta</option>
+                                    <option value="alquiler" className="bg-[#1a1a1a]">Alquiler</option>
+                                    <option value="prestamo" className="bg-[#1a1a1a]">Préstamo</option>
+                                </select>
                             </div>
-                            <div className="p-3">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-1 text-yellow-400 text-xs">
-                                        <Truck className="h-3 w-3" />
-                                        <span className="font-medium">{store.deliveryTime}</span>
-                                    </div>
-                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                        <Star className="h-3 w-3 fill-brand-lime text-brand-lime" />
-                                        {store.rating}
-                                    </div>
-                                </div>
-                                <div className="flex flex-wrap gap-1">
-                                    {store.categories.slice(0, 2).map((cat, i) => (
-                                        <span key={i} className="text-[10px] bg-white/5 text-muted-foreground px-2 py-0.5 rounded-full">
-                                            {cat}
-                                        </span>
-                                    ))}
-                                    {store.categories.length > 2 && (
-                                        <span className="text-[10px] text-muted-foreground">+{store.categories.length - 2}</span>
-                                    )}
-                                </div>
+                            <div className="space-y-1">
+                                <label className="text-xs font-medium text-gray-400">Ciudad</label>
+                                <Input
+                                    value={locationFilter}
+                                    onChange={e => setLocationFilter(e.target.value)}
+                                    placeholder="Barcelona..."
+                                    className="h-9 bg-white/5 border-white/10 text-white text-sm"
+                                />
                             </div>
-                        </motion.div>
-                    ))}
-                </div>
-            </section>
-
-            {/* Rental Section */}
-            <section>
-                <div className="flex items-center justify-between mb-3">
-                    <div className="flex items-center gap-2">
-                        <div className="p-1.5 bg-purple-500/20 rounded-lg">
-                            <Building2 className="h-4 w-4 text-purple-400" />
+                            <div className="space-y-1">
+                                <label className="text-xs font-medium text-gray-400">Precio máx. (€)</label>
+                                <Input
+                                    type="number"
+                                    value={maxPrice}
+                                    onChange={e => setMaxPrice(e.target.value)}
+                                    placeholder="Sin límite"
+                                    className="h-9 bg-white/5 border-white/10 text-white text-sm"
+                                />
+                            </div>
+                            <div className="flex items-end pb-1">
+                                <button
+                                    onClick={() => setUrgentOnly(v => !v)}
+                                    className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg border transition-colors ${urgentOnly ? 'border-primary/50 bg-primary/10 text-primary' : 'border-white/10 bg-white/5 text-gray-400'}`}
+                                >
+                                    <Zap size={14} /> Solo urgentes
+                                </button>
+                            </div>
                         </div>
-                        <div>
-                            <h2 className="text-lg font-bold text-white">Alquiler</h2>
-                            <p className="text-xs text-muted-foreground">Empresas de alquiler de equipos</p>
-                        </div>
-                    </div>
-                    <Button variant="link" className="text-brand-cyan p-0 h-auto text-sm">
-                        Ver todo <ArrowRight className="h-3 w-3 ml-1" />
-                    </Button>
-                </div>
-
-                <div className="flex gap-3 overflow-x-auto pb-2 hide-scrollbar -mx-4 px-4">
-                    {RENTAL_COMPANIES.map((company) => (
-                        <motion.div
-                            key={company.id}
-                            whileHover={{ scale: 1.02 }}
-                            className="min-w-[200px] md:min-w-[240px] shrink-0 bg-card border border-white/5 rounded-xl overflow-hidden cursor-pointer hover:border-purple-500/30 transition-all"
-                        >
-                            <div className="relative h-24">
-                                <img src={company.image} alt={company.name} className="w-full h-full object-cover" />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent" />
-                                {company.featured && (
-                                    <div className="absolute top-2 right-2 flex items-center gap-1 bg-purple-500/90 text-white text-[10px] font-bold px-2 py-0.5 rounded-full">
-                                        <Star className="h-2.5 w-2.5 fill-current" />
-                                        Destacado
-                                    </div>
-                                )}
-                                <div className="absolute bottom-2 left-2 right-2">
-                                    <h3 className="font-bold text-white text-sm truncate">{company.name}</h3>
-                                </div>
-                            </div>
-                            <div className="p-3">
-                                <div className="flex items-center justify-between mb-2">
-                                    <div className="flex items-center gap-1 text-purple-400 text-xs">
-                                        <Clock className="h-3 w-3" />
-                                        <span className="font-medium">Desde {company.priceFrom}€/día</span>
-                                    </div>
-                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                                        <Star className="h-3 w-3 fill-brand-lime text-brand-lime" />
-                                        {company.rating}
-                                    </div>
-                                </div>
-                                <div className="flex flex-wrap gap-1">
-                                    {company.categories.slice(0, 2).map((cat, i) => (
-                                        <span key={i} className="text-[10px] bg-white/5 text-muted-foreground px-2 py-0.5 rounded-full">
-                                            {cat}
-                                        </span>
-                                    ))}
-                                    {company.categories.length > 2 && (
-                                        <span className="text-[10px] text-muted-foreground">+{company.categories.length - 2}</span>
-                                    )}
-                                </div>
-                            </div>
-                        </motion.div>
-                    ))}
-                </div>
-            </section>
-
-            {/* Marketplace Grid */}
-            <section>
-                <h2 className="text-lg font-bold text-white mb-4">Anuncios de particulares</h2>
-
-                {loading ? (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {[1, 2, 3, 4].map(i => (
-                            <div key={i} className="aspect-square rounded-xl bg-white/5 animate-pulse border border-white/5"></div>
-                        ))}
-                    </div>
-                ) : (
-                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-                        {items.map((item) => (
-                            <Card
-                                key={item.id}
-                                className="bg-card border-white/5 hover:border-brand-cyan/50 transition-all group cursor-pointer overflow-hidden"
-                                onClick={() => navigate(`/market/${item.id}`)}
-                            >
-                                <div className="aspect-square bg-zinc-900 relative">
-                                    <img src={item.image} alt={item.title} className="h-full w-full object-cover transition-transform duration-500 group-hover:scale-110" />
-
-                                    <div className="absolute top-2 right-2 flex gap-1">
-                                        <span className="bg-black/60 backdrop-blur-md text-brand-lime text-[10px] font-bold px-2 py-1 rounded border border-white/10 flex items-center gap-1">
-                                            <Star className="h-3 w-3 fill-current" /> {item.rating}
-                                        </span>
-                                    </div>
-
-                                    {item.category === 'instrument' && (
-                                        <div className="absolute bottom-2 left-2 bg-brand-petrol/80 backdrop-blur-md text-white p-1.5 rounded-full">
-                                            <Music className="h-3 w-3" />
-                                        </div>
-                                    )}
-                                    {item.category === 'service' && (
-                                        <div className="absolute bottom-2 left-2 bg-purple-500/80 backdrop-blur-md text-white p-1.5 rounded-full">
-                                            <Mic className="h-3 w-3" />
-                                        </div>
-                                    )}
-                                </div>
-                                <CardContent className="p-3">
-                                    <h3 className="font-bold text-white text-sm truncate mb-1">{item.title}</h3>
-                                    <div className="flex items-center justify-between">
-                                        <span className="text-[10px] text-muted-foreground bg-white/5 px-2 py-0.5 rounded flex items-center gap-1">
-                                            <Tag className="h-2.5 w-2.5" /> {item.category}
-                                        </span>
-                                        <span className="font-bold text-brand-cyan">{item.price}€</span>
-                                    </div>
-                                </CardContent>
-                            </Card>
-                        ))}
-                    </div>
+                    </motion.div>
                 )}
-            </section>
+            </AnimatePresence>
+
+            {/* Results */}
+            {loading ? (
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                    {[...Array(8)].map((_, i) => (
+                        <div key={i} className="aspect-[3/4] rounded-xl bg-white/5 animate-pulse border border-white/5" />
+                    ))}
+                </div>
+            ) : filtered.length === 0 ? (
+                <div className="text-center py-20 text-gray-500">
+                    <p className="text-4xl mb-3">🎸</p>
+                    <p className="font-medium text-white">No hay anuncios todavía</p>
+                    <p className="text-sm mt-1">¡Sé el primero en publicar!</p>
+                    <Button className="mt-4 bg-primary text-black font-bold" onClick={() => navigate('/market/create')}>
+                        Publicar anuncio
+                    </Button>
+                </div>
+            ) : (
+                <>
+                    <p className="text-xs text-gray-500">{filtered.length} anuncio{filtered.length !== 1 ? 's' : ''}</p>
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+                        {filtered.map(listing => (
+                            <motion.div
+                                key={listing.id}
+                                whileHover={{ y: -2 }}
+                                className="bg-surface border border-white/5 rounded-xl overflow-hidden hover:border-white/20 transition-colors flex flex-col"
+                            >
+                                <div className="aspect-square bg-white/5 relative overflow-hidden">
+                                    {listing.images?.[0] ? (
+                                        <img src={listing.images[0]} alt={listing.title} loading="lazy" className="w-full h-full object-cover" />
+                                    ) : (
+                                        <div className="w-full h-full flex items-center justify-center text-4xl">🎵</div>
+                                    )}
+                                    <div className="absolute top-2 left-2 flex flex-col gap-1">
+                                        {listing.urgent && (
+                                            <span className="bg-[#82FF1F] text-black text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                                                <Zap size={8} className="fill-current" /> URGENTE
+                                            </span>
+                                        )}
+                                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${TYPE_COLORS[listing.type]}`}>
+                                            {TYPE_LABELS[listing.type]}
+                                        </span>
+                                    </div>
+                                </div>
+                                <div className="p-3 flex flex-col gap-1.5 flex-1">
+                                    <p className="text-white text-sm font-bold leading-tight line-clamp-2">{listing.title}</p>
+                                    <p className="text-primary font-black text-sm">{formatPrice(listing)}</p>
+                                    <div className="flex items-center gap-1 text-gray-500 text-xs">
+                                        <MapPin size={10} />
+                                        <span className="truncate">{listing.userLocation}</span>
+                                    </div>
+                                    <div className="flex items-center gap-2 mt-auto pt-1">
+                                        {listing.userAvatar ? (
+                                            <img src={listing.userAvatar} alt="" loading="lazy" className="w-5 h-5 rounded-full object-cover" />
+                                        ) : (
+                                            <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white">
+                                                {listing.userName?.[0]?.toUpperCase()}
+                                            </div>
+                                        )}
+                                        <span className="text-gray-500 text-xs truncate flex-1">{listing.userName}</span>
+                                    </div>
+                                    <button
+                                        onClick={() => setContactListing(listing)}
+                                        className="w-full mt-1 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors"
+                                    >
+                                        Contactar
+                                    </button>
+                                </div>
+                            </motion.div>
+                        ))}
+                    </div>
+                    {hasMore && (
+                        <div className="flex justify-center pt-2">
+                            <Button
+                                variant="outline"
+                                onClick={() => fetchListings(false)}
+                                disabled={loadingMore}
+                                className="border-white/10 hover:bg-white/5"
+                            >
+                                {loadingMore ? 'Cargando...' : 'Ver más'}
+                            </Button>
+                        </div>
+                    )}
+                </>
+            )}
+
+            {/* Contact Modal */}
+            <AnimatePresence>
+                {contactListing && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/60 backdrop-blur-sm p-4"
+                        onClick={() => setContactListing(null)}
+                    >
+                        <motion.div
+                            initial={{ y: 40, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            exit={{ y: 40, opacity: 0 }}
+                            onClick={e => e.stopPropagation()}
+                            className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl"
+                        >
+                            <div className="flex items-start justify-between">
+                                <div>
+                                    <h3 className="text-white font-bold">Contactar vendedor</h3>
+                                    <p className="text-gray-500 text-sm mt-0.5 line-clamp-1">{contactListing.title}</p>
+                                </div>
+                                <button onClick={() => setContactListing(null)} className="text-gray-500 hover:text-white">
+                                    <X size={18} />
+                                </button>
+                            </div>
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={() => {
+                                        navigate(`/messages?userId=${contactListing.userId}&ref=${contactListing.id}`);
+                                        setContactListing(null);
+                                    }}
+                                    className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/30 transition-colors text-left w-full"
+                                >
+                                    <div className="p-2 rounded-lg bg-primary/20">
+                                        <MessageSquare size={18} className="text-primary" />
+                                    </div>
+                                    <div>
+                                        <p className="text-white font-medium text-sm">Mensaje en Musikeeo</p>
+                                        <p className="text-gray-500 text-xs">Escríbele desde la plataforma</p>
+                                    </div>
+                                </button>
+                                {contactListing.userWhatsApp && (
+                                    <a
+                                        href={`https://wa.me/${contactListing.userWhatsApp}?text=${encodeURIComponent(`Hola, vi tu anuncio "${contactListing.title}" en Musikeeo 🎸`)}`}
+                                        target="_blank"
+                                        rel="noopener noreferrer"
+                                        className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-green-500/50 transition-colors"
+                                    >
+                                        <div className="p-2 rounded-lg bg-green-500/20">
+                                            <Phone size={18} className="text-green-400" />
+                                        </div>
+                                        <div>
+                                            <p className="text-white font-medium text-sm">WhatsApp</p>
+                                            <p className="text-gray-500 text-xs">Contacto directo</p>
+                                        </div>
+                                    </a>
+                                )}
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 }

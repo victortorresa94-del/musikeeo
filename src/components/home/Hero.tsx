@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Search, MapPin, Mic2, Music, Calendar } from 'lucide-react';
+import { Search, MapPin, Mic2, Music, Calendar, ShoppingBag, Plus } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 
 export const Hero = () => {
@@ -134,6 +134,44 @@ export const Hero = () => {
                         ))}
                     </div>
                     <p>Más de <span className="text-white font-bold">2,000+</span> artistas verificados</p>
+                </div>
+
+                {/* Marketplace CTAs */}
+                <div className="w-full max-w-2xl mt-6 pt-6 border-t border-white/10">
+                    <p className="text-gray-400 text-sm mb-4 font-medium">¿Necesitas equipo? ¿Tienes algo que vender?</p>
+                    <div className="flex flex-col sm:flex-row gap-3">
+                        <Link
+                            to="/market"
+                            className="flex-1 h-12 rounded-xl bg-white/10 hover:bg-white/15 border border-white/10 text-white text-sm font-bold flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                        >
+                            <ShoppingBag size={16} /> Ver marketplace
+                        </Link>
+                        <Link
+                            to="/market/create"
+                            className="flex-1 h-12 rounded-xl bg-primary/10 hover:bg-primary/20 border border-primary/30 text-primary text-sm font-bold flex items-center justify-center gap-2 transition-all hover:-translate-y-0.5"
+                        >
+                            <Plus size={16} /> Publicar anuncio
+                        </Link>
+                    </div>
+
+                    {/* Quick categories */}
+                    <div className="flex flex-wrap justify-center gap-2 mt-4">
+                        {[
+                            { label: '🎸 Guitarras', cat: 'guitarras' },
+                            { label: '🎹 Teclados', cat: 'teclados' },
+                            { label: '🥁 Batería', cat: 'bateria' },
+                            { label: '🎤 PA/Sonido', cat: 'pa_sonido' },
+                            { label: '🎒 Accesorios', cat: 'accesorios' },
+                        ].map(({ label, cat }) => (
+                            <Link
+                                key={cat}
+                                to={`/market?category=${cat}`}
+                                className="px-3 py-1.5 rounded-full bg-white/5 border border-white/10 text-gray-400 hover:text-white hover:border-white/30 text-xs font-medium transition-colors"
+                            >
+                                {label}
+                            </Link>
+                        ))}
+                    </div>
                 </div>
 
             </div>
