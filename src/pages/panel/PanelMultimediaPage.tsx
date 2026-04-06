@@ -1,7 +1,8 @@
-import { useState, useEffect } from 'react';
-import { Plus, Trash2, Link as LinkIcon, Music, Image, Play, GripVertical } from 'lucide-react';
+import { useState, useEffect, useRef } from 'react';
+import { Plus, Trash2, Link as LinkIcon, Music, Image, Play, GripVertical, Loader2 } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { getArtistByUserId, updateArtist } from '../../services/artistService';
+import { storageService } from '../../services/storageService';
 import type { Artist, ArtistMultimedia } from '../../types';
 
 export default function PanelMultimediaPage() {
@@ -9,6 +10,8 @@ export default function PanelMultimediaPage() {
     const [artist, setArtist] = useState<Artist | null>(null);
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
+    const [uploadingPhoto, setUploadingPhoto] = useState(false);
+    const photoInputRef = useRef<HTMLInputElement>(null);
 
     // Form state
     const [spotifyUri, setSpotifyUri] = useState('');
@@ -105,6 +108,54 @@ export default function PanelMultimediaPage() {
         } catch (error) {
             console.error('Error removing video:', error);
         }
+    };
+
+    const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        if (!artist || !user || !e.target.files?.length) return;
+        setUploadingPhoto(true);
+        try {
+            const files = Array.from(e.target.files).slice(0, 6 - (artist.multimedia?.photos.length || 0));
+            const urls = await Promise.all(files.map(f => storageService.uploadArtistPhoto(user.uid, f)));
+            const newPhotos = urls.map((url, i) => ({
+                id: `photo_${Date.now()}_${i}`,
+                url,
+                order: (artist.multimedia?.photos.length || 0) + i,
+                isCover: artist.multimedia?.photos.length === 0 && i === 0,
+            }));
+            const updatedMultimedia: ArtistMultimedia = {
+                ...artist.multimedia,
+                photos: [...(artist.multimedia?.photos || []), ...newPhotos],
+            };
+            await updateArtist(artist.id, { multimedia: updatedMultimedia });
+            setArtist({ ...artist, multimedia: updatedMultimedia });
+        } catch (err) {
+            console.error('Error uploading photos:', err);
+        } finally {
+            setUploadingPhoto(false);
+            if (photoInputRef.current) photoInputRef.current.value = '';
+        }
+    };
+
+    const handleSetCover = async (photoId: string) => {
+        if (!artist) return;
+        const updatedMultimedia: ArtistMultimedia = {
+            ...artist.multimedia,
+            photos: artist.multimedia.photos.map(p => ({ ...p, isCover: p.id === photoId })),
+        };
+        await updateArtist(artist.id, { multimedia: updatedMultimedia });
+        setArtist({ ...artist, multimedia: updatedMultimedia });
+    };
+
+    const handleDeletePhoto = async (photoId: string) => {
+        if (!artist) return;
+        const remaining = artist.multimedia.photos.filter(p => p.id !== photoId);
+        // If deleted photo was cover, make first remaining photo cover
+        if (remaining.length > 0 && !remaining.some(p => p.isCover)) {
+            remaining[0].isCover = true;
+        }
+        const updatedMultimedia: ArtistMultimedia = { ...artist.multimedia, photos: remaining };
+        await updateArtist(artist.id, { multimedia: updatedMultimedia });
+        setArtist({ ...artist, multimedia: updatedMultimedia });
     };
 
     if (loading) {
@@ -305,10 +356,22 @@ export default function PanelMultimediaPage() {
                                     <p className="text-gray-500 text-xs mt-1">Arrastra para reordenar. La primera foto será tu portada.</p>
                                 </div>
                             </div>
-                            <button className="flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition-colors">
-                                <Plus size={18} />
-                                Subir Fotos
+                            <button
+                                onClick={() => photoInputRef.current?.click()}
+                                disabled={uploadingPhoto}
+                                className="flex items-center justify-center gap-2 h-10 px-4 rounded-xl bg-white/10 hover:bg-white/20 text-white text-sm font-bold transition-colors disabled:opacity-50"
+                            >
+                                {uploadingPhoto ? <Loader2 size={18} className="animate-spin" /> : <Plus size={18} />}
+                                {uploadingPhoto ? 'Subiendo...' : 'Subir Fotos'}
                             </button>
+                            <input
+                                ref={photoInputRef}
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={handlePhotoUpload}
+                            />
                         </div>
 
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -329,20 +392,29 @@ export default function PanelMultimediaPage() {
                                     />
                                     <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 transition-opacity flex flex-col items-center justify-center gap-3">
                                         {!photo.isCover && (
-                                            <button className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors">
+                                            <button
+                                                onClick={() => handleSetCover(photo.id)}
+                                                className="bg-white/10 hover:bg-white/20 text-white px-3 py-1.5 rounded-lg text-xs font-bold transition-colors"
+                                            >
                                                 Hacer Portada
                                             </button>
                                         )}
                                         <div className="flex gap-3">
-                                            <button className="text-white hover:text-primary"><GripVertical size={20} /></button>
-                                            <button className="text-white hover:text-red-400"><Trash2 size={20} /></button>
+                                            <GripVertical size={20} className="text-white/40" />
+                                            <button
+                                                onClick={() => handleDeletePhoto(photo.id)}
+                                                className="text-white hover:text-red-400"
+                                            ><Trash2 size={20} /></button>
                                         </div>
                                     </div>
                                 </div>
                             ))}
 
                             {/* Upload Placeholder */}
-                            <div className="relative aspect-[4/5] rounded-xl overflow-hidden border-2 border-dashed border-white/10 hover:border-primary/50 hover:bg-white/5 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 group">
+                            <div
+                                onClick={() => photoInputRef.current?.click()}
+                                className="relative aspect-[4/5] rounded-xl overflow-hidden border-2 border-dashed border-white/10 hover:border-primary/50 hover:bg-white/5 transition-all cursor-pointer flex flex-col items-center justify-center gap-3 group"
+                            >
                                 <div className="w-12 h-12 rounded-full bg-white/10 group-hover:bg-primary group-hover:text-black text-gray-500 flex items-center justify-center transition-colors">
                                     <Plus size={24} />
                                 </div>
