@@ -1,15 +1,13 @@
-import { Bell, Search, Menu, Bot, MessageCircle } from 'lucide-react';
+import { Bell, Search, Menu, MessageCircle } from 'lucide-react';
 import { Button } from '../ui/button';
 import { Input } from '../ui/input';
 import { useNavigate } from 'react-router-dom';
 
 interface TopBarProps {
     onMenuClick: () => void;
-    onAIToggle: () => void;
-    isAIOpen: boolean;
 }
 
-export const TopBar = ({ onMenuClick, onAIToggle, isAIOpen }: TopBarProps) => {
+export const TopBar = ({ onMenuClick }: TopBarProps) => {
     const navigate = useNavigate();
 
     return (
@@ -35,16 +33,6 @@ export const TopBar = ({ onMenuClick, onAIToggle, isAIOpen }: TopBarProps) => {
             </div>
 
             <div className="flex items-center gap-2">
-                <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={onAIToggle}
-                    className={`hidden lg:flex items-center gap-2 ${isAIOpen ? 'text-brand-lime bg-brand-lime/10' : 'text-muted-foreground hover:text-white'}`}
-                >
-                    <Bot className="h-5 w-5" />
-                    <span className="hidden xl:inline">{isAIOpen ? 'Asistente' : 'Activar IA'}</span>
-                </Button>
-
                 {/* Messages Icon - Instagram Style */}
                 <Button
                     variant="ghost"

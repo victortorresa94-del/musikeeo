@@ -15,7 +15,6 @@ const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
 const Home = lazy(() => import('./pages/home/Home'));
 const Feed = lazy(() => import('./pages/feed/Feed'));
-const Events = lazy(() => import('./pages/events/Events'));
 const EventsV2 = lazy(() => import('./pages/events/EventsV2'));
 const EventDetail = lazy(() => import('./pages/events/EventDetail'));
 const CreateEvent = lazy(() => import('./pages/events/CreateEvent'));
@@ -166,7 +165,7 @@ function App() {
               <Route element={<RequireAuthCompleted />}>
                 <Route path="/feed" element={<Feed />} />
                 <Route path="/discover" element={<Discover />} />
-                <Route path="/eventos" element={<Events />} />
+                <Route path="/eventos" element={<EventsV2 />} />
                 <Route path="/eventos/:id" element={<EventDetail />} />
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/market" element={<Market />} />

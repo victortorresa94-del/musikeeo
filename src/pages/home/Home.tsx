@@ -1,7 +1,6 @@
 import { Navbar } from '../../components/home/Navbar';
 import { Hero } from '../../components/home/Hero';
 import { HowItWorks } from '../../components/home/HowItWorks';
-import { FeaturedArtists } from '../../components/home/FeaturedArtists';
 import { RodrigoBanner } from '../../components/home/RodrigoBanner';
 import { Footer } from '../../components/layout/Footer';
 
@@ -12,8 +11,7 @@ const Home = () => {
             <main>
                 <Hero />
                 <HowItWorks />
-                <FeaturedArtists />
-                <RodrigoBanner />
+<RodrigoBanner />
             </main>
             <Footer />
         </div>
