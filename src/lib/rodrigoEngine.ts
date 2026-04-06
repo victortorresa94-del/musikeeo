@@ -1,8 +1,8 @@
 // Rodrigo AI Response Engine - Powered by DeepSeek
 // Motor de conversación inteligente basado en el prompt profesional
 
-import { generateDeepSeekContent } from './deepseek';
-import { RODRIGO_SYSTEM_PROMPT, RODRIGO_INITIAL_MESSAGE } from './rodrigoPrompt';
+import { callRodrigoChat } from './openrouter';
+import { RODRIGO_INITIAL_MESSAGE } from './rodrigoPrompt';
 
 // ===========================================
 // TYPES & INTERFACES
@@ -158,16 +158,11 @@ export async function generateResponse(
     state: ConversationState
 ): Promise<{ response: ParsedResponse; newState: ConversationState }> {
 
-    // Build messages array
-    const messages: { role: string; content: string }[] = [
-        { role: 'system', content: RODRIGO_SYSTEM_PROMPT },
-        ...state.messages.map(m => ({ role: m.role, content: m.content })),
-        { role: 'user', content: userMessage }
-    ];
-
     try {
-        // Switch to DeepSeek
-        const rawResponse = await generateDeepSeekContent(messages);
+        const rawResponse = await callRodrigoChat(
+            userMessage,
+            state.messages.map(m => ({ role: m.role, content: m.content }))
+        );
         const parsedResponse = parseResponse(rawResponse);
 
         // Update state with new messages
