@@ -108,21 +108,27 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 
 ### 2026-04-06 (Sesión 2 — Cuenta 2)
 
-**✅ Completado:**
-- SPRINT 2 Fix B: commit de PanelCalendarPage (estaba sin commitear)
+**✅ Completado (Sesión 2):**
+- SPRINT 2 Fix B: commit PanelCalendarPage (FAB + modal bloquear fecha + sync → Próximamente)
 - SPRINT 2 Fix C: PanelSettingsPage — formulario editable displayName + location con userService.updateProfile()
-
-**❌ Falta por hacer:**
 - SPRINT 3 FASE 1: tipo Listing + ListingCategory en src/types/index.ts
-- SPRINT 3 FASE 2: rewrite CreateListing.tsx con image upload real y campos nuevos
-- SPRINT 3 FASE 3: refactor Market.tsx — query Firestore real colección "listings", filtros, contact modal
-- SPRINT 3 FASE 4: Home.tsx — nuevo hero con 3 CTAs + fila categorías rápidas
+- SPRINT 3 FASE 2: rewrite CreateListing.tsx — upload real Firebase Storage, campos completos (tipo/condición/urgente/whatsapp/etc.)
+- SPRINT 3 FASE 3: refactor Market.tsx — query Firestore "listings", filtros, cards, contact modal (mensajes + WhatsApp)
+- SPRINT 3 FASE 4: Hero.tsx — CTAs marketplace + fila categorías rápidas linkando a /market?category=X
+
+**❌ Pendiente / mejoras futuras:**
+- Firestore index necesario para query listings (urgent desc + createdAt desc) — se crea automáticamente al ejecutar la query por primera vez en producción, o manualmente en Firebase Console
+- ProductDetail.tsx no actualizado (ruta /market/:id aún usa el tipo antiguo)
+- Events.tsx legacy sigue en src/ (puede borrarse)
+- Discover: filtros contra Firestore real (actualmente mock)
+- Trust Score, bookings, Pro Plan — no implementados (v2)
 
 **➡️ Próxima tarea concreta:**
-SPRINT 3 FASE 1 — añadir tipo Listing + ListingCategory en src/types/index.ts
+Verificar que el índice compuesto de Firestore existe para la query de listings (available==true + orderBy urgent + orderBy createdAt). Si falla en producción, crear el índice en Firebase Console.
 
 **Decisiones técnicas (Sesión 2):**
 - Marketplace v1: solo contacto (mensajes internos o WhatsApp), sin pagos, sin Stripe
 - Contact modal: [💬 Mensaje en Musikeeo] + [📱 WhatsApp] (solo si userWhatsApp existe)
 - Colección Firestore: "listings" (no "products" ni "market")
 - OPENROUTER_API_KEY: debe estar en Vercel Dashboard env vars (no en repo)
+- Listings usan string ISO para timestamps (consistente con el resto del proyecto)
