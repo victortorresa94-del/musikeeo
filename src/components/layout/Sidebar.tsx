@@ -68,7 +68,7 @@ export const Sidebar = () => {
                     <NavLink to="/profile" className="flex items-center gap-3 flex-1 overflow-hidden group">
                         <div className="h-10 w-10 rounded-full bg-gradient-to-tr from-brand-petrol to-brand-lime p-[2px]">
                             <div className="h-full w-full rounded-full bg-black flex items-center justify-center overflow-hidden">
-                                {user?.photoURL ? <img src={user.photoURL} alt={user.displayName || 'User'} className="h-full w-full object-cover" /> : <User className="h-5 w-5" />}
+                                {user?.photoURL ? <img src={user.photoURL} alt={user.displayName || 'User'} loading="lazy" className="h-full w-full object-cover" /> : <User className="h-5 w-5" />}
                             </div>
                         </div>
                         <div className="flex-1 overflow-hidden">

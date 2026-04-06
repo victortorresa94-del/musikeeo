@@ -19,7 +19,7 @@ const PROVIDERS_COLLECTION = 'providers';
 export async function getPublicProviders(): Promise<ProviderProfile[]> {
     try {
         const providersRef = collection(db, PROVIDERS_COLLECTION);
-        const q = query(providersRef, where('isPublic', '==', true));
+        const q = query(providersRef, where('isPublic', '==', true), limit(50));
         const snapshot = await getDocs(q);
         return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as ProviderProfile));
     } catch (error) {

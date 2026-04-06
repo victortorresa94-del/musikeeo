@@ -1,12 +1,13 @@
-import { collection, getDocs, doc, getDoc, addDoc, setDoc, query, where, type DocumentData, type WhereFilterOp } from 'firebase/firestore';
+import { collection, getDocs, doc, getDoc, addDoc, setDoc, query, where, limit, type DocumentData, type WhereFilterOp } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 export const firestoreService = {
     // Generic Fetch Collection
-    getAll: async <T>(collectionName: string): Promise<T[]> => {
+    getAll: async <T>(collectionName: string, limitN = 50): Promise<T[]> => {
         try {
             if (!db) throw new Error("Database not initialized");
-            const querySnapshot = await getDocs(collection(db, collectionName));
+            const q = query(collection(db, collectionName), limit(limitN));
+            const querySnapshot = await getDocs(q);
             return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as T));
         } catch (error) {
             console.error(`Error fetching collection ${collectionName}:`, error);

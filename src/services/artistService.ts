@@ -33,7 +33,7 @@ const ARTISTS_COLLECTION = 'artists';
 export async function getArtists(filters?: ArtistSearchFilters): Promise<Artist[]> {
     try {
         const artistsRef = collection(db, ARTISTS_COLLECTION);
-        let q = query(artistsRef, where('isPublic', '==', true));
+        let q = query(artistsRef, where('isPublic', '==', true), limit(50));
 
         const snapshot = await getDocs(q);
         let artists: Artist[] = snapshot.docs.map(doc => ({

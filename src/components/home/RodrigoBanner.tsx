@@ -38,6 +38,7 @@ export const RodrigoBanner = () => {
                         <img
                             src="/rodrigo-persona.png"
                             alt="Rodrigo AI Persona"
+                            loading="lazy"
                             className="w-full h-full object-cover rounded-2xl grayscale hover:grayscale-0 transition-all duration-500 mask-image-gradient"
                         />
                     </div>

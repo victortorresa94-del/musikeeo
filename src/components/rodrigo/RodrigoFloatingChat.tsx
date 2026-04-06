@@ -151,7 +151,7 @@ export const RodrigoFloatingChat = () => {
                         className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#FFD84D] text-black shadow-[0_4px_20px_rgba(250,208,56,0.4)] transition-transform hover:scale-110 active:scale-95 overflow-hidden border-2 border-[#FFD84D]"
                         title="Habla con Rodrigo"
                     >
-                        <img src={RODRIGO_AVATAR} alt="Rodrigo" className="w-full h-full object-cover" />
+                        <img src={RODRIGO_AVATAR} alt="Rodrigo" loading="lazy" className="w-full h-full object-cover" />
                     </motion.button>
                 )}
             </AnimatePresence>
