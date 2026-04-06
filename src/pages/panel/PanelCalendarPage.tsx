@@ -14,6 +14,8 @@ export default function PanelCalendarPage() {
     const [loading, setLoading] = useState(true);
     const [currentDate, setCurrentDate] = useState(new Date());
     const [viewMode, setViewMode] = useState<'month' | 'week'>('month');
+    const [showBlockModal, setShowBlockModal] = useState(false);
+    const [blockDate, setBlockDate] = useState('');
 
     const loadArtist = async () => {
         if (!user) return;
@@ -114,6 +116,18 @@ export default function PanelCalendarPage() {
             .slice(0, 5);
     }, [artist]);
 
+    const handleAddBlockDate = async () => {
+        if (!artist || !blockDate) return;
+        await setDayAvailability(artist.id, blockDate, 'blocked');
+        const updatedAvailability: DayAvailability[] = [
+            ...artist.availability.filter(d => d.date !== blockDate),
+            { date: blockDate, status: 'blocked' as AvailabilityState },
+        ];
+        setArtist({ ...artist, availability: updatedAvailability });
+        setBlockDate('');
+        setShowBlockModal(false);
+    };
+
     if (loading) {
         return (
             <div className="flex-1 flex items-center justify-center">
@@ -136,10 +150,10 @@ export default function PanelCalendarPage() {
                         <h1 className="text-white text-3xl md:text-4xl font-black tracking-tight">Disponibilidad y Calendario</h1>
                         <p className="text-gray-500 text-base max-w-2xl">Gestiona tus fechas disponibles, bloquea días de descanso y sincroniza tus bolos.</p>
                     </div>
-                    <button className="flex items-center justify-center gap-2 h-10 px-5 bg-white/10 hover:bg-white/20 text-white text-sm font-bold rounded-lg transition-colors border border-white/5">
+                    <span className="flex items-center gap-2 h-10 px-5 bg-white/5 text-gray-500 text-sm font-bold rounded-lg border border-white/5 cursor-not-allowed" title="Próximamente">
                         <RefreshCw size={18} />
-                        <span>Sincronizar Google/iCal</span>
-                    </button>
+                        <span>Sincronizar Google/iCal — Próximamente</span>
+                    </span>
                 </div>
             </header>
 
@@ -312,11 +326,41 @@ export default function PanelCalendarPage() {
 
             {/* FAB */}
             <div className="fixed bottom-8 right-8 z-50">
-                <button className="flex items-center gap-3 bg-primary hover:bg-primary-hover text-black px-6 py-4 rounded-2xl shadow-[0_8px_30px_rgba(255,216,77,0.3)] hover:shadow-[0_8px_35px_rgba(255,216,77,0.4)] transition-all transform hover:-translate-y-1 font-bold text-base">
+                <button
+                    onClick={() => setShowBlockModal(true)}
+                    className="flex items-center gap-3 bg-primary hover:bg-primary-hover text-black px-6 py-4 rounded-2xl shadow-[0_8px_30px_rgba(255,216,77,0.3)] hover:shadow-[0_8px_35px_rgba(255,216,77,0.4)] transition-all transform hover:-translate-y-1 font-bold text-base"
+                >
                     <Plus size={20} />
                     <span>Añadir Fecha de Bloqueo</span>
                 </button>
             </div>
+
+            {/* Block Date Modal */}
+            {showBlockModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
+                    <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 w-full max-w-sm flex flex-col gap-5 shadow-2xl">
+                        <h3 className="text-white font-bold text-lg">Bloquear fecha</h3>
+                        <input
+                            type="date"
+                            value={blockDate}
+                            onChange={e => setBlockDate(e.target.value)}
+                            min={new Date().toISOString().split('T')[0]}
+                            className="w-full h-12 rounded-xl bg-background border border-white/10 text-white px-4 text-sm focus:border-primary focus:outline-none"
+                        />
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => { setShowBlockModal(false); setBlockDate(''); }}
+                                className="flex-1 h-10 rounded-xl border border-white/10 text-white text-sm font-bold hover:bg-white/5"
+                            >Cancelar</button>
+                            <button
+                                onClick={handleAddBlockDate}
+                                disabled={!blockDate}
+                                className="flex-1 h-10 rounded-xl bg-primary text-black text-sm font-bold disabled:opacity-50"
+                            >Bloquear</button>
+                        </div>
+                    </div>
+                </div>
+            )}
         </div>
     );
 }
