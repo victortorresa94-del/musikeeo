@@ -5,10 +5,10 @@ import { motion } from 'framer-motion';
 
 export const BottomNav = () => {
     const navItems = [
-        { icon: Home, label: 'Feed', path: '/' },
+        { icon: Home, label: 'Feed', path: '/feed' },
         { icon: Search, label: 'Descubrir', path: '/discover' },
-        { icon: Calendar, label: 'Eventos', path: '/events' },
-        { icon: ShoppingBag, label: 'Tienda', path: '/market' },
+        { icon: ShoppingBag, label: 'Market', path: '/market' },
+        { icon: Calendar, label: 'Eventos', path: '/eventos' },
         { icon: User, label: 'Perfil', path: '/profile' },
     ];
 

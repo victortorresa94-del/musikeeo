@@ -408,12 +408,37 @@ export default function Feed() {
                     </div>
 
                     <div className="flex gap-3">
-                        <Button className="bg-white text-black hover:bg-white/90 font-bold rounded-xl" size="sm" onClick={() => navigate('/events')}>
+                        <Button className="bg-white text-black hover:bg-white/90 font-bold rounded-xl" size="sm" onClick={() => navigate('/eventos')}>
                             Ver Oportunidades
                         </Button>
                     </div>
                 </div>
             </motion.div>
+
+            {/* Marketplace Banner */}
+            <div
+                onClick={() => navigate('/market')}
+                className="cursor-pointer rounded-2xl bg-gradient-to-r from-primary/20 to-primary/5 border border-primary/30 p-4 flex items-center justify-between hover:border-primary/60 transition-colors"
+            >
+                <div className="flex items-center gap-3">
+                    <div className="p-2 bg-primary/20 rounded-xl">
+                        <ShoppingBag className="h-5 w-5 text-primary" />
+                    </div>
+                    <div>
+                        <p className="text-white font-bold text-sm">Mercado de equipos</p>
+                        <p className="text-gray-400 text-xs">Compra, alquila o presta material musical</p>
+                    </div>
+                </div>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={e => { e.stopPropagation(); navigate('/market/create'); }}
+                        className="h-8 px-3 rounded-lg bg-primary text-black text-xs font-bold hover:bg-primary/90 transition-colors"
+                    >
+                        + Publicar
+                    </button>
+                    <ArrowRight className="h-4 w-4 text-primary" />
+                </div>
+            </div>
 
             {/* Eventos Top - Horizontal Scroll */}
             <section>
@@ -422,7 +447,7 @@ export default function Feed() {
                         <Zap className="h-5 w-5 text-brand-lime" />
                         Eventos Top
                     </h2>
-                    <Button variant="link" className="text-brand-cyan hover:text-brand-cyan/80 p-0" onClick={() => navigate('/events')}>
+                    <Button variant="link" className="text-brand-cyan hover:text-brand-cyan/80 p-0" onClick={() => navigate('/eventos')}>
                         Ver todo <ArrowRight className="h-4 w-4 ml-1" />
                     </Button>
                 </div>
