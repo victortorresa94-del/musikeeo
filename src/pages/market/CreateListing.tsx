@@ -1,153 +1,307 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useForm } from 'react-hook-form';
-import { z } from 'zod';
-import { zodResolver } from '@hookform/resolvers/zod';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
+import { storageService } from '../../services/storageService';
+import { useAuth } from '../../context/AuthContext';
+import { ArrowLeft, Upload, X, Loader2, Zap } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
-import { ArrowLeft, Upload, Loader2, DollarSign, MapPin } from 'lucide-react';
-import { marketService } from '../../services/marketService';
-import { useAuth } from '../../context/AuthContext';
+import type { ListingCategory } from '../../types';
 
-const listingSchema = z.object({
-    title: z.string().min(5, "El título debe tener al menos 5 caracteres"),
-    price: z.coerce.number().min(0, "El precio no puede ser negativo"),
-    description: z.string().min(20, "Describe tu producto con al menos 20 caracteres"),
-    category: z.string().min(1, "Selecciona una categoría"),
-    location: z.string().min(3, "Indica la ubicación"),
-});
+const CATEGORIES: { value: ListingCategory; label: string }[] = [
+    { value: 'guitarras', label: 'Guitarras' },
+    { value: 'bajos', label: 'Bajos' },
+    { value: 'teclados', label: 'Teclados' },
+    { value: 'bateria', label: 'Batería' },
+    { value: 'viento', label: 'Viento' },
+    { value: 'accesorios', label: 'Accesorios' },
+    { value: 'pa_sonido', label: 'PA / Sonido' },
+    { value: 'iluminacion', label: 'Iluminación' },
+    { value: 'recording', label: 'Grabación' },
+    { value: 'partituras', label: 'Partituras' },
+    { value: 'otros', label: 'Otros' },
+];
 
-type ListingForm = z.infer<typeof listingSchema>;
+const CONDITIONS = [
+    { value: 'nuevo', label: 'Nuevo' },
+    { value: 'como_nuevo', label: 'Como nuevo' },
+    { value: 'bueno', label: 'Bueno' },
+    { value: 'aceptable', label: 'Aceptable' },
+] as const;
 
 export default function CreateListing() {
     const navigate = useNavigate();
-    const { user } = useAuth();
-    const [isLoading, setIsLoading] = useState(false);
+    const { user, userProfile } = useAuth();
 
-    // Mock image for MVP
-    const [activeImage] = useState("https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=500&q=80");
+    const [images, setImages] = useState<{ file: File; preview: string }[]>([]);
+    const [title, setTitle] = useState('');
+    const [category, setCategory] = useState<ListingCategory>('guitarras');
+    const [type, setType] = useState<'venta' | 'alquiler' | 'prestamo'>('venta');
+    const [price, setPrice] = useState('');
+    const [priceUnit, setPriceUnit] = useState<'dia' | 'semana'>('dia');
+    const [condition, setCondition] = useState<'nuevo' | 'como_nuevo' | 'bueno' | 'aceptable'>('bueno');
+    const [description, setDescription] = useState('');
+    const [location, setLocation] = useState(userProfile?.location || '');
+    const [whatsApp, setWhatsApp] = useState('');
+    const [urgent, setUrgent] = useState(false);
+    const [submitting, setSubmitting] = useState(false);
+    const [error, setError] = useState('');
 
-    const { register, handleSubmit, formState: { errors } } = useForm<ListingForm>({
-        resolver: zodResolver(listingSchema) as any,
-        defaultValues: {
-            category: 'instruments'
-        }
-    });
+    const handleImageAdd = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const files = Array.from(e.target.files || []);
+        const remaining = 3 - images.length;
+        files.slice(0, remaining).forEach(file => {
+            const preview = URL.createObjectURL(file);
+            setImages(prev => [...prev, { file, preview }]);
+        });
+        e.target.value = '';
+    };
 
-    const onSubmit = async (data: ListingForm) => {
+    const handleImageRemove = (idx: number) => {
+        setImages(prev => {
+            URL.revokeObjectURL(prev[idx].preview);
+            return prev.filter((_, i) => i !== idx);
+        });
+    };
+
+    const handleSubmit = async (e: React.FormEvent) => {
+        e.preventDefault();
         if (!user) return;
-        setIsLoading(true);
+
+        if (!title.trim()) { setError('El título es obligatorio'); return; }
+        if (images.length === 0) { setError('Añade al menos una foto'); return; }
+        if (type !== 'prestamo' && (!price || Number(price) < 0)) {
+            setError('Introduce un precio válido'); return;
+        }
+
+        setError('');
+        setSubmitting(true);
+
         try {
-            await marketService.createItem({
-                ...data,
-                category: data.category as any,
-                image: activeImage,
-                rating: 5.0, // Default for new
-                sellerId: user.uid,
-                seller: user.displayName || 'Usuario Anónimo',
-                reviews: 0,
+            const urls = await Promise.all(
+                images.map(({ file }) => {
+                    const ext = file.name.split('.').pop() || 'jpg';
+                    const path = `listings/${user.uid}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+                    return storageService.uploadFile(file, path);
+                })
+            );
+
+            await addDoc(collection(db, 'listings'), {
+                userId: user.uid,
+                userName: userProfile?.displayName || user.displayName || 'Usuario',
+                userAvatar: userProfile?.photoURL || user.photoURL || null,
+                userLocation: location,
+                userWhatsApp: whatsApp || null,
+                title: title.trim(),
+                description: description.trim(),
+                category,
+                condition,
+                type,
+                price: type === 'prestamo' ? 0 : Number(price),
+                priceUnit: type === 'alquiler' ? priceUnit : null,
+                urgent,
+                available: true,
+                images: urls,
+                createdAt: new Date().toISOString(),
+                updatedAt: new Date().toISOString(),
             });
-            navigate('/market');
-        } catch (error) {
-            console.error("Error creating listing", error);
+
+            navigate('/market', { state: { toast: '¡Anuncio publicado! 🎸' } });
+        } catch (err) {
+            console.error('Error creating listing:', err);
+            setError('Error al publicar. Inténtalo de nuevo.');
         } finally {
-            setIsLoading(false);
+            setSubmitting(false);
         }
     };
 
     return (
-        <div className="max-w-2xl mx-auto p-6 space-y-6 animate-fade-in-up">
-            <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2 text-muted-foreground hover:text-white">
+        <div className="max-w-xl mx-auto p-4 md:p-6 pb-24 space-y-6 animate-fade-in-up">
+            <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2 text-muted-foreground hover:text-white -ml-2">
                 <ArrowLeft className="w-4 h-4" /> Cancelar
             </Button>
 
             <div>
-                <h1 className="text-3xl font-heading font-bold text-white">Publicar Anuncio</h1>
-                <p className="text-muted-foreground">Vende instrumentos o servicios a la comunidad.</p>
+                <h1 className="text-2xl font-bold text-white">Publicar anuncio</h1>
+                <p className="text-muted-foreground text-sm">Vende, alquila o presta equipo a la comunidad.</p>
             </div>
 
-            <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 bg-white/5 p-6 rounded-2xl border border-white/10">
-                {/* Image Upload Mock */}
+            <form onSubmit={handleSubmit} className="space-y-5">
+                {/* Photos */}
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-white">Fotos del Producto</label>
-                    <div className="flex gap-4 items-start">
-                        <div className="w-32 h-32 bg-black/40 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center cursor-pointer hover:border-brand-cyan/50 hover:bg-white/5 transition-all text-muted-foreground hover:text-brand-cyan">
-                            <Upload className="h-6 w-6 mb-2" />
-                            <span className="text-xs">Subir Foto</span>
-                        </div>
-                        <div className="w-32 h-32 rounded-xl overflow-hidden border border-white/10 relative">
-                            <img src={activeImage} alt="Preview" className="w-full h-full object-cover" />
-                        </div>
+                    <label className="text-sm font-medium text-white">Fotos <span className="text-gray-500">(máx. 3)</span></label>
+                    <div className="flex gap-3 flex-wrap">
+                        {images.map(({ preview }, idx) => (
+                            <div key={idx} className="relative w-24 h-24 rounded-xl overflow-hidden border border-white/10">
+                                <img src={preview} alt="" className="w-full h-full object-cover" />
+                                <button
+                                    type="button"
+                                    onClick={() => handleImageRemove(idx)}
+                                    className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 text-white hover:bg-black"
+                                >
+                                    <X size={12} />
+                                </button>
+                            </div>
+                        ))}
+                        {images.length < 3 && (
+                            <label className="w-24 h-24 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-white/5 transition-all text-gray-500 hover:text-primary">
+                                <Upload size={20} className="mb-1" />
+                                <span className="text-xs">Añadir</span>
+                                <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageAdd} />
+                            </label>
+                        )}
                     </div>
-                    <p className="text-xs text-muted-foreground">* Usando imagen de demostración por defecto</p>
                 </div>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-white">Título del Anuncio</label>
+                {/* Title */}
+                <div className="space-y-1">
+                    <label className="text-sm font-medium text-white">Título</label>
                     <Input
-                        placeholder="Ej: Fender Stratocaster 2019..."
-                        {...register('title')}
-                        className={errors.title ? 'border-red-500' : ''}
+                        value={title}
+                        onChange={e => setTitle(e.target.value.slice(0, 60))}
+                        placeholder="Ej: Fender Stratocaster 2021 con funda..."
+                        className="bg-white/5 border-white/10 text-white"
                     />
-                    {errors.title && <p className="text-red-500 text-xs">{errors.title.message}</p>}
+                    <p className="text-xs text-gray-500 text-right">{title.length}/60</p>
                 </div>
 
-                <div className="grid grid-cols-2 gap-4">
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-white">Precio (€)</label>
-                        <div className="relative">
-                            <DollarSign className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
+                {/* Category */}
+                <div className="space-y-1">
+                    <label className="text-sm font-medium text-white">Categoría</label>
+                    <select
+                        value={category}
+                        onChange={e => setCategory(e.target.value as ListingCategory)}
+                        className="w-full h-10 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white focus:outline-none focus:border-primary"
+                    >
+                        {CATEGORIES.map(c => (
+                            <option key={c.value} value={c.value} className="bg-[#1a1a1a]">{c.label}</option>
+                        ))}
+                    </select>
+                </div>
+
+                {/* Type */}
+                <div className="space-y-1">
+                    <label className="text-sm font-medium text-white">Tipo de anuncio</label>
+                    <div className="flex rounded-xl bg-white/5 p-1 gap-1">
+                        {(['venta', 'alquiler', 'prestamo'] as const).map(t => (
+                            <button
+                                key={t}
+                                type="button"
+                                onClick={() => setType(t)}
+                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${type === t ? 'bg-primary text-black' : 'text-gray-400 hover:text-white'}`}
+                            >
+                                {t === 'prestamo' ? 'Préstamo' : t.charAt(0).toUpperCase() + t.slice(1)}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Price */}
+                {type !== 'prestamo' && (
+                    <div className="space-y-1">
+                        <label className="text-sm font-medium text-white">
+                            Precio (€){type === 'alquiler' && <span className="text-gray-500 font-normal ml-1">por</span>}
+                        </label>
+                        <div className="flex gap-2">
                             <Input
                                 type="number"
-                                placeholder="0.00"
-                                className={`pl-9 ${errors.price ? 'border-red-500' : ''}`}
-                                {...register('price')}
+                                min="0"
+                                value={price}
+                                onChange={e => setPrice(e.target.value)}
+                                placeholder="0"
+                                className="bg-white/5 border-white/10 text-white flex-1"
                             />
+                            {type === 'alquiler' && (
+                                <select
+                                    value={priceUnit}
+                                    onChange={e => setPriceUnit(e.target.value as 'dia' | 'semana')}
+                                    className="h-10 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white focus:outline-none focus:border-primary"
+                                >
+                                    <option value="dia" className="bg-[#1a1a1a]">día</option>
+                                    <option value="semana" className="bg-[#1a1a1a]">semana</option>
+                                </select>
+                            )}
                         </div>
-                        {errors.price && <p className="text-red-500 text-xs">{errors.price.message}</p>}
                     </div>
+                )}
 
-                    <div className="space-y-2">
-                        <label className="text-sm font-medium text-white">Categoría</label>
-                        <select
-                            className="flex h-10 w-full rounded-md border border-input bg-black/20 px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50 text-white"
-                            {...register('category')}
-                        >
-                            <option value="instrument">Instrumento</option>
-                            <option value="service" >Servicio</option>
-                            <option value="recording">Estudio/Grabación</option>
-                            <option value="venue">Sala/Espacio</option>
-                        </select>
-                        {errors.category && <p className="text-red-500 text-xs">{errors.category.message}</p>}
+                {/* Condition */}
+                <div className="space-y-1">
+                    <label className="text-sm font-medium text-white">Estado</label>
+                    <div className="grid grid-cols-2 gap-2">
+                        {CONDITIONS.map(c => (
+                            <button
+                                key={c.value}
+                                type="button"
+                                onClick={() => setCondition(c.value)}
+                                className={`py-2 rounded-xl text-sm font-medium border transition-colors ${condition === c.value ? 'border-primary bg-primary/10 text-primary' : 'border-white/10 bg-white/5 text-gray-400 hover:text-white'}`}
+                            >
+                                {c.label}
+                            </button>
+                        ))}
                     </div>
                 </div>
 
-                <div className="space-y-2">
-                    <label className="text-sm font-medium text-white">Ubicación</label>
-                    <div className="relative">
-                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
-                        <Input
-                            placeholder="Ej: Madrid, zona centro"
-                            className={`pl-9 ${errors.location ? 'border-red-500' : ''}`}
-                            {...register('location')}
-                        />
-                    </div>
-                    {errors.location && <p className="text-red-500 text-xs">{errors.location.message}</p>}
-                </div>
-
-                <div className="space-y-2">
+                {/* Description */}
+                <div className="space-y-1">
                     <label className="text-sm font-medium text-white">Descripción</label>
                     <Textarea
-                        placeholder="Detalla el estado, antigüedad, especificaciones..."
-                        className={`min-h-[120px] ${errors.description ? 'border-red-500' : ''}`}
-                        {...register('description')}
+                        value={description}
+                        onChange={e => setDescription(e.target.value.slice(0, 300))}
+                        placeholder="Describe el estado, antigüedad, accesorios incluidos..."
+                        className="bg-white/5 border-white/10 text-white min-h-[100px] resize-none"
                     />
-                    {errors.description && <p className="text-red-500 text-xs">{errors.description.message}</p>}
+                    <p className="text-xs text-gray-500 text-right">{description.length}/300</p>
                 </div>
 
-                <Button type="submit" className="w-full bg-brand-cyan text-black hover:bg-brand-cyan/90 font-bold h-12" disabled={isLoading}>
-                    {isLoading ? <Loader2 className="w-5 h-5 animate-spin" /> : "Publicar Anuncio"}
+                {/* Location */}
+                <div className="space-y-1">
+                    <label className="text-sm font-medium text-white">Ubicación</label>
+                    <Input
+                        value={location}
+                        onChange={e => setLocation(e.target.value)}
+                        placeholder="Ej: Barcelona, España"
+                        className="bg-white/5 border-white/10 text-white"
+                    />
+                </div>
+
+                {/* WhatsApp */}
+                <div className="space-y-1">
+                    <label className="text-sm font-medium text-white">WhatsApp <span className="text-gray-500 font-normal">(opcional)</span></label>
+                    <Input
+                        value={whatsApp}
+                        onChange={e => setWhatsApp(e.target.value)}
+                        placeholder="34612345678 (sin + ni espacios)"
+                        className="bg-white/5 border-white/10 text-white"
+                    />
+                </div>
+
+                {/* Urgent toggle */}
+                <button
+                    type="button"
+                    onClick={() => setUrgent(v => !v)}
+                    className={`w-full flex items-center gap-3 p-4 rounded-xl border transition-colors ${urgent ? 'border-primary/50 bg-primary/10' : 'border-white/10 bg-white/5'}`}
+                >
+                    <Zap size={18} className={urgent ? 'text-primary' : 'text-gray-500'} />
+                    <div className="text-left">
+                        <p className={`text-sm font-bold ${urgent ? 'text-primary' : 'text-white'}`}>Marcar como urgente ⚡</p>
+                        <p className="text-xs text-gray-500">Necesito venderlo / alquilarlo rápido</p>
+                    </div>
+                    <div className={`ml-auto w-10 h-6 rounded-full transition-colors flex items-center px-1 ${urgent ? 'bg-primary' : 'bg-white/10'}`}>
+                        <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${urgent ? 'translate-x-4' : 'translate-x-0'}`} />
+                    </div>
+                </button>
+
+                {error && <p className="text-red-400 text-sm">{error}</p>}
+
+                <Button
+                    type="submit"
+                    disabled={submitting}
+                    className="w-full h-12 bg-primary text-black font-bold hover:bg-primary/90 text-base"
+                >
+                    {submitting ? <Loader2 className="w-5 h-5 animate-spin" /> : 'Publicar anuncio'}
                 </Button>
             </form>
         </div>
