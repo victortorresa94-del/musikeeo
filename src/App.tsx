@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { useState, Suspense, lazy, useEffect } from 'react';
+import { useState, Suspense, lazy } from 'react';
 import { MainLayout } from './layouts/MainLayout';
 import { Loader2 } from 'lucide-react';
 import { EventsLayout } from './layouts/EventsLayout';
@@ -52,35 +52,9 @@ const RequireAuthSimple = () => {
 
 // Guard: Requires Auth + Onboarding Completed
 const RequireAuthCompleted = () => {
-  const { user, userProfile, loading } = useAuth();
+  const { user, userProfile, loading, profileLoading } = useAuth();
 
-  // FIX: Safety Timeout for Infinite Loading
-  const [showTimeoutError, setShowTimeoutError] = useState(false);
-
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      if (loading && !userProfile) {
-        setShowTimeoutError(true);
-      }
-    }, 8000); // 8 seconds timeout
-    return () => clearTimeout(timer);
-  }, [loading, userProfile]);
-
-  if (showTimeoutError) {
-    return (
-      <div className="h-screen w-full flex flex-col items-center justify-center gap-4 text-white">
-        <p className="text-red-400">La carga está tardando demasiado.</p>
-        <button
-          onClick={() => window.location.reload()}
-          className="px-4 py-2 bg-white/10 rounded hover:bg-white/20"
-        >
-          Recargar Página
-        </button>
-      </div>
-    );
-  }
-
-  if (loading) return <div className="h-screen w-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  if (loading || profileLoading) return <div className="h-screen w-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
   if (!user) return <Navigate to="/login" replace />;
 
   if (!userProfile) {
@@ -97,9 +71,9 @@ const RequireAuthCompleted = () => {
 
 // Guard for Panel routes
 const RequirePanelAuth = () => {
-  const { user, userProfile, loading } = useAuth(); // Need profile
+  const { user, userProfile, loading, profileLoading } = useAuth();
 
-  if (loading) {
+  if (loading || profileLoading) {
     return (
       <div className="h-screen w-full flex items-center justify-center bg-background text-primary">
         <Loader2 className="h-8 w-8 animate-spin" />
@@ -107,12 +81,9 @@ const RequirePanelAuth = () => {
     );
   }
 
-  if (!user) {
-    return <Navigate to="/login" replace />;
-  }
+  if (!user) return <Navigate to="/login" replace />;
 
   if (!userProfile) {
-    // FIX: Profile missing? Go to onboarding to fix/create it.
     console.warn("RequirePanelAuth: User exists but no profile. Redirecting.");
     return <Navigate to="/onboarding" replace />;
   }
@@ -126,9 +97,9 @@ const RequirePanelAuth = () => {
 
 // Intelligent Redirect for /panel
 const PanelGateway = () => {
-  const { userProfile, loading } = useAuth();
+  const { userProfile, loading, profileLoading } = useAuth();
 
-  if (loading) return <div className="h-full w-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
+  if (loading || profileLoading) return <div className="h-full w-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
 
   // Redirect based on primary mode
   const mode = userProfile?.primaryMode || 'musician';

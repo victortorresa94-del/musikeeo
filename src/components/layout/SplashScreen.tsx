@@ -4,11 +4,10 @@ const SplashScreen = ({ onFinish }: { onFinish: () => void }) => {
     const [isVisible, setIsVisible] = useState(true);
 
     useEffect(() => {
-        // Mantener el splash screen visible por 2.5 segundos
         const timer = setTimeout(() => {
             setIsVisible(false);
-            setTimeout(onFinish, 500); // Dar tiempo para la animación de salida
-        }, 2500);
+            setTimeout(onFinish, 300);
+        }, 600);
 
         return () => clearTimeout(timer);
     }, [onFinish]);

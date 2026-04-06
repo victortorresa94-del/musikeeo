@@ -5,9 +5,10 @@ import { doc, setDoc, getDoc } from "firebase/firestore";
 import type { User } from "../types";
 
 interface AuthContextType {
-    user: FirebaseUser | null;     // Firebase Auth User
-    userProfile: User | null;      // Firestore User Profile (custom data)
+    user: FirebaseUser | null;
+    userProfile: User | null;
     loading: boolean;
+    profileLoading: boolean;
     loginWithGoogle: () => Promise<void>;
     logout: () => Promise<void>;
     loginWithDev: () => void;
@@ -18,6 +19,7 @@ const AuthContext = createContext<AuthContextType>({
     user: null,
     userProfile: null,
     loading: true,
+    profileLoading: false,
     loginWithGoogle: async () => { },
     logout: async () => { },
     loginWithDev: () => { },
@@ -28,6 +30,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [user, setUser] = useState<FirebaseUser | null>(null);
     const [userProfile, setUserProfile] = useState<User | null>(null);
     const [loading, setLoading] = useState(true);
+    const [profileLoading, setProfileLoading] = useState(false);
 
     const fetchUserProfile = async (uid: string, authUserFallback?: FirebaseUser) => {
         // DEV BYPASS
@@ -143,15 +146,15 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
         try {
             unsubscribe = onAuthStateChanged(auth, async (authUser) => {
-                console.log("AuthContext: Auth State Changed", authUser?.uid);
                 setUser(authUser);
+                setLoading(false); // Auth state known — unblock navigation immediately
                 if (authUser) {
+                    setProfileLoading(true);
                     await fetchUserProfile(authUser.uid, authUser);
+                    setProfileLoading(false);
                 } else {
                     setUserProfile(null);
                 }
-                setLoading(false);
-                console.log("AuthContext: Loading set to false");
             });
         } catch (error) {
             console.error("AuthContext: Failed to subscribe to auth state changes.", error);
@@ -196,15 +199,16 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         user,
         userProfile,
         loading,
+        profileLoading,
         loginWithGoogle,
         logout,
         loginWithDev,
         refreshProfile
-    }), [user, userProfile, loading]);
+    }), [user, userProfile, loading, profileLoading]);
 
     return (
         <AuthContext.Provider value={value}>
-            {!loading && children}
+            {children}
         </AuthContext.Provider>
     );
 };
