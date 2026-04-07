@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from 'react';
 import { useLocation } from 'react-router-dom';
-import { Search, Phone, Video, MoreVertical, Send, Mic } from 'lucide-react';
+import { Search, Phone, Video, MoreVertical, Send, Mic, ArrowLeft } from 'lucide-react';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { cn } from '../../lib/utils';
@@ -18,6 +18,7 @@ export default function Messages() {
     const [messages, setMessages] = useState<ChatMessage[]>([]);
     const [inputText, setInputText] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
 
     // Handle navigation from other pages with a pre-selected chat
     useEffect(() => {
@@ -25,6 +26,7 @@ export default function Messages() {
             const target = chats.find(c => c.id === location.state.selectedChatId);
             if (target) {
                 setSelectedChat(target);
+                setMobileView('chat');
             }
         }
     }, [location.state, chats]);
@@ -107,14 +109,14 @@ export default function Messages() {
     }
 
     return (
-        <div className="h-[calc(100vh-6rem)] md:h-[calc(100vh-2rem)] flex flex-col md:flex-row bg-black/40 border border-white/5 rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm mt-2 md:mt-0">
+        <div className="h-[calc(100vh-6rem)] md:h-[calc(100vh-2rem)] flex flex-col md:flex-row bg-muted/50 border border-border rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm mt-2 md:mt-0">
             {/* Sidebar List */}
-            <div className="w-full md:w-80 border-r border-white/5 flex flex-col bg-black/20">
-                <div className="p-4 border-b border-white/5">
-                    <h2 className="font-heading font-bold text-lg text-white mb-4">Mensajes</h2>
+            <div className={`${mobileView === 'list' ? 'flex' : 'hidden'} md:flex w-full md:w-80 border-r border-border flex-col bg-muted/30`}>
+                <div className="p-4 border-b border-border">
+                    <h2 className="font-heading font-bold text-lg text-foreground mb-4">Mensajes</h2>
                     <div className="relative">
                         <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Buscar chats..." className="pl-10 bg-white/5 border-white/5 focus-visible:ring-brand-yellow/50" />
+                        <Input placeholder="Buscar chats..." className="pl-10 bg-muted border-border focus-visible:ring-primary/50" />
                     </div>
                 </div>
 
@@ -127,13 +129,13 @@ export default function Messages() {
                     {chats.map((chat) => (
                         <div
                             key={chat.id}
-                            onClick={() => setSelectedChat(chat)}
+                            onClick={() => { setSelectedChat(chat); setMobileView('chat'); }}
                             className={cn(
-                                "p-4 cursor-pointer flex gap-3 items-center border-b border-white/5 transition-all hover:bg-white/5",
-                                selectedChat?.id === chat.id ? "bg-white/5 border-l-4 border-l-brand-yellow" : "border-l-4 border-l-transparent"
+                                "p-4 cursor-pointer flex gap-3 items-center border-b border-border transition-all hover:bg-muted",
+                                selectedChat?.id === chat.id ? "bg-muted border-l-4 border-l-primary" : "border-l-4 border-l-transparent"
                             )}
                         >
-                            <div className={cn("h-12 w-12 rounded-full flex items-center justify-center font-bold text-sm shadow-lg overflow-hidden bg-brand-charcoal")}>
+                            <div className={cn("h-12 w-12 rounded-full flex items-center justify-center font-bold text-sm shadow-lg overflow-hidden bg-card")}>
                                 {chat.otherUser?.photoURL ?
                                     <img src={chat.otherUser.photoURL} alt="Avatar" className="w-full h-full object-cover" /> :
                                     <span>{chat.otherUser?.displayName?.substring(0, 2).toUpperCase() || 'U'}</span>
@@ -141,7 +143,7 @@ export default function Messages() {
                             </div>
                             <div className="flex-1 min-w-0">
                                 <div className="flex justify-between items-baseline mb-1">
-                                    <h4 className={cn("font-bold text-sm truncate text-gray-200")}>
+                                    <h4 className={cn("font-bold text-sm truncate text-foreground")}>
                                         {chat.otherUser?.displayName || "Usuario Desconocido"}
                                     </h4>
                                     <span className="text-[10px] text-muted-foreground">
@@ -159,29 +161,32 @@ export default function Messages() {
 
             {/* Chat Area */}
             {selectedChat ? (
-                <div className="hidden md:flex flex-1 flex-col bg-gradient-to-br from-black to-brand-petrol/5 relative">
+                <div className={`${mobileView === 'chat' ? 'flex' : 'hidden'} md:flex flex-1 flex-col bg-gradient-to-br from-background to-muted/30 relative`}>
                     {/* Header */}
-                    <div className="p-4 border-b border-white/5 flex justify-between items-center bg-black/40 backdrop-blur-md">
+                    <div className="p-4 border-b border-border flex justify-between items-center bg-muted/50 backdrop-blur-md">
                         <div className="flex items-center gap-3">
-                            <div className="h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm bg-zinc-800 overflow-hidden">
+                            <button onClick={() => setMobileView('list')} className="md:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground">
+                                <ArrowLeft className="h-5 w-5" />
+                            </button>
+                            <div className="h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm bg-muted overflow-hidden">
                                 {selectedChat.otherUser?.photoURL ?
                                     <img src={selectedChat.otherUser.photoURL} alt="Avatar" className="w-full h-full object-cover" /> :
                                     <span>{selectedChat.otherUser?.displayName?.substring(0, 2).toUpperCase() || 'U'}</span>
                                 }
                             </div>
                             <div>
-                                <h3 className="font-heading font-bold text-white text-sm">
+                                <h3 className="font-heading font-bold text-foreground text-sm">
                                     {selectedChat.otherUser?.displayName || "Chat"}
                                 </h3>
-                                <p className="text-[10px] flex items-center gap-1.5 font-medium text-brand-yellow">
+                                <p className="text-[10px] flex items-center gap-1.5 font-medium text-primary">
                                     En línea
                                 </p>
                             </div>
                         </div>
                         <div className="flex gap-1">
-                            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-white hover:bg-white/10"><Phone className="h-4 w-4" /></Button>
-                            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-white hover:bg-white/10"><Video className="h-4 w-4" /></Button>
-                            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-white hover:bg-white/10"><MoreVertical className="h-4 w-4" /></Button>
+                            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted"><Phone className="h-4 w-4" /></Button>
+                            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted"><Video className="h-4 w-4" /></Button>
+                            <Button variant="ghost" size="icon" className="h-9 w-9 text-muted-foreground hover:text-foreground hover:bg-muted"><MoreVertical className="h-4 w-4" /></Button>
                         </div>
                     </div>
 
@@ -194,8 +199,8 @@ export default function Messages() {
                                 key={msg.id}
                                 className={cn("max-w-[75%] rounded-2xl p-4 text-sm relative group",
                                     (msg.senderId === user?.uid || msg.senderId === 'current_user')
-                                        ? "self-end bg-brand-yellow text-brand-black rounded-tr-sm shadow-[0_0_15px_rgba(255,216,77,0.3)] font-medium"
-                                        : "self-start bg-brand-charcoal text-gray-200 rounded-tl-sm border border-white/5"
+                                        ? "self-end bg-primary text-foreground rounded-tr-sm shadow-[0_0_15px_rgba(255,216,77,0.3)] font-medium"
+                                        : "self-start bg-card text-foreground rounded-tl-sm border border-border"
                                 )}
                             >
                                 {msg.text}
@@ -206,15 +211,15 @@ export default function Messages() {
                     </div>
 
                     {/* Input Area */}
-                    <div className="p-4 bg-brand-black/95 border-t border-white/5 backdrop-blur-md">
-                        <div className="flex gap-3 items-end bg-brand-charcoal p-2 rounded-xl border border-white/10 focus-within:border-brand-yellow/30 transition-all">
-                            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-muted-foreground hover:text-white hover:bg-white/10 shrink-0">
+                    <div className="p-4 bg-background border-t border-border backdrop-blur-md">
+                        <div className="flex gap-3 items-end bg-card p-2 rounded-xl border border-border focus-within:border-primary/30 transition-all">
+                            <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted shrink-0">
                                 <Mic className="h-5 w-5" />
                             </Button>
                             <div className="flex-1">
                                 <Input
                                     placeholder="Escribe un mensaje..."
-                                    className="bg-transparent border-none focus-visible:ring-0 px-0 h-10 text-white placeholder:text-muted-foreground"
+                                    className="bg-transparent border-none focus-visible:ring-0 px-0 h-10 text-foreground placeholder:text-muted-foreground"
                                     value={inputText}
                                     onChange={(e) => setInputText(e.target.value)}
                                     onKeyDown={(e) => e.key === 'Enter' && handleSend()}
@@ -223,7 +228,7 @@ export default function Messages() {
                             <Button
                                 variant="glow"
                                 size="icon"
-                                className="h-10 w-10 rounded-lg shrink-0 bg-brand-yellow text-brand-black hover:bg-brand-warm"
+                                className="h-10 w-10 rounded-lg shrink-0 bg-primary text-foreground hover:bg-primary/80"
                                 onClick={handleSend}
                             >
                                 <Send className="h-4 w-4" />
@@ -232,7 +237,7 @@ export default function Messages() {
                     </div>
                 </div>
             ) : (
-                <div className="hidden md:flex flex-1 items-center justify-center bg-black/20 text-muted-foreground">
+                <div className={`${mobileView === 'chat' ? 'flex' : 'hidden'} md:flex flex-1 items-center justify-center bg-muted/30 text-muted-foreground`}>
                     Selecciona un chat para comenzar
                 </div>
             )}

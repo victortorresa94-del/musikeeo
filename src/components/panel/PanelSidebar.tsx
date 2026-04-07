@@ -36,15 +36,15 @@ export const PanelSidebar = () => {
     };
 
     return (
-        <div className="flex flex-col h-full bg-background border-r border-white/10 w-full">
+        <div className="flex flex-col h-full bg-background border-r border-border w-full">
             {/* Header / Mode Indicator */}
             <div className="p-6 flex items-center gap-3">
                 <div className={`size-10 rounded-full flex items-center justify-center text-black font-bold text-xl ${getModeColor(activeMode)}`}>
                     {activeMode.charAt(0).toUpperCase()}
                 </div>
                 <div className="flex flex-col">
-                    <h1 className="text-white text-lg font-bold leading-tight tracking-tight">Musikeeo</h1>
-                    <p className="text-gray-500 text-xs font-medium uppercase min-w-[100px]">
+                    <h1 className="text-foreground text-lg font-bold leading-tight tracking-tight">Musikeeo</h1>
+                    <p className="text-muted-foreground text-xs font-medium uppercase min-w-[100px]">
                         {loading ? 'Cargando...' : getModeLabel(activeMode)}
                     </p>
                 </div>
@@ -62,13 +62,13 @@ export const PanelSidebar = () => {
                             key={item.href}
                             to={item.href}
                             className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all ${isActive || isSubActive
-                                ? 'bg-white/10 border border-white/20 text-white'
-                                : 'text-gray-400 hover:bg-white/5 border border-transparent hover:text-white'
+                                ? 'bg-muted border border-border text-foreground'
+                                : 'text-muted-foreground hover:bg-muted border border-transparent hover:text-foreground'
                                 }`}
                         >
                             <item.icon
                                 size={20}
-                                className={isActive || isSubActive ? 'text-brand-yellow' : 'text-gray-500'}
+                                className={isActive || isSubActive ? 'text-brand-yellow' : 'text-muted-foreground'}
                             />
                             <p className="text-sm font-medium">
                                 {item.label}
@@ -77,27 +77,27 @@ export const PanelSidebar = () => {
                     );
                 })}
 
-                <div className="h-px bg-white/10 my-2 mx-2" />
+                <div className="h-px bg-muted my-2 mx-2" />
 
                 {/* Common Links */}
                 {COMMON_LINKS.map((item) => (
                     <Link
                         key={item.href}
                         to={item.href}
-                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover:bg-white/5 ${location.pathname === item.href ? 'bg-white/5 text-white' : 'text-gray-400'
+                        className={`flex items-center gap-3 px-4 py-3 rounded-lg transition-all hover:bg-muted ${location.pathname === item.href ? 'bg-muted text-foreground' : 'text-muted-foreground'
                             }`}
                     >
-                        <item.icon size={20} className="text-gray-500" />
+                        <item.icon size={20} className="text-muted-foreground" />
                         <p className="text-sm font-medium">{item.label}</p>
                     </Link>
                 ))}
             </nav>
 
             {/* Footer / User Profile */}
-            <div className="p-4 border-t border-white/10">
-                <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-white/5 cursor-pointer transition-colors group">
+            <div className="p-4 border-t border-border">
+                <div className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted cursor-pointer transition-colors group">
                     <div
-                        className="size-8 rounded-full bg-cover bg-center border border-white/20"
+                        className="size-8 rounded-full bg-cover bg-center border border-border"
                         style={{
                             backgroundImage: user?.photoURL
                                 ? `url(${user.photoURL})`
@@ -105,12 +105,12 @@ export const PanelSidebar = () => {
                         }}
                     />
                     <div className="flex flex-col overflow-hidden flex-1">
-                        <p className="text-white text-sm font-medium truncate group-hover:text-primary transition-colors">
+                        <p className="text-foreground text-sm font-medium truncate group-hover:text-primary transition-colors">
                             {user?.displayName || 'Usuario'}
                         </p>
                         <button
                             onClick={handleLogout}
-                            className="text-gray-500 text-xs text-left hover:text-red-400 transition-colors flex items-center gap-1 mt-0.5"
+                            className="text-muted-foreground text-xs text-left hover:text-red-400 transition-colors flex items-center gap-1 mt-0.5"
                         >
                             <LogOut size={12} /> Cerrar Sesión
                         </button>

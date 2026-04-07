@@ -105,7 +105,7 @@ export default function PublicProfile() {
     if (loading) {
         return (
             <div className="h-[50vh] flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-brand-cyan" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -113,7 +113,7 @@ export default function PublicProfile() {
     if (!profile) {
         return (
             <div className="text-center py-20 animate-fade-in-up">
-                <h2 className="text-2xl font-bold text-white mb-4">Usuario no encontrado</h2>
+                <h2 className="text-2xl font-bold text-foreground mb-4">Usuario no encontrado</h2>
                 <Button onClick={() => navigate('/')}>Volver al Inicio</Button>
             </div>
         );
@@ -121,12 +121,12 @@ export default function PublicProfile() {
 
     return (
         <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6 animate-fade-in-up">
-            <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2 text-muted-foreground hover:text-white">
+            <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2 text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="w-4 h-4" /> Volver
             </Button>
 
             {/* Profile Header */}
-            <div className="relative h-64 md:h-80 rounded-3xl overflow-hidden bg-zinc-900 border border-white/5">
+            <div className="relative h-64 md:h-80 rounded-3xl overflow-hidden bg-card border border-border">
                 <div className="absolute inset-0 bg-gradient-to-b from-brand-petrol/20 to-black/80 z-10" />
                 <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=1000&q=80')] bg-cover bg-center opacity-40 grayscale" />
 
@@ -145,16 +145,16 @@ export default function PublicProfile() {
                         <div className="flex items-center gap-3">
                             <h1 className="text-3xl md:text-4xl font-heading font-bold text-white shadow-black drop-shadow-lg">{profile.displayName}</h1>
                             {profile.verified && (
-                                <span className="bg-brand-cyan text-black text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
+                                <span className="bg-primary text-black text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
                                     <BadgeCheck className="h-3 w-3" />
                                     PRO
                                 </span>
                             )}
                         </div>
-                        <p className="text-brand-cyan font-medium text-lg flex items-center gap-2 mt-1">
+                        <p className="text-primary font-medium text-lg flex items-center gap-2 mt-1">
                             {profile.role.toUpperCase()}
                             <span className="text-white/30 text-sm">•</span>
-                            <span className="text-sm text-gray-300 flex items-center gap-1">
+                            <span className="text-sm text-muted-foreground flex items-center gap-1">
                                 <MapPin className="h-3 w-3" /> {profile.location || "Ubicación desconocida"}
                             </span>
                         </p>
@@ -170,15 +170,15 @@ export default function PublicProfile() {
             </div>
 
             {/* Stats Row */}
-            <div className="flex items-center justify-center gap-8 py-4 border-y border-white/10">
+            <div className="flex items-center justify-center gap-8 py-4 border-y border-border">
                 <div className="text-center">
-                    <span className="block text-2xl font-bold text-white">{userReels.length}</span>
+                    <span className="block text-2xl font-bold text-foreground">{userReels.length}</span>
                     <span className="text-xs text-muted-foreground uppercase tracking-wider">Videos</span>
                 </div>
                 {profile.stats && (
                     <>
                         <div className="text-center">
-                            <span className="block text-2xl font-bold text-white">{profile.stats.gigs}</span>
+                            <span className="block text-2xl font-bold text-foreground">{profile.stats.gigs}</span>
                             <span className="text-xs text-muted-foreground uppercase tracking-wider">Bolos</span>
                         </div>
                         <div className="text-center">
@@ -188,7 +188,7 @@ export default function PublicProfile() {
                     </>
                 )}
                 <div className="text-center">
-                    <span className="block text-2xl font-bold text-white">1.2K</span>
+                    <span className="block text-2xl font-bold text-foreground">1.2K</span>
                     <span className="text-xs text-muted-foreground uppercase tracking-wider">Seguidores</span>
                 </div>
             </div>
@@ -197,18 +197,18 @@ export default function PublicProfile() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                 {/* Left Column: About & Skills */}
                 <div className="space-y-6">
-                    <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
-                        <h3 className="font-heading font-bold text-white mb-4">Sobre mí</h3>
-                        <p className="text-gray-400 text-sm leading-relaxed">
+                    <div className="bg-muted border border-border rounded-2xl p-6">
+                        <h3 className="font-heading font-bold text-foreground mb-4">Sobre mí</h3>
+                        <p className="text-muted-foreground text-sm leading-relaxed">
                             {profile.bio || "Este usuario aún no ha escrito su biografía."}
                         </p>
                     </div>
 
-                    <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
-                        <h3 className="font-heading font-bold text-white mb-4">Habilidades</h3>
+                    <div className="bg-muted border border-border rounded-2xl p-6">
+                        <h3 className="font-heading font-bold text-foreground mb-4">Habilidades</h3>
                         <div className="flex flex-wrap gap-2">
                             {profile.skills?.map(skill => (
-                                <span key={skill} className="bg-white/10 text-white text-xs px-3 py-1 rounded-full border border-white/10">
+                                <span key={skill} className="bg-muted text-foreground text-xs px-3 py-1 rounded-full border border-border">
                                     {skill}
                                 </span>
                             )) || <span className="text-muted-foreground text-xs">Sin habilidades listadas</span>}
@@ -216,11 +216,11 @@ export default function PublicProfile() {
                     </div>
 
                     {profile.genres && profile.genres.length > 0 && (
-                        <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
-                            <h3 className="font-heading font-bold text-white mb-4">Géneros</h3>
+                        <div className="bg-muted border border-border rounded-2xl p-6">
+                            <h3 className="font-heading font-bold text-foreground mb-4">Géneros</h3>
                             <div className="flex flex-wrap gap-2">
                                 {profile.genres.map(genre => (
-                                    <span key={genre} className="bg-brand-cyan/10 text-brand-cyan text-xs px-3 py-1 rounded-full border border-brand-cyan/20">
+                                    <span key={genre} className="bg-primary/10 text-primary text-xs px-3 py-1 rounded-full border border-brand-cyan/20">
                                         {genre}
                                     </span>
                                 ))}
@@ -232,33 +232,33 @@ export default function PublicProfile() {
                 {/* Right Column: Videos / Portfolio */}
                 <div className="md:col-span-2 space-y-4">
                     {/* Tabs */}
-                    <div className="flex items-center gap-1 border-b border-white/10">
+                    <div className="flex items-center gap-1 border-b border-border">
                         <button
                             onClick={() => setActiveTab('videos')}
                             className={`flex items-center gap-2 px-6 py-3 font-medium text-sm transition-colors relative
                                 ${activeTab === 'videos'
-                                    ? 'text-white'
-                                    : 'text-muted-foreground hover:text-white'
+                                    ? 'text-foreground'
+                                    : 'text-muted-foreground hover:text-foreground'
                                 }`}
                         >
                             <Film className="h-4 w-4" />
                             Videos
                             {activeTab === 'videos' && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-cyan" />
+                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
                             )}
                         </button>
                         <button
                             onClick={() => setActiveTab('portfolio')}
                             className={`flex items-center gap-2 px-6 py-3 font-medium text-sm transition-colors relative
                                 ${activeTab === 'portfolio'
-                                    ? 'text-white'
-                                    : 'text-muted-foreground hover:text-white'
+                                    ? 'text-foreground'
+                                    : 'text-muted-foreground hover:text-foreground'
                                 }`}
                         >
                             <Grid3X3 className="h-4 w-4" />
                             Portfolio
                             {activeTab === 'portfolio' && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-brand-cyan" />
+                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
                             )}
                         </button>
                     </div>
@@ -270,7 +270,7 @@ export default function PublicProfile() {
                                 <button
                                     key={reel.id}
                                     onClick={() => handleOpenReel(reel)}
-                                    className="aspect-[9/16] bg-zinc-900 rounded-lg overflow-hidden relative group"
+                                    className="aspect-[9/16] bg-card rounded-lg overflow-hidden relative group"
                                 >
                                     <img
                                         src={reel.thumbnailUrl}
@@ -315,10 +315,10 @@ export default function PublicProfile() {
                     {activeTab === 'portfolio' && (
                         <div className="grid grid-cols-2 gap-4">
                             {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="aspect-video bg-zinc-900 rounded-xl border border-white/5 flex items-center justify-center relative group overflow-hidden">
-                                    <div className="absolute inset-0 bg-black/50 group-hover:bg-transparent transition-all" />
-                                    <Music className="h-8 w-8 text-white/20 group-hover:text-white/50 transition-colors" />
-                                    <span className="absolute bottom-2 left-2 text-xs font-bold text-white opacity-0 group-hover:opacity-100 transition-opacity">Demo Track {i}</span>
+                                <div key={i} className="aspect-video bg-card rounded-xl border border-border flex items-center justify-center relative group overflow-hidden">
+                                    <div className="absolute inset-0 bg-foreground/5 group-hover:bg-transparent transition-all" />
+                                    <Music className="h-8 w-8 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" />
+                                    <span className="absolute bottom-2 left-2 text-xs font-bold text-foreground opacity-0 group-hover:opacity-100 transition-opacity">Demo Track {i}</span>
                                 </div>
                             ))}
                         </div>

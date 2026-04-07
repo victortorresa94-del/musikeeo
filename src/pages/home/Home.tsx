@@ -15,7 +15,7 @@ const CATEGORIES = [
 
 const Home = () => {
     return (
-        <div className="min-h-screen bg-background text-white selection:bg-brand-yellow selection:text-brand-black">
+        <div className="theme-dark min-h-screen bg-background text-white selection:bg-brand-yellow selection:text-brand-black">
             <Navbar />
             <main>
                 <Hero />

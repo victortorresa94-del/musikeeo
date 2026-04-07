@@ -155,7 +155,7 @@ export default function Market() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-white">Mercado</h1>
+                    <h1 className="text-2xl md:text-3xl font-bold text-foreground">Mercado</h1>
                     <p className="text-sm text-muted-foreground mt-0.5">Compra, alquila o presta equipo</p>
                 </div>
                 <Button
@@ -172,7 +172,7 @@ export default function Market() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Buscar guitarra, micro, correa..."
-                        className="pl-10 bg-white/5 border-white/10 h-11"
+                        className="pl-10 bg-muted border-border h-11"
                         value={searchText}
                         onChange={e => setSearchText(e.target.value)}
                     />
@@ -181,7 +181,7 @@ export default function Market() {
                     variant="outline"
                     size="icon"
                     onClick={() => setShowFilters(v => !v)}
-                    className={`border-white/10 h-11 w-11 shrink-0 ${showFilters ? 'bg-primary/10 border-primary/50 text-primary' : 'hover:bg-white/5'}`}
+                    className={`border-border h-11 w-11 shrink-0 ${showFilters ? 'bg-primary/10 border-primary/50 text-primary' : 'hover:bg-muted'}`}
                 >
                     <SlidersHorizontal className="h-4 w-4" />
                 </Button>
@@ -196,7 +196,7 @@ export default function Market() {
                         className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors border ${
                             categoryFilter === c.value
                                 ? 'bg-primary text-black border-primary'
-                                : 'border-white/10 bg-white/5 text-gray-400 hover:text-white'
+                                : 'border-border bg-muted text-muted-foreground hover:text-foreground'
                         }`}
                     >
                         <span>{c.emoji}</span> {c.label}
@@ -213,43 +213,43 @@ export default function Market() {
                         exit={{ opacity: 0, height: 0 }}
                         className="overflow-hidden"
                     >
-                        <div className="bg-surface border border-white/10 rounded-xl p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
+                        <div className="bg-card border border-border rounded-xl p-4 grid grid-cols-2 md:grid-cols-4 gap-3">
                             <div className="col-span-2 md:col-span-1 space-y-1">
-                                <label className="text-xs font-medium text-gray-400">Tipo</label>
+                                <label className="text-xs font-medium text-muted-foreground">Tipo</label>
                                 <select
                                     value={typeFilter}
                                     onChange={e => setTypeFilter(e.target.value as typeof typeFilter)}
-                                    className="w-full h-9 rounded-lg border border-white/10 bg-white/5 px-2 text-sm text-white focus:outline-none"
+                                    className="w-full h-9 rounded-lg border border-border bg-muted px-2 text-sm text-foreground focus:outline-none"
                                 >
-                                    <option value="all" className="bg-[#1a1a1a]">Todos</option>
-                                    <option value="venta" className="bg-[#1a1a1a]">Venta</option>
-                                    <option value="alquiler" className="bg-[#1a1a1a]">Alquiler</option>
-                                    <option value="prestamo" className="bg-[#1a1a1a]">Préstamo</option>
+                                    <option value="all" className="bg-card">Todos</option>
+                                    <option value="venta" className="bg-card">Venta</option>
+                                    <option value="alquiler" className="bg-card">Alquiler</option>
+                                    <option value="prestamo" className="bg-card">Préstamo</option>
                                 </select>
                             </div>
                             <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-400">Ciudad</label>
+                                <label className="text-xs font-medium text-muted-foreground">Ciudad</label>
                                 <Input
                                     value={locationFilter}
                                     onChange={e => setLocationFilter(e.target.value)}
                                     placeholder="Barcelona..."
-                                    className="h-9 bg-white/5 border-white/10 text-white text-sm"
+                                    className="h-9 bg-muted border-border text-foreground text-sm"
                                 />
                             </div>
                             <div className="space-y-1">
-                                <label className="text-xs font-medium text-gray-400">Precio máx. (€)</label>
+                                <label className="text-xs font-medium text-muted-foreground">Precio máx. (€)</label>
                                 <Input
                                     type="number"
                                     value={maxPrice}
                                     onChange={e => setMaxPrice(e.target.value)}
                                     placeholder="Sin límite"
-                                    className="h-9 bg-white/5 border-white/10 text-white text-sm"
+                                    className="h-9 bg-muted border-border text-foreground text-sm"
                                 />
                             </div>
                             <div className="flex items-end pb-1">
                                 <button
                                     onClick={() => setUrgentOnly(v => !v)}
-                                    className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg border transition-colors ${urgentOnly ? 'border-primary/50 bg-primary/10 text-primary' : 'border-white/10 bg-white/5 text-gray-400'}`}
+                                    className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg border transition-colors ${urgentOnly ? 'border-primary/50 bg-primary/10 text-primary' : 'border-border bg-muted text-muted-foreground'}`}
                                 >
                                     <Zap size={14} /> Solo urgentes
                                 </button>
@@ -263,26 +263,27 @@ export default function Market() {
             {loading ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                     {[...Array(8)].map((_, i) => (
-                        <div key={i} className="aspect-[3/4] rounded-xl bg-white/5 animate-pulse border border-white/5" />
+                        <div key={i} className="aspect-[3/4] rounded-xl bg-muted animate-pulse border border-border" />
                     ))}
                 </div>
             ) : filtered.length === 0 ? (
-                <div className="text-center py-20 text-gray-500">
+                <div className="text-center py-20 text-muted-foreground">
                     <p className="text-4xl mb-3">🔍</p>
-                    <p className="font-medium text-white">Sin resultados para estos filtros</p>
+                    <p className="font-medium text-foreground">Sin resultados para estos filtros</p>
                     <p className="text-sm mt-1">Prueba con otros criterios</p>
                 </div>
             ) : (
                 <>
-                    <p className="text-xs text-gray-500">{filtered.length} anuncio{filtered.length !== 1 ? 's' : ''}</p>
+                    <p className="text-xs text-muted-foreground">{filtered.length} anuncio{filtered.length !== 1 ? 's' : ''}</p>
                     <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                         {filtered.map(listing => (
                             <motion.div
                                 key={listing.id}
                                 whileHover={{ y: -2 }}
-                                className="bg-surface border border-white/5 rounded-xl overflow-hidden hover:border-white/20 transition-colors flex flex-col"
+                                className="bg-card border border-border rounded-xl overflow-hidden hover:border-foreground/20 transition-colors flex flex-col cursor-pointer"
+                                onClick={() => navigate(`/market/${listing.id}`)}
                             >
-                                <div className="aspect-square bg-white/5 relative overflow-hidden">
+                                <div className="aspect-square bg-muted relative overflow-hidden">
                                     {listing.images?.[0] ? (
                                         <img src={listing.images[0]} alt={listing.title} loading="lazy" className="w-full h-full object-cover" />
                                     ) : (
@@ -300,33 +301,33 @@ export default function Market() {
                                     </div>
                                 </div>
                                 <div className="p-3 flex flex-col gap-1.5 flex-1">
-                                    <p className="text-white text-sm font-bold leading-tight line-clamp-2">{listing.title}</p>
+                                    <p className="text-foreground text-sm font-bold leading-tight line-clamp-2">{listing.title}</p>
                                     <p className="text-primary font-black text-sm">{formatPrice(listing)}</p>
-                                    <div className="flex items-center gap-1 text-gray-500 text-xs">
+                                    <div className="flex items-center gap-1 text-muted-foreground text-xs">
                                         <MapPin size={10} />
                                         <span className="truncate">{listing.userLocation}</span>
                                     </div>
                                     <div className="flex gap-1 flex-wrap">
                                         {listing.shipping && (
-                                            <span className="text-[9px] bg-white/10 text-gray-300 px-1.5 py-0.5 rounded-full">📦 Envío</span>
+                                            <span className="text-[9px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">📦 Envío</span>
                                         )}
                                         {listing.sellerType === 'profesional' && (
-                                            <span className="text-[9px] bg-white/10 text-gray-300 px-1.5 py-0.5 rounded-full">🏪 Pro</span>
+                                            <span className="text-[9px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">🏪 Pro</span>
                                         )}
                                     </div>
                                     <div className="flex items-center gap-2 mt-auto pt-1">
                                         {listing.userAvatar ? (
                                             <img src={listing.userAvatar} alt="" loading="lazy" className="w-5 h-5 rounded-full object-cover" />
                                         ) : (
-                                            <div className="w-5 h-5 rounded-full bg-white/10 flex items-center justify-center text-[10px] text-white">
+                                            <div className="w-5 h-5 rounded-full bg-muted flex items-center justify-center text-[10px] text-foreground">
                                                 {listing.userName?.[0]?.toUpperCase()}
                                             </div>
                                         )}
-                                        <span className="text-gray-500 text-xs truncate flex-1">{listing.userName}</span>
+                                        <span className="text-muted-foreground text-xs truncate flex-1">{listing.userName}</span>
                                     </div>
                                     <button
-                                        onClick={() => setContactListing(listing)}
-                                        className="w-full mt-1 h-8 rounded-lg bg-white/10 hover:bg-white/20 text-white text-xs font-bold transition-colors"
+                                        onClick={(e) => { e.stopPropagation(); setContactListing(listing); }}
+                                        className="w-full mt-1 h-8 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-xs font-bold transition-colors"
                                     >
                                         Contactar
                                     </button>
@@ -340,7 +341,7 @@ export default function Market() {
                                 variant="outline"
                                 onClick={() => fetchListings(false)}
                                 disabled={loadingMore}
-                                className="border-white/10 hover:bg-white/5"
+                                className="border-border hover:bg-muted"
                             >
                                 {loadingMore ? 'Cargando...' : 'Ver más'}
                             </Button>
@@ -364,14 +365,14 @@ export default function Market() {
                             animate={{ y: 0, opacity: 1 }}
                             exit={{ y: 40, opacity: 0 }}
                             onClick={e => e.stopPropagation()}
-                            className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl"
+                            className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl"
                         >
                             <div className="flex items-start justify-between">
                                 <div>
-                                    <h3 className="text-white font-bold">Contactar vendedor</h3>
-                                    <p className="text-gray-500 text-sm mt-0.5 line-clamp-1">{contactListing.title}</p>
+                                    <h3 className="text-foreground font-bold">Contactar vendedor</h3>
+                                    <p className="text-muted-foreground text-sm mt-0.5 line-clamp-1">{contactListing.title}</p>
                                 </div>
-                                <button onClick={() => setContactListing(null)} className="text-gray-500 hover:text-white">
+                                <button onClick={() => setContactListing(null)} className="text-muted-foreground hover:text-foreground">
                                     <X size={18} />
                                 </button>
                             </div>
@@ -381,14 +382,14 @@ export default function Market() {
                                         navigate(`/messages?userId=${contactListing.userId}&ref=${contactListing.id}`);
                                         setContactListing(null);
                                     }}
-                                    className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-white/30 transition-colors text-left w-full"
+                                    className="flex items-center gap-3 p-4 rounded-xl bg-muted border border-border hover:border-white/30 transition-colors text-left w-full"
                                 >
                                     <div className="p-2 rounded-lg bg-primary/20">
                                         <MessageSquare size={18} className="text-primary" />
                                     </div>
                                     <div>
-                                        <p className="text-white font-medium text-sm">Mensaje en Musikeeo</p>
-                                        <p className="text-gray-500 text-xs">Escríbele desde la plataforma</p>
+                                        <p className="text-foreground font-medium text-sm">Mensaje en Musikeeo</p>
+                                        <p className="text-muted-foreground text-xs">Escríbele desde la plataforma</p>
                                     </div>
                                 </button>
                                 {contactListing.userWhatsApp && (
@@ -396,14 +397,14 @@ export default function Market() {
                                         href={`https://wa.me/${contactListing.userWhatsApp}?text=${encodeURIComponent(`Hola, vi tu anuncio "${contactListing.title}" en Musikeeo 🎸`)}`}
                                         target="_blank"
                                         rel="noopener noreferrer"
-                                        className="flex items-center gap-3 p-4 rounded-xl bg-white/5 border border-white/10 hover:border-green-500/50 transition-colors"
+                                        className="flex items-center gap-3 p-4 rounded-xl bg-muted border border-border hover:border-green-500/50 transition-colors"
                                     >
                                         <div className="p-2 rounded-lg bg-green-500/20">
                                             <Phone size={18} className="text-green-400" />
                                         </div>
                                         <div>
-                                            <p className="text-white font-medium text-sm">WhatsApp</p>
-                                            <p className="text-gray-500 text-xs">Contacto directo</p>
+                                            <p className="text-foreground font-medium text-sm">WhatsApp</p>
+                                            <p className="text-muted-foreground text-xs">Contacto directo</p>
                                         </div>
                                     </a>
                                 )}

@@ -88,16 +88,16 @@ export default function PanelOrganizerProfilePage() {
     return (
         <div className="flex-1 flex flex-col h-full overflow-hidden">
             {/* Header */}
-            <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-white/10 px-6 py-4 md:px-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
+            <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border px-6 py-4 md:px-10 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h2 className="text-2xl font-bold text-white tracking-tight">Perfil de Organizador</h2>
-                    <p className="text-gray-500 text-sm mt-1">Gestiona tu identidad como creador de eventos.</p>
+                    <h2 className="text-2xl font-bold text-foreground tracking-tight">Perfil de Organizador</h2>
+                    <p className="text-muted-foreground text-sm mt-1">Gestiona tu identidad como creador de eventos.</p>
                 </div>
 
                 {/* Public View Toggle */}
-                <div className="flex items-center gap-4 bg-surface border border-white/10 rounded-full px-4 py-2">
+                <div className="flex items-center gap-4 bg-card border border-border rounded-full px-4 py-2">
                     <div className="flex flex-col items-end mr-2">
-                        <span className="text-xs font-bold text-white uppercase tracking-wider">Perfil Público</span>
+                        <span className="text-xs font-bold text-foreground uppercase tracking-wider">Perfil Público</span>
                     </div>
                     <label className="relative inline-flex items-center cursor-pointer">
                         <input
@@ -117,30 +117,30 @@ export default function PanelOrganizerProfilePage() {
 
                     {/* Basic Info */}
                     <section className="space-y-6">
-                        <div className="bg-surface rounded-xl p-6 border border-white/10 shadow-sm">
-                            <h3 className="text-white text-lg font-bold mb-6 flex items-center gap-2">
+                        <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
+                            <h3 className="text-foreground text-lg font-bold mb-6 flex items-center gap-2">
                                 🏢 Información de la Organización
                             </h3>
 
                             <div className="grid grid-cols-1 gap-6">
                                 <label className="flex flex-col gap-2">
-                                    <span className="text-white text-sm font-medium">Nombre Público (Display Name)</span>
+                                    <span className="text-foreground text-sm font-medium">Nombre Público (Display Name)</span>
                                     <input
                                         type="text"
                                         value={displayName}
                                         onChange={(e) => { setDisplayName(e.target.value); setHasChanges(true); }}
-                                        className="w-full bg-background border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-lime focus:ring-1 focus:ring-brand-lime transition-colors placeholder:text-gray-600"
+                                        className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-brand-lime focus:ring-1 focus:ring-brand-lime transition-colors placeholder:text-gray-600"
                                         placeholder="Tu nombre o alias"
                                     />
                                 </label>
 
                                 <label className="flex flex-col gap-2">
-                                    <span className="text-white text-sm font-medium">Nombre de la Empresa / Organización</span>
+                                    <span className="text-foreground text-sm font-medium">Nombre de la Empresa / Organización</span>
                                     <input
                                         type="text"
                                         value={companyName}
                                         onChange={(e) => { setCompanyName(e.target.value); setHasChanges(true); }}
-                                        className="w-full bg-background border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-brand-lime focus:ring-1 focus:ring-brand-lime transition-colors placeholder:text-gray-600"
+                                        className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-brand-lime focus:ring-1 focus:ring-brand-lime transition-colors placeholder:text-gray-600"
                                         placeholder="Ej. Eventos Madrid S.L."
                                     />
                                 </label>
@@ -152,12 +152,12 @@ export default function PanelOrganizerProfilePage() {
 
             {/* Floating Action Bar */}
             {hasChanges && (
-                <div className="fixed bottom-0 left-0 md:left-[280px] right-0 p-4 bg-background border-t border-white/10 flex justify-between items-center z-30">
-                    <p className="text-gray-500 text-sm hidden sm:block">Tienes cambios sin guardar</p>
+                <div className="fixed bottom-0 left-0 md:left-[280px] right-0 p-4 bg-background border-t border-border flex justify-between items-center z-30">
+                    <p className="text-muted-foreground text-sm hidden sm:block">Tienes cambios sin guardar</p>
                     <div className="flex items-center gap-3 ml-auto">
                         <button
                             onClick={handleDiscard}
-                            className="px-6 py-2.5 rounded-lg border border-white/10 text-white text-sm font-medium hover:bg-surface transition-colors"
+                            className="px-6 py-2.5 rounded-lg border border-border text-foreground text-sm font-medium hover:bg-card transition-colors"
                         >
                             Descartar
                         </button>
@@ -165,7 +165,7 @@ export default function PanelOrganizerProfilePage() {
                             onClick={handleSave}
                             disabled={saving}
                             className={`px-6 py-2.5 rounded-lg text-sm font-bold shadow-[0_0_15px_rgba(132,204,22,0.3)] transition-all flex items-center gap-2 disabled:opacity-50 ${showSuccess
-                                    ? 'bg-green-500 text-white hover:bg-green-600'
+                                    ? 'bg-green-500 text-foreground hover:bg-green-600'
                                     : 'bg-brand-lime text-black hover:bg-brand-lime/90'
                                 }`}
                         >

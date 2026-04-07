@@ -139,18 +139,18 @@ export default function PanelCalendarPage() {
     return (
         <div className="flex-1 flex flex-col h-full overflow-hidden">
             {/* Header */}
-            <header className="w-full px-6 py-8 md:px-10 border-b border-white/10 bg-background/95 backdrop-blur-sm sticky top-0 z-10">
+            <header className="w-full px-6 py-8 md:px-10 border-b border-border bg-background/95 backdrop-blur-sm sticky top-0 z-10">
                 <div className="flex flex-wrap justify-between items-end gap-4">
                     <div className="flex flex-col gap-2">
-                        <nav className="flex items-center text-sm text-gray-500 mb-1">
+                        <nav className="flex items-center text-sm text-muted-foreground mb-1">
                             <span>Panel</span>
                             <ChevronRight size={16} className="mx-1" />
-                            <span className="text-white">Calendario</span>
+                            <span className="text-foreground">Calendario</span>
                         </nav>
-                        <h1 className="text-white text-3xl md:text-4xl font-black tracking-tight">Disponibilidad y Calendario</h1>
-                        <p className="text-gray-500 text-base max-w-2xl">Gestiona tus fechas disponibles, bloquea días de descanso y sincroniza tus bolos.</p>
+                        <h1 className="text-foreground text-3xl md:text-4xl font-black tracking-tight">Disponibilidad y Calendario</h1>
+                        <p className="text-muted-foreground text-base max-w-2xl">Gestiona tus fechas disponibles, bloquea días de descanso y sincroniza tus bolos.</p>
                     </div>
-                    <span className="flex items-center gap-2 h-10 px-5 bg-white/5 text-gray-500 text-sm font-bold rounded-lg border border-white/5 cursor-not-allowed" title="Próximamente">
+                    <span className="flex items-center gap-2 h-10 px-5 bg-muted text-muted-foreground text-sm font-bold rounded-lg border border-border cursor-not-allowed" title="Próximamente">
                         <RefreshCw size={18} />
                         <span>Sincronizar Google/iCal — Próximamente</span>
                     </span>
@@ -162,38 +162,38 @@ export default function PanelCalendarPage() {
                 <div className="max-w-[1400px] mx-auto grid grid-cols-1 xl:grid-cols-12 gap-8">
                     {/* Calendar */}
                     <section className="xl:col-span-8 flex flex-col gap-6">
-                        <div className="bg-surface border border-white/10 rounded-2xl p-6 shadow-xl relative overflow-hidden">
+                        <div className="bg-card border border-border rounded-2xl p-6 shadow-xl relative overflow-hidden">
                             {/* Decorative glow */}
                             <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-transparent via-primary/50 to-transparent opacity-50" />
 
                             {/* Toolbar */}
                             <div className="flex items-center justify-between mb-8">
-                                <h2 className="text-2xl font-bold text-white flex items-center gap-3">
+                                <h2 className="text-2xl font-bold text-foreground flex items-center gap-3">
                                     📅 {MONTHS[currentMonth]} {currentYear}
                                 </h2>
                                 <div className="flex gap-2">
                                     <button
                                         onClick={() => navigateMonth('prev')}
-                                        className="size-10 flex items-center justify-center rounded-lg hover:bg-white/10 text-white transition-colors"
+                                        className="size-10 flex items-center justify-center rounded-lg hover:bg-muted text-foreground transition-colors"
                                     >
                                         <ChevronLeft size={20} />
                                     </button>
                                     <button
                                         onClick={() => navigateMonth('next')}
-                                        className="size-10 flex items-center justify-center rounded-lg hover:bg-white/10 text-white transition-colors"
+                                        className="size-10 flex items-center justify-center rounded-lg hover:bg-muted text-foreground transition-colors"
                                     >
                                         <ChevronRight size={20} />
                                     </button>
-                                    <div className="ml-4 flex rounded-lg bg-white/10 p-1">
+                                    <div className="ml-4 flex rounded-lg bg-muted p-1">
                                         <button
                                             onClick={() => setViewMode('month')}
-                                            className={`px-3 py-1 rounded text-xs font-bold transition-colors ${viewMode === 'month' ? 'bg-background text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
+                                            className={`px-3 py-1 rounded text-xs font-bold transition-colors ${viewMode === 'month' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                                         >
                                             Mes
                                         </button>
                                         <button
                                             onClick={() => setViewMode('week')}
-                                            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === 'week' ? 'bg-background text-white shadow-sm' : 'text-gray-400 hover:text-white'}`}
+                                            className={`px-3 py-1 rounded text-xs font-medium transition-colors ${viewMode === 'week' ? 'bg-background text-foreground shadow-sm' : 'text-muted-foreground hover:text-foreground'}`}
                                         >
                                             Semana
                                         </button>
@@ -204,7 +204,7 @@ export default function PanelCalendarPage() {
                             {/* Days Header */}
                             <div className="grid grid-cols-7 mb-4">
                                 {DAYS.map(day => (
-                                    <div key={day} className="text-gray-500 text-sm font-bold text-center py-2">
+                                    <div key={day} className="text-muted-foreground text-sm font-bold text-center py-2">
                                         {day}
                                     </div>
                                 ))}
@@ -220,7 +220,7 @@ export default function PanelCalendarPage() {
                                         available: 'bg-primary/10 border-primary/50 hover:bg-primary/20',
                                         occupied: 'border-red-500/30 hover:border-red-500/50',
                                         blocked: 'border-red-500/30 hover:border-red-500/50',
-                                        none: 'border-white/10 hover:border-white/20',
+                                        none: 'border-border hover:border-border',
                                     };
 
                                     return (
@@ -231,7 +231,7 @@ export default function PanelCalendarPage() {
                                             className={`aspect-square p-2 rounded-xl bg-background border transition-all flex flex-col items-start justify-between ${!isCurrentMonth ? 'opacity-30 cursor-not-allowed border-transparent' : statusStyles[status?.status || 'none']
                                                 } ${today ? 'ring-2 ring-primary shadow-[0_0_15px_rgba(255,216,77,0.15)]' : ''}`}
                                         >
-                                            <span className={`text-sm font-medium ${status?.status === 'available' ? 'text-primary font-bold' : 'text-white'
+                                            <span className={`text-sm font-medium ${status?.status === 'available' ? 'text-primary font-bold' : 'text-foreground'
                                                 } ${today ? 'bg-primary text-black rounded-full size-6 flex items-center justify-center -mt-1 -ml-1' : ''}`}>
                                                 {date.getDate()}
                                             </span>
@@ -257,18 +257,18 @@ export default function PanelCalendarPage() {
                             </div>
 
                             {/* Legend */}
-                            <div className="flex items-center gap-6 mt-6 border-t border-white/10 pt-4">
+                            <div className="flex items-center gap-6 mt-6 border-t border-border pt-4">
                                 <div className="flex items-center gap-2">
                                     <div className="size-3 rounded-full bg-primary" />
-                                    <span className="text-sm text-gray-500">Disponible</span>
+                                    <span className="text-sm text-muted-foreground">Disponible</span>
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <div className="size-3 rounded-full bg-red-500" />
-                                    <span className="text-sm text-gray-500">Ocupado / Bloqueado</span>
+                                    <span className="text-sm text-muted-foreground">Ocupado / Bloqueado</span>
                                 </div>
                                 <div className="flex items-center gap-2">
-                                    <div className="size-3 rounded-full border border-white/20 bg-background" />
-                                    <span className="text-sm text-gray-500">Sin estado</span>
+                                    <div className="size-3 rounded-full border border-border bg-background" />
+                                    <span className="text-sm text-muted-foreground">Sin estado</span>
                                 </div>
                             </div>
                         </div>
@@ -276,31 +276,31 @@ export default function PanelCalendarPage() {
 
                     {/* Sidebar: Upcoming Gigs */}
                     <aside className="xl:col-span-4 flex flex-col gap-6">
-                        <div className="bg-surface border border-white/10 rounded-2xl p-6 h-full shadow-xl">
+                        <div className="bg-card border border-border rounded-2xl p-6 h-full shadow-xl">
                             <div className="flex items-center justify-between mb-6">
-                                <h3 className="text-xl font-bold text-white">Próximos Bolos</h3>
+                                <h3 className="text-xl font-bold text-foreground">Próximos Bolos</h3>
                                 <button className="text-xs text-primary font-medium hover:underline">Ver todo</button>
                             </div>
 
                             {/* Events List */}
                             <div className="flex flex-col gap-4">
                                 {upcomingGigs.length === 0 ? (
-                                    <p className="text-gray-500 text-sm text-center py-8">No tienes bolos próximos</p>
+                                    <p className="text-muted-foreground text-sm text-center py-8">No tienes bolos próximos</p>
                                 ) : (
                                     upcomingGigs.map((gig) => {
                                         const date = new Date(gig.date);
                                         return (
-                                            <div key={gig.date} className="group flex flex-col gap-3 p-4 rounded-xl bg-background border border-white/10 hover:border-primary/50 transition-colors">
+                                            <div key={gig.date} className="group flex flex-col gap-3 p-4 rounded-xl bg-background border border-border hover:border-primary/50 transition-colors">
                                                 <div className="flex gap-3">
-                                                    <div className="flex flex-col items-center justify-center w-12 h-14 bg-white/5 rounded-lg border border-white/10">
+                                                    <div className="flex flex-col items-center justify-center w-12 h-14 bg-muted rounded-lg border border-border">
                                                         <span className="text-xs font-bold text-primary uppercase">
                                                             {MONTHS[date.getMonth()].slice(0, 3)}
                                                         </span>
-                                                        <span className="text-lg font-black text-white">{date.getDate()}</span>
+                                                        <span className="text-lg font-black text-foreground">{date.getDate()}</span>
                                                     </div>
                                                     <div>
-                                                        <h4 className="text-white font-bold leading-tight">{gig.eventName || 'Evento'}</h4>
-                                                        <p className="text-gray-500 text-xs mt-1">Fecha confirmada</p>
+                                                        <h4 className="text-foreground font-bold leading-tight">{gig.eventName || 'Evento'}</h4>
+                                                        <p className="text-muted-foreground text-xs mt-1">Fecha confirmada</p>
                                                     </div>
                                                 </div>
                                             </div>
@@ -311,10 +311,10 @@ export default function PanelCalendarPage() {
 
                             {/* Promo Box */}
                             <div className="mt-auto pt-6">
-                                <div className="rounded-xl bg-gradient-to-r from-white/10 to-white/5 p-4 border border-white/5 relative overflow-hidden">
+                                <div className="rounded-xl bg-gradient-to-r from-white/10 to-white/5 p-4 border border-border relative overflow-hidden">
                                     <div className="relative z-10">
-                                        <p className="text-white font-bold text-sm mb-1">¡Consigue más bolos!</p>
-                                        <p className="text-gray-500 text-xs mb-3">Mantén tu calendario actualizado para aparecer en más búsquedas.</p>
+                                        <p className="text-foreground font-bold text-sm mb-1">¡Consigue más bolos!</p>
+                                        <p className="text-muted-foreground text-xs mb-3">Mantén tu calendario actualizado para aparecer en más búsquedas.</p>
                                     </div>
                                     <span className="absolute -right-2 -bottom-2 text-6xl opacity-10">🚀</span>
                                 </div>
@@ -338,19 +338,19 @@ export default function PanelCalendarPage() {
             {/* Block Date Modal */}
             {showBlockModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4">
-                    <div className="bg-[#1a1a1a] border border-white/10 rounded-2xl p-6 w-full max-w-sm flex flex-col gap-5 shadow-2xl">
-                        <h3 className="text-white font-bold text-lg">Bloquear fecha</h3>
+                    <div className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm flex flex-col gap-5 shadow-2xl">
+                        <h3 className="text-foreground font-bold text-lg">Bloquear fecha</h3>
                         <input
                             type="date"
                             value={blockDate}
                             onChange={e => setBlockDate(e.target.value)}
                             min={new Date().toISOString().split('T')[0]}
-                            className="w-full h-12 rounded-xl bg-background border border-white/10 text-white px-4 text-sm focus:border-primary focus:outline-none"
+                            className="w-full h-12 rounded-xl bg-background border border-border text-foreground px-4 text-sm focus:border-primary focus:outline-none"
                         />
                         <div className="flex gap-3">
                             <button
                                 onClick={() => { setShowBlockModal(false); setBlockDate(''); }}
-                                className="flex-1 h-10 rounded-xl border border-white/10 text-white text-sm font-bold hover:bg-white/5"
+                                className="flex-1 h-10 rounded-xl border border-border text-foreground text-sm font-bold hover:bg-muted"
                             >Cancelar</button>
                             <button
                                 onClick={handleAddBlockDate}

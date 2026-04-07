@@ -8,37 +8,48 @@ export default {
     theme: {
         extend: {
             colors: {
-                border: "rgba(255, 255, 255, 0.1)",
-                input: "hsl(var(--input))", // Keep if used elsewhere
-                ring: "hsl(var(--ring))",   // Keep if used elsewhere
-                background: "#0A0A0A", // Deep Black
-                surface: "#171717",    // Charcoal
-                foreground: "#FFFFFF",
+                border: "hsl(var(--border))",
+                input: "hsl(var(--input))",
+                ring: "hsl(var(--ring))",
+                background: "hsl(var(--background))",
+                surface: "hsl(var(--card))",
+                foreground: "hsl(var(--foreground))",
+                card: {
+                    DEFAULT: "hsl(var(--card))",
+                    foreground: "hsl(var(--card-foreground))",
+                },
                 primary: {
-                    DEFAULT: "#FFD84D", // Electric Yellow
+                    DEFAULT: "#FFD84D",
                     hover: "#FFC800",
                     foreground: "#0A0A0A",
-                    dark: "#002C45", // Keep for backward compat if needed
+                    dark: "#002C45",
                 },
                 secondary: {
-                    DEFAULT: "#FFFFFF",
-                    foreground: "#0A0A0A",
+                    DEFAULT: "hsl(var(--secondary))",
+                    foreground: "hsl(var(--secondary-foreground))",
                 },
                 muted: {
-                    DEFAULT: "#B0B0B0",
-                    foreground: "#A3A3A3", // Fixed: Light grey for visibility on dark backgrounds
+                    DEFAULT: "hsl(var(--muted))",
+                    foreground: "hsl(var(--muted-foreground))",
                 },
                 destructive: {
                     DEFAULT: "hsl(var(--destructive))",
                     foreground: "hsl(var(--destructive-foreground))",
                 },
-                // Brand specific specific object
+                popover: {
+                    DEFAULT: "hsl(var(--popover))",
+                    foreground: "hsl(var(--popover-foreground))",
+                },
+                // Brand tokens (explicit, not theme-aware)
                 brand: {
                     yellow: "#FFD84D",
                     black: "#0A0A0A",
                     charcoal: "#171717",
                     white: "#FFFFFF",
-                    gray: "#B0B0B0"
+                    gray: "#B0B0B0",
+                    cyan: "#37B7F6",
+                    lime: "#82FF1F",
+                    petrol: "#002C45",
                 }
             },
             fontFamily: {

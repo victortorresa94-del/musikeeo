@@ -84,10 +84,10 @@ export default function PanelServicesPage() {
 
     return (
         <div className="flex-1 flex flex-col h-full bg-background">
-            <header className="px-6 py-6 border-b border-white/10 flex justify-between items-center">
+            <header className="px-6 py-6 border-b border-border flex justify-between items-center">
                 <div>
-                    <h1 className="text-2xl font-bold text-white mb-1">Mis Servicios Técnicos</h1>
-                    <p className="text-gray-400 text-sm">Gestiona el catálogo de servicios que ofreces.</p>
+                    <h1 className="text-2xl font-bold text-foreground mb-1">Mis Servicios Técnicos</h1>
+                    <p className="text-muted-foreground text-sm">Gestiona el catálogo de servicios que ofreces.</p>
                 </div>
                 <div className="bg-purple-500/10 p-2 rounded-lg">
                     <Box className="text-purple-400" size={24} />
@@ -95,8 +95,8 @@ export default function PanelServicesPage() {
             </header>
 
             <main className="flex-1 p-6 md:p-10 max-w-4xl mx-auto w-full">
-                <div className="bg-surface border border-white/10 rounded-xl p-6">
-                    <h3 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                <div className="bg-card border border-border rounded-xl p-6">
+                    <h3 className="text-lg font-bold text-foreground mb-4 flex items-center gap-2">
                         <Settings size={18} />
                         Lista de Servicios
                     </h3>
@@ -108,11 +108,11 @@ export default function PanelServicesPage() {
                             onChange={(e) => setNewService(e.target.value)}
                             onKeyDown={(e) => e.key === 'Enter' && handleAddService()}
                             placeholder="Ej. Sonorización de eventos, Alquiler de luces..."
-                            className="flex-1 bg-background border border-white/10 rounded-lg px-4 py-2 text-white focus:border-purple-500 outline-none"
+                            className="flex-1 bg-background border border-border rounded-lg px-4 py-2 text-foreground focus:border-purple-500 outline-none"
                         />
                         <button
                             onClick={handleAddService}
-                            className="bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg font-bold transition-colors"
+                            className="bg-purple-600 hover:bg-purple-700 text-foreground px-4 py-2 rounded-lg font-bold transition-colors"
                         >
                             <Plus size={20} />
                         </button>
@@ -120,17 +120,17 @@ export default function PanelServicesPage() {
 
                     <div className="flex flex-wrap gap-3">
                         {services.length === 0 && (
-                            <p className="text-gray-500 italic text-sm w-full text-center py-4">
+                            <p className="text-muted-foreground italic text-sm w-full text-center py-4">
                                 No has añadido ningún servicio aún.
                             </p>
                         )}
 
                         {services.map((service, idx) => (
-                            <div key={idx} className="bg-white/5 border border-white/10 rounded-lg pl-4 pr-2 py-2 flex items-center gap-3 group hover:border-purple-500/50 transition-colors">
-                                <span className="text-white font-medium">{service}</span>
+                            <div key={idx} className="bg-muted border border-border rounded-lg pl-4 pr-2 py-2 flex items-center gap-3 group hover:border-purple-500/50 transition-colors">
+                                <span className="text-foreground font-medium">{service}</span>
                                 <button
                                     onClick={() => handleRemoveService(service)}
-                                    className="p-1 rounded-md text-gray-500 hover:bg-red-500/20 hover:text-red-400 transition-colors"
+                                    className="p-1 rounded-md text-muted-foreground hover:bg-red-500/20 hover:text-red-400 transition-colors"
                                 >
                                     <X size={14} />
                                 </button>
@@ -138,13 +138,13 @@ export default function PanelServicesPage() {
                         ))}
                     </div>
 
-                    <div className="mt-8 pt-6 border-t border-white/10 flex justify-end">
+                    <div className="mt-8 pt-6 border-t border-border flex justify-end">
                         <button
                             onClick={handleSave}
                             disabled={saving}
                             className={`px-6 py-2.5 rounded-lg text-sm font-bold shadow-lg transition-all flex items-center gap-2 disabled:opacity-50 ${showSuccess
-                                    ? 'bg-green-500 text-white hover:bg-green-600'
-                                    : 'bg-purple-600 text-white hover:bg-purple-700'
+                                    ? 'bg-green-500 text-foreground hover:bg-green-600'
+                                    : 'bg-purple-600 text-foreground hover:bg-purple-700'
                                 }`}
                         >
                             {showSuccess ? <Check size={16} /> : <Save size={16} />}

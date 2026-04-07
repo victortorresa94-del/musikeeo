@@ -3,46 +3,68 @@
 @tailwind utilities;
 
 @layer base {
+  /* ===== LIGHT THEME (default — all app pages) ===== */
   :root {
-    /* DEFAULT TO DARK MODE (Scenic Black Theme) */
-    /* Background: Scenic Black #0A0A0A -> HSL: 0 0% 4% */
-    --background: 0 0% 4%;
-    /* Text: Smoke White #F5F5F5 -> HSL: 0 0% 96% */
-    --foreground: 0 0% 96%;
+    --background: 0 0% 100%;
+    --foreground: 0 0% 7%;
 
-    /* Primary: Musikeeo Yellow #FFD84D -> HSL: 47 100% 65% */
     --primary: 47 100% 65%;
     --primary-foreground: 0 0% 4%;
 
-    /* Accent: Warm Yellow #FFC300 -> HSL: 46 100% 50% */
     --accent: 46 100% 50%;
     --accent-foreground: 0 0% 4%;
 
-    /* Card: Charcoal Grey #1E1E1E -> HSL: 0 0% 12% */
+    --card: 0 0% 98%;
+    --card-foreground: 0 0% 7%;
+
+    --popover: 0 0% 98%;
+    --popover-foreground: 0 0% 7%;
+
+    --secondary: 0 0% 96%;
+    --secondary-foreground: 0 0% 7%;
+
+    --muted: 0 0% 96%;
+    --muted-foreground: 0 0% 45%;
+
+    --destructive: 0 62.8% 50%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 47 100% 65%;
+
+    --radius: 1rem;
+  }
+
+  /* ===== DARK THEME (Home, auth pages) ===== */
+  .theme-dark {
+    --background: 0 0% 4%;
+    --foreground: 0 0% 96%;
+
+    --primary: 47 100% 65%;
+    --primary-foreground: 0 0% 4%;
+
+    --accent: 46 100% 50%;
+    --accent-foreground: 0 0% 4%;
+
     --card: 0 0% 12%;
     --card-foreground: 0 0% 96%;
 
-    /* Popover: Matches Card */
     --popover: 0 0% 12%;
     --popover-foreground: 0 0% 96%;
 
-    /* Secondary: Charcoal Grey */
     --secondary: 0 0% 12%;
     --secondary-foreground: 0 0% 96%;
 
-    /* Muted */
     --muted: 0 0% 12%;
     --muted-foreground: 0 0% 60%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    /* Border: #2A2A2A -> HSL 0 0% 16% */
     --border: 0 0% 16%;
     --input: 0 0% 16%;
     --ring: 47 100% 65%;
-
-    --radius: 1rem;
   }
 }
 
@@ -71,7 +93,7 @@
 
 @layer utilities {
   .glass-panel {
-    @apply bg-card/60 backdrop-blur-md border border-white/5;
+    @apply bg-card/60 backdrop-blur-md border border-border;
   }
 
   .text-glow {

@@ -5,7 +5,6 @@ import { Button } from '../../components/ui/button';
 import { EventCard } from '../../components/events/EventCard';
 import { EventsSidebar } from '../../components/events/EventsSidebar';
 import { MobileEventsFilterDrawer } from '../../components/events/MobileEventsFilterDrawer';
-import { Navbar } from '../../components/home/Navbar';
 // import { MOCK_EVENTS } from '../../services/eventsData';
 import { eventService } from '../../services/eventService';
 import type { Event } from '../../types';
@@ -91,10 +90,8 @@ export default function EventsV2() {
     };
 
     return (
-        <div className="flex h-screen w-full flex-col bg-background text-white font-sans overflow-hidden">
-            {!isPanelMode && <Navbar />}
-
-            <div className="flex flex-1 overflow-hidden pt-20">
+        <div className="flex h-full w-full flex-col bg-background text-foreground font-sans overflow-hidden">
+            <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar Filters */}
                 <EventsSidebar
                     filters={filters}
@@ -106,20 +103,20 @@ export default function EventsV2() {
                 <main className="flex-1 overflow-y-auto bg-background p-4 md:p-8 pb-32 relative">
 
                     {/* Header / Hero Section */}
-                    <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-8 border-b border-white/5">
+                    <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-8 border-b border-border">
                         <div>
                             <div className="flex items-center gap-3 mb-2">
                                 <div className="h-10 w-10 rounded-full bg-brand-yellow flex items-center justify-center text-brand-black font-bold">
                                     <Sparkles size={20} />
                                 </div>
-                                <h1 className="text-3xl font-heading font-bold text-white tracking-tight">
+                                <h1 className="text-xl md:text-2xl font-heading font-bold text-foreground tracking-tight">
                                     {isPanelMode ? 'Mis Eventos' : 'Tablón de Oportunidades'}
                                 </h1>
                             </div>
-                            <p className="text-gray-400 text-lg">
+                            <p className="text-muted-foreground text-lg">
                                 {isPanelMode
                                     ? 'Gestiona tus eventos publicados y revisa candidaturas.'
-                                    : <>Encuentra tu próximo escenario. <span className="text-white font-bold">{sortedEvents.length}</span> oportunidades abiertas.</>
+                                    : <>Encuentra tu próximo escenario. <span className="text-foreground font-bold">{sortedEvents.length}</span> oportunidades abiertas.</>
                                 }
                             </p>
                         </div>
@@ -127,9 +124,9 @@ export default function EventsV2() {
                         <div className="flex flex-col sm:flex-row gap-4">
                             {/* In-page Search */}
                             <div className="relative w-full sm:w-80">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
                                 <input
-                                    className="w-full rounded-lg border border-white/10 bg-surface py-2 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:border-brand-yellow focus:ring-1 focus:ring-brand-yellow outline-none"
+                                    className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 text-sm text-foreground placeholder-muted-foreground focus:border-brand-yellow focus:ring-1 focus:ring-brand-yellow outline-none"
                                     placeholder="Buscar eventos..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -140,7 +137,7 @@ export default function EventsV2() {
                             <div className="flex items-center gap-3">
                                 <span className="text-sm text-muted-foreground whitespace-nowrap">Ordenar por:</span>
                                 <select
-                                    className="rounded-lg border-white/10 bg-surface py-2 pl-3 pr-10 text-sm font-medium text-white focus:border-brand-yellow outline-none cursor-pointer"
+                                    className="rounded-lg border-border bg-card py-2 pl-3 pr-10 text-sm font-medium text-foreground focus:border-brand-yellow outline-none cursor-pointer"
                                     value={sortOption}
                                     onChange={(e) => setSortOption(e.target.value)}
                                 >
@@ -160,9 +157,9 @@ export default function EventsV2() {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-20 bg-surface/30 rounded-2xl border border-white/5 border-dashed">
-                            <Music className="mx-auto h-12 w-12 text-gray-600 mb-4" />
-                            <h3 className="text-lg font-bold text-white">No se encontraron eventos</h3>
+                        <div className="text-center py-20 bg-card/30 rounded-2xl border border-border border-dashed">
+                            <Music className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                            <h3 className="text-lg font-bold text-foreground">No se encontraron eventos</h3>
                             <p className="text-muted-foreground">Intenta ajustar tus filtros de búsqueda.</p>
                         </div>
                     )}

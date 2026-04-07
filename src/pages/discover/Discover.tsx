@@ -1,7 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useLocation, useSearchParams, Link } from 'react-router-dom';
 import { Search, Music, Filter, Calendar, MapPin, Star, CheckCircle, Users } from 'lucide-react';
-import { Navbar } from '../../components/home/Navbar';
+
 import { DiscoverSidebar } from '../../components/discover/DiscoverSidebar';
 import { ProviderSidebar } from '../../components/discover/ProviderSidebar';
 import { MobileFilterDrawer } from '../../components/discover/MobileFilterDrawer';
@@ -228,10 +228,9 @@ export default function Discover() {
     }, [filteredArtists, sortOption, filters.dateFrom]);
 
     return (
-        <div className="flex h-screen w-full flex-col bg-background text-white font-sans overflow-hidden">
-            <Navbar />
+        <div className="flex h-screen w-full flex-col bg-background text-foreground font-sans overflow-hidden">
 
-            <div className="flex flex-1 overflow-hidden pt-20">
+            <div className="flex flex-1 overflow-hidden">
                 {/* Sidebar Filters */}
                 {isSoundServices ? (
                     <ProviderSidebar
@@ -253,7 +252,7 @@ export default function Discover() {
                     {/* Header of Grid */}
                     <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                         <div>
-                            <h1 className="text-3xl font-bold text-white mb-2 font-heading">
+                            <h1 className="text-3xl font-bold text-foreground mb-2 font-heading">
                                 {isSoundServices ? 'Proveedores' : 'Descubre Músicos'}
                             </h1>
                             <p className="text-muted-foreground">
@@ -272,7 +271,7 @@ export default function Discover() {
                                     </span>
                                     <button
                                         onClick={() => handleFilterChange('dateFrom', null)}
-                                        className="text-primary hover:text-white ml-1"
+                                        className="text-primary hover:text-foreground ml-1"
                                     >
                                         ×
                                     </button>
@@ -283,7 +282,7 @@ export default function Discover() {
                             <div className="relative w-full sm:w-64">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
                                 <input
-                                    className="w-full rounded-lg border border-white/10 bg-surface py-2 pl-10 pr-4 text-sm text-white placeholder-gray-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                                    className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 text-sm text-foreground placeholder-gray-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                                     placeholder="Buscar artistas..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -293,7 +292,7 @@ export default function Discover() {
                             <div className="flex items-center gap-3">
                                 <span className="text-sm text-muted-foreground whitespace-nowrap">Ordenar por:</span>
                                 <select
-                                    className="rounded-lg border-white/10 bg-surface py-2 pl-3 pr-10 text-sm font-medium text-white focus:border-primary outline-none cursor-pointer"
+                                    className="rounded-lg border-border bg-card py-2 pl-3 pr-10 text-sm font-medium text-foreground focus:border-primary outline-none cursor-pointer"
                                     value={sortOption}
                                     onChange={(e) => setSortOption(e.target.value)}
                                 >
@@ -318,9 +317,9 @@ export default function Discover() {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-20 bg-surface/30 rounded-2xl border border-white/5 border-dashed">
+                        <div className="text-center py-20 bg-muted/30 rounded-2xl border border-border border-dashed">
                             <Music className="mx-auto h-12 w-12 text-gray-600 mb-4" />
-                            <p className="text-lg text-white font-bold">No se encontraron resultados.</p>
+                            <p className="text-lg text-foreground font-bold">No se encontraron resultados.</p>
                             <p className="text-muted-foreground">Intenta ajustar tus filtros de búsqueda.</p>
                         </div>
                     )}
@@ -362,7 +361,7 @@ function ArtistCard({ artist, dateFilter }: { artist: UnifiedArtist; dateFilter:
     return (
         <Link
             to={linkTo}
-            className="group relative flex flex-col bg-surface border border-white/10 rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.3)]"
+            className="group relative flex flex-col bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
         >
             {/* Image */}
             <div className="relative aspect-[4/3] overflow-hidden">
@@ -400,23 +399,23 @@ function ArtistCard({ artist, dateFilter }: { artist: UnifiedArtist; dateFilter:
             <div className="p-4 flex flex-col gap-2">
                 <div className="flex items-start justify-between gap-2">
                     <div>
-                        <h3 className="text-white font-bold text-base leading-tight group-hover:text-primary transition-colors line-clamp-1">
+                        <h3 className="text-foreground font-bold text-base leading-tight group-hover:text-primary transition-colors line-clamp-1">
                             {artist.name}
                         </h3>
                         <p className="text-gray-500 text-xs flex items-center gap-1 mt-0.5">
                             <MapPin size={12} /> {artist.city}
                         </p>
                     </div>
-                    <div className="flex items-center gap-1 bg-white/10 px-2 py-1 rounded-lg shrink-0">
+                    <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded-lg shrink-0">
                         <Star size={12} className="text-primary fill-primary" />
-                        <span className="text-white text-xs font-bold">{artist.rating?.toFixed(1) || '5.0'}</span>
+                        <span className="text-foreground text-xs font-bold">{artist.rating?.toFixed(1) || '5.0'}</span>
                     </div>
                 </div>
 
                 {/* Genres */}
                 <div className="flex flex-wrap gap-1.5 mt-1">
                     {artist.genres?.slice(0, 2).map((genre: string) => (
-                        <span key={genre} className="text-[10px] px-2 py-0.5 rounded-full bg-white/5 text-gray-400 border border-white/5">
+                        <span key={genre} className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
                             {genre}
                         </span>
                     ))}

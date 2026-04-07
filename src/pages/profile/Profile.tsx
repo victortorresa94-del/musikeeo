@@ -178,14 +178,14 @@ export default function Profile() {
     // Loading State
     if (isLoading && !isEditing) { // Don't show full screen loader if just saving
         return (
-            <div className="flex items-center justify-center min-h-screen bg-brand-black/90">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-brand-yellow"></div>
+            <div className="flex items-center justify-center min-h-screen bg-background/90">
+                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
             </div>
         );
     }
 
     return (
-        <div className="min-h-screen bg-brand-black text-brand-white pb-32 font-sans overflow-x-hidden selection:bg-brand-yellow/30">
+        <div className="min-h-screen bg-background text-foreground pb-32 font-sans overflow-x-hidden selection:bg-primary/30">
             {/* Hidden File Inputs */}
             <input type="file" ref={avatarInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'avatar')} />
             <input type="file" ref={coverInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'cover')} />
@@ -198,7 +198,7 @@ export default function Profile() {
                     className="absolute inset-0 bg-cover bg-center transition-all duration-500"
                     style={{ backgroundImage: `url("${cover}")` }}
                 >
-                    <div className="absolute inset-0 bg-brand-black/20 bg-gradient-to-t from-brand-black via-transparent to-transparent"></div>
+                    <div className="absolute inset-0 bg-background/20 bg-gradient-to-t from-background via-transparent to-transparent"></div>
                 </div>
 
                 {/* Edit Cover Button (Visible in Edit Mode) */}
@@ -213,11 +213,11 @@ export default function Profile() {
 
                 {/* Top Nav Actions */}
                 <div className="absolute top-4 left-0 right-0 px-4 flex justify-between items-center z-20">
-                    <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full bg-black/20 backdrop-blur-md">
+                    <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted rounded-full bg-black/20 backdrop-blur-md">
                         <ArrowLeft className="h-6 w-6" />
                     </Button>
                     <div className="flex gap-2">
-                        <Button variant="ghost" size="icon" className="text-white hover:bg-white/10 rounded-full bg-black/20 backdrop-blur-md">
+                        <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted rounded-full bg-black/20 backdrop-blur-md">
                             <Share2 className="h-6 w-6" />
                         </Button>
                     </div>
@@ -231,7 +231,7 @@ export default function Profile() {
                             animate={{ scale: 1, opacity: 1 }}
                             src={avatar}
                             alt={profile.name}
-                            className={`w-36 h-36 rounded-full border-4 border-brand-black shadow-2xl object-cover bg-brand-charcoal ${isEditing ? 'brightness-75' : ''}`}
+                            className={`w-36 h-36 rounded-full border-4 border-background shadow-2xl object-cover bg-card ${isEditing ? 'brightness-75' : ''}`}
                         />
                         {/* Edit Avatar Overlay */}
                         {isEditing && (
@@ -256,13 +256,13 @@ export default function Profile() {
                             <Input
                                 value={profile.name}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfile({ ...profile, name: e.target.value })}
-                                className="text-3xl font-bold bg-brand-charcoal border-white/10 text-white h-12"
+                                className="text-3xl font-bold bg-card border-border text-foreground h-12"
                                 placeholder="Nombre Artístico"
                             />
                         ) : (
                             <div className="flex items-center gap-3">
-                                <h1 className="text-3xl font-bold tracking-tight text-white">{profile.name}</h1>
-                                <Badge className="bg-brand-charcoal text-brand-yellow border border-brand-yellow/30 px-2 py-0.5 text-[10px] h-5 gap-1">
+                                <h1 className="text-3xl font-bold tracking-tight text-foreground">{profile.name}</h1>
+                                <Badge className="bg-card text-primary border border-primary/30 px-2 py-0.5 text-[10px] h-5 gap-1">
                                     <ShieldCheck className="w-3 h-3" /> TrustScore {profile.trustScore}
                                 </Badge>
                             </div>
@@ -273,20 +273,20 @@ export default function Profile() {
                         <Input
                             value={profile.role}
                             onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfile({ ...profile, role: e.target.value })}
-                            className="bg-brand-charcoal border-white/10 text-gray-300"
+                            className="bg-card border-border text-muted-foreground"
                             placeholder="Rol Principal"
                         />
                     ) : (
-                        <h2 className="text-base text-gray-300 font-medium">{profile.role}</h2>
+                        <h2 className="text-base text-muted-foreground font-medium">{profile.role}</h2>
                     )}
 
-                    <div className="flex items-center gap-2 text-sm text-gray-500">
-                        <MapPin className="w-4 h-4 text-brand-yellow" />
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                        <MapPin className="w-4 h-4 text-primary" />
                         {isEditing ? (
                             <Input
                                 value={profile.location}
                                 onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfile({ ...profile, location: e.target.value })}
-                                className="bg-brand-charcoal border-white/10 text-gray-400 h-8 text-sm"
+                                className="bg-card border-border text-muted-foreground h-8 text-sm"
                                 placeholder="Ubicación"
                             />
                         ) : (
@@ -298,11 +298,11 @@ export default function Profile() {
                         <Textarea
                             value={profile.about}
                             onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setProfile({ ...profile, about: e.target.value })}
-                            className="bg-brand-charcoal border-white/10 text-white mt-4 min-h-[100px]"
+                            className="bg-card border-border text-foreground mt-4 min-h-[100px]"
                             placeholder="Sobre mí..."
                         />
                     ) : (
-                        <p className="text-gray-400 leading-relaxed text-sm mt-4 max-w-2xl">
+                        <p className="text-muted-foreground leading-relaxed text-sm mt-4 max-w-2xl">
                             {profile.about}
                         </p>
                     )}
@@ -310,27 +310,27 @@ export default function Profile() {
 
                 {/* 2. Stats Cards */}
                 <div className="grid grid-cols-2 gap-4">
-                    <Card className="bg-brand-charcoal border-none shadow-md rounded-2xl overflow-hidden">
+                    <Card className="bg-card border-none shadow-md rounded-2xl overflow-hidden">
                         <CardContent className="p-6 flex flex-col items-start justify-center h-32 relative">
-                            <Music className="absolute -right-4 -bottom-4 w-24 h-24 text-brand-yellow/10 rotate-12" />
+                            <Music className="absolute -right-4 -bottom-4 w-24 h-24 text-primary/10 rotate-12" />
                             <div className="flex items-center gap-2 mb-2">
-                                <Music className="w-5 h-5 text-brand-yellow" />
-                                <span className="text-xs uppercase tracking-wider text-brand-yellow font-bold">Bolos</span>
+                                <Music className="w-5 h-5 text-primary" />
+                                <span className="text-xs uppercase tracking-wider text-primary font-bold">Bolos</span>
                             </div>
-                            <span className="text-4xl font-bold text-white">{profile.stats.gigs}</span>
-                            <span className="text-xs text-gray-400 mt-1">Realizados</span>
+                            <span className="text-4xl font-bold text-foreground">{profile.stats.gigs}</span>
+                            <span className="text-xs text-muted-foreground mt-1">Realizados</span>
                         </CardContent>
                     </Card>
-                    <Card className="bg-brand-charcoal border-none shadow-md rounded-2xl overflow-hidden">
+                    <Card className="bg-card border-none shadow-md rounded-2xl overflow-hidden">
                         <CardContent className="p-6 flex flex-col items-start justify-center h-32 relative">
-                            <Star className="absolute -right-4 -bottom-4 w-24 h-24 text-brand-warm/10 rotate-12" />
+                            <Star className="absolute -right-4 -bottom-4 w-24 h-24 text-primary/10 rotate-12" />
                             <div className="flex items-center gap-2 mb-2">
-                                <Star className="w-5 h-5 text-brand-yellow" />
-                                <span className="text-xs uppercase tracking-wider text-brand-yellow font-bold">Reseñas</span>
+                                <Star className="w-5 h-5 text-primary" />
+                                <span className="text-xs uppercase tracking-wider text-primary font-bold">Reseñas</span>
                             </div>
                             <div className="flex flex-col">
-                                <span className="text-4xl font-bold text-white">{profile.stats.rating} <span className="text-lg text-gray-500 font-normal">/5</span></span>
-                                <span className="text-xs text-gray-400 mt-0.5">{profile.stats.reviews} reviews</span>
+                                <span className="text-4xl font-bold text-foreground">{profile.stats.rating} <span className="text-lg text-muted-foreground font-normal">/5</span></span>
+                                <span className="text-xs text-muted-foreground mt-0.5">{profile.stats.reviews} reviews</span>
                             </div>
                         </CardContent>
                     </Card>
@@ -339,12 +339,12 @@ export default function Profile() {
                 {/* 3. Skills (Habilidades) */}
                 <section>
                     <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-bold text-white flex items-center gap-2">Habilidades</h3>
-                        {isEditing && <Button variant="ghost" size="sm" className="text-brand-yellow h-8"><Plus className="w-4 h-4 mr-1" /> Añadir</Button>}
+                        <h3 className="text-lg font-bold text-foreground flex items-center gap-2">Habilidades</h3>
+                        {isEditing && <Button variant="ghost" size="sm" className="text-primary h-8"><Plus className="w-4 h-4 mr-1" /> Añadir</Button>}
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {profile.skills.map((skill, i) => (
-                            <Badge key={i} className="bg-brand-charcoal hover:bg-brand-charcoal/80 text-white border border-white/10 px-4 py-1.5 rounded-full text-sm font-normal relative group">
+                            <Badge key={i} className="bg-card hover:bg-card/80 text-foreground border border-border px-4 py-1.5 rounded-full text-sm font-normal relative group">
                                 {skill}
                                 {isEditing && <X className="w-3 h-3 ml-2 cursor-pointer text-red-400 hover:text-red-300" />}
                             </Badge>
@@ -355,12 +355,12 @@ export default function Profile() {
                 {/* 4. Genres (Géneros) - SEPARATED */}
                 <section>
                     <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-bold text-white flex items-center gap-2">Géneros</h3>
-                        {isEditing && <Button variant="ghost" size="sm" className="text-brand-yellow h-8"><Plus className="w-4 h-4 mr-1" /> Añadir</Button>}
+                        <h3 className="text-lg font-bold text-foreground flex items-center gap-2">Géneros</h3>
+                        {isEditing && <Button variant="ghost" size="sm" className="text-primary h-8"><Plus className="w-4 h-4 mr-1" /> Añadir</Button>}
                     </div>
                     <div className="flex flex-wrap gap-2">
                         {profile.genres.map((genre, i) => (
-                            <Badge key={i} className="bg-brand-black hover:bg-brand-black/80 text-gray-300 border border-white/10 px-4 py-1.5 rounded-full text-sm font-normal relative">
+                            <Badge key={i} className="bg-background hover:bg-background/80 text-muted-foreground border border-border px-4 py-1.5 rounded-full text-sm font-normal relative">
                                 {genre}
                                 {isEditing && <X className="w-3 h-3 ml-2 cursor-pointer text-red-400 hover:text-red-300" />}
                             </Badge>
@@ -371,17 +371,17 @@ export default function Profile() {
                 {/* 5. Media Gallery */}
                 <section>
                     <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-white">Clips destacados</h3>
+                        <h3 className="text-lg font-bold text-foreground">Clips destacados</h3>
                         <div className="flex gap-2">
                             <Button
                                 variant="ghost"
                                 size="sm"
-                                className="text-brand-yellow hover:bg-brand-yellow/10 px-2 h-8"
+                                className="text-primary hover:bg-primary/10 px-2 h-8"
                                 onClick={() => galleryInputRef.current?.click()}
                             >
                                 <Plus className="w-4 h-4 mr-1" /> Añadir
                             </Button>
-                            <Button variant="link" className="text-brand-yellow text-sm h-auto p-0 hover:text-brand-yellow/80">Ver todo</Button>
+                            <Button variant="link" className="text-primary text-sm h-auto p-0 hover:text-primary/80">Ver todo</Button>
                         </div>
                     </div>
 
@@ -390,7 +390,7 @@ export default function Profile() {
                             <div
                                 key={reel.id}
                                 onClick={() => handleClipClick(reel.id)}
-                                className="relative aspect-[9/16] h-[280px] min-w-[160px] rounded-xl overflow-hidden group cursor-pointer snap-start border border-white/5 bg-brand-charcoal"
+                                className="relative aspect-[9/16] h-[280px] min-w-[160px] rounded-xl overflow-hidden group cursor-pointer snap-start border border-border bg-card"
                             >
                                 <img
                                     src={reel.thumbnailUrl}
@@ -416,7 +416,7 @@ export default function Profile() {
                             </div>
                         ))}
                         {userReels.length === 0 && (
-                            <div className="flex items-center justify-center w-full h-32 bg-brand-charcoal/50 rounded-xl border border-white/5 text-gray-500 text-sm">
+                            <div className="flex items-center justify-center w-full h-32 bg-card/50 rounded-xl border border-border text-muted-foreground text-sm">
                                 No tienes clips aún
                             </div>
                         )}
@@ -424,52 +424,52 @@ export default function Profile() {
                 </section>
 
                 {/* 6. TrustScore */}
-                <section className="bg-brand-charcoal rounded-2xl p-6 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-brand-yellow/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
+                <section className="bg-card rounded-2xl p-6 relative overflow-hidden">
+                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
                     <div className="flex items-center justify-between mb-2">
                         <div className="flex items-center gap-2">
-                            <ShieldCheck className="w-5 h-5 text-brand-yellow" />
-                            <h3 className="font-bold text-white">TrustScore Pro</h3>
+                            <ShieldCheck className="w-5 h-5 text-primary" />
+                            <h3 className="font-bold text-foreground">TrustScore Pro</h3>
                         </div>
-                        <span className="text-2xl font-bold text-brand-warm">{profile.trustScore}<span className="text-sm text-gray-500 font-normal">/100</span></span>
+                        <span className="text-2xl font-bold text-primary">{profile.trustScore}<span className="text-sm text-muted-foreground font-normal">/100</span></span>
                     </div>
-                    <div className="w-full bg-black/40 h-2 rounded-full mb-2 overflow-hidden">
+                    <div className="w-full bg-muted h-2 rounded-full mb-2 overflow-hidden">
                         <motion.div
                             initial={{ width: 0 }}
                             whileInView={{ width: '98%' }}
                             viewport={{ once: true }}
-                            className="bg-gradient-to-r from-brand-yellow to-brand-warm h-full rounded-full"
+                            className="bg-gradient-to-r from-primary to-primary/70 h-full rounded-full"
                         />
                     </div>
-                    <p className="text-xs text-gray-400">Basado en 24 bolos verificados, tiempo de respuesta y valoraciones de clientes.</p>
+                    <p className="text-xs text-muted-foreground">Basado en 24 bolos verificados, tiempo de respuesta y valoraciones de clientes.</p>
                 </section>
 
                 {/* 7. Gig History */}
                 <section className="space-y-4 pb-24">
                     <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-white">Historial reciente</h3>
-                        <Button variant="link" className="text-brand-yellow text-sm h-auto p-0 hover:text-brand-yellow/80">Ver completo</Button>
+                        <h3 className="text-lg font-bold text-foreground">Historial reciente</h3>
+                        <Button variant="link" className="text-primary text-sm h-auto p-0 hover:text-primary/80">Ver completo</Button>
                     </div>
 
                     <div className="space-y-3">
                         {gigs.map((gig) => (
-                            <div key={gig.id} className="bg-brand-charcoal p-3 rounded-xl flex items-center justify-between hover:bg-brand-charcoal/80 transition-colors cursor-default border border-white/5">
+                            <div key={gig.id} className="bg-card p-3 rounded-xl flex items-center justify-between hover:bg-card/80 transition-colors cursor-default border border-border">
                                 <div className="flex items-center gap-3">
                                     <img
                                         src="/avatar.png"
                                         alt="Gig"
-                                        className="w-12 h-12 rounded-lg object-cover bg-zinc-800"
+                                        className="w-12 h-12 rounded-lg object-cover bg-muted"
                                     />
                                     <div>
-                                        <h4 className="font-bold text-white text-sm">{gig.title}</h4>
-                                        <div className="flex items-center gap-2 text-xs text-gray-500">
+                                        <h4 className="font-bold text-foreground text-sm">{gig.title}</h4>
+                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
                                             <span>{gig.role}</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div className="flex flex-col items-end gap-1">
-                                    <span className="text-[10px] text-gray-400">{gig.date}</span>
-                                    <div className="flex items-center gap-1 text-brand-warm text-xs font-bold">
+                                    <span className="text-[10px] text-muted-foreground">{gig.date}</span>
+                                    <div className="flex items-center gap-1 text-primary text-xs font-bold">
                                         <Star className="w-3 h-3 fill-current" /> {gig.rating}
                                     </div>
                                 </div>
@@ -503,12 +503,12 @@ export default function Profile() {
                             toggleEditMode();
                         }
                     }}
-                    className={`w-full h-14 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all ring-1 ring-white/10 active:scale-[0.98]
+                    className={`w-full h-14 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all ring-1 ring-border active:scale-[0.98]
                         ${isEditing
                             ? "bg-green-500 hover:bg-green-600 text-white shadow-[0_4px_20px_rgba(34,197,94,0.5)]"
                             : !profile.isPublic
-                                ? "bg-brand-yellow hover:bg-brand-warm text-brand-black shadow-[0_4px_20px_rgba(255,216,77,0.5)]"
-                                : "bg-brand-charcoal border border-white/20 text-white hover:bg-white/10"
+                                ? "bg-primary hover:bg-primary/90 text-background shadow-[0_4px_20px_rgba(130,255,31,0.3)]"
+                                : "bg-card border border-border text-foreground hover:bg-muted"
                         }
                     `}
                 >

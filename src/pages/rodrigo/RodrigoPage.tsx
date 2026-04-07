@@ -121,7 +121,7 @@ export default function RodrigoPage() {
     ];
 
     return (
-        <div className="min-h-screen bg-background text-white selection:bg-brand-yellow selection:text-brand-black">
+        <div className="theme-dark min-h-screen bg-background text-foreground selection:bg-brand-yellow selection:text-brand-black">
             {/* Main Navbar */}
             <Navbar />
 
@@ -139,7 +139,7 @@ export default function RodrigoPage() {
                             className="space-y-8"
                         >
                             {/* Status Badge */}
-                            <div className="inline-flex items-center gap-2 rounded-full bg-white/5 border border-white/10 py-1.5 px-4">
+                            <div className="inline-flex items-center gap-2 rounded-full bg-muted border border-border py-1.5 px-4">
                                 <span className="relative flex h-2 w-2">
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FFD84D] opacity-75" />
                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FFD84D]" />
@@ -156,7 +156,7 @@ export default function RodrigoPage() {
                                         Tu experto en música en vivo.
                                     </span>
                                 </h1>
-                                <p className="text-lg text-gray-400 max-w-xl leading-relaxed">
+                                <p className="text-lg text-muted-foreground max-w-xl leading-relaxed">
                                     Organiza, reserva y gestiona tus eventos de música en vivo en segundos.
                                     Desde la logística hasta el rider técnico, yo me encargo de todo.
                                 </p>
@@ -168,10 +168,10 @@ export default function RodrigoPage() {
                                     <button
                                         key={i}
                                         onClick={() => setChatOpen(true)}
-                                        className="group flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-4 py-2 hover:border-[#FFD84D]/50 hover:bg-white/10 transition-all"
+                                        className="group flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-2 hover:border-[#FFD84D]/50 hover:bg-muted transition-all"
                                     >
                                         <prompt.icon size={16} className="text-[#FFD84D] group-hover:scale-110 transition-transform" />
-                                        <span className="text-sm text-gray-300">{prompt.text}</span>
+                                        <span className="text-sm text-muted-foreground">{prompt.text}</span>
                                     </button>
                                 ))}
                             </div>
@@ -194,7 +194,7 @@ export default function RodrigoPage() {
                             transition={{ duration: 0.6, delay: 0.2 }}
                             className="relative flex justify-center"
                         >
-                            <div className="relative w-full max-w-md aspect-[4/5] rounded-2xl overflow-hidden border border-white/10 shadow-2xl bg-white/5 group">
+                            <div className="relative w-full max-w-md aspect-[4/5] rounded-2xl overflow-hidden border border-border shadow-2xl bg-muted group">
                                 <div className="absolute inset-0 bg-gradient-to-t from-background via-transparent to-transparent opacity-60 z-10" />
                                 <img
                                     src={RODRIGO_AVATAR}
@@ -203,12 +203,12 @@ export default function RodrigoPage() {
                                 />
 
                                 {/* Status Card Overlay */}
-                                <div className="absolute bottom-6 left-6 right-6 z-20 bg-white/5 backdrop-blur-md border border-white/10 rounded-xl p-4 flex items-center gap-4">
-                                    <div className="size-10 rounded-full bg-background border border-white/10 flex items-center justify-center text-[#FFD84D] shrink-0">
+                                <div className="absolute bottom-6 left-6 right-6 z-20 bg-muted backdrop-blur-md border border-border rounded-xl p-4 flex items-center gap-4">
+                                    <div className="size-10 rounded-full bg-background border border-border flex items-center justify-center text-[#FFD84D] shrink-0">
                                         <Music size={20} />
                                     </div>
                                     <div>
-                                        <p className="text-xs text-gray-400 uppercase tracking-wider font-bold">Status</p>
+                                        <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold">Status</p>
                                         <p className="text-sm font-medium text-white">Buscando bandas disponibles...</p>
                                     </div>
                                 </div>
@@ -219,12 +219,12 @@ export default function RodrigoPage() {
             </section>
 
             {/* Features Section */}
-            <section className="py-20 bg-white/[0.02] border-y border-white/5">
+            <section className="py-20 bg-white/[0.02] border-y border-border">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
                         <div>
                             <h2 className="text-3xl font-bold tracking-tight mb-2">Cómo puedo ayudarte</h2>
-                            <p className="text-gray-400">Tu asistente integral para eventos inolvidables.</p>
+                            <p className="text-muted-foreground">Tu asistente integral para eventos inolvidables.</p>
                         </div>
                         <a href="/eventos2" className="text-[#FFD84D] text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all">
                             Ver todas las funciones <ArrowRight size={16} />
@@ -238,13 +238,13 @@ export default function RodrigoPage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.4, delay: i * 0.1 }}
-                                className="group relative rounded-xl bg-white/5 border border-white/5 p-6 hover:border-[#FFD84D]/50 transition-colors"
+                                className="group relative rounded-xl bg-muted border border-border p-6 hover:border-[#FFD84D]/50 transition-colors"
                             >
                                 <div className="mb-4 inline-flex size-12 items-center justify-center rounded-lg bg-background text-[#FFD84D] group-hover:scale-110 transition-transform">
                                     <feature.icon size={24} />
                                 </div>
                                 <h3 className="mb-2 text-lg font-bold">{feature.title}</h3>
-                                <p className="text-sm text-gray-400 leading-relaxed">{feature.description}</p>
+                                <p className="text-sm text-muted-foreground leading-relaxed">{feature.description}</p>
                             </motion.div>
                         ))}
                     </div>
@@ -255,7 +255,7 @@ export default function RodrigoPage() {
             <section className="py-20">
                 <div className="max-w-3xl mx-auto px-4 text-center">
                     <h2 className="text-2xl font-bold mb-4">Cómo aprende Rodrigo</h2>
-                    <p className="text-gray-400 leading-relaxed mb-8">
+                    <p className="text-muted-foreground leading-relaxed mb-8">
                         Analizo tus búsquedas, tus anuncios y tu perfil musical para ofrecerte las mejores coincidencias.
                         <br />
                         <span className="text-[#FFD84D]">Nunca comparto tus datos fuera de Musikeeo.</span>
@@ -289,13 +289,13 @@ export default function RodrigoPage() {
                             initial={{ opacity: 0, scale: 0.95, y: 20 }}
                             animate={{ opacity: 1, scale: 1, y: 0 }}
                             exit={{ opacity: 0, scale: 0.95, y: 20 }}
-                            className="w-full max-w-md h-[600px] bg-background border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+                            className="w-full max-w-md h-[600px] bg-background border border-border rounded-2xl shadow-2xl flex flex-col overflow-hidden"
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Chat Header */}
                             <div className="flex items-center gap-3 p-4 border-b border-white/10">
                                 <div className="relative">
-                                    <div className="size-10 rounded-full bg-cover bg-center border border-white/10" style={{ backgroundImage: `url(${RODRIGO_AVATAR})` }} />
+                                    <div className="size-10 rounded-full bg-cover bg-center border border-border" style={{ backgroundImage: `url(${RODRIGO_AVATAR})` }} />
                                     <div className="absolute -bottom-0.5 -right-0.5 size-3 bg-green-500 rounded-full border-2 border-background" />
                                 </div>
                                 <div className="flex-1">
@@ -304,7 +304,7 @@ export default function RodrigoPage() {
                                 </div>
                                 <button
                                     onClick={() => setChatOpen(false)}
-                                    className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                                    className="p-2 text-muted-foreground hover:text-foreground hover:bg-muted rounded-lg transition-colors"
                                 >
                                     <X size={20} />
                                 </button>
@@ -316,14 +316,14 @@ export default function RodrigoPage() {
                                     <div key={message.id} className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
                                         {message.role === 'assistant' && (
                                             <div
-                                                className="size-8 rounded-full bg-cover bg-center shrink-0 border border-white/10"
+                                                className="size-8 rounded-full bg-cover bg-center shrink-0 border border-border"
                                                 style={{ backgroundImage: `url(${RODRIGO_AVATAR})` }}
                                             />
                                         )}
                                         <div className={`max-w-[85%]`}>
                                             <div className={`px-4 py-3 rounded-2xl text-sm ${message.role === 'user'
-                                                ? 'bg-white/10 border border-white/5 rounded-br-sm text-white'
-                                                : 'bg-white/5 border border-white/5 rounded-bl-sm text-gray-100'
+                                                ? 'bg-muted border border-border rounded-br-sm text-foreground'
+                                                : 'bg-muted border border-border rounded-bl-sm text-gray-100'
                                                 }`}>
                                                 <p className="whitespace-pre-wrap">{message.content}</p>
                                             </div>
@@ -345,10 +345,10 @@ export default function RodrigoPage() {
                                 {isTyping && (
                                     <div className="flex gap-3">
                                         <div
-                                            className="size-8 rounded-full bg-cover bg-center shrink-0 border border-white/10"
+                                            className="size-8 rounded-full bg-cover bg-center shrink-0 border border-border"
                                             style={{ backgroundImage: `url(${RODRIGO_AVATAR})` }}
                                         />
-                                        <div className="flex items-center gap-1 px-4 py-3 bg-white/5 border border-white/5 rounded-2xl rounded-bl-sm">
+                                        <div className="flex items-center gap-1 px-4 py-3 bg-muted border border-border rounded-2xl rounded-bl-sm">
                                             <span className="text-sm text-[#FFD84D] animate-pulse">Rodrigo está escribiendo...</span>
                                         </div>
                                     </div>
@@ -360,17 +360,17 @@ export default function RodrigoPage() {
                             {/* Chat Input */}
                             <div className="p-4 border-t border-white/10">
                                 <div className="flex gap-2 items-end">
-                                    <div className="flex-1 bg-white/5 border border-white/10 rounded-xl flex items-center focus-within:border-[#FFD84D]/50 transition-colors">
+                                    <div className="flex-1 bg-muted border border-border rounded-xl flex items-center focus-within:border-[#FFD84D]/50 transition-colors">
                                         <input
                                             type="text"
                                             value={input}
                                             onChange={(e) => setInput(e.target.value)}
                                             onKeyDown={handleKeyDown}
                                             placeholder="Escríbele a Rodrigo..."
-                                            className="flex-1 bg-transparent px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none"
+                                            className="flex-1 bg-transparent px-4 py-3 text-sm text-foreground placeholder-muted-foreground focus:outline-none"
                                             disabled={isTyping}
                                         />
-                                        <button className="p-3 text-gray-400 hover:text-white transition-colors">
+                                        <button className="p-3 text-muted-foreground hover:text-foreground transition-colors">
                                             <Mic size={18} />
                                         </button>
                                     </div>
@@ -382,7 +382,7 @@ export default function RodrigoPage() {
                                         <ArrowUp size={20} />
                                     </button>
                                 </div>
-                                <p className="text-[10px] text-gray-500 text-center mt-2">
+                                <p className="text-[10px] text-muted-foreground text-center mt-2">
                                     Rodrigo AI puede cometer errores. Verifica la información importante.
                                 </p>
                             </div>

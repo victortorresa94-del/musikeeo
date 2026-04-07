@@ -126,11 +126,11 @@ export default function ArtistProfilePage() {
 
     if (!artist) {
         return (
-            <div className="min-h-screen bg-background text-white">
+            <div className="min-h-screen bg-background text-foreground">
                 <Navbar />
                 <div className="flex flex-col items-center justify-center h-[70vh] gap-4">
                     <h1 className="text-3xl font-bold">Artista no encontrado</h1>
-                    <p className="text-gray-500">El perfil que buscas no existe o no está disponible</p>
+                    <p className="text-muted-foreground">El perfil que buscas no existe o no está disponible</p>
                     <Link to="/artistas" className="text-primary hover:underline">
                         Ver todos los artistas
                     </Link>
@@ -142,14 +142,14 @@ export default function ArtistProfilePage() {
     const isOwner = user?.uid === artist.userId;
     if (!artist.isPublic && !isOwner) {
         return (
-            <div className="min-h-screen bg-background text-white">
+            <div className="min-h-screen bg-background text-foreground">
                 <Navbar />
                 <div className="flex flex-col items-center justify-center h-[70vh] gap-4">
-                    <div className="bg-white/10 p-4 rounded-full">
-                        <Share2 size={40} className="text-gray-400" />
+                    <div className="bg-muted p-4 rounded-full">
+                        <Share2 size={40} className="text-muted-foreground" />
                     </div>
                     <h1 className="text-3xl font-bold">Perfil Privado</h1>
-                    <p className="text-gray-500">Este perfil es privado y solo visible por su dueño.</p>
+                    <p className="text-muted-foreground">Este perfil es privado y solo visible por su dueño.</p>
                     <Link to="/artistas" className="text-primary hover:underline">
                         Volver a descubrir
                     </Link>
@@ -159,7 +159,7 @@ export default function ArtistProfilePage() {
     }
 
     return (
-        <div className="min-h-screen bg-background text-white">
+        <div className="min-h-screen bg-background text-foreground">
             <Navbar />
 
             {/* Cover Section */}
@@ -182,7 +182,7 @@ export default function ArtistProfilePage() {
                     <div className="flex flex-col md:flex-row gap-6 items-start md:items-end">
                         {/* Avatar */}
                         <div
-                            className="size-36 md:size-44 rounded-2xl border-4 border-background bg-surface bg-cover bg-center shadow-2xl flex-shrink-0"
+                            className="size-36 md:size-44 rounded-2xl border-4 border-background bg-card bg-cover bg-center shadow-2xl flex-shrink-0"
                             style={{ backgroundImage: `url(${artist.profilePhoto})` }}
                         />
 
@@ -196,7 +196,7 @@ export default function ArtistProfilePage() {
                                     </span>
                                 )}
                             </div>
-                            <div className="flex flex-wrap items-center gap-4 text-gray-400 text-sm">
+                            <div className="flex flex-wrap items-center gap-4 text-muted-foreground text-sm">
                                 <span className="flex items-center gap-1">
                                     <MapPin size={16} /> {artist.city}, {artist.country}
                                 </span>
@@ -211,10 +211,10 @@ export default function ArtistProfilePage() {
 
                         {/* Actions */}
                         <div className="flex gap-3">
-                            <button className="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors">
+                            <button className="p-3 rounded-xl bg-muted hover:bg-muted/80 text-foreground transition-colors">
                                 <Heart size={20} />
                             </button>
-                            <button className="p-3 rounded-xl bg-white/10 hover:bg-white/20 text-white transition-colors">
+                            <button className="p-3 rounded-xl bg-muted hover:bg-muted/80 text-foreground transition-colors">
                                 <Share2 size={20} />
                             </button>
                             <button
@@ -236,12 +236,12 @@ export default function ArtistProfilePage() {
                     {/* Bio */}
                     < section >
                         <h2 className="text-xl font-bold mb-4">Sobre {artist.artistName}</h2>
-                        <p className="text-gray-400 leading-relaxed">{artist.bio}</p>
+                        <p className="text-muted-foreground leading-relaxed">{artist.bio}</p>
 
                         {/* Genres */}
                         <div className="flex flex-wrap gap-2 mt-4">
                             {artist.genres.map((genre) => (
-                                <span key={genre} className="px-3 py-1 rounded-full bg-white/10 text-sm text-gray-300">
+                                <span key={genre} className="px-3 py-1 rounded-full bg-muted text-sm text-muted-foreground">
                                     {genre}
                                 </span>
                             ))}
@@ -268,27 +268,27 @@ export default function ArtistProfilePage() {
                             {artist.packages.filter(p => p.isActive).map((pkg) => (
                                 <div
                                     key={pkg.id}
-                                    className={`relative p-5 rounded-xl bg-surface border transition-all cursor-pointer ${selectedPackage?.id === pkg.id
+                                    className={`relative p-5 rounded-xl bg-card border transition-all cursor-pointer ${selectedPackage?.id === pkg.id
                                         ? 'border-primary shadow-[0_0_20px_rgba(255,216,77,0.15)]'
-                                        : 'border-white/10 hover:border-white/20'
+                                        : 'border-border hover:border-border/60'
                                         }`}
                                     onClick={() => setSelectedPackage(pkg)}
                                 >
                                     <div className="flex justify-between items-start mb-3">
                                         <div>
-                                            <h3 className="text-white font-bold">{pkg.name}</h3>
-                                            <p className="text-gray-500 text-xs flex items-center gap-1 mt-1">
+                                            <h3 className="text-foreground font-bold">{pkg.name}</h3>
+                                            <p className="text-muted-foreground text-xs flex items-center gap-1 mt-1">
                                                 <Clock size={12} /> {pkg.duration}h
                                             </p>
                                         </div>
                                         <span className="text-primary text-2xl font-black">{pkg.price}€</span>
                                     </div>
-                                    <p className="text-gray-400 text-sm line-clamp-2">{pkg.description}</p>
+                                    <p className="text-muted-foreground text-sm line-clamp-2">{pkg.description}</p>
 
                                     {pkg.includes && pkg.includes.length > 0 && (
                                         <ul className="mt-3 flex flex-wrap gap-2">
                                             {pkg.includes.slice(0, 3).map((item, idx) => (
-                                                <li key={idx} className="text-xs text-gray-500 bg-white/5 px-2 py-1 rounded">
+                                                <li key={idx} className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded">
                                                     {item}
                                                 </li>
                                             ))}
@@ -314,7 +314,7 @@ export default function ArtistProfilePage() {
                                                 href={video.url}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="group relative aspect-video rounded-xl overflow-hidden bg-surface border border-white/10 hover:border-primary/50 transition-colors"
+                                                className="group relative aspect-video rounded-xl overflow-hidden bg-card border border-border hover:border-primary/50 transition-colors"
                                             >
                                                 <div
                                                     className="absolute inset-0 bg-cover bg-center"
@@ -329,7 +329,7 @@ export default function ArtistProfilePage() {
                                                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
                                                     <p className="text-white text-sm font-medium">{video.title}</p>
                                                     {video.duration && (
-                                                        <span className="text-xs text-gray-400">{video.duration}</span>
+                                                        <span className="text-xs text-muted-foreground">{video.duration}</span>
                                                     )}
                                                 </div>
                                             </a>
@@ -339,14 +339,14 @@ export default function ArtistProfilePage() {
 
                                 {/* Spotify */}
                                 {artist.multimedia.spotifyVisible && artist.multimedia.spotifyUri && (
-                                    <div className="bg-[#121212] rounded-xl p-4 border border-white/10">
+                                    <div className="bg-[#121212] rounded-xl p-4 border border-border">
                                         <div className="flex items-center gap-3 mb-3">
                                             <svg className="w-6 h-6 text-[#1DB954]" fill="currentColor" viewBox="0 0 24 24">
                                                 <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
                                             </svg>
                                             <span className="text-[#1DB954] text-sm font-bold">Escuchar en Spotify</span>
                                         </div>
-                                        <p className="text-gray-500 text-sm">Conecta para ver las canciones más populares</p>
+                                        <p className="text-muted-foreground text-sm">Conecta para ver las canciones más populares</p>
                                     </div>
                                 )}
                             </section>
@@ -362,7 +362,7 @@ export default function ArtistProfilePage() {
                                     {artist.multimedia.photos.map((photo) => (
                                         <div
                                             key={photo.id}
-                                            className="aspect-square rounded-xl overflow-hidden bg-surface border border-white/10 hover:border-primary/50 transition-colors cursor-pointer"
+                                            className="aspect-square rounded-xl overflow-hidden bg-card border border-border hover:border-primary/50 transition-colors cursor-pointer"
                                         >
                                             <div
                                                 className="w-full h-full bg-cover bg-center hover:scale-105 transition-transform duration-500"
@@ -380,16 +380,16 @@ export default function ArtistProfilePage() {
                 < aside className="lg:col-span-1" >
                     <div className="sticky top-24 flex flex-col gap-6">
                         {/* Booking Card */}
-                        <div className="bg-surface rounded-2xl p-6 border border-white/10 shadow-xl">
+                        <div className="bg-card rounded-2xl p-6 border border-border shadow-xl">
                             <div className="flex items-center justify-between mb-4">
-                                <span className="text-gray-500 text-sm">Desde</span>
-                                <span className="text-white text-3xl font-black">{artist.priceFrom || artist.packages[0]?.price || 0}€</span>
+                                <span className="text-muted-foreground text-sm">Desde</span>
+                                <span className="text-foreground text-3xl font-black">{artist.priceFrom || artist.packages[0]?.price || 0}€</span>
                             </div>
 
                             {selectedPackage && (
                                 <div className="bg-background p-4 rounded-xl mb-4">
-                                    <p className="text-white font-bold text-sm">{selectedPackage.name}</p>
-                                    <p className="text-gray-500 text-xs mt-1">{selectedPackage.duration}h • {selectedPackage.price}€</p>
+                                    <p className="text-foreground font-bold text-sm">{selectedPackage.name}</p>
+                                    <p className="text-muted-foreground text-xs mt-1">{selectedPackage.duration}h • {selectedPackage.price}€</p>
                                 </div>
                             )}
 
@@ -401,36 +401,36 @@ export default function ArtistProfilePage() {
                                 Solicitar Presupuesto
                             </button>
 
-                            <p className="text-center text-gray-500 text-xs mt-3">Respuesta media: &lt; 2 horas</p>
+                            <p className="text-center text-muted-foreground text-xs mt-3">Respuesta media: &lt; 2 horas</p>
                         </div>
 
                         {/* Mini Calendar */}
-                        <div className="bg-surface rounded-2xl p-5 border border-white/10">
+                        <div className="bg-card rounded-2xl p-5 border border-border">
                             <div className="flex items-center justify-between mb-4">
-                                <h3 className="text-white font-bold">Disponibilidad</h3>
+                                <h3 className="text-foreground font-bold">Disponibilidad</h3>
                                 <div className="flex gap-1">
                                     <button
                                         onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() - 1))}
-                                        className="p-1 text-gray-500 hover:text-white"
+                                        className="p-1 text-muted-foreground hover:text-foreground"
                                     >
                                         <ChevronLeft size={18} />
                                     </button>
                                     <button
                                         onClick={() => setCalendarDate(new Date(calendarDate.getFullYear(), calendarDate.getMonth() + 1))}
-                                        className="p-1 text-gray-500 hover:text-white"
+                                        className="p-1 text-muted-foreground hover:text-foreground"
                                     >
                                         <ChevronRight size={18} />
                                     </button>
                                 </div>
                             </div>
 
-                            <p className="text-sm text-gray-400 mb-3">
+                            <p className="text-sm text-muted-foreground mb-3">
                                 {MONTHS_FULL[calendarDate.getMonth()]} {calendarDate.getFullYear()}
                             </p>
 
                             <div className="grid grid-cols-7 gap-1 text-center text-xs">
                                 {['L', 'M', 'X', 'J', 'V', 'S', 'D'].map(d => (
-                                    <span key={d} className="text-gray-600 py-1">{d}</span>
+                                    <span key={d} className="text-muted-foreground py-1">{d}</span>
                                 ))}
 
                                 {generateCalendarDays().map(({ date, inMonth }, idx) => {
@@ -440,10 +440,10 @@ export default function ArtistProfilePage() {
                                     return (
                                         <div
                                             key={idx}
-                                            className={`aspect-square flex items-center justify-center rounded-md text-xs ${!inMonth ? 'text-gray-700' :
+                                            className={`aspect-square flex items-center justify-center rounded-md text-xs ${!inMonth ? 'text-muted-foreground/30' :
                                                 status?.status === 'available' ? 'bg-primary/20 text-primary font-bold' :
                                                     status?.status === 'occupied' || status?.status === 'blocked' ? 'bg-red-500/10 text-red-400' :
-                                                        'text-gray-400'
+                                                        'text-muted-foreground'
                                                 } ${today ? 'ring-1 ring-primary' : ''}`}
                                         >
                                             {date.getDate()}
@@ -453,14 +453,14 @@ export default function ArtistProfilePage() {
                             </div>
 
                             {/* Legend */}
-                            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-white/10 text-xs">
+                            <div className="flex items-center gap-4 mt-4 pt-4 border-t border-border text-xs">
                                 <div className="flex items-center gap-1">
                                     <div className="size-2 rounded-full bg-primary" />
-                                    <span className="text-gray-500">Disponible</span>
+                                    <span className="text-muted-foreground">Disponible</span>
                                 </div>
                                 <div className="flex items-center gap-1">
                                     <div className="size-2 rounded-full bg-red-500" />
-                                    <span className="text-gray-500">Ocupado</span>
+                                    <span className="text-muted-foreground">Ocupado</span>
                                 </div>
                             </div>
                         </div>

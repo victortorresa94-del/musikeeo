@@ -49,7 +49,7 @@ export default function Projects() {
     if (loading) {
         return (
             <div className="h-[50vh] flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-brand-cyan" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
         );
     }
@@ -58,7 +58,7 @@ export default function Projects() {
         <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-6 animate-fade-in-up">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-heading font-bold text-white">Proyectos</h1>
+                    <h1 className="text-3xl font-heading font-bold text-foreground">Proyectos</h1>
                     <p className="text-muted-foreground">Gestiona tus lanzamientos y colaboraciones.</p>
                 </div>
                 <Button className="gap-2 bg-brand-lime text-black hover:bg-brand-lime/90 font-bold" onClick={handleCreateProject}>
@@ -70,25 +70,25 @@ export default function Projects() {
                 {/* Column 1: Planning */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between px-1">
-                        <h3 className="font-semibold text-sm text-white/80">Planificación</h3>
-                        <span className="text-xs bg-white/10 px-2 py-0.5 rounded-full text-white">{getProjectsByStatus('planning').length}</span>
+                        <h3 className="font-semibold text-sm text-foreground/80">Planificación</h3>
+                        <span className="text-xs bg-muted px-2 py-0.5 rounded-full text-foreground">{getProjectsByStatus('planning').length}</span>
                     </div>
 
                     {getProjectsByStatus('planning').map((project) => (
-                        <Card key={project.id} className="bg-card border-white/5 hover:border-brand-cyan/50 transition-colors cursor-pointer">
+                        <Card key={project.id} className="bg-card border-border hover:border-brand-cyan/50 transition-colors cursor-pointer">
                             <CardContent className="p-4">
                                 <div className="flex justify-between items-start mb-3">
                                     <span className={cn(
                                         "text-[10px] px-2 py-0.5 rounded font-bold",
                                         project.type === 'ep_launch' ? "bg-indigo-500/10 text-indigo-400" :
                                             project.type === 'tour' ? "bg-emerald-500/10 text-emerald-400" :
-                                                "bg-white/10 text-white/70"
+                                                "bg-muted text-foreground/70"
                                     )}>
                                         {project.type.replace('_', ' ').toUpperCase()}
                                     </span>
                                     <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
                                 </div>
-                                <h4 className="font-bold text-sm text-white mb-1">{project.title}</h4>
+                                <h4 className="font-bold text-sm text-foreground mb-1">{project.title}</h4>
                                 <p className="text-xs text-muted-foreground mb-4 line-clamp-2">{project.description}</p>
 
                                 <div className="flex items-center justify-between text-xs text-muted-foreground">
@@ -107,8 +107,8 @@ export default function Projects() {
                 {/* Column 2: In Progress */}
                 <div className="space-y-4">
                     <div className="flex items-center justify-between px-1">
-                        <h3 className="font-semibold text-sm text-white/80">En Progreso</h3>
-                        <span className="text-xs bg-brand-cyan/20 text-brand-cyan px-2 py-0.5 rounded-full">{getProjectsByStatus('in_progress').length}</span>
+                        <h3 className="font-semibold text-sm text-foreground/80">En Progreso</h3>
+                        <span className="text-xs bg-brand-cyan/20 text-primary px-2 py-0.5 rounded-full">{getProjectsByStatus('in_progress').length}</span>
                     </div>
 
                     {getProjectsByStatus('in_progress').map((project) => (
@@ -117,17 +117,17 @@ export default function Projects() {
                                 <div className="flex justify-between items-start mb-3">
                                     <span className={cn(
                                         "text-[10px] px-2 py-0.5 rounded font-bold",
-                                        project.type === 'tour' ? "bg-emerald-500/10 text-emerald-400" : "bg-white/10 text-white/70"
+                                        project.type === 'tour' ? "bg-emerald-500/10 text-emerald-400" : "bg-muted text-foreground/70"
                                     )}>
                                         {project.type.replace('_', ' ').toUpperCase()}
                                     </span>
                                     <MoreHorizontal className="h-4 w-4 text-muted-foreground" />
                                 </div>
-                                <h4 className="font-bold text-sm text-white mb-1">{project.title}</h4>
+                                <h4 className="font-bold text-sm text-foreground mb-1">{project.title}</h4>
                                 <p className="text-xs text-muted-foreground mb-4 line-clamp-2">{project.description}</p>
 
                                 <div className="flex items-center justify-between text-xs text-muted-foreground">
-                                    <div className="flex items-center gap-1 text-brand-cyan">
+                                    <div className="flex items-center gap-1 text-primary">
                                         <Clock className="h-3 w-3" /> En curso
                                     </div>
                                 </div>
@@ -139,12 +139,12 @@ export default function Projects() {
                 {/* Column 3: Done */}
                 <div className="space-y-4 opacity-70">
                     <div className="flex items-center justify-between px-1">
-                        <h3 className="font-semibold text-sm text-white/80">Completado</h3>
+                        <h3 className="font-semibold text-sm text-foreground/80">Completado</h3>
                         <span className="text-xs bg-brand-lime/20 text-brand-lime px-2 py-0.5 rounded-full">{getProjectsByStatus('completed').length}</span>
                     </div>
 
                     {getProjectsByStatus('completed').map((project) => (
-                        <div key={project.id} className="bg-white/5 border border-white/5 p-3 rounded-xl flex items-center gap-3">
+                        <div key={project.id} className="bg-muted border border-border p-3 rounded-xl flex items-center gap-3">
                             <CheckCircle2 className="h-5 w-5 text-brand-lime" />
                             <span className="text-sm line-through text-muted-foreground">{project.title}</span>
                         </div>

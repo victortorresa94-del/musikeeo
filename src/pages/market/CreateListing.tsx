@@ -123,34 +123,34 @@ export default function CreateListing() {
 
     return (
         <div className="max-w-xl mx-auto p-4 md:p-6 pb-24 space-y-6 animate-fade-in-up">
-            <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2 text-muted-foreground hover:text-white -ml-2">
+            <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2 text-muted-foreground hover:text-foreground -ml-2">
                 <ArrowLeft className="w-4 h-4" /> Cancelar
             </Button>
 
             <div>
-                <h1 className="text-2xl font-bold text-white">Publicar anuncio</h1>
+                <h1 className="text-2xl font-bold text-foreground">Publicar anuncio</h1>
                 <p className="text-muted-foreground text-sm">Vende, alquila o presta equipo a la comunidad.</p>
             </div>
 
             <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Photos */}
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-white">Fotos <span className="text-gray-500">(máx. 3)</span></label>
+                    <label className="text-sm font-medium text-foreground">Fotos <span className="text-gray-500">(máx. 3)</span></label>
                     <div className="flex gap-3 flex-wrap">
                         {images.map(({ preview }, idx) => (
-                            <div key={idx} className="relative w-24 h-24 rounded-xl overflow-hidden border border-white/10">
+                            <div key={idx} className="relative w-24 h-24 rounded-xl overflow-hidden border border-border">
                                 <img src={preview} alt="" className="w-full h-full object-cover" />
                                 <button
                                     type="button"
                                     onClick={() => handleImageRemove(idx)}
-                                    className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 text-white hover:bg-black"
+                                    className="absolute top-1 right-1 bg-black/60 rounded-full p-0.5 text-foreground hover:bg-black"
                                 >
                                     <X size={12} />
                                 </button>
                             </div>
                         ))}
                         {images.length < 3 && (
-                            <label className="w-24 h-24 rounded-xl border-2 border-dashed border-white/20 flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-white/5 transition-all text-gray-500 hover:text-primary">
+                            <label className="w-24 h-24 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-muted transition-all text-gray-500 hover:text-primary">
                                 <Upload size={20} className="mb-1" />
                                 <span className="text-xs">Añadir</span>
                                 <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageAdd} />
@@ -161,23 +161,23 @@ export default function CreateListing() {
 
                 {/* Title */}
                 <div className="space-y-1">
-                    <label className="text-sm font-medium text-white">Título</label>
+                    <label className="text-sm font-medium text-foreground">Título</label>
                     <Input
                         value={title}
                         onChange={e => setTitle(e.target.value.slice(0, 60))}
                         placeholder="Ej: Fender Stratocaster 2021 con funda..."
-                        className="bg-white/5 border-white/10 text-white"
+                        className="bg-muted border-border text-foreground"
                     />
                     <p className="text-xs text-gray-500 text-right">{title.length}/60</p>
                 </div>
 
                 {/* Category */}
                 <div className="space-y-1">
-                    <label className="text-sm font-medium text-white">Categoría</label>
+                    <label className="text-sm font-medium text-foreground">Categoría</label>
                     <select
                         value={category}
                         onChange={e => setCategory(e.target.value as ListingCategory)}
-                        className="w-full h-10 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white focus:outline-none focus:border-primary"
+                        className="w-full h-10 rounded-md border border-border bg-muted px-3 text-sm text-foreground focus:outline-none focus:border-primary"
                     >
                         {CATEGORIES.map(c => (
                             <option key={c.value} value={c.value} className="bg-[#1a1a1a]">{c.label}</option>
@@ -187,14 +187,14 @@ export default function CreateListing() {
 
                 {/* Type */}
                 <div className="space-y-1">
-                    <label className="text-sm font-medium text-white">Tipo de anuncio</label>
-                    <div className="flex rounded-xl bg-white/5 p-1 gap-1">
+                    <label className="text-sm font-medium text-foreground">Tipo de anuncio</label>
+                    <div className="flex rounded-xl bg-muted p-1 gap-1">
                         {(['venta', 'alquiler', 'prestamo'] as const).map(t => (
                             <button
                                 key={t}
                                 type="button"
                                 onClick={() => setType(t)}
-                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${type === t ? 'bg-primary text-black' : 'text-gray-400 hover:text-white'}`}
+                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${type === t ? 'bg-primary text-black' : 'text-gray-400 hover:text-foreground'}`}
                             >
                                 {t === 'prestamo' ? 'Préstamo' : t.charAt(0).toUpperCase() + t.slice(1)}
                             </button>
@@ -205,7 +205,7 @@ export default function CreateListing() {
                 {/* Price */}
                 {type !== 'prestamo' && (
                     <div className="space-y-1">
-                        <label className="text-sm font-medium text-white">
+                        <label className="text-sm font-medium text-foreground">
                             Precio (€){type === 'alquiler' && <span className="text-gray-500 font-normal ml-1">por</span>}
                         </label>
                         <div className="flex gap-2">
@@ -215,13 +215,13 @@ export default function CreateListing() {
                                 value={price}
                                 onChange={e => setPrice(e.target.value)}
                                 placeholder="0"
-                                className="bg-white/5 border-white/10 text-white flex-1"
+                                className="bg-muted border-border text-foreground flex-1"
                             />
                             {type === 'alquiler' && (
                                 <select
                                     value={priceUnit}
                                     onChange={e => setPriceUnit(e.target.value as 'dia' | 'semana')}
-                                    className="h-10 rounded-md border border-white/10 bg-white/5 px-3 text-sm text-white focus:outline-none focus:border-primary"
+                                    className="h-10 rounded-md border border-border bg-muted px-3 text-sm text-foreground focus:outline-none focus:border-primary"
                                 >
                                     <option value="dia" className="bg-[#1a1a1a]">día</option>
                                     <option value="semana" className="bg-[#1a1a1a]">semana</option>
@@ -233,14 +233,14 @@ export default function CreateListing() {
 
                 {/* Condition */}
                 <div className="space-y-1">
-                    <label className="text-sm font-medium text-white">Estado</label>
+                    <label className="text-sm font-medium text-foreground">Estado</label>
                     <div className="grid grid-cols-2 gap-2">
                         {CONDITIONS.map(c => (
                             <button
                                 key={c.value}
                                 type="button"
                                 onClick={() => setCondition(c.value)}
-                                className={`py-2 rounded-xl text-sm font-medium border transition-colors ${condition === c.value ? 'border-primary bg-primary/10 text-primary' : 'border-white/10 bg-white/5 text-gray-400 hover:text-white'}`}
+                                className={`py-2 rounded-xl text-sm font-medium border transition-colors ${condition === c.value ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-muted text-gray-400 hover:text-foreground'}`}
                             >
                                 {c.label}
                             </button>
@@ -250,48 +250,48 @@ export default function CreateListing() {
 
                 {/* Description */}
                 <div className="space-y-1">
-                    <label className="text-sm font-medium text-white">Descripción</label>
+                    <label className="text-sm font-medium text-foreground">Descripción</label>
                     <Textarea
                         value={description}
                         onChange={e => setDescription(e.target.value.slice(0, 300))}
                         placeholder="Describe el estado, antigüedad, accesorios incluidos..."
-                        className="bg-white/5 border-white/10 text-white min-h-[100px] resize-none"
+                        className="bg-muted border-border text-foreground min-h-[100px] resize-none"
                     />
                     <p className="text-xs text-gray-500 text-right">{description.length}/300</p>
                 </div>
 
                 {/* Location */}
                 <div className="space-y-1">
-                    <label className="text-sm font-medium text-white">Ubicación</label>
+                    <label className="text-sm font-medium text-foreground">Ubicación</label>
                     <Input
                         value={location}
                         onChange={e => setLocation(e.target.value)}
                         placeholder="Ej: Barcelona, España"
-                        className="bg-white/5 border-white/10 text-white"
+                        className="bg-muted border-border text-foreground"
                     />
                 </div>
 
                 {/* WhatsApp */}
                 <div className="space-y-1">
-                    <label className="text-sm font-medium text-white">WhatsApp <span className="text-gray-500 font-normal">(opcional)</span></label>
+                    <label className="text-sm font-medium text-foreground">WhatsApp <span className="text-gray-500 font-normal">(opcional)</span></label>
                     <Input
                         value={whatsApp}
                         onChange={e => setWhatsApp(e.target.value)}
                         placeholder="34612345678 (sin + ni espacios)"
-                        className="bg-white/5 border-white/10 text-white"
+                        className="bg-muted border-border text-foreground"
                     />
                 </div>
 
                 {/* Seller type */}
                 <div className="space-y-1">
-                    <label className="text-sm font-medium text-white">Tipo de vendedor</label>
-                    <div className="flex rounded-xl bg-white/5 p-1 gap-1">
+                    <label className="text-sm font-medium text-foreground">Tipo de vendedor</label>
+                    <div className="flex rounded-xl bg-muted p-1 gap-1">
                         {(['particular', 'profesional'] as const).map(t => (
                             <button
                                 key={t}
                                 type="button"
                                 onClick={() => setSellerType(t)}
-                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors capitalize ${sellerType === t ? 'bg-primary text-black' : 'text-gray-400 hover:text-white'}`}
+                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors capitalize ${sellerType === t ? 'bg-primary text-black' : 'text-gray-400 hover:text-foreground'}`}
                             >
                                 {t === 'particular' ? '👤 Particular' : '🏪 Profesional'}
                             </button>
@@ -303,14 +303,14 @@ export default function CreateListing() {
                 <button
                     type="button"
                     onClick={() => setShipping(v => !v)}
-                    className={`w-full flex items-center gap-3 p-4 rounded-xl border transition-colors ${shipping ? 'border-primary/50 bg-primary/10' : 'border-white/10 bg-white/5'}`}
+                    className={`w-full flex items-center gap-3 p-4 rounded-xl border transition-colors ${shipping ? 'border-primary/50 bg-primary/10' : 'border-border bg-muted'}`}
                 >
                     <span className="text-lg">{shipping ? '📦' : '📍'}</span>
                     <div className="text-left">
-                        <p className={`text-sm font-bold ${shipping ? 'text-primary' : 'text-white'}`}>Envío disponible</p>
+                        <p className={`text-sm font-bold ${shipping ? 'text-primary' : 'text-foreground'}`}>Envío disponible</p>
                         <p className="text-xs text-gray-500">Puedo enviar el artículo por mensajería</p>
                     </div>
-                    <div className={`ml-auto w-10 h-6 rounded-full transition-colors flex items-center px-1 ${shipping ? 'bg-primary' : 'bg-white/10'}`}>
+                    <div className={`ml-auto w-10 h-6 rounded-full transition-colors flex items-center px-1 ${shipping ? 'bg-primary' : 'bg-muted'}`}>
                         <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${shipping ? 'translate-x-4' : 'translate-x-0'}`} />
                     </div>
                 </button>
@@ -319,14 +319,14 @@ export default function CreateListing() {
                 <button
                     type="button"
                     onClick={() => setUrgent(v => !v)}
-                    className={`w-full flex items-center gap-3 p-4 rounded-xl border transition-colors ${urgent ? 'border-primary/50 bg-primary/10' : 'border-white/10 bg-white/5'}`}
+                    className={`w-full flex items-center gap-3 p-4 rounded-xl border transition-colors ${urgent ? 'border-primary/50 bg-primary/10' : 'border-border bg-muted'}`}
                 >
                     <Zap size={18} className={urgent ? 'text-primary' : 'text-gray-500'} />
                     <div className="text-left">
-                        <p className={`text-sm font-bold ${urgent ? 'text-primary' : 'text-white'}`}>Marcar como urgente ⚡</p>
+                        <p className={`text-sm font-bold ${urgent ? 'text-primary' : 'text-foreground'}`}>Marcar como urgente ⚡</p>
                         <p className="text-xs text-gray-500">Necesito venderlo / alquilarlo rápido</p>
                     </div>
-                    <div className={`ml-auto w-10 h-6 rounded-full transition-colors flex items-center px-1 ${urgent ? 'bg-primary' : 'bg-white/10'}`}>
+                    <div className={`ml-auto w-10 h-6 rounded-full transition-colors flex items-center px-1 ${urgent ? 'bg-primary' : 'bg-muted'}`}>
                         <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${urgent ? 'translate-x-4' : 'translate-x-0'}`} />
                     </div>
                 </button>

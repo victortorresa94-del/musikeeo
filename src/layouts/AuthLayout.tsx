@@ -9,7 +9,7 @@ interface AuthLayoutProps {
 
 export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitle }) => {
     return (
-        <div className="min-h-screen w-full flex items-center justify-center bg-background p-4 relative overflow-hidden">
+        <div className="theme-dark min-h-screen w-full flex items-center justify-center bg-background p-4 relative overflow-hidden">
             {/* Background Ambience */}
             <div className="absolute inset-0 z-0">
                 <div className="absolute top-[-20%] left-[-10%] w-[600px] h-[600px] bg-primary/20 rounded-full blur-[120px] opacity-40 animate-pulse" />

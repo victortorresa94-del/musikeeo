@@ -13,6 +13,7 @@ import { Toaster } from 'sonner';
 // Lazy Imports
 const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
+const NotFound = lazy(() => import('./pages/NotFound'));
 const Home = lazy(() => import('./pages/home/Home'));
 const Feed = lazy(() => import('./pages/feed/Feed'));
 const EventsV2 = lazy(() => import('./pages/events/EventsV2'));
@@ -204,7 +205,7 @@ function App() {
               </Route>
 
               {/* Fallback */}
-              <Route path="*" element={<Navigate to="/" replace />} />
+              <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
           <RodrigoFloatingChat />

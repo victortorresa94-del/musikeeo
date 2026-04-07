@@ -13,9 +13,9 @@ export const PanelLayout = () => {
     }, [location.pathname]);
 
     return (
-        <div className="flex min-h-screen w-full bg-background text-white font-sans">
+        <div className="flex min-h-screen w-full bg-background text-foreground font-sans">
             {/* Desktop Sidebar */}
-            <aside className="w-[280px] flex-shrink-0 flex-col border-r border-white/10 bg-background h-screen sticky top-0 hidden md:flex">
+            <aside className="w-[280px] flex-shrink-0 flex-col border-r border-border bg-background h-screen sticky top-0 hidden md:flex">
                 <PanelSidebar />
             </aside>
 
@@ -23,13 +23,13 @@ export const PanelLayout = () => {
             {isMobileNavOpen && (
                 <div className="fixed inset-0 z-50 flex md:hidden">
                     <div
-                        className="absolute inset-0 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+                        className="absolute inset-0 bg-black/40 backdrop-blur-sm animate-in fade-in duration-200"
                         onClick={() => setIsMobileNavOpen(false)}
                     />
-                    <aside className="relative flex flex-col w-[85%] max-w-[300px] h-full bg-background border-r border-white/10 shadow-2xl animate-in slide-in-from-left duration-300">
+                    <aside className="relative flex flex-col w-[85%] max-w-[300px] h-full bg-background border-r border-border shadow-2xl animate-in slide-in-from-left duration-300">
                         <button
                             onClick={() => setIsMobileNavOpen(false)}
-                            className="absolute top-4 right-4 p-2 text-gray-400 hover:text-white z-50 bg-black/20 rounded-full"
+                            className="absolute top-4 right-4 p-2 text-muted-foreground hover:text-foreground z-50 bg-muted rounded-full"
                         >
                             <X size={20} />
                         </button>
@@ -40,16 +40,16 @@ export const PanelLayout = () => {
 
             {/* Main Content */}
             <main className="flex-1 flex flex-col h-screen overflow-y-auto relative">
-                {/* Mobile Header Trigger - Visible only on mobile */}
-                <div className="md:hidden sticky top-0 z-40 bg-background/80 backdrop-blur-md border-b border-white/10 px-4 py-3 flex items-center justify-between">
+                {/* Mobile Header */}
+                <div className="md:hidden sticky top-0 z-40 bg-background/95 backdrop-blur-md border-b border-border px-4 py-3 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <button
                             onClick={() => setIsMobileNavOpen(true)}
-                            className="p-2 -ml-2 text-white hover:bg-white/10 rounded-lg"
+                            className="p-2 -ml-2 text-foreground hover:bg-muted rounded-lg"
                         >
                             <Menu size={24} />
                         </button>
-                        <span className="font-bold text-white text-lg tracking-tight">Musikeeo Panel</span>
+                        <span className="font-bold text-foreground text-lg tracking-tight">Musikeeo Panel</span>
                     </div>
                 </div>
 

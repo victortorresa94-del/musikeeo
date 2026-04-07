@@ -23,8 +23,8 @@ const buttonVariants = cva(
                 ghost: "hover:bg-accent/10 hover:text-accent",
                 link: "text-primary underline-offset-4 hover:underline",
                 // Stitch Specific
-                glow: "bg-primary text-primary-foreground shadow-[0_0_20px_rgba(0,229,255,0.4)] hover:shadow-[0_0_30px_rgba(0,229,255,0.6)] hover:scale-105 border border-primary/50",
-                glass: "bg-white/5 backdrop-blur-md border border-white/10 hover:bg-white/10 text-foreground"
+                glow: "bg-primary text-primary-foreground shadow-[0_0_20px_rgba(255,216,77,0.4)] hover:shadow-[0_0_30px_rgba(255,216,77,0.6)] hover:scale-105 border border-primary/50",
+                glass: "bg-muted/50 backdrop-blur-md border border-border hover:bg-muted text-foreground"
             },
             size: {
                 default: "h-11 px-6 py-2",
