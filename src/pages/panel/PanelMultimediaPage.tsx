@@ -214,7 +214,7 @@ export default function PanelMultimediaPage() {
                                             value={spotifyUri}
                                             onChange={(e) => setSpotifyUri(e.target.value)}
                                             placeholder="spotify:artist:..."
-                                            className="w-full h-12 rounded-xl bg-background border border-border text-foreground pl-12 pr-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-gray-600"
+                                            className="w-full h-12 rounded-xl bg-background border border-border text-foreground pl-12 pr-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground"
                                         />
                                     </div>
                                 </div>
@@ -236,7 +236,7 @@ export default function PanelMultimediaPage() {
                                             onChange={(e) => setSpotifyVisible(e.target.checked)}
                                             className="sr-only peer"
                                         />
-                                        <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                                        <div className="w-11 h-6 bg-muted peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                                     </label>
                                 </div>
                             </div>
@@ -290,7 +290,7 @@ export default function PanelMultimediaPage() {
                                             value={newVideoUrl}
                                             onChange={(e) => setNewVideoUrl(e.target.value)}
                                             placeholder="https://youtube.com/watch?v=..."
-                                            className="w-full h-12 rounded-xl bg-background border border-border text-foreground pl-12 pr-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-gray-600"
+                                            className="w-full h-12 rounded-xl bg-background border border-border text-foreground pl-12 pr-4 text-sm focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder:text-muted-foreground"
                                         />
                                     </div>
                                 </div>

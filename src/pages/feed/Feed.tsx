@@ -31,8 +31,8 @@ const TimeAgo = ({ timestamp }: { timestamp: number }) => {
 // Componente para el badge del tipo de post
 const PostTypeBadge = ({ type, milestoneType }: { type: FeedPost['type']; milestoneType?: string }) => {
     const badges = {
-        event_highlight: { icon: Calendar, label: 'Evento', color: 'text-primary bg-primary/10 border-brand-cyan/20' },
-        market_highlight: { icon: ShoppingBag, label: 'En venta', color: 'text-brand-lime bg-brand-lime/10 border-brand-lime/20' },
+        event_highlight: { icon: Calendar, label: 'Evento', color: 'text-primary bg-primary/10 border-primary/20' },
+        market_highlight: { icon: ShoppingBag, label: 'En venta', color: 'text-primary bg-primary/10 border-primary/20' },
         milestone: { icon: Award, label: milestoneType === 'achievement' ? 'Logro' : 'Hito', color: 'text-yellow-400 bg-yellow-400/10 border-yellow-400/20' },
         announcement: { icon: Zap, label: 'Anuncio', color: 'text-purple-400 bg-purple-400/10 border-purple-400/20' },
         post: null
@@ -72,7 +72,7 @@ const FeedPostCard = ({ post, onNavigate, onOpenReel }: {
         <motion.article
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-card border border-border rounded-2xl overflow-hidden hover:border-border transition-all"
+            className="bg-card border border-border rounded-2xl overflow-hidden hover:border-[var(--border-subtle)] transition-all"
         >
             {/* Post Header */}
             <div className="p-4 flex items-start justify-between">
@@ -84,7 +84,7 @@ const FeedPostCard = ({ post, onNavigate, onOpenReel }: {
                         <img
                             src={post.authorPhoto}
                             alt={post.authorName}
-                            className="h-11 w-11 rounded-full object-cover border-2 border-transparent hover:border-brand-cyan transition-colors"
+                            className="h-11 w-11 rounded-full object-cover border-2 border-transparent hover:border-primary transition-colors"
                         />
                         {post.authorVerified && (
                             <div className="absolute -bottom-0.5 -right-0.5 bg-primary rounded-full p-0.5">
@@ -133,7 +133,7 @@ const FeedPostCard = ({ post, onNavigate, onOpenReel }: {
             {/* Event Data Card */}
             {post.eventData && (
                 <div
-                    className="mx-4 mb-3 p-3 bg-muted rounded-xl border border-white/10 cursor-pointer hover:bg-muted transition-colors"
+                    className="mx-4 mb-3 p-3 bg-muted rounded-xl border border-border cursor-pointer hover:bg-muted transition-colors"
                     onClick={() => post.eventId && onNavigate(`/events/${post.eventId}`)}
                 >
                     <div className="flex items-center gap-3">
@@ -161,18 +161,18 @@ const FeedPostCard = ({ post, onNavigate, onOpenReel }: {
             {/* Market Data Card */}
             {post.marketData && (
                 <div
-                    className="mx-4 mb-3 p-3 bg-muted rounded-xl border border-white/10 cursor-pointer hover:bg-muted transition-colors"
+                    className="mx-4 mb-3 p-3 bg-muted rounded-xl border border-border cursor-pointer hover:bg-muted transition-colors"
                     onClick={() => post.marketItemId && onNavigate(`/market/${post.marketItemId}`)}
                 >
                     <div className="flex items-center justify-between">
                         <div className="flex items-center gap-3">
-                            <div className="p-2 bg-brand-lime/20 rounded-lg">
-                                <ShoppingBag className="h-5 w-5 text-brand-lime" />
+                            <div className="p-2 bg-primary/20 rounded-lg">
+                                <ShoppingBag className="h-5 w-5 text-primary" />
                             </div>
                             <p className="font-bold text-foreground text-sm">{post.marketData.title}</p>
                         </div>
                         {post.marketData.price && (
-                            <span className="text-brand-lime font-bold">{post.marketData.price}€</span>
+                            <span className="text-primary font-bold">{post.marketData.price}€</span>
                         )}
                     </div>
                 </div>
@@ -236,7 +236,7 @@ const FeedPostCard = ({ post, onNavigate, onOpenReel }: {
                         <MessageCircle className="h-5 w-5" />
                         <span className="text-sm">{formatNumber(post.comments)}</span>
                     </Button>
-                    <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-brand-lime">
+                    <Button variant="ghost" size="sm" className="gap-2 text-muted-foreground hover:text-primary transition-colors">
                         <Share2 className="h-5 w-5" />
                         <span className="text-sm">{formatNumber(post.shares)}</span>
                     </Button>
@@ -252,10 +252,8 @@ const CreatePostCard = () => {
         <Card className="bg-card border-border overflow-hidden">
             <CardContent className="p-4">
                 <div className="flex items-center gap-3">
-                    <div className="h-10 w-10 rounded-full bg-gradient-to-br from-brand-petrol to-brand-cyan p-[1px]">
-                        <div className="h-full w-full rounded-full bg-background flex items-center justify-center">
-                            <span className="font-heading font-bold text-xs">TU</span>
-                        </div>
+                    <div className="h-10 w-10 rounded-full bg-muted border border-border flex items-center justify-center">
+                        <span className="font-bold text-xs text-muted-foreground">TU</span>
                     </div>
                     <div className="flex-1 bg-muted rounded-full px-4 py-2.5 text-muted-foreground text-sm cursor-pointer hover:bg-muted transition-colors">
                         ¿Qué estás creando hoy?
@@ -266,11 +264,11 @@ const CreatePostCard = () => {
                         <ImageIcon className="h-4 w-4" />
                         <span className="hidden sm:inline">Foto/Video</span>
                     </Button>
-                    <Button variant="ghost" size="sm" className="flex-1 text-muted-foreground hover:text-brand-lime gap-2">
+                    <Button variant="ghost" size="sm" className="flex-1 text-muted-foreground hover:text-primary transition-colors gap-2">
                         <Calendar className="h-4 w-4" />
                         <span className="hidden sm:inline">Evento</span>
                     </Button>
-                    <Button variant="ghost" size="sm" className="flex-1 text-muted-foreground hover:text-purple-400 gap-2">
+                    <Button variant="ghost" size="sm" className="flex-1 text-muted-foreground hover:text-primary transition-colors gap-2">
                         <ShoppingBag className="h-4 w-4" />
                         <span className="hidden sm:inline">Vender</span>
                     </Button>
@@ -369,32 +367,34 @@ export default function Feed() {
     return (
         <div className="max-w-5xl mx-auto p-4 md:p-6 space-y-6 animate-fade-in-up">
             {/* Mobile Header - Only visible on mobile */}
-            <div className="md:hidden flex items-center justify-between -mx-4 -mt-4 px-4 py-3 bg-background/95 backdrop-blur-md border-b border-border sticky top-0 z-40">
+            <div className="md:hidden flex items-center justify-between -mx-4 -mt-4 px-4 py-3 bg-background border-b border-border sticky top-0 z-40">
                 <div className="flex items-center gap-2">
                     <img src="/logo-musikeeo.png" alt="Musikeeo" className="h-8 w-auto rounded-lg" />
-                    <span className="text-xl font-heading font-bold text-foreground">Musikeeo</span>
+                    <span className="text-xl font-bold tracking-tight text-foreground">Para ti</span>
                 </div>
-                <button
-                    onClick={() => navigate('/messages')}
-                    className="relative p-2 rounded-full hover:bg-muted transition-colors"
-                >
-                    <MessageCircle className="h-6 w-6 text-foreground" />
-                    <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-primary" />
-                </button>
+                <div className="flex items-center gap-2">
+                    <button
+                        onClick={() => navigate('/messages')}
+                        className="relative p-2 rounded-full hover:bg-muted transition-colors"
+                    >
+                        <MessageCircle className="h-6 w-6 text-foreground" />
+                        <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-primary" />
+                    </button>
+                </div>
             </div>
 
             {/* AI Welcome Section - Compact */}
             <motion.div
                 initial={{ opacity: 0, y: 10 }}
                 animate={{ opacity: 1, y: 0 }}
-                className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-brand-petrol/40 to-black border border-brand-cyan/20 p-5 md:p-6"
+                className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-primary/10 to-background border border-primary/20 p-5 md:p-6"
             >
                 <div className="absolute top-0 right-0 -mt-10 -mr-10 h-40 w-40 bg-primary/20 blur-3xl rounded-full pointer-events-none"></div>
 
                 <div className="relative z-10 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="flex items-center gap-4">
-                        <div className="p-2 bg-brand-lime/10 rounded-full border border-brand-lime/20">
-                            <Sparkles className="h-5 w-5 text-brand-lime animate-pulse" />
+                        <div className="p-2 bg-primary/10 rounded-full border border-primary/20">
+                            <Sparkles className="h-5 w-5 text-primary animate-pulse" />
                         </div>
                         <div>
                             <h1 className="text-xl md:text-2xl font-heading font-bold text-foreground">
@@ -444,7 +444,7 @@ export default function Feed() {
             <section>
                 <div className="flex items-center justify-between mb-4">
                     <h2 className="text-lg font-heading font-bold text-foreground flex items-center gap-2">
-                        <Zap className="h-5 w-5 text-brand-lime" />
+                        <Zap className="h-5 w-5 text-primary" />
                         Eventos Top
                     </h2>
                     <Button variant="link" className="text-primary hover:text-primary/80 p-0" onClick={() => navigate('/eventos')}>
@@ -461,7 +461,7 @@ export default function Feed() {
                         opportunities.map((item) => (
                             <Card
                                 key={item.id}
-                                className="min-w-[240px] md:min-w-[280px] bg-card border-border overflow-hidden group hover:border-brand-cyan/30 transition-all snap-start cursor-pointer shrink-0"
+                                className="min-w-[240px] md:min-w-[280px] bg-card border-border border-l-4 border-l-primary overflow-hidden group hover:border-primary/40 transition-all snap-start cursor-pointer shrink-0"
                                 onClick={() => navigate(`/events/${item.id}`)}
                             >
                                 <div className="h-28 w-full overflow-hidden relative">
@@ -500,10 +500,10 @@ export default function Feed() {
                                 onClick={() => navigate(`/profile/${user.uid}`)}
                             >
                                 <div className="relative mb-1">
-                                    <div className="h-16 w-16 rounded-full p-[2px] bg-gradient-to-br from-brand-lime to-brand-cyan">
-                                        <img src={user.photoURL || 'https://github.com/shadcn.png'} alt={user.displayName} className="h-full w-full rounded-full object-cover border-2 border-background" />
+                                    <div className="h-14 w-14 rounded-full ring-2 ring-primary ring-offset-2 ring-offset-background">
+                                        <img src={user.photoURL || 'https://github.com/shadcn.png'} alt={user.displayName} className="h-full w-full rounded-full object-cover" />
                                     </div>
-                                    <div className="absolute bottom-0 right-0 h-4 w-4 bg-brand-lime rounded-full border-2 border-background" />
+                                    <div className="absolute bottom-0 right-0 h-4 w-4 bg-primary rounded-full border-2 border-background" />
                                 </div>
                                 <span className="text-xs font-medium text-foreground truncate max-w-[70px] text-center">{user.displayName ? user.displayName.split(' ')[0] : 'Usuario'}</span>
                             </motion.div>

@@ -223,7 +223,7 @@ export default function PanelProfilePage() {
                             onChange={(e) => { setIsPublic(e.target.checked); setHasChanges(true); }}
                             className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+                        <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                     </label>
                     <button
                         onClick={handlePreview}
@@ -325,7 +325,7 @@ export default function PanelProfilePage() {
                                                 type="text"
                                                 value={artistName}
                                                 onChange={(e) => { setArtistName(e.target.value); setHasChanges(true); }}
-                                                className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-gray-600"
+                                                className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-muted-foreground"
                                                 placeholder="Ej. The Midnight Echo"
                                             />
                                         </label>
@@ -338,7 +338,7 @@ export default function PanelProfilePage() {
                                                     type="text"
                                                     value={city}
                                                     onChange={(e) => { setCity(e.target.value); setHasChanges(true); }}
-                                                    className="w-full bg-background border border-border rounded-lg pl-10 pr-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-gray-600"
+                                                    className="w-full bg-background border border-border rounded-lg pl-10 pr-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-muted-foreground"
                                                     placeholder="Madrid, España"
                                                 />
                                             </div>
@@ -354,7 +354,7 @@ export default function PanelProfilePage() {
                                             value={bio}
                                             onChange={(e) => { setBio(e.target.value.slice(0, 500)); setHasChanges(true); }}
                                             rows={4}
-                                            className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-gray-600 resize-none"
+                                            className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-muted-foreground resize-none"
                                             placeholder="Describe tu proyecto musical, tu estilo y qué te hace único..."
                                         />
                                     </label>
@@ -375,7 +375,7 @@ export default function PanelProfilePage() {
 
                                             {/* Add Genre Dropdown */}
                                             <div className="relative group">
-                                                <button className="px-3 py-1 rounded-full border border-dashed border-gray-500 text-xs text-muted-foreground hover:text-foreground hover:border-white transition-colors flex items-center gap-1">
+                                                <button className="px-3 py-1 rounded-full border border-dashed border-border text-xs text-muted-foreground hover:text-foreground hover:border-primary transition-colors flex items-center gap-1">
                                                     <Plus size={14} /> Añadir
                                                 </button>
                                                 <div className="absolute left-0 top-full mt-2 w-48 bg-card border border-border rounded-lg shadow-2xl py-2 hidden group-hover:block z-10 max-h-48 overflow-y-auto">
@@ -438,7 +438,7 @@ export default function PanelProfilePage() {
                                     <h4 className="text-foreground font-bold text-base">Instagram</h4>
                                     <p className="text-muted-foreground text-xs mt-1">Sincroniza tus fotos y videos recientes.</p>
                                 </div>
-                                <button className="w-full mt-2 py-2 px-4 rounded-lg bg-white text-black text-sm font-bold hover:bg-gray-200 transition-colors">
+                                <button className="w-full mt-2 py-2 px-4 rounded-lg bg-muted text-foreground border border-border text-sm font-bold hover:bg-muted/80 transition-colors">
                                     Conectar
                                 </button>
                             </div>

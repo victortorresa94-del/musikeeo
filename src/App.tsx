@@ -1,8 +1,18 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { useState, Suspense, lazy } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { MainLayout } from './layouts/MainLayout';
 import { Loader2 } from 'lucide-react';
+
+// Apply saved theme before first render to prevent flash
+function ThemeInit() {
+  useEffect(() => {
+    const saved = localStorage.getItem('musikeeo-theme');
+    if (saved === 'dark') document.documentElement.classList.add('dark');
+    else document.documentElement.classList.remove('dark');
+  }, []);
+  return null;
+}
 import { EventsLayout } from './layouts/EventsLayout';
 import { PanelLayout } from './layouts/PanelLayout';
 import SplashScreen from './components/layout/SplashScreen';
@@ -128,6 +138,7 @@ function App() {
 
   return (
     <ErrorBoundary>
+      <ThemeInit />
       <AuthProvider>
         {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
         <Router>

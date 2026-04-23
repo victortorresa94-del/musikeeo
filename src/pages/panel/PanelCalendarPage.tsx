@@ -311,7 +311,7 @@ export default function PanelCalendarPage() {
 
                             {/* Promo Box */}
                             <div className="mt-auto pt-6">
-                                <div className="rounded-xl bg-gradient-to-r from-white/10 to-white/5 p-4 border border-border relative overflow-hidden">
+                                <div className="rounded-xl bg-muted p-4 border border-border relative overflow-hidden">
                                     <div className="relative z-10">
                                         <p className="text-foreground font-bold text-sm mb-1">¡Consigue más bolos!</p>
                                         <p className="text-muted-foreground text-xs mb-3">Mantén tu calendario actualizado para aparecer en más búsquedas.</p>

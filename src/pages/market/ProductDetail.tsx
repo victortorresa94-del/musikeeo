@@ -47,8 +47,8 @@ export default function ProductDetail() {
     }
 
     return (
-        <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-6 animate-fade-in-up">
-            <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2 text-muted-foreground hover:text-foreground">
+        <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-6 animate-fade-in-up bg-background min-h-screen">
+            <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2 bg-card/80 backdrop-blur text-foreground rounded-full hover:bg-card">
                 <ArrowLeft className="w-4 h-4" /> Volver
             </Button>
 
@@ -68,7 +68,7 @@ export default function ProductDetail() {
                             </div>
                         )}
                         <div className="absolute top-4 left-4">
-                            <span className="bg-background/60 backdrop-blur-md text-foreground text-xs font-bold px-3 py-1 rounded-full border border-border flex items-center gap-1">
+                            <span className="bg-muted text-muted-foreground text-xs px-3 py-1 rounded-full border border-border flex items-center gap-1">
                                 <Tag className="h-3 w-3" /> {item.category}
                             </span>
                         </div>
@@ -79,50 +79,50 @@ export default function ProductDetail() {
                 <div className="space-y-6">
                     <div>
                         <div className="flex justify-between items-start">
-                            <h1 className="text-3xl font-heading font-bold text-foreground mb-2">{item.title}</h1>
+                            <h1 className="text-2xl font-black tracking-tighter text-foreground mb-2">{item.title}</h1>
                             <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted rounded-full">
                                 <Share2 className="h-5 w-5" />
                             </Button>
                         </div>
-                        <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
                             <div className="flex items-center gap-1">
-                                <MapPin className="h-4 w-4 text-primary" /> {item.userLocation || 'Sin ubicación'}
+                                <MapPin className="h-3.5 w-3.5 text-muted-foreground" /> {item.userLocation || 'Sin ubicación'}
                             </div>
                         </div>
                     </div>
 
-                    <div className="text-4xl font-bold text-primary">
+                    <div className="text-4xl font-black tracking-tighter text-primary">
                         {item.price}€
                     </div>
 
-                    <div className="bg-muted border border-border rounded-2xl p-6 space-y-4">
+                    <div className="bg-card border border-border rounded-2xl p-6 space-y-4">
                         <h3 className="font-bold text-foreground">Descripción</h3>
-                        <p className="text-muted-foreground leading-relaxed">
+                        <p className="text-sm text-muted-foreground leading-relaxed">
                             {item.description || "Este vendedor no ha proporcionado una descripción detallada, pero puedes contactarle directamente para más información."}
                         </p>
                     </div>
 
                     <div className="flex gap-3">
                         <Button
-                            className="flex-1 bg-primary text-black hover:bg-primary/90 font-bold h-12 text-lg"
+                            className="flex-1 bg-primary text-primary-foreground hover:bg-primary/90 font-semibold h-12 rounded-xl"
                             onClick={() => navigate('/messages')}
                         >
                             <MessageSquare className="w-5 h-5 mr-2" />
-                            Contactar Vendedor
+                            Enviar mensaje
                         </Button>
-                        <Button variant="outline" className="h-12 border-border hover:bg-muted">
+                        <Button variant="outline" className="h-12 rounded-xl border-primary/40 text-primary hover:bg-primary/10 font-semibold">
                             Guardar
                         </Button>
                     </div>
 
                     {/* Seller Card */}
-                    <div className="border border-border rounded-xl p-4 flex items-center gap-4 bg-card">
+                    <div className="bg-card rounded-2xl border border-border p-4 flex items-center gap-4">
                         <div className="h-12 w-12 rounded-full bg-muted flex items-center justify-center border border-border">
                             <span className="font-bold text-foreground uppercase">{(item.userName || 'U').substring(0, 2)}</span>
                         </div>
                         <div>
                             <p className="text-xs text-muted-foreground">Vendido por</p>
-                            <p className="font-bold text-foreground">{item.userName || 'Usuario'}</p>
+                            <p className="text-sm font-semibold text-foreground">{item.userName || 'Usuario'}</p>
                         </div>
                         <Button size="sm" variant="ghost" className="ml-auto text-primary hover:text-primary/80">
                             Ver Perfil

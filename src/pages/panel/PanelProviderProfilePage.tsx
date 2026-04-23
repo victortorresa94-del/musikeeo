@@ -107,7 +107,7 @@ export default function PanelProviderProfilePage() {
                             onChange={(e) => { setIsPublic(e.target.checked); setHasChanges(true); }}
                             className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-purple-500/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-purple-500"></div>
+                        <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                     </label>
                 </div>
             </header>
@@ -120,7 +120,7 @@ export default function PanelProviderProfilePage() {
                     <section className="space-y-6">
                         <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
                             <h3 className="text-foreground text-lg font-bold mb-6 flex items-center gap-2">
-                                <Briefcase className="text-purple-400" size={24} /> Información del Negocio
+                                <Briefcase className="text-muted-foreground" size={24} /> Información del Negocio
                             </h3>
 
                             <div className="grid grid-cols-1 gap-6">
@@ -130,7 +130,7 @@ export default function PanelProviderProfilePage() {
                                         type="text"
                                         value={businessName}
                                         onChange={(e) => { setBusinessName(e.target.value); setHasChanges(true); }}
-                                        className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors placeholder:text-gray-600"
+                                        className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-muted-foreground"
                                         placeholder="Tu nombre o marca comercial"
                                     />
                                 </label>
@@ -141,7 +141,7 @@ export default function PanelProviderProfilePage() {
                                         <select
                                             value={providerType}
                                             onChange={(e) => { setProviderType(e.target.value as any); setHasChanges(true); }}
-                                            className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors"
+                                            className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors"
                                         >
                                             <option value="freelance">Freelance / Autónomo</option>
                                             <option value="empresa">Empresa / S.L.</option>
@@ -157,7 +157,7 @@ export default function PanelProviderProfilePage() {
                                             type="text"
                                             value={servicesText}
                                             onChange={(e) => { setServicesText(e.target.value); setHasChanges(true); }}
-                                            className="w-full bg-background border border-border rounded-lg pl-10 pr-4 py-3 text-foreground focus:outline-none focus:border-purple-500 focus:ring-1 focus:ring-purple-500 transition-colors placeholder:text-gray-600"
+                                            className="w-full bg-background border border-border rounded-lg pl-10 pr-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-muted-foreground"
                                             placeholder="Ej. Sonido Directo, Iluminación, Backline, Grabación..."
                                         />
                                     </div>
@@ -183,7 +183,7 @@ export default function PanelProviderProfilePage() {
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="px-6 py-2.5 rounded-lg bg-purple-500 text-foreground text-sm font-bold hover:bg-purple-600 shadow-[0_0_15px_rgba(168,85,247,0.3)] transition-all flex items-center gap-2 disabled:opacity-50"
+                            className="px-6 py-2.5 rounded-lg bg-primary text-black text-sm font-bold hover:bg-primary/90 shadow-[0_0_15px_rgba(130,255,31,0.3)] transition-all flex items-center gap-2 disabled:opacity-50"
                         >
                             <Save size={16} />
                             {saving ? 'Guardando...' : 'Guardar Cambios'}

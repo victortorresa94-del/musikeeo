@@ -8,81 +8,97 @@ export default {
     theme: {
         extend: {
             colors: {
-                border: "hsl(var(--border))",
-                input: "hsl(var(--input))",
-                ring: "hsl(var(--ring))",
+                // --- Tailwind HSL vars (backward compat + opacity modifiers work) ---
+                border:     "hsl(var(--border))",
+                input:      "hsl(var(--input))",
+                ring:       "hsl(var(--ring))",
                 background: "hsl(var(--background))",
-                surface: "hsl(var(--card))",
                 foreground: "hsl(var(--foreground))",
                 card: {
-                    DEFAULT: "hsl(var(--card))",
+                    DEFAULT:    "hsl(var(--card))",
                     foreground: "hsl(var(--card-foreground))",
                 },
+                popover: {
+                    DEFAULT:    "hsl(var(--popover))",
+                    foreground: "hsl(var(--popover-foreground))",
+                },
                 primary: {
-                    DEFAULT: "#FFD84D",
-                    hover: "#FFC800",
-                    foreground: "#0A0A0A",
-                    dark: "#002C45",
+                    DEFAULT:    "hsl(var(--primary))",
+                    foreground: "hsl(var(--primary-foreground))",
+                    // hover y dark se heredan del sistema
                 },
                 secondary: {
-                    DEFAULT: "hsl(var(--secondary))",
+                    DEFAULT:    "hsl(var(--secondary))",
                     foreground: "hsl(var(--secondary-foreground))",
                 },
                 muted: {
-                    DEFAULT: "hsl(var(--muted))",
+                    DEFAULT:    "hsl(var(--muted))",
                     foreground: "hsl(var(--muted-foreground))",
                 },
+                accent: {
+                    DEFAULT:    "hsl(var(--accent))",
+                    foreground: "hsl(var(--accent-foreground))",
+                },
                 destructive: {
-                    DEFAULT: "hsl(var(--destructive))",
+                    DEFAULT:    "hsl(var(--destructive))",
                     foreground: "hsl(var(--destructive-foreground))",
                 },
-                popover: {
-                    DEFAULT: "hsl(var(--popover))",
-                    foreground: "hsl(var(--popover-foreground))",
-                },
-                // Brand tokens (explicit, not theme-aware)
+
+                // --- Semantic design tokens (via CSS var, cambian con el tema) ---
+                surface:    "var(--surf)",
+                elevated:   "var(--elev)",
+                text1:      "var(--text1)",
+                text2:      "var(--text2)",
+                text3:      "var(--text3)",
+
+                // --- Brand tokens (fijos, no cambian con el tema) ---
                 brand: {
-                    yellow: "#FFD84D",
-                    black: "#0A0A0A",
+                    yellow:   "#FFD84D",
+                    black:    "#0A0A0A",
                     charcoal: "#171717",
-                    white: "#FFFFFF",
-                    gray: "#B0B0B0",
-                    cyan: "#37B7F6",
-                    lime: "#82FF1F",
-                    petrol: "#002C45",
-                }
+                    white:    "#FFFFFF",
+                    gray:     "#B0B0B0",
+                    cyan:     "#37B7F6",
+                    lime:     "#82FF1F",
+                    petrol:   "#002C45",
+                },
             },
             fontFamily: {
-                heading: ["'Inter'", "sans-serif"], // Changed to Inter as requested
-                sans: ["'Inter'", "sans-serif"],
-                mono: ["'Rubik Mono One'", "monospace"],
+                heading: ["'Inter'", "sans-serif"],
+                sans:    ["'Inter'", "sans-serif"],
+                mono:    ["'Rubik Mono One'", "monospace"],
+            },
+            letterSpacing: {
+                tight:    "-0.02em",
+                tighter:  "-0.03em",
+                tightest: "-0.04em",
             },
             borderRadius: {
-                lg: "0.5rem",
-                md: "0.375rem",
-                sm: "0.25rem",
-                xl: "0.75rem",
-                '2xl': "1rem",
-                '3xl': "1.5rem",
+                sm:    "0.25rem",
+                md:    "0.375rem",
+                lg:    "0.5rem",
+                xl:    "0.75rem",
+                "2xl": "1rem",
+                "3xl": "1.5rem",
             },
             keyframes: {
                 "accordion-down": {
                     from: { height: "0" },
-                    to: { height: "var(--radix-accordion-content-height)" },
+                    to:   { height: "var(--radix-accordion-content-height)" },
                 },
                 "accordion-up": {
                     from: { height: "var(--radix-accordion-content-height)" },
-                    to: { height: "0" },
+                    to:   { height: "0" },
                 },
                 "pulse-green": {
                     "0%, 100%": { opacity: "1" },
-                    "50%": { opacity: "0.5", transform: "scale(1.05)" },
-                }
+                    "50%":      { opacity: "0.5", transform: "scale(1.05)" },
+                },
             },
             animation: {
                 "accordion-down": "accordion-down 0.2s ease-out",
-                "accordion-up": "accordion-up 0.2s ease-out",
-                "pulse-green": "pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
+                "accordion-up":   "accordion-up 0.2s ease-out",
+                "pulse-green":    "pulse-green 2s cubic-bezier(0.4, 0, 0.6, 1) infinite",
             },
         },
     },

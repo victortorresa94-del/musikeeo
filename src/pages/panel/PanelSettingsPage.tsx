@@ -4,6 +4,7 @@ import { useAuth } from "../../context/AuthContext";
 import { userService } from "../../services/userService";
 import { Button } from "../../components/ui/button";
 import { Input } from "../../components/ui/input";
+import { ThemeToggle } from "../../components/ui/ThemeToggle";
 
 export default function PanelSettingsPage() {
     const { user, userProfile, logout } = useAuth();
@@ -29,20 +30,20 @@ export default function PanelSettingsPage() {
     };
 
     return (
-        <div className="p-10 space-y-8">
+        <div className="p-6 md:p-10 space-y-8 bg-background min-h-screen">
             <header>
-                <h2 className="text-2xl font-bold text-foreground">Ajustes de Cuenta</h2>
-                <p className="text-muted-foreground">Gestiona tus preferencias y sesión.</p>
+                <h2 className="text-2xl font-bold text-foreground tracking-tight">Ajustes de Cuenta</h2>
+                <p className="text-muted-foreground text-sm mt-1">Gestiona tus preferencias y sesión.</p>
             </header>
 
-            <div className="bg-card border border-border rounded-xl p-6 max-w-2xl space-y-6">
+            <div className="bg-card border border-border rounded-2xl p-6 max-w-2xl space-y-6">
                 <div>
-                    <h3 className="text-foreground font-bold mb-1">Información Personal</h3>
+                    <h3 className="text-base font-semibold text-foreground tracking-tight mb-1">Información Personal</h3>
                     <p className="text-muted-foreground text-sm mb-4">Email: {user?.email} · Modo: {userProfile?.primaryMode}</p>
 
                     <form onSubmit={handleSave} className="space-y-4">
                         <div className="space-y-1">
-                            <label className="text-sm font-medium text-muted-foreground">Nombre público</label>
+                            <label className="text-sm font-medium text-foreground">Nombre público</label>
                             <Input
                                 value={displayName}
                                 onChange={e => setDisplayName(e.target.value)}
@@ -51,7 +52,7 @@ export default function PanelSettingsPage() {
                             />
                         </div>
                         <div className="space-y-1">
-                            <label className="text-sm font-medium text-muted-foreground">Ciudad</label>
+                            <label className="text-sm font-medium text-foreground">Ciudad</label>
                             <Input
                                 value={location}
                                 onChange={e => setLocation(e.target.value)}
@@ -70,7 +71,15 @@ export default function PanelSettingsPage() {
                 </div>
 
                 <div className="pt-4 border-t border-border">
-                    <h3 className="text-foreground font-bold mb-4">Zona de Peligro</h3>
+                    <h3 className="text-base font-semibold text-foreground tracking-tight mb-4">Apariencia</h3>
+                    <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-foreground">Tema</span>
+                        <ThemeToggle />
+                    </div>
+                </div>
+
+                <div className="pt-4 border-t border-border">
+                    <h3 className="text-base font-semibold text-foreground tracking-tight mb-4">Zona de Peligro</h3>
                     <Button variant="destructive" onClick={logout}>
                         Cerrar Sesión
                     </Button>

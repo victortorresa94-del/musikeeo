@@ -109,14 +109,14 @@ export default function Messages() {
     }
 
     return (
-        <div className="h-[calc(100vh-6rem)] md:h-[calc(100vh-2rem)] flex flex-col md:flex-row bg-muted/50 border border-border rounded-2xl overflow-hidden shadow-2xl backdrop-blur-sm mt-2 md:mt-0">
+        <div className="bg-background h-screen flex overflow-hidden">
             {/* Sidebar List */}
-            <div className={`${mobileView === 'list' ? 'flex' : 'hidden'} md:flex w-full md:w-80 border-r border-border flex-col bg-muted/30`}>
+            <div className={`${mobileView === 'list' ? 'flex' : 'hidden'} md:flex w-full md:w-80 border-r border-border flex-col bg-background`}>
                 <div className="p-4 border-b border-border">
                     <h2 className="font-heading font-bold text-lg text-foreground mb-4">Mensajes</h2>
                     <div className="relative">
-                        <Search className="absolute left-3 top-3 h-4 w-4 text-muted-foreground" />
-                        <Input placeholder="Buscar chats..." className="pl-10 bg-muted border-border focus-visible:ring-primary/50" />
+                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                        <Input placeholder="Buscar chats..." className="pl-10 bg-muted rounded-xl border border-border h-10 focus-visible:ring-primary/50" />
                     </div>
                 </div>
 
@@ -131,26 +131,28 @@ export default function Messages() {
                             key={chat.id}
                             onClick={() => { setSelectedChat(chat); setMobileView('chat'); }}
                             className={cn(
-                                "p-4 cursor-pointer flex gap-3 items-center border-b border-border transition-all hover:bg-muted",
-                                selectedChat?.id === chat.id ? "bg-muted border-l-4 border-l-primary" : "border-l-4 border-l-transparent"
+                                "p-4 cursor-pointer flex gap-3 items-center border-b border-border transition-colors hover:bg-muted/60",
+                                selectedChat?.id === chat.id
+                                    ? "bg-primary/5 border-l-2 border-l-primary"
+                                    : "border-l-2 border-l-transparent"
                             )}
                         >
-                            <div className={cn("h-12 w-12 rounded-full flex items-center justify-center font-bold text-sm shadow-lg overflow-hidden bg-card")}>
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm overflow-hidden bg-muted shrink-0">
                                 {chat.otherUser?.photoURL ?
                                     <img src={chat.otherUser.photoURL} alt="Avatar" className="w-full h-full object-cover" /> :
                                     <span>{chat.otherUser?.displayName?.substring(0, 2).toUpperCase() || 'U'}</span>
                                 }
                             </div>
                             <div className="flex-1 min-w-0">
-                                <div className="flex justify-between items-baseline mb-1">
-                                    <h4 className={cn("font-bold text-sm truncate text-foreground")}>
+                                <div className="flex justify-between items-baseline mb-0.5">
+                                    <h4 className="text-sm font-semibold text-foreground truncate">
                                         {chat.otherUser?.displayName || "Usuario Desconocido"}
                                     </h4>
-                                    <span className="text-[10px] text-muted-foreground">
+                                    <span className="text-xs text-muted-foreground shrink-0 ml-2">
                                         {chat.lastMessage ? formatTime(chat.lastMessage.timestamp) : ''}
                                     </span>
                                 </div>
-                                <p className="text-xs truncate text-muted-foreground">
+                                <p className="text-xs text-muted-foreground truncate">
                                     {chat.lastMessage?.text || "Nuevo chat"}
                                 </p>
                             </div>
@@ -161,24 +163,25 @@ export default function Messages() {
 
             {/* Chat Area */}
             {selectedChat ? (
-                <div className={`${mobileView === 'chat' ? 'flex' : 'hidden'} md:flex flex-1 flex-col bg-gradient-to-br from-background to-muted/30 relative`}>
+                <div className={`${mobileView === 'chat' ? 'flex' : 'hidden'} md:flex flex-1 flex-col bg-background relative`}>
                     {/* Header */}
-                    <div className="p-4 border-b border-border flex justify-between items-center bg-muted/50 backdrop-blur-md">
+                    <div className="px-4 py-3 border-b border-border flex justify-between items-center bg-background">
                         <div className="flex items-center gap-3">
                             <button onClick={() => setMobileView('list')} className="md:hidden p-2 -ml-2 text-muted-foreground hover:text-foreground">
                                 <ArrowLeft className="h-5 w-5" />
                             </button>
-                            <div className="h-10 w-10 rounded-full flex items-center justify-center font-bold text-sm bg-muted overflow-hidden">
+                            <div className="w-10 h-10 rounded-full flex items-center justify-center font-bold text-sm bg-muted overflow-hidden shrink-0">
                                 {selectedChat.otherUser?.photoURL ?
                                     <img src={selectedChat.otherUser.photoURL} alt="Avatar" className="w-full h-full object-cover" /> :
                                     <span>{selectedChat.otherUser?.displayName?.substring(0, 2).toUpperCase() || 'U'}</span>
                                 }
                             </div>
                             <div>
-                                <h3 className="font-heading font-bold text-foreground text-sm">
+                                <h3 className="font-semibold text-foreground text-sm">
                                     {selectedChat.otherUser?.displayName || "Chat"}
                                 </h3>
-                                <p className="text-[10px] flex items-center gap-1.5 font-medium text-primary">
+                                <p className="text-xs flex items-center gap-1.5 text-muted-foreground">
+                                    <span className="w-2 h-2 rounded-full bg-green-500 inline-block" />
                                     En línea
                                 </p>
                             </div>
@@ -191,44 +194,48 @@ export default function Messages() {
                     </div>
 
                     {/* Messages */}
-                    <div className="flex-1 p-6 overflow-y-auto flex flex-col gap-6 scroll-smooth">
+                    <div className="flex-1 px-6 py-4 overflow-y-auto flex flex-col gap-4 scroll-smooth bg-background">
                         {messages.map((msg) => (
                             <motion.div
                                 initial={{ opacity: 0, y: 10 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 key={msg.id}
-                                className={cn("max-w-[75%] rounded-2xl p-4 text-sm relative group",
+                                className={cn("flex flex-col",
                                     (msg.senderId === user?.uid || msg.senderId === 'current_user')
-                                        ? "self-end bg-primary text-foreground rounded-tr-sm shadow-[0_0_15px_rgba(255,216,77,0.3)] font-medium"
-                                        : "self-start bg-card text-foreground rounded-tl-sm border border-border"
+                                        ? "items-end"
+                                        : "items-start"
                                 )}
                             >
-                                {msg.text}
-                                <span className="block text-[10px] opacity-50 mt-1 text-right">{formatTime(msg.timestamp)}</span>
+                                <div className={cn(
+                                    "px-4 py-2.5 text-sm max-w-[75%]",
+                                    (msg.senderId === user?.uid || msg.senderId === 'current_user')
+                                        ? "bg-primary text-primary-foreground rounded-2xl rounded-br-sm ml-auto"
+                                        : "bg-muted text-foreground rounded-2xl rounded-bl-sm"
+                                )}>
+                                    {msg.text}
+                                </div>
+                                <span className="text-xs text-muted-foreground mt-1">{formatTime(msg.timestamp)}</span>
                             </motion.div>
                         ))}
                         <div ref={messagesEndRef} />
                     </div>
 
                     {/* Input Area */}
-                    <div className="p-4 bg-background border-t border-border backdrop-blur-md">
-                        <div className="flex gap-3 items-end bg-card p-2 rounded-xl border border-border focus-within:border-primary/30 transition-all">
+                    <div className="p-4 bg-background border-t border-border">
+                        <div className="flex gap-3 items-center">
                             <Button variant="ghost" size="icon" className="h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted shrink-0">
                                 <Mic className="h-5 w-5" />
                             </Button>
-                            <div className="flex-1">
-                                <Input
-                                    placeholder="Escribe un mensaje..."
-                                    className="bg-transparent border-none focus-visible:ring-0 px-0 h-10 text-foreground placeholder:text-muted-foreground"
-                                    value={inputText}
-                                    onChange={(e) => setInputText(e.target.value)}
-                                    onKeyDown={(e) => e.key === 'Enter' && handleSend()}
-                                />
-                            </div>
+                            <Input
+                                placeholder="Escribe un mensaje..."
+                                className="flex-1 bg-muted rounded-xl border border-border h-10 text-foreground placeholder:text-muted-foreground focus-visible:ring-primary/50"
+                                value={inputText}
+                                onChange={(e) => setInputText(e.target.value)}
+                                onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                            />
                             <Button
-                                variant="glow"
                                 size="icon"
-                                className="h-10 w-10 rounded-lg shrink-0 bg-primary text-foreground hover:bg-primary/80"
+                                className="h-10 w-10 rounded-xl shrink-0 bg-primary text-primary-foreground hover:brightness-105"
                                 onClick={handleSend}
                             >
                                 <Send className="h-4 w-4" />
@@ -237,7 +244,7 @@ export default function Messages() {
                     </div>
                 </div>
             ) : (
-                <div className={`${mobileView === 'chat' ? 'flex' : 'hidden'} md:flex flex-1 items-center justify-center bg-muted/30 text-muted-foreground`}>
+                <div className={`${mobileView === 'chat' ? 'flex' : 'hidden'} md:flex flex-1 items-center justify-center bg-background text-muted-foreground`}>
                     Selecciona un chat para comenzar
                 </div>
             )}

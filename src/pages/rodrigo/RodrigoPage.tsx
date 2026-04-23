@@ -121,7 +121,7 @@ export default function RodrigoPage() {
     ];
 
     return (
-        <div className="theme-dark min-h-screen bg-background text-foreground selection:bg-brand-yellow selection:text-brand-black">
+        <div className="min-h-screen bg-background text-foreground">
             {/* Main Navbar */}
             <Navbar />
 
@@ -141,10 +141,10 @@ export default function RodrigoPage() {
                             {/* Status Badge */}
                             <div className="inline-flex items-center gap-2 rounded-full bg-muted border border-border py-1.5 px-4">
                                 <span className="relative flex h-2 w-2">
-                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-[#FFD84D] opacity-75" />
-                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-[#FFD84D]" />
+                                    <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
+                                    <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
                                 </span>
-                                <span className="text-xs font-medium text-[#FFD84D] uppercase tracking-wider">Rodrigo AI Online</span>
+                                <span className="text-xs font-medium text-primary uppercase tracking-wider">Rodrigo AI Online</span>
                             </div>
 
                             {/* Title */}
@@ -152,7 +152,7 @@ export default function RodrigoPage() {
                                 <h1 className="text-5xl sm:text-6xl lg:text-7xl font-bold tracking-tight leading-[1.1]">
                                     Hola, soy Rodrigo.
                                     <br />
-                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-[#FFD84D] to-white">
+                                    <span className="text-transparent bg-clip-text bg-gradient-to-r from-primary to-foreground">
                                         Tu experto en música en vivo.
                                     </span>
                                 </h1>
@@ -168,10 +168,10 @@ export default function RodrigoPage() {
                                     <button
                                         key={i}
                                         onClick={() => setChatOpen(true)}
-                                        className="group flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-2 hover:border-[#FFD84D]/50 hover:bg-muted transition-all"
+                                        className="group flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-2 hover:border-primary/40 hover:text-primary transition-colors"
                                     >
-                                        <prompt.icon size={16} className="text-[#FFD84D] group-hover:scale-110 transition-transform" />
-                                        <span className="text-sm text-muted-foreground">{prompt.text}</span>
+                                        <prompt.icon size={16} className="text-primary group-hover:scale-110 transition-transform" />
+                                        <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">{prompt.text}</span>
                                     </button>
                                 ))}
                             </div>
@@ -180,7 +180,7 @@ export default function RodrigoPage() {
                             <Button
                                 onClick={() => setChatOpen(true)}
                                 size="lg"
-                                className="h-14 px-8 bg-[#FFD84D] text-black font-bold text-base hover:bg-[#ffe066] hover:shadow-[0_0_30px_rgba(250,208,56,0.3)] transition-all transform hover:-translate-y-0.5"
+                                className="h-14 px-8 bg-primary text-primary-foreground font-bold text-base hover:brightness-105 transition-all transform hover:-translate-y-0.5"
                             >
                                 <Zap className="mr-2" size={20} />
                                 Empieza a hablar conmigo
@@ -204,7 +204,7 @@ export default function RodrigoPage() {
 
                                 {/* Status Card Overlay */}
                                 <div className="absolute bottom-6 left-6 right-6 z-20 bg-muted backdrop-blur-md border border-border rounded-xl p-4 flex items-center gap-4">
-                                    <div className="size-10 rounded-full bg-background border border-border flex items-center justify-center text-[#FFD84D] shrink-0">
+                                    <div className="size-10 rounded-full bg-primary/10 border border-border flex items-center justify-center text-primary shrink-0">
                                         <Music size={20} />
                                     </div>
                                     <div>
@@ -219,14 +219,14 @@ export default function RodrigoPage() {
             </section>
 
             {/* Features Section */}
-            <section className="py-20 bg-white/[0.02] border-y border-border">
+            <section className="py-20 border-y border-border">
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                     <div className="flex flex-col md:flex-row justify-between items-start md:items-end mb-12 gap-6">
                         <div>
                             <h2 className="text-3xl font-bold tracking-tight mb-2">Cómo puedo ayudarte</h2>
                             <p className="text-muted-foreground">Tu asistente integral para eventos inolvidables.</p>
                         </div>
-                        <a href="/eventos2" className="text-[#FFD84D] text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all">
+                        <a href="/eventos2" className="text-primary text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all">
                             Ver todas las funciones <ArrowRight size={16} />
                         </a>
                     </div>
@@ -238,9 +238,9 @@ export default function RodrigoPage() {
                                 initial={{ opacity: 0, y: 20 }}
                                 animate={{ opacity: 1, y: 0 }}
                                 transition={{ duration: 0.4, delay: i * 0.1 }}
-                                className="group relative rounded-xl bg-muted border border-border p-6 hover:border-[#FFD84D]/50 transition-colors"
+                                className="group relative rounded-xl bg-muted border border-border p-6 hover:border-primary/40 transition-colors"
                             >
-                                <div className="mb-4 inline-flex size-12 items-center justify-center rounded-lg bg-background text-[#FFD84D] group-hover:scale-110 transition-transform">
+                                <div className="mb-4 inline-flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
                                     <feature.icon size={24} />
                                 </div>
                                 <h3 className="mb-2 text-lg font-bold">{feature.title}</h3>
@@ -258,12 +258,12 @@ export default function RodrigoPage() {
                     <p className="text-muted-foreground leading-relaxed mb-8">
                         Analizo tus búsquedas, tus anuncios y tu perfil musical para ofrecerte las mejores coincidencias.
                         <br />
-                        <span className="text-[#FFD84D]">Nunca comparto tus datos fuera de Musikeeo.</span>
+                        <span className="text-primary">Nunca comparto tus datos fuera de Musikeeo.</span>
                     </p>
                     <Button
                         onClick={() => setChatOpen(true)}
                         size="lg"
-                        className="bg-[#FFD84D] text-black font-bold hover:bg-[#ffe066]"
+                        className="bg-primary text-primary-foreground font-bold hover:brightness-105"
                     >
                         Habla con Rodrigo ahora <Zap className="ml-2" size={18} />
                     </Button>
@@ -276,7 +276,7 @@ export default function RodrigoPage() {
             {/* Floating Chat Button */}
             <button
                 onClick={() => setChatOpen(true)}
-                className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-[#FFD84D] text-black shadow-[0_4px_20px_rgba(250,208,56,0.4)] transition-transform hover:scale-110 active:scale-95 overflow-hidden border-2 border-[#FFD84D]"
+                className="fixed bottom-6 right-6 z-50 flex h-14 w-14 items-center justify-center rounded-full bg-primary text-primary-foreground shadow-lg transition-transform hover:scale-110 active:scale-95 overflow-hidden border-2 border-primary"
             >
                 <img src={RODRIGO_AVATAR} alt="Rodrigo" className="w-full h-full object-cover" />
             </button>
@@ -293,14 +293,16 @@ export default function RodrigoPage() {
                             onClick={(e) => e.stopPropagation()}
                         >
                             {/* Chat Header */}
-                            <div className="flex items-center gap-3 p-4 border-b border-white/10">
+                            <div className="flex items-center gap-3 p-4 bg-background/95 backdrop-blur border-b border-border">
                                 <div className="relative">
-                                    <div className="size-10 rounded-full bg-cover bg-center border border-border" style={{ backgroundImage: `url(${RODRIGO_AVATAR})` }} />
+                                    <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center border border-border overflow-hidden shrink-0">
+                                        <img src={RODRIGO_AVATAR} alt="Rodrigo" className="w-full h-full object-cover" />
+                                    </div>
                                     <div className="absolute -bottom-0.5 -right-0.5 size-3 bg-green-500 rounded-full border-2 border-background" />
                                 </div>
                                 <div className="flex-1">
-                                    <h3 className="text-sm font-bold">Rodrigo</h3>
-                                    <p className="text-xs text-[#FFD84D] font-medium">ONLINE</p>
+                                    <h3 className="text-sm font-bold text-foreground">Rodrigo</h3>
+                                    <p className="text-xs text-muted-foreground">AI Assistant</p>
                                 </div>
                                 <button
                                     onClick={() => setChatOpen(false)}
@@ -311,19 +313,19 @@ export default function RodrigoPage() {
                             </div>
 
                             {/* Chat Messages */}
-                            <div className="flex-1 p-4 overflow-y-auto space-y-4">
+                            <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-background">
                                 {messages.map((message) => (
                                     <div key={message.id} className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
                                         {message.role === 'assistant' && (
                                             <div
-                                                className="size-8 rounded-full bg-cover bg-center shrink-0 border border-border"
+                                                className="size-8 rounded-full bg-cover bg-center shrink-0 border border-border overflow-hidden"
                                                 style={{ backgroundImage: `url(${RODRIGO_AVATAR})` }}
                                             />
                                         )}
-                                        <div className={`max-w-[85%]`}>
+                                        <div className="max-w-[85%]">
                                             <div className={`px-4 py-3 rounded-2xl text-sm ${message.role === 'user'
-                                                ? 'bg-muted border border-border rounded-br-sm text-foreground'
-                                                : 'bg-muted border border-border rounded-bl-sm text-gray-100'
+                                                ? 'bg-primary text-primary-foreground rounded-tr-sm ml-auto'
+                                                : 'bg-muted text-foreground rounded-tl-sm border border-border'
                                                 }`}>
                                                 <p className="whitespace-pre-wrap">{message.content}</p>
                                             </div>
@@ -345,11 +347,13 @@ export default function RodrigoPage() {
                                 {isTyping && (
                                     <div className="flex gap-3">
                                         <div
-                                            className="size-8 rounded-full bg-cover bg-center shrink-0 border border-border"
+                                            className="size-8 rounded-full bg-cover bg-center shrink-0 border border-border overflow-hidden"
                                             style={{ backgroundImage: `url(${RODRIGO_AVATAR})` }}
                                         />
-                                        <div className="flex items-center gap-1 px-4 py-3 bg-muted border border-border rounded-2xl rounded-bl-sm">
-                                            <span className="text-sm text-[#FFD84D] animate-pulse">Rodrigo está escribiendo...</span>
+                                        <div className="flex items-center gap-1.5 px-4 py-3 bg-muted rounded-2xl rounded-bl-sm">
+                                            <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:0ms]" />
+                                            <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:150ms]" />
+                                            <span className="w-1.5 h-1.5 rounded-full bg-muted-foreground animate-bounce [animation-delay:300ms]" />
                                         </div>
                                     </div>
                                 )}
@@ -358,9 +362,9 @@ export default function RodrigoPage() {
                             </div>
 
                             {/* Chat Input */}
-                            <div className="p-4 border-t border-white/10">
-                                <div className="flex gap-2 items-end">
-                                    <div className="flex-1 bg-muted border border-border rounded-xl flex items-center focus-within:border-[#FFD84D]/50 transition-colors">
+                            <div className="p-4 border-t border-border bg-background">
+                                <div className="flex gap-2 items-center">
+                                    <div className="flex-1 bg-muted border border-border rounded-xl flex items-center focus-within:border-primary/40 transition-colors">
                                         <input
                                             type="text"
                                             value={input}
@@ -377,7 +381,7 @@ export default function RodrigoPage() {
                                     <button
                                         onClick={() => sendMessage(input)}
                                         disabled={isTyping || !input.trim()}
-                                        className="h-12 w-12 flex items-center justify-center bg-[#FFD84D] text-black rounded-xl hover:bg-[#ffe066] transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                                        className="h-10 w-10 flex items-center justify-center bg-primary text-primary-foreground rounded-xl hover:brightness-105 transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         <ArrowUp size={20} />
                                     </button>

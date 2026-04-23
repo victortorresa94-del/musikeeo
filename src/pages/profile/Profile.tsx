@@ -310,7 +310,7 @@ export default function Profile() {
 
                 {/* 2. Stats Cards */}
                 <div className="grid grid-cols-2 gap-4">
-                    <Card className="bg-card border-none shadow-md rounded-2xl overflow-hidden">
+                    <Card className="bg-card border border-border shadow-md rounded-2xl overflow-hidden">
                         <CardContent className="p-6 flex flex-col items-start justify-center h-32 relative">
                             <Music className="absolute -right-4 -bottom-4 w-24 h-24 text-primary/10 rotate-12" />
                             <div className="flex items-center gap-2 mb-2">
@@ -321,7 +321,7 @@ export default function Profile() {
                             <span className="text-xs text-muted-foreground mt-1">Realizados</span>
                         </CardContent>
                     </Card>
-                    <Card className="bg-card border-none shadow-md rounded-2xl overflow-hidden">
+                    <Card className="bg-card border border-border shadow-md rounded-2xl overflow-hidden">
                         <CardContent className="p-6 flex flex-col items-start justify-center h-32 relative">
                             <Star className="absolute -right-4 -bottom-4 w-24 h-24 text-primary/10 rotate-12" />
                             <div className="flex items-center gap-2 mb-2">

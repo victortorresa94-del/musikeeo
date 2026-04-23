@@ -280,9 +280,9 @@ export default function Discover() {
 
                             {/* In-page Search */}
                             <div className="relative w-full sm:w-64">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500" size={16} />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
                                 <input
-                                    className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 text-sm text-foreground placeholder-gray-500 focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                                    className="w-full rounded-xl border border-border bg-muted h-12 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none"
                                     placeholder="Buscar artistas..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -318,7 +318,7 @@ export default function Discover() {
                         </div>
                     ) : (
                         <div className="text-center py-20 bg-muted/30 rounded-2xl border border-border border-dashed">
-                            <Music className="mx-auto h-12 w-12 text-gray-600 mb-4" />
+                            <Music className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                             <p className="text-lg text-foreground font-bold">No se encontraron resultados.</p>
                             <p className="text-muted-foreground">Intenta ajustar tus filtros de búsqueda.</p>
                         </div>
@@ -361,7 +361,7 @@ function ArtistCard({ artist, dateFilter }: { artist: UnifiedArtist; dateFilter:
     return (
         <Link
             to={linkTo}
-            className="group relative flex flex-col bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)]"
+            className="group relative flex flex-col bg-card border border-border rounded-2xl overflow-hidden hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300"
         >
             {/* Image */}
             <div className="relative aspect-[4/3] overflow-hidden">
@@ -376,8 +376,8 @@ function ArtistCard({ artist, dateFilter }: { artist: UnifiedArtist; dateFilter:
                 {/* Badges */}
                 <div className="absolute top-3 left-3 flex gap-2">
                     {artist.verified && (
-                        <span className="flex items-center gap-1 bg-primary/90 text-black px-2 py-1 rounded-full text-[10px] font-bold">
-                            <CheckCircle size={10} /> Verificado
+                        <span className="flex items-center gap-1 bg-primary/10 text-primary border border-primary/30 px-2 py-0.5 rounded-full text-xs font-semibold">
+                            <CheckCircle size={10} /> Pro
                         </span>
                     )}
                     {isAvailable && (
@@ -399,10 +399,10 @@ function ArtistCard({ artist, dateFilter }: { artist: UnifiedArtist; dateFilter:
             <div className="p-4 flex flex-col gap-2">
                 <div className="flex items-start justify-between gap-2">
                     <div>
-                        <h3 className="text-foreground font-bold text-base leading-tight group-hover:text-primary transition-colors line-clamp-1">
+                        <h3 className="text-sm font-semibold text-foreground tracking-tight group-hover:text-primary transition-colors line-clamp-1">
                             {artist.name}
                         </h3>
-                        <p className="text-gray-500 text-xs flex items-center gap-1 mt-0.5">
+                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
                             <MapPin size={12} /> {artist.city}
                         </p>
                     </div>

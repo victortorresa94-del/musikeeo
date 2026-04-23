@@ -103,10 +103,10 @@ export default function EventsV2() {
                 <main className="flex-1 overflow-y-auto bg-background p-4 md:p-8 pb-32 relative">
 
                     {/* Header / Hero Section */}
-                    <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-8 border-b border-border">
+                    <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-8 bg-background border-b border-border">
                         <div>
                             <div className="flex items-center gap-3 mb-2">
-                                <div className="h-10 w-10 rounded-full bg-brand-yellow flex items-center justify-center text-brand-black font-bold">
+                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
                                     <Sparkles size={20} />
                                 </div>
                                 <h1 className="text-xl md:text-2xl font-heading font-bold text-foreground tracking-tight">
@@ -126,7 +126,7 @@ export default function EventsV2() {
                             <div className="relative w-full sm:w-80">
                                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
                                 <input
-                                    className="w-full rounded-lg border border-border bg-card py-2 pl-10 pr-4 text-sm text-foreground placeholder-muted-foreground focus:border-brand-yellow focus:ring-1 focus:ring-brand-yellow outline-none"
+                                    className="w-full rounded-xl border border-border bg-muted h-10 py-2 pl-10 pr-4 text-sm text-foreground placeholder-muted-foreground focus:border-primary/30 focus:ring-1 focus:ring-primary/30 outline-none"
                                     placeholder="Buscar eventos..."
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -137,7 +137,7 @@ export default function EventsV2() {
                             <div className="flex items-center gap-3">
                                 <span className="text-sm text-muted-foreground whitespace-nowrap">Ordenar por:</span>
                                 <select
-                                    className="rounded-lg border-border bg-card py-2 pl-3 pr-10 text-sm font-medium text-foreground focus:border-brand-yellow outline-none cursor-pointer"
+                                    className="rounded-xl border border-border bg-muted h-10 py-2 pl-3 pr-10 text-sm font-medium text-foreground focus:border-primary/30 outline-none cursor-pointer"
                                     value={sortOption}
                                     onChange={(e) => setSortOption(e.target.value)}
                                 >
@@ -157,7 +157,7 @@ export default function EventsV2() {
                             ))}
                         </div>
                     ) : (
-                        <div className="text-center py-20 bg-card/30 rounded-2xl border border-border border-dashed">
+                        <div className="text-center py-20 bg-card rounded-2xl border border-border border-dashed">
                             <Music className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
                             <h3 className="text-lg font-bold text-foreground">No se encontraron eventos</h3>
                             <p className="text-muted-foreground">Intenta ajustar tus filtros de búsqueda.</p>
@@ -169,13 +169,13 @@ export default function EventsV2() {
                 <div className="lg:hidden fixed bottom-6 right-6 z-40 flex flex-col gap-4 items-end">
                     <Button
                         onClick={() => navigate('/publicar')}
-                        className="rounded-full h-14 w-14 p-0 bg-white text-black hover:bg-gray-200 shadow-lg flex items-center justify-center"
+                        className="rounded-full h-14 w-14 p-0 bg-primary text-primary-foreground hover:brightness-105 shadow-lg flex items-center justify-center font-semibold"
                     >
                         <span className="text-2xl font-light mb-1">+</span>
                     </Button>
                     <Button
                         onClick={() => setIsMobileFiltersOpen(true)}
-                        className="flex items-center gap-2 bg-brand-yellow text-brand-black font-bold px-6 py-3 rounded-full shadow-lg hover:scale-105 transition-transform h-14"
+                        className="flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-6 py-3 rounded-xl shadow-lg hover:brightness-105 transition-all h-14"
                     >
                         <Filter size={20} />
                         Filtros

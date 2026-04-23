@@ -31,9 +31,9 @@ const TYPE_LABELS: Record<string, string> = {
 };
 
 const TYPE_COLORS: Record<string, string> = {
-    venta: 'bg-blue-500/20 text-blue-300',
-    alquiler: 'bg-purple-500/20 text-purple-300',
-    prestamo: 'bg-green-500/20 text-green-300',
+    venta: 'bg-muted text-muted-foreground',
+    alquiler: 'bg-muted text-muted-foreground',
+    prestamo: 'bg-muted text-muted-foreground',
 };
 
 const PAGE_SIZE = 20;
@@ -137,7 +137,7 @@ export default function Market() {
     };
 
     return (
-        <div className="max-w-5xl mx-auto p-4 md:p-6 space-y-5 animate-fade-in-up pb-24">
+        <div className="max-w-5xl mx-auto p-4 md:p-6 space-y-5 animate-fade-in-up pb-24 bg-background">
             {/* Toast */}
             <AnimatePresence>
                 {toast && (
@@ -159,7 +159,7 @@ export default function Market() {
                     <p className="text-sm text-muted-foreground mt-0.5">Compra, alquila o presta equipo</p>
                 </div>
                 <Button
-                    className="bg-primary text-black hover:bg-primary/90 font-bold h-10 px-4"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold h-10 px-4 rounded-2xl shadow-[0_4px_20px_var(--primary-glow)]"
                     onClick={() => navigate('/market/create')}
                 >
                     <Plus className="h-4 w-4 mr-1.5" /> Publicar
@@ -172,7 +172,7 @@ export default function Market() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Buscar guitarra, micro, correa..."
-                        className="pl-10 bg-muted border-border h-11"
+                        className="pl-10 bg-muted border-border rounded-xl h-12"
                         value={searchText}
                         onChange={e => setSearchText(e.target.value)}
                     />
@@ -181,7 +181,7 @@ export default function Market() {
                     variant="outline"
                     size="icon"
                     onClick={() => setShowFilters(v => !v)}
-                    className={`border-border h-11 w-11 shrink-0 ${showFilters ? 'bg-primary/10 border-primary/50 text-primary' : 'hover:bg-muted'}`}
+                    className={`rounded-xl h-12 w-12 shrink-0 ${showFilters ? 'bg-primary/10 border-primary/50 text-primary' : 'bg-muted border-border hover:bg-muted text-muted-foreground'}`}
                 >
                     <SlidersHorizontal className="h-4 w-4" />
                 </Button>
@@ -195,8 +195,8 @@ export default function Market() {
                         onClick={() => setCategoryFilter(c.value)}
                         className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors border ${
                             categoryFilter === c.value
-                                ? 'bg-primary text-black border-primary'
-                                : 'border-border bg-muted text-muted-foreground hover:text-foreground'
+                                ? 'bg-primary/10 text-primary border-primary/30'
+                                : 'bg-muted text-muted-foreground border-border hover:text-foreground'
                         }`}
                     >
                         <span>{c.emoji}</span> {c.label}
@@ -280,7 +280,7 @@ export default function Market() {
                             <motion.div
                                 key={listing.id}
                                 whileHover={{ y: -2 }}
-                                className="bg-card border border-border rounded-xl overflow-hidden hover:border-foreground/20 transition-colors flex flex-col cursor-pointer"
+                                className="bg-card border border-border rounded-2xl overflow-hidden hover:border-[var(--border-hi)] transition-colors flex flex-col cursor-pointer"
                                 onClick={() => navigate(`/market/${listing.id}`)}
                             >
                                 <div className="aspect-square bg-muted relative overflow-hidden">
@@ -291,7 +291,7 @@ export default function Market() {
                                     )}
                                     <div className="absolute top-2 left-2 flex flex-col gap-1">
                                         {listing.urgent && (
-                                            <span className="bg-[#82FF1F] text-black text-[9px] font-black px-2 py-0.5 rounded-full flex items-center gap-0.5">
+                                            <span className="bg-red-500/10 text-red-500 text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5">
                                                 <Zap size={8} className="fill-current" /> URGENTE
                                             </span>
                                         )}
@@ -301,18 +301,18 @@ export default function Market() {
                                     </div>
                                 </div>
                                 <div className="p-3 flex flex-col gap-1.5 flex-1">
-                                    <p className="text-foreground text-sm font-bold leading-tight line-clamp-2">{listing.title}</p>
-                                    <p className="text-primary font-black text-sm">{formatPrice(listing)}</p>
-                                    <div className="flex items-center gap-1 text-muted-foreground text-xs">
+                                    <p className="text-sm font-semibold text-foreground tracking-tight leading-tight line-clamp-2">{listing.title}</p>
+                                    <p className="text-lg font-black text-primary tracking-tighter">{formatPrice(listing)}</p>
+                                    <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                         <MapPin size={10} />
                                         <span className="truncate">{listing.userLocation}</span>
                                     </div>
                                     <div className="flex gap-1 flex-wrap">
                                         {listing.shipping && (
-                                            <span className="text-[9px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">📦 Envío</span>
+                                            <span className="bg-muted text-muted-foreground text-xs rounded-full px-2 py-0.5">📦 Envío</span>
                                         )}
                                         {listing.sellerType === 'profesional' && (
-                                            <span className="text-[9px] bg-muted text-muted-foreground px-1.5 py-0.5 rounded-full">🏪 Pro</span>
+                                            <span className="bg-muted text-muted-foreground text-xs rounded-full px-2 py-0.5">🏪 Pro</span>
                                         )}
                                     </div>
                                     <div className="flex items-center gap-2 mt-auto pt-1">
@@ -327,7 +327,7 @@ export default function Market() {
                                     </div>
                                     <button
                                         onClick={(e) => { e.stopPropagation(); setContactListing(listing); }}
-                                        className="w-full mt-1 h-8 rounded-lg bg-muted hover:bg-muted/80 text-foreground text-xs font-bold transition-colors"
+                                        className="w-full mt-1 h-8 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold border border-primary/30 transition-colors"
                                     >
                                         Contactar
                                     </button>
@@ -365,7 +365,7 @@ export default function Market() {
                             animate={{ y: 0, opacity: 1 }}
                             exit={{ y: 40, opacity: 0 }}
                             onClick={e => e.stopPropagation()}
-                            className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl"
+                            className="bg-card border border-border rounded-2xl p-6 w-full max-w-sm space-y-4 shadow-2xl overflow-hidden"
                         >
                             <div className="flex items-start justify-between">
                                 <div>
@@ -382,7 +382,7 @@ export default function Market() {
                                         navigate(`/messages?userId=${contactListing.userId}&ref=${contactListing.id}`);
                                         setContactListing(null);
                                     }}
-                                    className="flex items-center gap-3 p-4 rounded-xl bg-muted border border-border hover:border-white/30 transition-colors text-left w-full"
+                                    className="flex items-center gap-3 p-4 rounded-xl bg-muted border border-border hover:border-primary/30 transition-colors text-left w-full"
                                 >
                                     <div className="p-2 rounded-lg bg-primary/20">
                                         <MessageSquare size={18} className="text-primary" />

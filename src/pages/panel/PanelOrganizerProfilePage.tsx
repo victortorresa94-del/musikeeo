@@ -106,7 +106,7 @@ export default function PanelOrganizerProfilePage() {
                             onChange={(e) => { setIsPublic(e.target.checked); setHasChanges(true); }}
                             className="sr-only peer"
                         />
-                        <div className="w-11 h-6 bg-gray-700 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-brand-lime/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-brand-lime"></div>
+                        <div className="w-11 h-6 bg-muted peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/50 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
                     </label>
                 </div>
             </header>
@@ -129,7 +129,7 @@ export default function PanelOrganizerProfilePage() {
                                         type="text"
                                         value={displayName}
                                         onChange={(e) => { setDisplayName(e.target.value); setHasChanges(true); }}
-                                        className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-brand-lime focus:ring-1 focus:ring-brand-lime transition-colors placeholder:text-gray-600"
+                                        className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-muted-foreground"
                                         placeholder="Tu nombre o alias"
                                     />
                                 </label>
@@ -140,7 +140,7 @@ export default function PanelOrganizerProfilePage() {
                                         type="text"
                                         value={companyName}
                                         onChange={(e) => { setCompanyName(e.target.value); setHasChanges(true); }}
-                                        className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-brand-lime focus:ring-1 focus:ring-brand-lime transition-colors placeholder:text-gray-600"
+                                        className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-muted-foreground"
                                         placeholder="Ej. Eventos Madrid S.L."
                                     />
                                 </label>
@@ -164,9 +164,9 @@ export default function PanelOrganizerProfilePage() {
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className={`px-6 py-2.5 rounded-lg text-sm font-bold shadow-[0_0_15px_rgba(132,204,22,0.3)] transition-all flex items-center gap-2 disabled:opacity-50 ${showSuccess
+                            className={`px-6 py-2.5 rounded-lg text-sm font-bold shadow-[0_0_15px_rgba(130,255,31,0.3)] transition-all flex items-center gap-2 disabled:opacity-50 ${showSuccess
                                     ? 'bg-green-500 text-foreground hover:bg-green-600'
-                                    : 'bg-brand-lime text-black hover:bg-brand-lime/90'
+                                    : 'bg-primary text-black hover:bg-primary/90'
                                 }`}
                         >
                             {showSuccess ? <Check size={16} /> : <Save size={16} />}

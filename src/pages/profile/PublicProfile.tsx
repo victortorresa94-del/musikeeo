@@ -135,10 +135,10 @@ export default function PublicProfile() {
                         <img
                             src={profile.photoURL || "https://github.com/shadcn.png"}
                             alt={profile.displayName}
-                            className="h-full w-full rounded-full object-cover bg-zinc-800"
+                            className="h-full w-full rounded-full object-cover bg-muted"
                         />
                         {/* Online Status Dot */}
-                        <div className="absolute bottom-1 right-2 w-5 h-5 bg-brand-lime border-4 border-black rounded-full"></div>
+                        <div className="absolute bottom-1 right-2 w-5 h-5 bg-primary border-4 border-black rounded-full"></div>
                     </div>
 
                     <div className="flex-1 mb-2">
@@ -161,7 +161,7 @@ export default function PublicProfile() {
                     </div>
 
                     <div className="flex gap-3 mb-2">
-                        <Button className="bg-brand-lime text-black hover:bg-brand-lime/90 font-bold px-6" onClick={() => navigate('/messages')}>
+                        <Button className="bg-primary text-black hover:bg-primary/90 font-bold px-6" onClick={() => navigate('/messages')}>
                             <MessageSquare className="w-4 h-4 mr-2" />
                             Contactar
                         </Button>
@@ -182,7 +182,7 @@ export default function PublicProfile() {
                             <span className="text-xs text-muted-foreground uppercase tracking-wider">Bolos</span>
                         </div>
                         <div className="text-center">
-                            <span className="block text-2xl font-bold text-brand-lime">{profile.stats.rating}</span>
+                            <span className="block text-2xl font-bold text-primary">{profile.stats.rating}</span>
                             <span className="text-xs text-muted-foreground uppercase tracking-wider">Rating</span>
                         </div>
                     </>
@@ -220,7 +220,7 @@ export default function PublicProfile() {
                             <h3 className="font-heading font-bold text-foreground mb-4">Géneros</h3>
                             <div className="flex flex-wrap gap-2">
                                 {profile.genres.map(genre => (
-                                    <span key={genre} className="bg-primary/10 text-primary text-xs px-3 py-1 rounded-full border border-brand-cyan/20">
+                                    <span key={genre} className="bg-primary/10 text-primary text-xs px-3 py-1 rounded-full border border-primary/30">
                                         {genre}
                                     </span>
                                 ))}
