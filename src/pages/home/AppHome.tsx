@@ -4,7 +4,7 @@ import { motion } from 'framer-motion';
 import {
   Bell, Search, Music2, Headphones, Building2,
   Calendar, ShoppingBag, MessageCircle, TrendingUp,
-  Eye, Heart, Star, ChevronRight
+  Eye, Heart, Star, ChevronRight, Music
 } from 'lucide-react';
 
 // ─── Data ────────────────────────────────────────────────────────────────────
@@ -38,12 +38,6 @@ const NEW_LISTINGS = [
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
-function getGreeting(): string {
-  const h = new Date().getHours();
-  if (h < 12) return 'Buenos días,';
-  if (h < 20) return 'Buenas tardes,';
-  return 'Buenas noches,';
-}
 
 const fade = (delay: number) => ({
   initial: { opacity: 0, y: 10 },
@@ -65,21 +59,28 @@ export default function AppHome() {
 
       {/* ── Header ── */}
       <motion.div {...fade(0)} className="bg-background/95 backdrop-blur sticky top-0 z-10 border-b border-border px-4 py-3 flex items-center justify-between">
-        <div>
-          <p className="text-xs text-muted-foreground">{getGreeting()}</p>
-          <p className="text-xl font-extrabold tracking-tighter text-foreground">{displayName}</p>
+        {/* Logo */}
+        <div className="flex items-center gap-2">
+          <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
+            <Music size={16} className="text-primary" strokeWidth={2.5} />
+          </div>
+          <span className="font-heading font-black text-base tracking-wide text-foreground">
+            MUSIK<span className="text-primary">EEO</span>
+          </span>
         </div>
+
+        {/* Right actions */}
         <div className="flex items-center gap-2">
           <button
             onClick={() => isLoggedIn ? navigate('/messages') : navigate('/login')}
-            className="relative w-10 h-10 bg-muted rounded-full flex items-center justify-center"
+            className="relative w-9 h-9 bg-muted rounded-full flex items-center justify-center"
           >
-            <Bell size={18} className="text-muted-foreground" />
-            {isLoggedIn && <span className="absolute top-2 right-2 w-2 h-2 rounded-full bg-primary" />}
+            <Bell size={17} className="text-muted-foreground" />
+            {isLoggedIn && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />}
           </button>
           <div
             onClick={() => isLoggedIn ? navigate('/profile') : navigate('/login')}
-            className="w-10 h-10 rounded-full bg-gradient-to-br from-primary/60 to-primary/30 flex items-center justify-center text-sm font-bold text-primary-foreground cursor-pointer"
+            className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/60 to-primary/30 flex items-center justify-center text-sm font-bold text-primary-foreground cursor-pointer"
           >
             {isLoggedIn ? initials : '?'}
           </div>
@@ -130,30 +131,33 @@ export default function AppHome() {
       <motion.div {...fade(0.3)} className="mx-4 mb-6">
         <div
           onClick={() => navigate('/market')}
-          className="relative overflow-hidden rounded-2xl bg-gradient-to-r from-emerald-950/80 to-emerald-900/60 border border-emerald-700/30 p-4 cursor-pointer active:scale-[0.99] transition-all"
+          className="relative overflow-hidden rounded-2xl bg-card border border-primary/20 p-4 cursor-pointer active:scale-[0.99] transition-all"
         >
           {/* BG glow */}
-          <div className="absolute -right-6 -top-6 w-32 h-32 rounded-full bg-emerald-500/10 blur-2xl pointer-events-none" />
+          <div className="absolute -right-6 -top-6 w-40 h-40 rounded-full bg-primary/10 blur-3xl pointer-events-none" />
 
           <div className="flex items-center gap-3">
-            <div className="w-12 h-12 rounded-xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center flex-shrink-0">
-              <ShoppingBag size={22} className="text-emerald-400" />
+            <div className="w-12 h-12 rounded-xl bg-primary/15 border border-primary/25 flex items-center justify-center flex-shrink-0">
+              <ShoppingBag size={22} className="text-primary" />
             </div>
             <div className="flex-1 min-w-0">
-              <p className="text-xs font-bold text-emerald-400 uppercase tracking-widest mb-0.5">Marketplace</p>
-              <p className="text-base font-extrabold text-white tracking-tight leading-tight">Compra, vende y alquila</p>
-              <p className="text-xs text-emerald-200/60 mt-0.5">Instrumentos y equipo de sonido</p>
+              <div className="flex items-center gap-1.5 mb-0.5">
+                <Music size={10} className="text-primary" strokeWidth={2.5} />
+                <p className="text-[10px] font-black text-primary uppercase tracking-widest">Musikeeo Market</p>
+              </div>
+              <p className="text-base font-extrabold text-foreground tracking-tight leading-tight">Compra, vende y alquila</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Instrumentos y equipo de sonido</p>
             </div>
             <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
               <button
                 onClick={(e) => { e.stopPropagation(); navigate('/market'); }}
-                className="bg-emerald-500 text-white text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"
+                className="bg-primary text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"
               >
                 Ver todo
               </button>
               <button
                 onClick={(e) => { e.stopPropagation(); navigate('/market/create'); }}
-                className="border border-emerald-500/50 text-emerald-400 text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"
+                className="border border-primary/40 text-primary text-xs font-bold px-3 py-1.5 rounded-lg whitespace-nowrap"
               >
                 + Publicar
               </button>
@@ -161,15 +165,15 @@ export default function AppHome() {
           </div>
 
           {/* Mini listings preview */}
-          <div className="mt-3 pt-3 border-t border-emerald-700/30 flex gap-2 overflow-x-auto scrollbar-hide">
+          <div className="mt-3 pt-3 border-t border-border flex gap-2 overflow-x-auto scrollbar-hide">
             {NEW_LISTINGS.map((item) => (
-              <div key={item.title} className="flex-shrink-0 bg-emerald-950/60 border border-emerald-700/20 rounded-xl px-3 py-2 flex items-center gap-2">
+              <div key={item.title} className="flex-shrink-0 bg-muted border border-border rounded-xl px-3 py-2 flex items-center gap-2">
                 <span className="text-lg">{item.emoji}</span>
                 <div className="min-w-0">
-                  <p className="text-xs font-bold text-white truncate max-w-[100px]">{item.title}</p>
-                  <p className="text-xs text-emerald-400 font-bold">{item.price}</p>
+                  <p className="text-xs font-bold text-foreground truncate max-w-[100px]">{item.title}</p>
+                  <p className="text-xs text-primary font-bold">{item.price}</p>
                 </div>
-                <span className="text-[10px] bg-emerald-500/20 text-emerald-300 px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0">{item.badge}</span>
+                <span className="text-[10px] bg-primary/10 text-primary px-1.5 py-0.5 rounded-full font-semibold flex-shrink-0">{item.badge}</span>
               </div>
             ))}
           </div>

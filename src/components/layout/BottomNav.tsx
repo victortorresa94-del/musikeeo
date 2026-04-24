@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Compass, ShoppingBag, MessageCircle, User } from 'lucide-react';
+import { Home, Compass, ShoppingBag, MessageCircle, User } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
 
@@ -7,20 +7,23 @@ interface NavItem {
   icon: React.ElementType;
   label: string;
   path: string;
+  exact?: boolean;
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { icon: Compass,       label: 'Artistas',  path: '/discover'  },
-  { icon: ShoppingBag,   label: 'Mercado',   path: '/market'    },
-  { icon: MessageCircle, label: 'Chat',      path: '/messages'  },
-  { icon: User,          label: 'Perfil',    path: '/profile'   },
+  { icon: Home,          label: 'Inicio',   path: '/home',     exact: true },
+  { icon: Compass,       label: 'Artistas', path: '/discover'             },
+  { icon: ShoppingBag,   label: 'Mercado',  path: '/market'               },
+  { icon: MessageCircle, label: 'Chat',     path: '/messages'             },
+  { icon: User,          label: 'Perfil',   path: '/profile'              },
 ];
 
 export const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const isActive = (path: string) => location.pathname.startsWith(path);
+  const isActive = (item: NavItem) =>
+    item.exact ? location.pathname === item.path : location.pathname.startsWith(item.path);
 
   return (
     <nav
@@ -35,7 +38,7 @@ export const BottomNav = () => {
           <NavButton
             key={item.path}
             item={item}
-            active={isActive(item.path)}
+            active={isActive(item)}
             onClick={() => navigate(item.path)}
           />
         ))}
