@@ -1,6 +1,5 @@
 import { NavLink } from 'react-router-dom';
 import {
-  Music,
   Home,
   Rss,
   Compass,
@@ -21,12 +20,12 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { icon: Home, label: 'Inicio', path: '/home' },
-  { icon: Rss, label: 'Feed', path: '/feed' },
-  { icon: Compass, label: 'Descubrir', path: '/discover' },
-  { icon: Calendar, label: 'Eventos', path: '/eventos' },
-  { icon: ShoppingBag, label: 'Mercado', path: '/market' },
-  { icon: Bot, label: 'Rodrigo AI', path: '/rodrigo' },
+  { icon: Home,        label: 'Inicio',     path: '/home'     },
+  { icon: Rss,         label: 'Feed',       path: '/feed'     },
+  { icon: Compass,     label: 'Explorar',   path: '/discover' },
+  { icon: Calendar,    label: 'Eventos',    path: '/eventos'  },
+  { icon: ShoppingBag, label: 'Mercado',    path: '/market'   },
+  { icon: Bot,         label: 'Rodrigo AI', path: '/rodrigo'  },
 ];
 
 export const Sidebar = () => {
@@ -37,13 +36,10 @@ export const Sidebar = () => {
   };
 
   return (
-    <aside className="hidden md:flex w-64 h-screen sticky top-0 flex-col bg-surface border-r border-border">
+    <aside className="hidden md:flex w-64 h-screen sticky top-0 flex-col bg-muted/60 border-r border-border">
       {/* Logo */}
       <div className="flex items-center gap-2 px-5 h-14 border-b border-border flex-shrink-0">
-        <Music className="h-5 w-5 text-primary" strokeWidth={2.5} />
-        <span className="font-heading font-bold text-lg text-foreground tracking-wide">
-          MUSIK<span className="text-primary">EEO</span>
-        </span>
+        <img src="/logo-musikeeo.png" alt="Musikeeo" className="h-6 w-auto object-contain" />
       </div>
 
       {/* Navigation */}
@@ -57,7 +53,7 @@ export const Sidebar = () => {
                 'flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-all duration-150',
                 isActive
                   ? 'bg-primary/10 text-primary border-l-2 border-primary rounded-r-xl pl-[10px]'
-                  : 'text-muted-foreground hover:bg-muted hover:text-foreground rounded-xl'
+                  : 'text-muted-foreground hover:bg-background hover:text-foreground rounded-xl'
               )
             }
           >
@@ -78,9 +74,9 @@ export const Sidebar = () => {
 
       {/* Footer */}
       <div className="border-t border-border mx-2 mb-2 mt-auto">
-        <div className="bg-muted/50 rounded-xl p-3 mt-2">
+        <div className="bg-background rounded-xl p-3 mt-2">
           {/* User info */}
-          <NavLink to="/profile" className="flex items-center gap-2.5 mb-3 group overflow-hidden">
+          <NavLink to="/panel" className="flex items-center gap-2.5 mb-3 group overflow-hidden">
             <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/70 to-primary/40 flex items-center justify-center flex-shrink-0">
               {user?.photoURL ? (
                 <img

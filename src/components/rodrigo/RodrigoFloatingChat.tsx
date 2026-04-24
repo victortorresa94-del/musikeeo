@@ -148,7 +148,7 @@ export const RodrigoFloatingChat = () => {
                         animate={{ scale: 1, opacity: 1 }}
                         exit={{ scale: 0, opacity: 0 }}
                         onClick={() => setIsOpen(true)}
-                        className="fixed top-3 right-16 z-50 flex h-10 w-10 items-center justify-center rounded-full bg-[#FFD84D] text-black shadow-[0_4px_16px_rgba(250,208,56,0.35)] transition-transform hover:scale-110 active:scale-95 overflow-hidden border-2 border-[#FFD84D] md:top-3 md:right-4"
+                        className="fixed bottom-[76px] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[#FFD84D] text-black shadow-[0_4px_20px_rgba(250,208,56,0.4)] transition-transform hover:scale-110 active:scale-95 overflow-hidden border-2 border-[#FFD84D] md:bottom-6 md:right-6"
                         title="Habla con Rodrigo"
                     >
                         <img src={RODRIGO_AVATAR} alt="Rodrigo" loading="lazy" className="w-full h-full object-cover" />
@@ -163,7 +163,7 @@ export const RodrigoFloatingChat = () => {
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="fixed top-16 right-2 z-50 w-[min(400px,calc(100vw-16px))] h-[min(600px,calc(100dvh-80px))] bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden"
+                        className="fixed bottom-[148px] right-2 z-50 w-[min(400px,calc(100vw-16px))] h-[min(560px,calc(100dvh-200px))] bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden md:bottom-24 md:right-6"
                     >
                         {/* Header */}
                         <div className="flex items-center gap-3 p-4 border-b border-white/10 bg-[#0A0A0A]">

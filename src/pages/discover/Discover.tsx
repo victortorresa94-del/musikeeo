@@ -249,11 +249,70 @@ export default function Discover() {
                 {/* Main Content Area */}
                 <main className="flex-1 overflow-y-auto bg-background p-4 md:p-8 pb-32 relative">
 
+                    {/* ── Explorar Hub ── */}
+                    <div className="mb-8">
+                        <h1 className="text-2xl font-black text-foreground mb-1 font-heading tracking-tight">Explorar</h1>
+                        <p className="text-sm text-muted-foreground mb-4">Músicos, técnicos, salas y eventos de toda España</p>
+                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
+                            {/* Músicos destacados */}
+                            <div className="bg-card border border-border rounded-2xl p-4 cursor-pointer hover:-translate-y-0.5 transition-all group">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
+                                        <Music size={18} className="text-purple-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-foreground">Músicos destacados</p>
+                                        <p className="text-xs text-muted-foreground">Guitarristas, DJs, cantantes…</p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                    {['Rock', 'Jazz', 'Electrónica', 'Flamenco'].map(g => (
+                                        <span key={g} className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{g}</span>
+                                    ))}
+                                </div>
+                            </div>
+                            {/* Técnicos destacados */}
+                            <div className="bg-card border border-border rounded-2xl p-4 cursor-pointer hover:-translate-y-0.5 transition-all group">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
+                                        <Star size={18} className="text-blue-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-foreground">Técnicos destacados</p>
+                                        <p className="text-xs text-muted-foreground">FOH, monitores, iluminación…</p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                    {['FOH', 'PA', 'Backline', 'Iluminación'].map(g => (
+                                        <span key={g} className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{g}</span>
+                                    ))}
+                                </div>
+                            </div>
+                            {/* Próximos eventos */}
+                            <div className="bg-card border border-border rounded-2xl p-4 cursor-pointer hover:-translate-y-0.5 transition-all group">
+                                <div className="flex items-center gap-3 mb-2">
+                                    <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center flex-shrink-0">
+                                        <Calendar size={18} className="text-cyan-500" />
+                                    </div>
+                                    <div>
+                                        <p className="text-sm font-bold text-foreground">Próximos eventos</p>
+                                        <p className="text-xs text-muted-foreground">Festivales, conciertos, bolos…</p>
+                                    </div>
+                                </div>
+                                <div className="flex flex-wrap gap-1">
+                                    {['Festival', 'Sala', 'Privado', 'Gira'].map(g => (
+                                        <span key={g} className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{g}</span>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
                     {/* Header of Grid */}
-                    <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
+                    <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
                         <div>
-                            <h1 className="text-3xl font-bold text-foreground mb-2 font-heading">
-                                {isSoundServices ? 'Proveedores' : 'Descubre Músicos'}
+                            <h1 className="text-xl font-bold text-foreground mb-1 font-heading">
+                                {isSoundServices ? 'Proveedores' : 'Artistas'}
                             </h1>
                             <p className="text-muted-foreground">
                                 {loading ? 'Cargando...' : `${sortedArtists.length} ${isSoundServices ? 'profesionales' : 'artistas'} disponibles`}

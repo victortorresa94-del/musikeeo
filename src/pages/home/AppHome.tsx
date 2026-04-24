@@ -59,8 +59,16 @@ export default function AppHome() {
 
       {/* ── Header ── */}
       <motion.div {...fade(0)} className="bg-background/95 backdrop-blur sticky top-0 z-10 border-b border-border px-4 py-3 flex items-center justify-between">
-        {/* Logo */}
-        <img src="/logo-musikeeo.png" alt="Musikeeo" className="h-8 w-auto object-contain" />
+        {/* Logo + greeting */}
+        <div className="flex items-center gap-2.5">
+          <img src="/logo-musikeeo.png" alt="Musikeeo" className="h-7 w-auto object-contain flex-shrink-0" />
+          <div>
+            <p className="text-[11px] text-muted-foreground leading-none mb-0.5">
+              {isLoggedIn ? 'Bienvenido de nuevo,' : 'Hola,'}
+            </p>
+            <p className="text-base font-extrabold tracking-tight text-foreground leading-none">{displayName}</p>
+          </div>
+        </div>
 
         {/* Right actions */}
         <div className="flex items-center gap-2">
@@ -72,7 +80,7 @@ export default function AppHome() {
             {isLoggedIn && <span className="absolute top-1.5 right-1.5 w-2 h-2 rounded-full bg-primary" />}
           </button>
           <div
-            onClick={() => isLoggedIn ? navigate('/profile') : navigate('/login')}
+            onClick={() => isLoggedIn ? navigate('/panel') : navigate('/login')}
             className="w-9 h-9 rounded-full bg-gradient-to-br from-primary/60 to-primary/30 flex items-center justify-center text-sm font-bold text-primary-foreground cursor-pointer"
           >
             {isLoggedIn ? initials : '?'}
