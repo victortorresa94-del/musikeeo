@@ -93,7 +93,7 @@ export const Navbar = () => {
 
     return (
         <header
-            className={`fixed top-0 z-50 w-full transition-all duration-300 ${isScrolled || isMobileMenuOpen ? 'bg-background/80 backdrop-blur-md border-b border-white/10' : 'bg-transparent border-b border-transparent'
+            className={`fixed top-0 z-50 w-full transition-all duration-300 ${isScrolled || isMobileMenuOpen ? 'bg-background/80 backdrop-blur-md border-b border-border' : 'bg-transparent border-b border-transparent'
                 }`}
         >
             <div className="max-w-[1400px] mx-auto px-4 md:px-10 h-20 flex items-center justify-between">
@@ -104,18 +104,18 @@ export const Navbar = () => {
                         alt="Musikeeo Logo"
                         className="h-10 w-auto transition-transform group-hover:scale-110"
                     />
-                    <span className="text-xl font-bold text-white tracking-tight">Musikeeo</span>
+                    <span className="text-xl font-bold text-foreground tracking-tight">Musikeeo</span>
                 </Link>
 
                 {/* Desktop Nav */}
                 <nav className="hidden md:flex items-center gap-8">
-                    <Link to="/artistas" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">
+                    <Link to="/artistas" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                         Músicos
                     </Link>
-                    <Link to="/sonido" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">
+                    <Link to="/sonido" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                         Proveedores
                     </Link>
-                    <Link to="/eventos2" className="text-sm font-medium text-gray-300 hover:text-primary transition-colors">
+                    <Link to="/eventos2" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                         Eventos
                     </Link>
                 </nav>
@@ -127,7 +127,7 @@ export const Navbar = () => {
                         <div className="relative" ref={userMenuRef}>
                             <button
                                 onClick={() => setIsUserMenuOpen(!isUserMenuOpen)}
-                                className="flex items-center gap-2 p-1 rounded-full hover:bg-white/10 transition-colors"
+                                className="flex items-center gap-2 p-1 rounded-full hover:bg-muted transition-colors"
                             >
                                 <div
                                     className="w-9 h-9 rounded-full bg-cover bg-center border-2 border-primary/50"
@@ -138,7 +138,7 @@ export const Navbar = () => {
                                     }}
                                 />
                                 <div className="flex flex-col items-start">
-                                    <span className="text-sm font-medium text-white max-w-[100px] truncate leading-none">
+                                    <span className="text-sm font-medium text-foreground max-w-[100px] truncate leading-none">
                                         {user.displayName?.split(' ')[0] || 'Usuario'}
                                     </span>
                                     {userProfile && (
@@ -149,23 +149,23 @@ export const Navbar = () => {
                                 </div>
                                 <ChevronDown
                                     size={16}
-                                    className={`text-gray-400 transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`}
+                                    className={`text-muted-foreground transition-transform ${isUserMenuOpen ? 'rotate-180' : ''}`}
                                 />
                             </button>
 
                             {/* Dropdown Menu */}
                             {isUserMenuOpen && (
-                                <div className="absolute right-0 top-full mt-2 w-64 bg-surface border border-white/10 rounded-xl shadow-2xl py-2 animate-fade-in">
+                                <div className="absolute right-0 top-full mt-2 w-64 bg-card border border-border rounded-xl shadow-2xl py-2 animate-fade-in">
                                     {/* User Info Header */}
-                                    <div className="px-4 py-3 border-b border-white/10">
-                                        <p className="text-white font-medium truncate">{user.displayName}</p>
-                                        <p className="text-xs text-gray-400 truncate">{user.email}</p>
+                                    <div className="px-4 py-3 border-b border-border">
+                                        <p className="text-foreground font-medium truncate">{user.displayName}</p>
+                                        <p className="text-xs text-muted-foreground truncate">{user.email}</p>
                                     </div>
 
                                     {/* Mode Switcher */}
                                     {userProfile && (
-                                        <div className="px-4 py-2 border-b border-white/10">
-                                            <p className="text-[10px] uppercase text-gray-500 font-bold mb-2">Cambiar Modo</p>
+                                        <div className="px-4 py-2 border-b border-border">
+                                            <p className="text-[10px] uppercase text-muted-foreground font-bold mb-2">Cambiar Modo</p>
                                             <div className="grid grid-cols-3 gap-1">
                                                 {(Object.keys(userProfile.activeModes) as UserMode[]).map((mode) => (
                                                     userProfile.activeModes[mode] ? (
@@ -174,7 +174,7 @@ export const Navbar = () => {
                                                             onClick={() => handleSwitchMode(mode)}
                                                             className={`text-[10px] py-1 px-2 rounded-md border transition-all ${userProfile.primaryMode === mode
                                                                 ? 'bg-primary text-black border-primary font-bold'
-                                                                : 'bg-white/5 text-gray-400 border-white/10 hover:border-white/30'
+                                                                : 'bg-muted text-muted-foreground border-border hover:border-muted-foreground'
                                                                 }`}
                                                         >
                                                             {getModeLabel(mode)}
@@ -193,16 +193,16 @@ export const Navbar = () => {
                                                 key={item.href}
                                                 to={item.href}
                                                 onClick={() => setIsUserMenuOpen(false)}
-                                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-gray-300 hover:text-white hover:bg-white/5 transition-colors"
+                                                className="flex items-center gap-3 px-4 py-2.5 text-sm text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
                                             >
-                                                <item.icon size={18} className="text-gray-500" />
+                                                <item.icon size={18} className="text-muted-foreground" />
                                                 {item.label}
                                             </Link>
                                         ))}
                                     </div>
 
                                     {/* Logout */}
-                                    <div className="border-t border-white/10 pt-2">
+                                    <div className="border-t border-border pt-2">
                                         <button
                                             onClick={handleLogout}
                                             className="flex items-center gap-3 px-4 py-2.5 text-sm text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-colors w-full"
@@ -216,7 +216,7 @@ export const Navbar = () => {
                         </div>
                     ) : (
                         /* User is not logged in - show login button */
-                        <Link to="/login" className="text-sm font-bold text-white hover:text-primary transition-colors">
+                        <Link to="/login" className="text-sm font-bold text-foreground hover:text-primary transition-colors">
                             Inicia sesión
                         </Link>
                     )}
@@ -232,7 +232,7 @@ export const Navbar = () => {
 
                 {/* Mobile Toggle */}
                 <button
-                    className="md:hidden text-white"
+                    className="md:hidden text-foreground"
                     onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
                 >
                     {isMobileMenuOpen ? <X size={28} /> : <Menu size={28} />}
@@ -242,11 +242,11 @@ export const Navbar = () => {
             {/* Mobile Menu */}
             {isMobileMenuOpen && (
                 <div className="md:hidden bg-background absolute top-20 left-0 w-full h-[calc(100vh-80px)] p-6 flex flex-col gap-6 overflow-y-auto">
-                    <Link to="/artistas" className="text-2xl font-heading font-bold text-white" onClick={() => setIsMobileMenuOpen(false)}>Músicos</Link>
-                    <Link to="/sonido" className="text-2xl font-heading font-bold text-white" onClick={() => setIsMobileMenuOpen(false)}>Proveedores</Link>
-                    <Link to="/eventos2" className="text-2xl font-heading font-bold text-white" onClick={() => setIsMobileMenuOpen(false)}>Eventos</Link>
+                    <Link to="/artistas" className="text-2xl font-heading font-bold text-foreground" onClick={() => setIsMobileMenuOpen(false)}>Músicos</Link>
+                    <Link to="/sonido" className="text-2xl font-heading font-bold text-foreground" onClick={() => setIsMobileMenuOpen(false)}>Proveedores</Link>
+                    <Link to="/eventos2" className="text-2xl font-heading font-bold text-foreground" onClick={() => setIsMobileMenuOpen(false)}>Eventos</Link>
 
-                    <hr className="border-white/10 my-2" />
+                    <hr className="border-border my-2" />
 
                     {user ? (
                         <>
@@ -261,8 +261,8 @@ export const Navbar = () => {
                                     }}
                                 />
                                 <div>
-                                    <p className="text-white font-bold">{user.displayName}</p>
-                                    <p className="text-xs text-gray-400">{user.email}</p>
+                                    <p className="text-foreground font-bold">{user.displayName}</p>
+                                    <p className="text-xs text-muted-foreground">{user.email}</p>
                                     {userProfile && (
                                         <p className="text-xs text-primary font-bold mt-1 uppercase">{getModeLabel(userProfile.primaryMode)}</p>
                                     )}
@@ -279,7 +279,7 @@ export const Navbar = () => {
                                                 onClick={() => { handleSwitchMode(mode); setIsMobileMenuOpen(false); }}
                                                 className={`text-xs py-1 px-3 rounded-full border ${userProfile.primaryMode === mode
                                                     ? 'bg-primary text-black border-primary'
-                                                    : 'bg-white/5 text-gray-400 border-white/10'
+                                                    : 'bg-muted text-muted-foreground border-border'
                                                     }`}
                                             >
                                                 {getModeLabel(mode)}
@@ -295,9 +295,9 @@ export const Navbar = () => {
                                     key={item.href}
                                     to={item.href}
                                     onClick={() => setIsMobileMenuOpen(false)}
-                                    className="flex items-center gap-3 text-lg text-gray-300"
+                                    className="flex items-center gap-3 text-lg text-muted-foreground"
                                 >
-                                    <item.icon size={20} className="text-gray-500" />
+                                    <item.icon size={20} className="text-muted-foreground" />
                                     {item.label}
                                 </Link>
                             ))}
@@ -311,7 +311,7 @@ export const Navbar = () => {
                             </button>
                         </>
                     ) : (
-                        <Link to="/login" className="text-lg font-medium text-gray-300" onClick={() => setIsMobileMenuOpen(false)}>Inicia sesión</Link>
+                        <Link to="/login" className="text-lg font-medium text-muted-foreground" onClick={() => setIsMobileMenuOpen(false)}>Inicia sesión</Link>
                     )}
 
                     <Link to="/rodrigo" className="flex h-12 items-center justify-center gap-2 rounded-lg bg-primary text-background font-bold text-lg mt-auto" onClick={() => setIsMobileMenuOpen(false)}>

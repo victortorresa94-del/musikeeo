@@ -37,12 +37,12 @@ export const ProviderSidebar = ({ className, filters, onFilterChange }: Provider
     };
 
     return (
-        <aside className={cn("w-full md:w-80 flex-shrink-0 flex flex-col border-r border-white/10 bg-surface overflow-y-auto h-full", className)}>
+        <aside className={cn("w-full md:w-80 flex-shrink-0 flex flex-col border-r border-border bg-muted overflow-y-auto h-full", className)}>
             <div className="p-6 space-y-8">
 
                 {/* Header */}
                 <div>
-                    <h2 className="text-xl font-bold text-white mb-2">Filtros de Proveedor</h2>
+                    <h2 className="text-xl font-bold text-foreground mb-2">Filtros de Proveedor</h2>
                     <p className="text-xs text-muted-foreground">Encuentra el equipo y personal técnico ideal.</p>
                 </div>
 
@@ -63,7 +63,7 @@ export const ProviderSidebar = ({ className, filters, onFilterChange }: Provider
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Fecha del Evento</h3>
                     <input
                         type="date"
-                        className="w-full rounded-lg border border-white/10 bg-white/5 py-2.5 pl-3 pr-3 text-sm text-white focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all [color-scheme:dark]"
+                        className="w-full rounded-lg border border-border bg-muted py-2.5 pl-3 pr-3 text-sm text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all"
                         value={filters.dateFrom || ''}
                         onChange={(e) => onFilterChange('dateFrom', e.target.value || null)}
                     />
@@ -81,7 +81,7 @@ export const ProviderSidebar = ({ className, filters, onFilterChange }: Provider
                                     "px-3 py-2 rounded-lg text-sm font-medium border transition-all",
                                     filters.type === type
                                         ? "bg-primary text-black border-primary"
-                                        : "bg-white/5 border-white/10 text-gray-300 hover:bg-white/10"
+                                        : "bg-muted border-border text-muted-foreground hover:bg-card"
                                 )}
                             >
                                 {type}
@@ -100,13 +100,13 @@ export const ProviderSidebar = ({ className, filters, onFilterChange }: Provider
                                     "w-4 h-4 rounded border flex items-center justify-center transition-colors",
                                     filters.services?.includes(service)
                                         ? "bg-primary border-primary"
-                                        : "border-gray-600 group-hover:border-primary"
+                                        : "border-border group-hover:border-primary"
                                 )}>
                                     {filters.services?.includes(service) && <Search size={10} className="text-black" />}
                                 </div>
                                 <span className={cn(
                                     "text-sm transition-colors",
-                                    filters.services?.includes(service) ? "text-white" : "text-gray-400 group-hover:text-white"
+                                    filters.services?.includes(service) ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                                 )}>
                                     {service}
                                 </span>
@@ -131,13 +131,13 @@ export const ProviderSidebar = ({ className, filters, onFilterChange }: Provider
                                     "w-4 h-4 rounded border flex items-center justify-center transition-colors",
                                     filters.equipment?.includes(eq)
                                         ? "bg-primary border-primary"
-                                        : "border-gray-600 group-hover:border-primary"
+                                        : "border-border group-hover:border-primary"
                                 )}>
                                     {filters.equipment?.includes(eq) && <Search size={10} className="text-black" />}
                                 </div>
                                 <span className={cn(
                                     "text-sm transition-colors",
-                                    filters.equipment?.includes(eq) ? "text-white" : "text-gray-400 group-hover:text-white"
+                                    filters.equipment?.includes(eq) ? "text-foreground" : "text-muted-foreground group-hover:text-foreground"
                                 )}>
                                     {eq}
                                 </span>
@@ -156,7 +156,7 @@ export const ProviderSidebar = ({ className, filters, onFilterChange }: Provider
                 <div className="space-y-3">
                     <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Cobertura</h3>
                     <select
-                        className="w-full rounded-lg border border-white/10 bg-white/5 py-2.5 px-3 text-sm text-white focus:border-primary outline-none"
+                        className="w-full rounded-lg border border-border bg-muted py-2.5 px-3 text-sm text-foreground focus:border-primary outline-none"
                         value={filters.coverage || ''}
                         onChange={(e) => onFilterChange('coverage', e.target.value || null)}
                     >
@@ -168,10 +168,10 @@ export const ProviderSidebar = ({ className, filters, onFilterChange }: Provider
                     </select>
                 </div>
 
-                <div className="pt-6 border-t border-white/10">
+                <div className="pt-6 border-t border-border">
                     <Button
                         variant="ghost"
-                        className="w-full text-muted-foreground hover:text-white"
+                        className="w-full text-muted-foreground hover:text-foreground"
                         onClick={() => {
                             onFilterChange('city', null);
                             onFilterChange('type', null);

@@ -25,6 +25,7 @@ const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Home = lazy(() => import('./pages/home/Home'));
+const AppHome = lazy(() => import('./pages/home/AppHome'));
 const Feed = lazy(() => import('./pages/feed/Feed'));
 const EventsV2 = lazy(() => import('./pages/events/EventsV2'));
 const EventDetail = lazy(() => import('./pages/events/EventDetail'));
@@ -125,7 +126,7 @@ const PanelGateway = () => {
 const RequireAnon = () => {
   const { user, loading } = useAuth();
   if (!loading && user) {
-    return <Navigate to="/" replace />;
+    return <Navigate to="/home" replace />;
   }
 
   return <Outlet />;
@@ -175,6 +176,7 @@ function App() {
 
               {/* Protected App Routes (MainLayout) */}
               <Route element={<RequireAuthCompleted />}>
+                <Route path="/home" element={<AppHome />} />
                 <Route path="/feed" element={<Feed />} />
                 <Route path="/discover" element={<Discover />} />
                 <Route path="/eventos" element={<EventsV2 />} />

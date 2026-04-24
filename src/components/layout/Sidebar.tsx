@@ -1,11 +1,11 @@
 import { NavLink } from 'react-router-dom';
 import {
   Music,
+  Home,
   Rss,
   Compass,
   Calendar,
   ShoppingBag,
-  Folder,
   Bot,
   LogOut,
   User,
@@ -21,11 +21,11 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
+  { icon: Home, label: 'Inicio', path: '/home' },
   { icon: Rss, label: 'Feed', path: '/feed' },
   { icon: Compass, label: 'Descubrir', path: '/discover' },
   { icon: Calendar, label: 'Eventos', path: '/eventos' },
   { icon: ShoppingBag, label: 'Mercado', path: '/market' },
-  { icon: Folder, label: 'Proyectos', path: '/projects' },
   { icon: Bot, label: 'Rodrigo AI', path: '/rodrigo' },
 ];
 

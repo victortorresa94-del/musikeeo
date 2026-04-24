@@ -10,8 +10,8 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { icon: Home, label: 'Feed', path: '/feed' },
-  { icon: Compass, label: 'Discover', path: '/discover' },
+  { icon: Home, label: 'Inicio', path: '/home' },
+  { icon: Compass, label: 'Descubrir', path: '/discover' },
   { icon: MessageCircle, label: 'Mensajes', path: '/messages' },
   { icon: User, label: 'Perfil', path: '/profile' },
 ];

@@ -42,11 +42,11 @@ const artists = [
 
 export const FeaturedArtists = () => {
     return (
-        <section className="py-10 px-4 md:px-10 bg-gradient-to-b from-transparent to-surface/30 relative z-10">
+        <section className="py-10 px-4 md:px-10 bg-gradient-to-b from-transparent to-muted/30 relative z-10">
             <div className="max-w-[1200px] mx-auto">
                 <div className="flex justify-between items-end mb-10">
                     <div>
-                        <h2 className="text-3xl md:text-4xl font-bold text-white font-heading">Músicos destacados</h2>
+                        <h2 className="text-3xl md:text-4xl font-bold text-foreground font-heading">Músicos destacados</h2>
                         <p className="text-muted-foreground mt-2">Talento verificado listo para tu próximo evento</p>
                     </div>
                     <Link to="/artistas" className="hidden sm:flex items-center gap-1 text-primary hover:text-white font-medium transition-colors">
@@ -57,7 +57,7 @@ export const FeaturedArtists = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
                     {artists.map((artist) => (
-                        <Link key={artist.id} to={`/perfil/${artist.id}`} className="group bg-surface rounded-xl overflow-hidden border border-white/5 hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 cursor-pointer">
+                        <Link key={artist.id} to={`/perfil/${artist.id}`} className="group bg-muted rounded-xl overflow-hidden border border-border hover:border-primary/50 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl hover:shadow-primary/5 cursor-pointer">
                             <div className="relative aspect-square overflow-hidden">
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent z-10 opacity-60 group-hover:opacity-40 transition-opacity"></div>
                                 <div
@@ -78,14 +78,14 @@ export const FeaturedArtists = () => {
                             </div>
 
                             <div className="p-4">
-                                <h3 className="text-lg font-bold text-white group-hover:text-primary transition-colors truncate">{artist.name}</h3>
+                                <h3 className="text-lg font-bold text-foreground group-hover:text-primary transition-colors truncate">{artist.name}</h3>
 
-                                <div className="flex items-center justify-between pt-3 border-t border-white/10 mt-3">
+                                <div className="flex items-center justify-between pt-3 border-t border-border mt-3">
                                     <div className="flex items-center gap-1 text-muted-foreground text-xs">
                                         <MapPin size={14} />
                                         {artist.location}
                                     </div>
-                                    <div className="text-white font-bold text-sm">
+                                    <div className="text-foreground font-bold text-sm">
                                         Desde <span className="text-primary text-base">${artist.price}</span>/hr
                                     </div>
                                 </div>

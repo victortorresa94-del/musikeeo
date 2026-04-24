@@ -23,7 +23,7 @@ export const HowItWorks = () => {
         <section className="py-20 px-4 md:px-10 bg-background relative z-10">
             <div className="max-w-[1200px] mx-auto">
                 <div className="text-center mb-16">
-                    <h2 className="text-3xl md:text-4xl font-bold text-white mb-4 font-heading">Cómo funciona Musikeeo</h2>
+                    <h2 className="text-3xl md:text-4xl font-bold text-foreground mb-4 font-heading">Cómo funciona Musikeeo</h2>
                     <p className="text-muted-foreground text-lg max-w-2xl mx-auto">
                         Tres pasos sencillos para llevar la mejor música en vivo a tu evento.
                     </p>
@@ -33,12 +33,12 @@ export const HowItWorks = () => {
                     {steps.map((step, index) => (
                         <div
                             key={index}
-                            className="bg-surface p-8 rounded-2xl border border-white/5 hover:border-primary/50 transition-all duration-300 group hover:-translate-y-2"
+                            className="bg-muted p-8 rounded-2xl border border-border hover:border-primary/50 transition-all duration-300 group hover:-translate-y-2"
                         >
                             <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-background transition-colors text-primary">
                                 <step.icon size={28} />
                             </div>
-                            <h3 className="text-xl font-bold text-white mb-3 font-heading">{step.title}</h3>
+                            <h3 className="text-xl font-bold text-foreground mb-3 font-heading">{step.title}</h3>
                             <p className="text-muted-foreground leading-relaxed">
                                 {step.description}
                             </p>
