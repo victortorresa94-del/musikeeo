@@ -182,9 +182,13 @@ function App() {
                 <Route path="/onboarding" element={<Onboarding />} />
               </Route>
 
+              {/* Public App Routes (MainLayout, no auth required) */}
+              <Route element={<MainLayout />}>
+                <Route path="/home" element={<AppHome />} />
+              </Route>
+
               {/* Protected App Routes (MainLayout) */}
               <Route element={<RequireAuthCompleted />}>
-                <Route path="/home" element={<AppHome />} />
                 <Route path="/feed" element={<Feed />} />
                 <Route path="/discover" element={<Discover />} />
                 <Route path="/eventos" element={<EventsV2 />} />

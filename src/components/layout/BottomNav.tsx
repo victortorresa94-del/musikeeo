@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Compass, Plus, MessageCircle, User } from 'lucide-react';
+import { Compass, ShoppingBag, MessageCircle, User } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
 
@@ -10,17 +10,17 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { icon: Home, label: 'Inicio', path: '/home' },
-  { icon: Compass, label: 'Descubrir', path: '/discover' },
-  { icon: MessageCircle, label: 'Mensajes', path: '/messages' },
-  { icon: User, label: 'Perfil', path: '/profile' },
+  { icon: Compass,       label: 'Artistas',  path: '/discover'  },
+  { icon: ShoppingBag,   label: 'Mercado',   path: '/market'    },
+  { icon: MessageCircle, label: 'Chat',      path: '/messages'  },
+  { icon: User,          label: 'Perfil',    path: '/profile'   },
 ];
 
 export const BottomNav = () => {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const isActive = (path: string) => location.pathname === path;
+  const isActive = (path: string) => location.pathname.startsWith(path);
 
   return (
     <nav
@@ -31,31 +31,14 @@ export const BottomNav = () => {
       )}
     >
       <div className="flex items-center justify-around h-full px-2">
-        {/* Feed */}
-        <NavButton item={NAV_ITEMS[0]} active={isActive(NAV_ITEMS[0].path)} onClick={() => navigate(NAV_ITEMS[0].path)} />
-
-        {/* Discover */}
-        <NavButton item={NAV_ITEMS[1]} active={isActive(NAV_ITEMS[1].path)} onClick={() => navigate(NAV_ITEMS[1].path)} />
-
-        {/* CENTER FAB */}
-        <button
-          className={cn(
-            'flex items-center justify-center',
-            'bg-primary text-primary-foreground rounded-full h-12 w-12 -mt-5',
-            'shadow-[0_4px_20px_var(--primary-glow)]',
-            'hover:brightness-110 active:scale-95 transition-all'
-          )}
-          onClick={() => navigate('/market/create')}
-          aria-label="Crear anuncio"
-        >
-          <Plus className="h-6 w-6" strokeWidth={2.5} />
-        </button>
-
-        {/* Messages */}
-        <NavButton item={NAV_ITEMS[2]} active={isActive(NAV_ITEMS[2].path)} onClick={() => navigate(NAV_ITEMS[2].path)} />
-
-        {/* Profile */}
-        <NavButton item={NAV_ITEMS[3]} active={isActive(NAV_ITEMS[3].path)} onClick={() => navigate(NAV_ITEMS[3].path)} />
+        {NAV_ITEMS.map((item) => (
+          <NavButton
+            key={item.path}
+            item={item}
+            active={isActive(item.path)}
+            onClick={() => navigate(item.path)}
+          />
+        ))}
       </div>
     </nav>
   );
@@ -87,8 +70,15 @@ const NavButton = ({ item, active, onClick }: NavButtonProps) => {
         <Icon className="h-5 w-5" />
       </motion.div>
 
+      <span className={cn(
+        'text-[10px] font-medium transition-colors',
+        active ? 'text-primary' : 'text-muted-foreground'
+      )}>
+        {item.label}
+      </span>
+
       {active && (
-        <span className="w-1 h-1 rounded-full bg-primary mt-0.5" />
+        <span className="absolute top-1 w-1 h-1 rounded-full bg-primary" />
       )}
     </button>
   );
