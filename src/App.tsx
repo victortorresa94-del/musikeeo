@@ -122,6 +122,14 @@ const PanelGateway = () => {
   return <Navigate to="/panel/perfil" replace />;
 };
 
+// Smart root: authenticated → /home, not authenticated → landing
+const RootRoute = () => {
+  const { user, loading } = useAuth();
+  if (loading) return <div className="h-screen w-full flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  if (user) return <Navigate to="/home" replace />;
+  return <Home />;
+};
+
 // Check if already logged in to redirect from auth pages
 const RequireAnon = () => {
   const { user, loading } = useAuth();
@@ -149,8 +157,8 @@ function App() {
             </div>
           }>
             <Routes>
-              {/* Public Routes */}
-              <Route path="/" element={<Home />} />
+              {/* Root: authenticated → /home, else → landing */}
+              <Route path="/" element={<RootRoute />} />
               <Route path="/artistas" element={<Discover />} />
               <Route path="/sonido" element={<Discover />} />
               <Route path="/rodrigo" element={<RodrigoPage />} />
