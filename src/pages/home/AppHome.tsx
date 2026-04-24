@@ -60,14 +60,7 @@ export default function AppHome() {
       {/* ── Header ── */}
       <motion.div {...fade(0)} className="bg-background/95 backdrop-blur sticky top-0 z-10 border-b border-border px-4 py-3 flex items-center justify-between">
         {/* Logo */}
-        <div className="flex items-center gap-2">
-          <div className="w-8 h-8 rounded-lg bg-primary/10 border border-primary/20 flex items-center justify-center">
-            <Music size={16} className="text-primary" strokeWidth={2.5} />
-          </div>
-          <span className="font-heading font-black text-base tracking-wide text-foreground">
-            MUSIK<span className="text-primary">EEO</span>
-          </span>
-        </div>
+        <img src="/logo-musikeeo.png" alt="Musikeeo" className="h-8 w-auto object-contain" />
 
         {/* Right actions */}
         <div className="flex items-center gap-2">
