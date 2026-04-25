@@ -9,25 +9,25 @@ import {
 // ─── Data ─────────────────────────────────────────────────────────────────────
 
 const CATEGORIES = [
-  { label: 'Músicos',  desc: 'Encuentra y conecta con talento',          icon: '/icons/cat-musicos.webp',  color: '#7C3AED', route: '/discover?type=musician'  },
-  { label: 'Técnicos', desc: 'Sonido, luces, backline y más',            icon: '/icons/cat-tecnicos.webp', color: '#2563EB', route: '/discover?type=provider'  },
-  { label: 'Salas',    desc: 'Descubre y conecta con espacios',          icon: '/icons/cat-salas.webp',    color: '#EA580C', route: '/discover?type=organizer' },
-  { label: 'Eventos',  desc: 'Publica, encuentra y únete a eventos',     icon: '/icons/cat-eventos.webp',  color: '#0891B2', route: '/eventos'                 },
+  { label: 'Músicos',  desc: 'Encuentra y conecta con talento',          icon: '/icons/cat-musicos.png',  color: '#7C3AED', route: '/discover?type=musician'  },
+  { label: 'Técnicos', desc: 'Sonido, luces, backline y más',            icon: '/icons/cat-tecnicos.png', color: '#2563EB', route: '/discover?type=provider'  },
+  { label: 'Salas',    desc: 'Descubre y conecta con espacios',          icon: '/icons/cat-salas.png',    color: '#EA580C', route: '/discover?type=organizer' },
+  { label: 'Eventos',  desc: 'Publica, encuentra y únete a eventos',     icon: '/icons/cat-eventos.png',  color: '#0891B2', route: '/eventos'                 },
 ];
 
 const SEARCH_PILLS = ['Guitarristas en Madrid', 'PA System alquiler', 'Bolo este fin de semana'];
 
 const LISTINGS = [
-  { title: "Gibson Les Paul '59 Reissue", price: '2.400€', badge: 'Venta',    img: '/images/fender_stratocaster_1768143437660.png' },
-  { title: 'Mesa Boogie Mark V',          price: '1.100€', badge: 'Alquiler', img: '/images/guitar_amplifier_1768143723681.png'     },
-  { title: 'Shure SM7dB',                 price: '380€',   badge: 'Venta',    img: '/images/microphone_pro_1768143562847.png'        },
+  { title: "Gibson Les Paul '59 Reissue", price: '2.400€', badge: 'Venta',    img: '/images/market/fender_stratocaster_1768143437660.png' },
+  { title: 'Mesa Boogie Mark V',          price: '1.100€', badge: 'Alquiler', img: '/images/market/guitar_amplifier_1768143723681.png'     },
+  { title: 'Shure SM7dB',                 price: '380€',   badge: 'Venta',    img: '/images/market/microphone_pro_1768143562847.png'        },
 ];
 
 const TRENDING_ARTISTS = [
-  { name: 'Carlos M.',   role: 'Guitarrista',    city: 'Madrid',    img: '/artists/nova-rock.png',     hot: true,  rating: 4.9 },
-  { name: 'Ana Torres',  role: 'Técnica FOH',    city: 'Barcelona', img: '/artists/midnight-trio.png', hot: false, rating: 4.8 },
-  { name: 'DJ Solano',   role: 'DJ / Productor', city: 'Valencia',  img: '/artists/dj-alex-beat.png',  hot: true,  rating: 4.9 },
-  { name: 'La Sala Sur', role: 'Promotora',      city: 'Sevilla',   img: '/artists/mariachi-sol.png',  hot: false, rating: 4.7 },
+  { name: 'Carlos M.',   role: 'Guitarrista',    city: 'Madrid',    img: '/images/market/sound_engineer_1768143670792.png', hot: true,  rating: 4.9 },
+  { name: 'Ana Torres',  role: 'Técnica FOH',    city: 'Barcelona', img: '/images/market/recording_studio_1768143540955.png', hot: false, rating: 4.8 },
+  { name: 'DJ Solano',   role: 'DJ / Productor', city: 'Valencia',  img: '/images/market/concert_venue_1768143610025.png',    hot: true,  rating: 4.9 },
+  { name: 'La Sala Sur', role: 'Promotora',      city: 'Sevilla',   img: '/images/market/rehearsal_space_1768143644276.png',  hot: false, rating: 4.7 },
 ];
 
 const ACTIVITY = [
@@ -136,7 +136,7 @@ function OportunidadCard({ navigate, isLoggedIn }: { navigate: (p: string) => vo
       style={{ minHeight: 200 }}
     >
       <img
-        src="/images/concert_venue_1768143610025.png"
+        src="/images/market/concert_venue_1768143610025.png"
         alt="Concierto"
         className="absolute inset-0 w-full h-full object-cover opacity-40"
       />

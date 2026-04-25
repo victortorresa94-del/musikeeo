@@ -3,7 +3,7 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     Sparkles, MapPin, Calendar, ArrowRight, Heart, MessageCircle,
     Share2, MoreHorizontal, Play, Award, ShoppingBag, Zap,
-    BadgeCheck, Image as ImageIcon, Loader2
+    BadgeCheck, Image as ImageIcon, Loader2, Search, Bell
 } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Card, CardContent } from '../../components/ui/card';
@@ -367,18 +367,35 @@ export default function Feed() {
     return (
         <div className="max-w-5xl mx-auto p-4 md:p-6 space-y-6 animate-fade-in-up">
             {/* Mobile Header - Only visible on mobile */}
-            <div className="md:hidden flex items-center justify-between -mx-4 -mt-4 px-4 py-3 bg-background border-b border-border sticky top-0 z-40">
+            <div className="md:hidden flex items-center justify-between -mx-4 -mt-4 px-4 py-3 bg-background/95 backdrop-blur-md border-b border-border sticky top-0 z-40">
                 <div className="flex items-center gap-2">
-                    <img src="/logo-musikeeo.png" alt="Musikeeo" className="h-8 w-auto rounded-lg" />
-                    <span className="text-xl font-bold tracking-tight text-foreground">Para ti</span>
+                    <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+                        <span className="text-primary-foreground font-black text-sm leading-none">M</span>
+                    </div>
+                    <span className="font-heading font-bold text-base tracking-wide text-foreground">
+                        MUSIK<span className="text-primary">EEO</span>
+                    </span>
                 </div>
-                <div className="flex items-center gap-2">
+                <div className="flex items-center gap-1">
+                    <button
+                        onClick={() => {/* TODO: search */}}
+                        className="relative p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                    >
+                        <Search className="h-5 w-5" />
+                    </button>
                     <button
                         onClick={() => navigate('/messages')}
-                        className="relative p-2 rounded-full hover:bg-muted transition-colors"
+                        className="relative p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
                     >
-                        <MessageCircle className="h-6 w-6 text-foreground" />
-                        <span className="absolute top-1 right-1 h-2.5 w-2.5 rounded-full bg-primary" />
+                        <MessageCircle className="h-5 w-5" />
+                        <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary border border-background" />
+                    </button>
+                    <button
+                        className="relative p-2 rounded-xl hover:bg-muted transition-colors text-muted-foreground hover:text-foreground"
+                        aria-label="Notificaciones"
+                    >
+                        <Bell className="h-5 w-5" />
+                        <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive border border-background" />
                     </button>
                 </div>
             </div>
