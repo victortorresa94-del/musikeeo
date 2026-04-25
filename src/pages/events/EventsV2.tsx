@@ -1,194 +1,414 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
-import { Search, Sparkles, Filter, Music } from 'lucide-react';
-import { Button } from '../../components/ui/button';
-import { EventCard } from '../../components/events/EventCard';
-import { EventsSidebar } from '../../components/events/EventsSidebar';
-import { MobileEventsFilterDrawer } from '../../components/events/MobileEventsFilterDrawer';
-// import { MOCK_EVENTS } from '../../services/eventsData';
+import { useNavigate } from 'react-router-dom';
+import {
+    Search, Plus, SlidersHorizontal, Calendar, MapPin,
+    ArrowRight, Music, Zap, Users, Star, X
+} from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import { eventService } from '../../services/eventService';
 import type { Event } from '../../types';
 import { useAuth } from '../../context/AuthContext';
+import { cn } from '../../lib/utils';
 
+// ─── Mock data for when Firestore is empty ────────────────────────────────────
+const MOCK_EVENTS: Event[] = [
+    {
+        id: 'mock_1',
+        title: 'Guitarrista eléctrico para gira de verano',
+        description: 'Banda de rock busca guitarrista solista para gira de 15 fechas por España.',
+        type: 'gig',
+        location: 'Madrid, España',
+        date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 5).toISOString(),
+        price: 800,
+        organizerId: 'org_1',
+        organizerName: 'Banda Los Sónicos',
+        imageUrl: '/images/market/concert_venue_1768143610025.png',
+        tags: ['Urgente'],
+        createdAt: new Date().toISOString(),
+    },
+    {
+        id: 'mock_2',
+        title: 'Técnico FOH para festival de jazz',
+        description: 'Buscamos técnico de sonido con experiencia en mezcla en vivo para festival.',
+        type: 'session',
+        location: 'Barcelona, España',
+        date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 12).toISOString(),
+        price: 1200,
+        organizerId: 'org_2',
+        organizerName: 'JazzFest BCN',
+        imageUrl: '/images/market/sound_engineer_1768143670792.png',
+        tags: ['Premium'],
+        createdAt: new Date().toISOString(),
+    },
+    {
+        id: 'mock_3',
+        title: 'DJ para boda en finca privada',
+        description: 'Matrimonio busca DJ profesional para celebración con 200 invitados.',
+        type: 'gig',
+        location: 'Valencia, España',
+        date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 20).toISOString(),
+        price: 600,
+        organizerId: 'org_3',
+        organizerName: 'Eventos Solís',
+        imageUrl: '/images/market/rehearsal_space_1768143644276.png',
+        tags: ['Nuevo'],
+        createdAt: new Date().toISOString(),
+    },
+    {
+        id: 'mock_4',
+        title: 'Músicos para sesión de grabación',
+        description: 'Productor busca batería y bajo para grabar EP de 5 temas en estudio.',
+        type: 'session',
+        location: 'Sevilla, España',
+        date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 8).toISOString(),
+        price: 350,
+        organizerId: 'org_4',
+        organizerName: 'Estudio Sur Records',
+        imageUrl: '/images/market/recording_studio_1768143540955.png',
+        tags: [],
+        createdAt: new Date().toISOString(),
+    },
+    {
+        id: 'mock_5',
+        title: 'Banda telonera — Festival Rock en Río',
+        description: 'Festival necesita banda telonera para apertura del escenario principal.',
+        type: 'gig',
+        location: 'Madrid, España',
+        date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 30).toISOString(),
+        price: 2500,
+        organizerId: 'org_5',
+        organizerName: 'Rock en Río ES',
+        imageUrl: '/images/market/concert_venue_1768143610025.png',
+        tags: ['Premium'],
+        createdAt: new Date().toISOString(),
+    },
+    {
+        id: 'mock_6',
+        title: 'Cantante para residencia mensual en bar',
+        description: 'Bar de jazz en el centro busca cantante para actuaciones de jueves a sábado.',
+        type: 'gig',
+        location: 'Barcelona, España',
+        date: new Date(Date.now() + 1000 * 60 * 60 * 24 * 3).toISOString(),
+        price: 400,
+        organizerId: 'org_6',
+        organizerName: 'Jazz Club Plata',
+        imageUrl: '/images/market/microphone_pro_1768143562847.png',
+        tags: ['Urgente'],
+        createdAt: new Date().toISOString(),
+    },
+];
+
+const EVENT_TYPES = ['Todos', 'Bolo', 'Sesión', 'Colaboración', 'Festival', 'Boda / Social'];
+
+const TYPE_MAP: Record<string, string> = {
+    'Bolo': 'gig',
+    'Sesión': 'session',
+    'Colaboración': 'collab',
+    'Festival': 'festival',
+    'Boda / Social': 'social',
+};
+
+// ─── Event card ────────────────────────────────────────────────────────────────
+const EventCardNew = ({ event, onClick }: { event: Event; onClick: () => void }) => {
+    const dateObj = new Date(event.date);
+    const day = dateObj.getDate();
+    const month = dateObj.toLocaleDateString('es-ES', { month: 'short', timeZone: 'UTC' });
+    const daysLeft = Math.ceil((dateObj.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+
+    const badgeColor: Record<string, string> = {
+        'Urgente': 'bg-red-500 text-white',
+        'Premium': 'bg-purple-500 text-white',
+        'Nuevo': 'bg-blue-500 text-white',
+    };
+
+    return (
+        <motion.article
+            initial={{ opacity: 0, y: 16 }}
+            animate={{ opacity: 1, y: 0 }}
+            whileHover={{ y: -2 }}
+            transition={{ duration: 0.25 }}
+            onClick={onClick}
+            className="group bg-card border border-border rounded-2xl overflow-hidden cursor-pointer hover:border-primary/30 hover:shadow-lg transition-all duration-300"
+        >
+            {/* Photo */}
+            <div className="relative h-44 overflow-hidden bg-muted">
+                <img
+                    src={event.imageUrl || '/images/market/concert_venue_1768143610025.png'}
+                    alt={event.title}
+                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
+
+                {/* Date badge */}
+                <div className="absolute top-3 left-3 bg-background/95 backdrop-blur-sm rounded-xl px-2.5 py-1.5 text-center min-w-[44px]">
+                    <p className="text-[10px] font-bold text-primary uppercase leading-none">{month}</p>
+                    <p className="text-lg font-black text-foreground leading-tight">{day}</p>
+                </div>
+
+                {/* Tags */}
+                <div className="absolute top-3 right-3 flex gap-1.5">
+                    {(event.tags || []).map(tag => (
+                        <span key={tag} className={cn('text-[10px] font-bold px-2 py-1 rounded-full', badgeColor[tag] || 'bg-muted text-muted-foreground')}>
+                            {tag === 'Urgente' ? '⚡ Urgente' : tag === 'Premium' ? '💎 Premium' : tag}
+                        </span>
+                    ))}
+                </div>
+
+                {/* Price bottom right */}
+                <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl">
+                    <span className="text-primary font-black text-sm">
+                        {event.price ? `${event.price.toLocaleString()}€` : 'A negociar'}
+                    </span>
+                </div>
+            </div>
+
+            {/* Content */}
+            <div className="p-4">
+                <span className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1 block">
+                    {event.type === 'gig' ? 'Bolo' : event.type === 'session' ? 'Sesión' : event.type}
+                </span>
+                <h3 className="font-bold text-foreground text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors mb-3">
+                    {event.title}
+                </h3>
+                <div className="flex flex-col gap-1.5 mb-4">
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <MapPin className="h-3.5 w-3.5 text-primary/70 flex-shrink-0" />
+                        <span className="truncate">{event.location}</span>
+                    </div>
+                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
+                        <Calendar className="h-3.5 w-3.5 text-primary/70 flex-shrink-0" />
+                        <span>
+                            {daysLeft <= 0 ? 'Hoy' : daysLeft === 1 ? 'Mañana' : `En ${daysLeft} días`}
+                        </span>
+                    </div>
+                </div>
+                <div className="flex items-center justify-between pt-3 border-t border-border">
+                    <span className="text-xs text-muted-foreground">{event.organizerName}</span>
+                    <button className="flex items-center gap-1 text-xs font-bold text-primary group-hover:gap-2 transition-all">
+                        Ver más <ArrowRight className="h-3.5 w-3.5" />
+                    </button>
+                </div>
+            </div>
+        </motion.article>
+    );
+};
+
+// ─── Main page ─────────────────────────────────────────────────────────────────
 export default function EventsV2() {
     const navigate = useNavigate();
-    const location = useLocation();
     const { user } = useAuth();
-    const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
 
-    // Check if we are in Panel mode (Organizer view)
-    const isPanelMode = location.pathname.startsWith('/panel');
-
-    // State
     const [events, setEvents] = useState<Event[]>([]);
-    // const [loading, setLoading] = useState(true);
+    const [loading, setLoading] = useState(true);
     const [searchQuery, setSearchQuery] = useState('');
-    const [filters, setFilters] = useState({
-        type: [] as string[],
-        city: '',
-        date: ''
-    });
-    const [sortOption, setSortOption] = useState<string>('Más recientes');
+    const [activeType, setActiveType] = useState('Todos');
+    const [cityFilter, setCityFilter] = useState('');
+    const [showFilters, setShowFilters] = useState(false);
 
-    // Fetch Events
     useEffect(() => {
         const fetchEvents = async () => {
-            // setLoading(true);
             try {
-                if (isPanelMode && user?.uid) {
-                    const myEvents = await eventService.getEventsByOrganizer(user.uid);
-                    setEvents(myEvents);
-                } else {
-                    const allEvents = await eventService.getUpcomingEvents();
-                    setEvents(allEvents);
-                }
-            } catch (error) {
-                console.error("Failed to fetch events", error);
+                const allEvents = await eventService.getUpcomingEvents();
+                setEvents(allEvents.length > 0 ? allEvents : MOCK_EVENTS);
+            } catch {
+                setEvents(MOCK_EVENTS);
             } finally {
-                // setLoading(false);
+                setLoading(false);
             }
         };
         fetchEvents();
-    }, [user, isPanelMode]);
+    }, [user]);
 
-    // Filter Logic
     const filteredEvents = useMemo(() => {
         return events.filter(event => {
             if (searchQuery) {
                 const q = searchQuery.toLowerCase();
                 if (!event.title.toLowerCase().includes(q) &&
-                    !event.description?.toLowerCase().includes(q) &&
-                    !event.location.toLowerCase().includes(q)) return false;
+                    !event.location.toLowerCase().includes(q) &&
+                    !event.organizerName?.toLowerCase().includes(q)) return false;
             }
-            if (filters.type.length > 0 && !filters.type.includes(event.type)) return false;
-
-            // Note: Partial match for city is better for real data
-            if (filters.city.length > 0 && !event.location.toLowerCase().includes(filters.city.toLowerCase())) return false;
-
-            // Date string precise match might be tricky with ISO strings, keeping simple for now
-            if (filters.date && !event.date.startsWith(filters.date)) return false;
-
+            if (activeType !== 'Todos') {
+                const mapped = TYPE_MAP[activeType];
+                if (mapped && event.type !== mapped) return false;
+            }
+            if (cityFilter) {
+                if (!event.location.toLowerCase().includes(cityFilter.toLowerCase())) return false;
+            }
             return true;
-        });
-    }, [searchQuery, filters, events]);
-
-    // Sort Logic
-    const sortedEvents = useMemo(() => {
-        const sorted = [...filteredEvents];
-        switch (sortOption) {
-            case 'Presupuesto: Mayor a Menor': return sorted.sort((a, b) => (b.price || 0) - (a.price || 0));
-            case 'Fecha del evento': return sorted.sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-            case 'Más recientes':
-            default:
-                // Fallback to createdAt or date if no visibility score
-                return sorted.sort((a, b) => new Date(b.createdAt || b.date).getTime() - new Date(a.createdAt || a.date).getTime());
-        }
-    }, [filteredEvents, sortOption]);
-
-    const handleFilterChange = (key: string, value: any) => {
-        setFilters(prev => ({ ...prev, [key]: value }));
-    };
+        }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
+    }, [events, searchQuery, activeType, cityFilter]);
 
     return (
-        <div className="flex h-full w-full flex-col bg-background text-foreground font-sans overflow-hidden">
-            <div className="flex flex-1 overflow-hidden">
-                {/* Sidebar Filters */}
-                <EventsSidebar
-                    filters={filters}
-                    onFilterChange={handleFilterChange}
-                    className="hidden lg:flex"
-                />
+        <div className="min-h-full bg-background">
+            {/* ── Mobile header ── */}
+            <div className="md:hidden sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-2.5 flex items-center justify-between">
+                <div className="flex items-center gap-2">
+                    <img src="/logo-musikeeo.png" alt="Musikeeo" className="h-7 w-7 rounded-lg object-contain" />
+                    <span className="font-heading font-bold text-base text-foreground">Eventos</span>
+                </div>
+                <button
+                    onClick={() => navigate('/publicar')}
+                    className="flex items-center gap-1.5 bg-primary text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-full"
+                >
+                    <Plus className="h-3.5 w-3.5" /> Publicar
+                </button>
+            </div>
 
-                {/* Main Content Area */}
-                <main className="flex-1 overflow-y-auto bg-background p-4 md:p-8 pb-32 relative">
+            <div className="max-w-6xl mx-auto px-4 py-6 md:px-6 md:py-8">
 
-                    {/* Header / Hero Section */}
-                    <div className="mb-8 flex flex-col sm:flex-row sm:items-end justify-between gap-6 pb-8 bg-background border-b border-border">
-                        <div>
-                            <div className="flex items-center gap-3 mb-2">
-                                <div className="h-10 w-10 rounded-full bg-primary/10 flex items-center justify-center text-primary font-bold">
-                                    <Sparkles size={20} />
-                                </div>
-                                <h1 className="text-xl md:text-2xl font-heading font-bold text-foreground tracking-tight">
-                                    {isPanelMode ? 'Mis Eventos' : 'Tablón de Oportunidades'}
-                                </h1>
-                            </div>
-                            <p className="text-muted-foreground text-lg">
-                                {isPanelMode
-                                    ? 'Gestiona tus eventos publicados y revisa candidaturas.'
-                                    : <>Encuentra tu próximo escenario. <span className="text-foreground font-bold">{sortedEvents.length}</span> oportunidades abiertas.</>
-                                }
-                            </p>
-                        </div>
-
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            {/* In-page Search */}
-                            <div className="relative w-full sm:w-80">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
-                                <input
-                                    className="w-full rounded-xl border border-border bg-muted h-10 py-2 pl-10 pr-4 text-sm text-foreground placeholder-muted-foreground focus:border-primary/30 focus:ring-1 focus:ring-primary/30 outline-none"
-                                    placeholder="Buscar eventos..."
-                                    value={searchQuery}
-                                    onChange={(e) => setSearchQuery(e.target.value)}
-                                />
-                            </div>
-
-                            {/* Sort */}
-                            <div className="flex items-center gap-3">
-                                <span className="text-sm text-muted-foreground whitespace-nowrap">Ordenar por:</span>
-                                <select
-                                    className="rounded-xl border border-border bg-muted h-10 py-2 pl-3 pr-10 text-sm font-medium text-foreground focus:border-primary/30 outline-none cursor-pointer"
-                                    value={sortOption}
-                                    onChange={(e) => setSortOption(e.target.value)}
-                                >
-                                    <option>Más recientes</option>
-                                    <option>Presupuesto: Mayor a Menor</option>
-                                    <option>Fecha del evento</option>
-                                </select>
-                            </div>
-                        </div>
+                {/* ── Page header ── */}
+                <div className="flex items-start justify-between gap-4 mb-6">
+                    <div>
+                        <h1 className="text-2xl md:text-3xl font-heading font-black text-foreground tracking-tight">
+                            Tablón de Oportunidades
+                        </h1>
+                        <p className="text-muted-foreground mt-1">
+                            {loading ? 'Cargando...' : (
+                                <><span className="font-bold text-foreground">{filteredEvents.length}</span> oportunidades abiertas</>
+                            )}
+                        </p>
                     </div>
-
-                    {/* Grid */}
-                    {sortedEvents.length > 0 ? (
-                        <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-2 2xl:grid-cols-3 gap-6">
-                            {sortedEvents.map(event => (
-                                <EventCard key={event.id} event={event} />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-20 bg-card rounded-2xl border border-border border-dashed">
-                            <Music className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                            <h3 className="text-lg font-bold text-foreground">No se encontraron eventos</h3>
-                            <p className="text-muted-foreground">Intenta ajustar tus filtros de búsqueda.</p>
-                        </div>
-                    )}
-                </main>
-
-                {/* Mobile Filter Button */}
-                <div className="lg:hidden fixed bottom-6 right-6 z-40 flex flex-col gap-4 items-end">
-                    <Button
+                    <button
                         onClick={() => navigate('/publicar')}
-                        className="rounded-full h-14 w-14 p-0 bg-primary text-primary-foreground hover:brightness-105 shadow-lg flex items-center justify-center font-semibold"
+                        className="hidden md:flex items-center gap-2 bg-primary text-primary-foreground font-bold px-4 py-2.5 rounded-xl hover:brightness-105 transition-all flex-shrink-0"
                     >
-                        <span className="text-2xl font-light mb-1">+</span>
-                    </Button>
-                    <Button
-                        onClick={() => setIsMobileFiltersOpen(true)}
-                        className="flex items-center gap-2 bg-primary text-primary-foreground font-semibold px-6 py-3 rounded-xl shadow-lg hover:brightness-105 transition-all h-14"
-                    >
-                        <Filter size={20} />
-                        Filtros
-                    </Button>
+                        <Plus className="h-4 w-4" /> Publicar anuncio
+                    </button>
                 </div>
 
-                {/* Mobile Events Filter Drawer */}
-                <MobileEventsFilterDrawer
-                    isOpen={isMobileFiltersOpen}
-                    onClose={() => setIsMobileFiltersOpen(false)}
-                    filters={filters}
-                    onFilterChange={handleFilterChange}
-                />
+                {/* ── Search + filters ── */}
+                <div className="mb-6 space-y-3">
+                    <div className="flex gap-2">
+                        <div className="relative flex-1">
+                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
+                            <input
+                                type="text"
+                                placeholder="Buscar eventos, ciudades, organizadores..."
+                                value={searchQuery}
+                                onChange={(e) => setSearchQuery(e.target.value)}
+                                className="w-full bg-muted border border-border rounded-xl h-10 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-colors"
+                            />
+                        </div>
+                        <button
+                            onClick={() => setShowFilters(v => !v)}
+                            className={cn(
+                                'flex items-center gap-2 h-10 px-4 rounded-xl border text-sm font-medium transition-all',
+                                showFilters
+                                    ? 'bg-primary/10 border-primary text-primary'
+                                    : 'bg-muted border-border text-muted-foreground hover:text-foreground'
+                            )}
+                        >
+                            <SlidersHorizontal className="h-4 w-4" />
+                            <span className="hidden sm:inline">Filtros</span>
+                        </button>
+                    </div>
+
+                    {/* City filter (expandable) */}
+                    <AnimatePresence>
+                        {showFilters && (
+                            <motion.div
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: 'auto', opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                className="overflow-hidden"
+                            >
+                                <div className="flex gap-2 items-center pt-1">
+                                    <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
+                                    <input
+                                        type="text"
+                                        placeholder="Filtrar por ciudad (Madrid, Barcelona…)"
+                                        value={cityFilter}
+                                        onChange={(e) => setCityFilter(e.target.value)}
+                                        className="flex-1 bg-muted border border-border rounded-xl h-9 px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-colors"
+                                    />
+                                    {cityFilter && (
+                                        <button
+                                            onClick={() => setCityFilter('')}
+                                            className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground"
+                                        >
+                                            <X className="h-4 w-4" />
+                                        </button>
+                                    )}
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+
+                    {/* Type chips */}
+                    <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
+                        {EVENT_TYPES.map(type => (
+                            <button
+                                key={type}
+                                onClick={() => setActiveType(type)}
+                                className={cn(
+                                    'flex-shrink-0 h-8 px-4 rounded-full text-sm font-medium border transition-all',
+                                    activeType === type
+                                        ? 'bg-primary text-primary-foreground border-primary shadow-sm'
+                                        : 'bg-muted border-border text-muted-foreground hover:border-primary/40 hover:text-foreground'
+                                )}
+                            >
+                                {type}
+                            </button>
+                        ))}
+                    </div>
+                </div>
+
+                {/* ── Stats row ── */}
+                <div className="grid grid-cols-3 gap-3 mb-8">
+                    {[
+                        { icon: Zap, label: 'Urgentes', value: events.filter(e => e.tags?.includes('Urgente')).length, color: 'text-red-500 bg-red-500/10' },
+                        { icon: Users, label: 'Organizadores', value: new Set(events.map(e => e.organizerId)).size, color: 'text-blue-500 bg-blue-500/10' },
+                        { icon: Star, label: 'Premium', value: events.filter(e => e.tags?.includes('Premium')).length, color: 'text-purple-500 bg-purple-500/10' },
+                    ].map(({ icon: Icon, label, value, color }) => (
+                        <div key={label} className="bg-card border border-border rounded-xl p-3 flex items-center gap-3">
+                            <div className={cn('h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0', color)}>
+                                <Icon className="h-4 w-4" />
+                            </div>
+                            <div>
+                                <p className="text-lg font-black text-foreground leading-none">{value}</p>
+                                <p className="text-xs text-muted-foreground">{label}</p>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+
+                {/* ── Events grid ── */}
+                {loading ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {[...Array(6)].map((_, i) => (
+                            <div key={i} className="bg-card border border-border rounded-2xl overflow-hidden animate-pulse">
+                                <div className="h-44 bg-muted" />
+                                <div className="p-4 space-y-2">
+                                    <div className="h-3 bg-muted rounded w-16" />
+                                    <div className="h-5 bg-muted rounded w-3/4" />
+                                    <div className="h-4 bg-muted rounded w-1/2" />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                ) : filteredEvents.length > 0 ? (
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+                        {filteredEvents.map(event => (
+                            <EventCardNew
+                                key={event.id}
+                                event={event}
+                                onClick={() => navigate(`/events/${event.id}`)}
+                            />
+                        ))}
+                    </div>
+                ) : (
+                    <div className="text-center py-20 border border-border border-dashed rounded-2xl bg-card">
+                        <Music className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
+                        <h3 className="text-lg font-bold text-foreground mb-1">Sin resultados</h3>
+                        <p className="text-muted-foreground text-sm mb-4">Intenta ajustar los filtros de búsqueda</p>
+                        <button
+                            onClick={() => { setSearchQuery(''); setActiveType('Todos'); setCityFilter(''); }}
+                            className="text-primary text-sm font-medium hover:underline"
+                        >
+                            Limpiar filtros
+                        </button>
+                    </div>
+                )}
             </div>
         </div>
     );

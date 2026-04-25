@@ -39,9 +39,11 @@ export const Sidebar = () => {
     <aside className="hidden md:flex w-64 h-screen sticky top-0 flex-col bg-muted/60 border-r border-border">
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-4 h-14 border-b border-border flex-shrink-0">
-        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
-          <span className="text-primary-foreground font-black text-sm leading-none">M</span>
-        </div>
+        <img
+          src="/logo-musikeeo.png"
+          alt="Musikeeo"
+          className="h-8 w-8 rounded-lg object-contain flex-shrink-0"
+        />
         <span className="font-heading font-bold text-base tracking-wide text-foreground">
           MUSIK<span className="text-primary">EEO</span>
         </span>

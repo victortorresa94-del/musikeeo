@@ -1,5 +1,4 @@
-import { Sparkles, Calendar } from 'lucide-react';
-import { Button } from '../ui/button';
+import { Calendar } from 'lucide-react';
 import { CityAutocomplete } from '../ui/CityAutocomplete';
 import { cn } from '../../lib/utils';
 import { GENRES } from '../../lib/constants';
@@ -32,23 +31,7 @@ export const DiscoverSidebar = ({ className, filters, onFilterChange }: Discover
         <aside className={cn("w-full md:w-80 flex-shrink-0 flex flex-col border-r border-border bg-muted overflow-y-auto h-full", className)}>
             <div className="p-6 space-y-8">
 
-                {/* AI Assistant Banner */}
-                <div className="relative overflow-hidden rounded-xl bg-gradient-to-br from-primary/20 to-primary/5 p-4 border border-primary/20">
-                    <div className="flex items-start gap-3">
-                        <div className="h-10 w-10 shrink-0 rounded-full bg-primary flex items-center justify-center text-black">
-                            <Sparkles size={20} />
-                        </div>
-                        <div className="flex flex-col">
-                            <h3 className="font-bold text-sm text-foreground">Rodrigo AI</h3>
-                            <p className="text-xs text-muted-foreground mt-1 mb-3">¿Necesitas ayuda para encontrar el sonido perfecto?</p>
-                            <Button size="sm" className="w-full text-xs font-bold bg-primary text-black hover:bg-primary-hover">
-                                Habla con Rodrigo
-                            </Button>
-                        </div>
-                    </div>
-                </div>
-
-                {/* Filters: Location */}
+                    {/* Filters: Location */}
                 <div className="space-y-3">
                     <div className="flex items-center justify-between">
                         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Ubicación</h3>

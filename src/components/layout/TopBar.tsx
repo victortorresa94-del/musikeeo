@@ -1,4 +1,5 @@
-import { Bell, MessageCircle, Music, Search } from 'lucide-react';
+import { useState } from 'react';
+import { Bell, MessageCircle, Search } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { ThemeToggle } from '../ui/ThemeToggle';
@@ -11,42 +12,44 @@ interface TopBarProps {
 export const TopBar = ({ onMenuClick: _onMenuClick }: TopBarProps) => {
   const navigate = useNavigate();
   const { user } = useAuth();
+  const [searchValue, setSearchValue] = useState('');
 
   const initials = user?.displayName
     ? user.displayName.slice(0, 2).toUpperCase()
     : 'MK';
 
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    navigate(`/discover${searchValue.trim() ? `?q=${encodeURIComponent(searchValue.trim())}` : ''}`);
+  };
+
   return (
     <header
       className={cn(
-        'hidden md:flex items-center justify-between',
+        'hidden md:flex items-center justify-between gap-4',
         'sticky top-0 z-20 h-14 px-4',
         'bg-background/95 backdrop-blur-md border-b border-border'
       )}
     >
-      {/* LEFT — Logo */}
-      <div
-        className="flex items-center gap-2 cursor-pointer select-none"
-        onClick={() => navigate('/feed')}
-      >
-        <Music className="h-5 w-5 text-primary" strokeWidth={2.5} />
-        <span className="font-heading font-bold text-lg text-foreground tracking-wide">
-          MUSIK<span className="text-primary">EEO</span>
-        </span>
-      </div>
-
-      {/* CENTER — Search bar */}
-      <div
-        className="bg-muted border border-border rounded-xl h-9 px-3 flex items-center gap-2 cursor-pointer w-72 hover:border-primary/30 transition-colors group"
-        onClick={() => {/* TODO: open search */}}
-      >
-        <Search className="h-4 w-4 text-muted-foreground flex-shrink-0 group-hover:text-primary transition-colors" />
-        <span className="text-sm text-muted-foreground flex-1">Buscar músicos, técnicos, salas...</span>
-        <span className="text-xs text-muted-foreground bg-background border border-border px-1.5 py-0.5 rounded font-mono flex-shrink-0">⌘K</span>
-      </div>
+      {/* CENTER — Functional search bar */}
+      <form onSubmit={handleSearch} className="flex-1 flex justify-center">
+        <div className="relative flex items-center w-80 max-w-lg">
+          <Search className="absolute left-3 h-4 w-4 text-muted-foreground pointer-events-none" />
+          <input
+            type="text"
+            value={searchValue}
+            onChange={(e) => setSearchValue(e.target.value)}
+            placeholder="Buscar músicos, técnicos, salas..."
+            className="w-full bg-muted border border-border rounded-xl h-9 pl-9 pr-14 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-colors"
+          />
+          <kbd className="absolute right-3 text-xs text-muted-foreground bg-background border border-border px-1.5 py-0.5 rounded font-mono pointer-events-none select-none">
+            ⌘K
+          </kbd>
+        </div>
+      </form>
 
       {/* RIGHT — Actions */}
-      <div className="flex items-center gap-1">
+      <div className="flex items-center gap-1 flex-shrink-0">
         <ThemeToggle />
 
         {/* Messages */}
