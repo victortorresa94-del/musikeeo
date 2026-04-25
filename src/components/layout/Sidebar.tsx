@@ -38,8 +38,13 @@ export const Sidebar = () => {
   return (
     <aside className="hidden md:flex w-64 h-screen sticky top-0 flex-col bg-muted/60 border-r border-border">
       {/* Logo */}
-      <div className="flex items-center gap-2 px-5 h-14 border-b border-border flex-shrink-0">
-        <img src="/logo-musikeeo.png" alt="Musikeeo" className="h-6 w-auto object-contain" />
+      <div className="flex items-center gap-2.5 px-4 h-14 border-b border-border flex-shrink-0">
+        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center flex-shrink-0">
+          <span className="text-primary-foreground font-black text-sm leading-none">M</span>
+        </div>
+        <span className="font-heading font-bold text-base tracking-wide text-foreground">
+          MUSIK<span className="text-primary">EEO</span>
+        </span>
       </div>
 
       {/* Navigation */}
@@ -98,16 +103,16 @@ export const Sidebar = () => {
             </div>
           </NavLink>
 
-          {/* Theme toggle + Logout */}
+          {/* Theme toggle pills + Logout */}
           <div className="flex items-center justify-between">
-            <ThemeToggle size="sm" />
+            <ThemeToggle size="sm" variant="pills" />
             <button
               onClick={handleLogout}
-              className="flex items-center gap-1.5 text-xs text-destructive/80 hover:text-destructive transition-colors px-2 py-1 rounded-lg hover:bg-destructive/10"
+              className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-destructive transition-colors px-2 py-1 rounded-lg hover:bg-destructive/10"
               aria-label="Cerrar sesión"
             >
               <LogOut className="h-3.5 w-3.5" />
-              <span>Salir</span>
+              <span>Cerrar sesión</span>
             </button>
           </div>
         </div>

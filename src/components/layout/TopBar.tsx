@@ -35,13 +35,14 @@ export const TopBar = ({ onMenuClick: _onMenuClick }: TopBarProps) => {
         </span>
       </div>
 
-      {/* CENTER — Search bar (non-functional placeholder) */}
+      {/* CENTER — Search bar */}
       <div
-        className="bg-muted rounded-xl h-9 px-3 flex items-center gap-2 cursor-pointer w-64"
-        onClick={() => {/* search not functional yet */}}
+        className="bg-muted border border-border rounded-xl h-9 px-3 flex items-center gap-2 cursor-pointer w-72 hover:border-primary/30 transition-colors group"
+        onClick={() => {/* TODO: open search */}}
       >
-        <Search className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-        <span className="text-sm text-muted-foreground">Buscar...</span>
+        <Search className="h-4 w-4 text-muted-foreground flex-shrink-0 group-hover:text-primary transition-colors" />
+        <span className="text-sm text-muted-foreground flex-1">Buscar músicos, técnicos, salas...</span>
+        <span className="text-xs text-muted-foreground bg-background border border-border px-1.5 py-0.5 rounded font-mono flex-shrink-0">⌘K</span>
       </div>
 
       {/* RIGHT — Actions */}
