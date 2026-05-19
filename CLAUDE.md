@@ -132,3 +132,47 @@ Verificar que el índice compuesto de Firestore existe para la query de listings
 - Colección Firestore: "listings" (no "products" ni "market")
 - OPENROUTER_API_KEY: debe estar en Vercel Dashboard env vars (no en repo)
 - Listings usan string ISO para timestamps (consistente con el resto del proyecto)
+
+---
+
+### 2026-05-19 (Sesión 3 — Sprint Marketplace + Home + Performance)
+
+> Todo el trabajo de esta sesión va en la rama `claude/read-context-files-7N0Ww` (NO en `main`). No despliega en Vercel hasta hacer merge.
+
+**✅ Completado (Sesión 3):**
+- SPRINT MARKETPLACE (4 fases, commit por fase):
+  - FASE 0 limpieza: borrado `Events.tsx` legacy; copy de "pasarela de pago" inexistente en HowItWorks → contact-only; Rodrigo verificado como integración REAL (`api/chat` + OpenRouter), se mantiene en nav
+  - FASE 1 modelo: `Listing` per spec — alias `ListingType`/`ListingCondition`/`RentalUnit`, campo `views?`, eliminados `shipping`/`sellerType`
+  - FASE 2 `CreateListing`: storage path `listings/{userId}/{timestamp}/{idx}_{filename}`, guarda `views:0`, UI sin campos fuera de spec
+  - FASE 3 `Market.tsx`: mocks limpios + `priceUnit`, badge obsoleto fuera, query `limit(20)` urgent desc + createdAt desc
+  - FASE 4 integración: rutas `/market`, `/market/create` (antes de `/market/:id`), `/market/:id`; BottomNav/Sidebar con icono ShoppingBag
+- Rediseño `Home.tsx` según spec de lanzamiento (Hero + chips categorías + Cómo funciona + 6 listings reales Firestore + Para profesionales + Footer "Hecho con ❤ en Barcelona"). Eliminado `FeaturedArtists.tsx` (hardcoded, sin uso)
+- Routing: `/` y `/home` ahora renderizan `Home.tsx` en vez de `AppHome.tsx` (AppHome queda como archivo fuera de ruta)
+- AUDITORÍA DE PERFORMANCE + 4 fixes (commit por fix):
+  - FIX 1: `limit(20)` en queries de listados (Discover artists/providers 50→20, EventsV2 `getAll('events',20)`, `firestoreService.getWhere` ∞→20)
+  - FIX 2: `RodrigoFloatingChat` → `lazy()` + Suspense (index inicial 84.4→81.2 KB gz)
+  - FIX 3: cleanup onSnapshot en `Messages` (deps `[user]`, flag `cancelled`, bloque no-op fuera)
+  - FIX 4: `loading="lazy"` en imágenes de cards (EventsV2 EventCardNew, Feed x4)
+- ✅ Resuelto pendiente Sesión 2: el índice compuesto de `listings` YA existe en `firestore.indexes.json` (`available ASC, urgent DESC, createdAt DESC`)
+
+**❌ Pendiente / mejoras futuras:**
+- **Desplegar índices Firestore a producción:** `firebase deploy --only firestore:indexes` (el índice existe en el repo pero hay que desplegarlo)
+- Mergear rama `claude/read-context-files-7N0Ww` → `main` para que despliegue en Vercel
+- Punto 5 perf (evaluar aparte, NO prioritario): `Discover` `ArtistCard`/`ArtistGridCard` usan `backgroundImage` CSS → `loading="lazy"` no aplica; requiere refactor a `<img>` o IntersectionObserver
+- Diferir Firestore del arranque (`vendor-firebase` 135 KB gz en first paint) — refactor mayor
+- `chatService.subscribeToMessages`: `orderBy('timestamp','asc') + limit(100)` trae los 100 mensajes MÁS ANTIGUOS, no los últimos → debe ser `desc + limit + reverse`
+- Dependencia muerta `@google/generative-ai` en `package.json` (cero usos en `src/`, eliminar)
+- Mocks muertos sin imports: `sampleArtistData.ts`, `mockData.ts`
+- `AppHome.tsx` queda como archivo huérfano (mock-heavy: LISTINGS/TRENDING_ARTISTS/ACTIVITY) — borrar o reutilizar
+- Discover: filtros contra Firestore real (aún parcialmente mock)
+- Trust Score, bookings, Pro Plan — v2
+
+**➡️ Próxima tarea concreta:**
+Desplegar el índice compuesto a producción (`firebase deploy --only firestore:indexes`) y, tras validar la rama, mergear `claude/read-context-files-7N0Ww` → `main`. Limpieza rápida adicional: eliminar dependencia muerta `@google/generative-ai` y mocks sin uso (`sampleArtistData.ts`, `mockData.ts`).
+
+**Decisiones técnicas (Sesión 3):**
+- `Listing` sin `shipping`/`sellerType` (fuera de spec v1)
+- `Home.tsx` self-contained (footer/hero propios) para no tocar componentes compartidos usados por otras páginas
+- Límite estándar de listados = `limit(20)`; `getWhere` con tope por defecto 20
+- Rutas estáticas antes que dinámicas en el router (`/market/create` antes de `/market/:id`)
+- `RodrigoFloatingChat` diferido con `Suspense fallback={null}` (widget no bloquea el shell)
