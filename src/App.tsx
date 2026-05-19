@@ -16,7 +16,9 @@ function ThemeInit() {
 import { EventsLayout } from './layouts/EventsLayout';
 import { PanelLayout } from './layouts/PanelLayout';
 import SplashScreen from './components/layout/SplashScreen';
-import { RodrigoFloatingChat } from './components/rodrigo/RodrigoFloatingChat';
+const RodrigoFloatingChat = lazy(() =>
+  import('./components/rodrigo/RodrigoFloatingChat').then(m => ({ default: m.RodrigoFloatingChat }))
+);
 import { ErrorBoundary } from './components/layout/ErrorBoundary';
 import { Toaster } from 'sonner';
 
@@ -231,7 +233,9 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
-          <RodrigoFloatingChat />
+          <Suspense fallback={null}>
+            <RodrigoFloatingChat />
+          </Suspense>
           <Toaster position="top-center" richColors />
         </Router>
       </AuthProvider>
