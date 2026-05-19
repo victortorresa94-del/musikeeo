@@ -24,7 +24,7 @@ import { Toaster } from 'sonner';
 const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
 const NotFound = lazy(() => import('./pages/NotFound'));
-const AppHome = lazy(() => import('./pages/home/AppHome'));
+const Home = lazy(() => import('./pages/home/Home'));
 const Feed = lazy(() => import('./pages/feed/Feed'));
 const EventsV2 = lazy(() => import('./pages/events/EventsV2'));
 const EventDetail = lazy(() => import('./pages/events/EventDetail'));
@@ -121,7 +121,7 @@ const PanelGateway = () => {
   return <Navigate to="/panel/perfil" replace />;
 };
 
-// Smart root: always redirect to /home (AppHome is public)
+// Smart root: always redirect to /home (public landing)
 const RootRoute = () => {
   const { loading } = useAuth();
   if (loading) return <div className="h-screen w-full flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -182,7 +182,7 @@ function App() {
 
               {/* Public App Routes (MainLayout, no auth required) */}
               <Route element={<MainLayout />}>
-                <Route path="/home" element={<AppHome />} />
+                <Route path="/home" element={<Home />} />
               </Route>
 
               {/* Protected App Routes (MainLayout) */}
