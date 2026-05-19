@@ -16,7 +16,9 @@ function ThemeInit() {
 import { EventsLayout } from './layouts/EventsLayout';
 import { PanelLayout } from './layouts/PanelLayout';
 import SplashScreen from './components/layout/SplashScreen';
-import { RodrigoFloatingChat } from './components/rodrigo/RodrigoFloatingChat';
+const RodrigoFloatingChat = lazy(() =>
+  import('./components/rodrigo/RodrigoFloatingChat').then(m => ({ default: m.RodrigoFloatingChat }))
+);
 import { ErrorBoundary } from './components/layout/ErrorBoundary';
 import { Toaster } from 'sonner';
 
@@ -24,7 +26,7 @@ import { Toaster } from 'sonner';
 const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
 const NotFound = lazy(() => import('./pages/NotFound'));
-const AppHome = lazy(() => import('./pages/home/AppHome'));
+const Home = lazy(() => import('./pages/home/Home'));
 const Feed = lazy(() => import('./pages/feed/Feed'));
 const EventsV2 = lazy(() => import('./pages/events/EventsV2'));
 const EventDetail = lazy(() => import('./pages/events/EventDetail'));
@@ -121,7 +123,7 @@ const PanelGateway = () => {
   return <Navigate to="/panel/perfil" replace />;
 };
 
-// Smart root: always redirect to /home (AppHome is public)
+// Smart root: always redirect to /home (public landing)
 const RootRoute = () => {
   const { loading } = useAuth();
   if (loading) return <div className="h-screen w-full flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
@@ -182,7 +184,7 @@ function App() {
 
               {/* Public App Routes (MainLayout, no auth required) */}
               <Route element={<MainLayout />}>
-                <Route path="/home" element={<AppHome />} />
+                <Route path="/home" element={<Home />} />
               </Route>
 
               {/* Protected App Routes (MainLayout) */}
@@ -193,8 +195,8 @@ function App() {
                 <Route path="/eventos/:id" element={<EventDetail />} />
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/market" element={<Market />} />
-                <Route path="/market/:id" element={<ProductDetail />} />
                 <Route path="/market/create" element={<CreateListing />} />
+                <Route path="/market/:id" element={<ProductDetail />} />
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/profile/:id" element={<PublicProfile />} />
@@ -231,7 +233,9 @@ function App() {
               <Route path="*" element={<NotFound />} />
             </Routes>
           </Suspense>
-          <RodrigoFloatingChat />
+          <Suspense fallback={null}>
+            <RodrigoFloatingChat />
+          </Suspense>
           <Toaster position="top-center" richColors />
         </Router>
       </AuthProvider>

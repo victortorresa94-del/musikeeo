@@ -4,7 +4,7 @@ import { firestoreService } from './firestoreService';
 export const eventService = {
     getUpcomingEvents: async (): Promise<Event[]> => {
         try {
-            const realEvents = await firestoreService.getAll<Event>('events');
+            const realEvents = await firestoreService.getAll<Event>('events', 20);
             return realEvents || [];
         } catch (error) {
             console.error("Error fetching events:", error);

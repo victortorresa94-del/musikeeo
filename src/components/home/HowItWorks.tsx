@@ -13,8 +13,8 @@ const steps = [
     },
     {
         icon: ShieldCheck,
-        title: "3. Reserva Segura",
-        description: "Realiza el pago a través de nuestra pasarela protegida. El artista recibe el pago solo después del show."
+        title: "3. Cierra el Trato",
+        description: "Contacta directamente con el artista por mensaje interno o WhatsApp y acordáis los detalles del bolo sin intermediarios."
     }
 ];
 
