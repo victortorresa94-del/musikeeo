@@ -35,7 +35,9 @@ export default function Messages() {
     useEffect(() => {
         if (!user) return;
 
+        let cancelled = false;
         const unsubscribe = chatService.subscribeToChats(user.uid, async (chatList) => {
+            if (cancelled) return;
             if (chatList.length === 0) {
                 setChats([]);
                 return;
@@ -62,19 +64,11 @@ export default function Messages() {
                 return { ...chat, otherUser };
             }));
 
+            if (cancelled) return;
             setChats(enriched);
-
-            // If no chat selected, and we have a target from navigation, it will be handled by the other effect.
-            // If no target `state`, maybe we don't auto-select to keep it clean, or select latest.
-            // For now, let's NOT auto-select the first one unless we want to.
-            // But let's keep the behavior if we are not navigating.
-            if (!location.state?.selectedChatId && !selectedChat && enriched.length > 0) {
-                // Optional: Auto-select latest
-                // setSelectedChat(enriched[0]);
-            }
         });
-        return () => unsubscribe();
-    }, [user, location.state]);
+        return () => { cancelled = true; unsubscribe(); };
+    }, [user]);
 
     // Subscribe to Messages
     useEffect(() => {
