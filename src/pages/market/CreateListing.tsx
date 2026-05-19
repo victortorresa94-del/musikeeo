@@ -8,7 +8,7 @@ import { ArrowLeft, Upload, X, Loader2, Zap } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { Textarea } from '../../components/ui/textarea';
-import type { ListingCategory } from '../../types';
+import type { ListingCategory, ListingCondition, ListingType, RentalUnit } from '../../types';
 
 const CATEGORIES: { value: ListingCategory; label: string }[] = [
     { value: 'guitarras', label: 'Guitarras' },
@@ -38,16 +38,14 @@ export default function CreateListing() {
     const [images, setImages] = useState<{ file: File; preview: string }[]>([]);
     const [title, setTitle] = useState('');
     const [category, setCategory] = useState<ListingCategory>('guitarras');
-    const [type, setType] = useState<'venta' | 'alquiler' | 'prestamo'>('venta');
+    const [type, setType] = useState<ListingType>('venta');
     const [price, setPrice] = useState('');
-    const [priceUnit, setPriceUnit] = useState<'dia' | 'semana'>('dia');
-    const [condition, setCondition] = useState<'nuevo' | 'como_nuevo' | 'bueno' | 'aceptable'>('bueno');
+    const [priceUnit, setPriceUnit] = useState<RentalUnit>('dia');
+    const [condition, setCondition] = useState<ListingCondition>('bueno');
     const [description, setDescription] = useState('');
     const [location, setLocation] = useState(userProfile?.location || '');
     const [whatsApp, setWhatsApp] = useState('');
     const [urgent, setUrgent] = useState(false);
-    const [shipping, setShipping] = useState(false);
-    const [sellerType, setSellerType] = useState<'particular' | 'profesional'>('particular');
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
 
@@ -82,10 +80,11 @@ export default function CreateListing() {
         setSubmitting(true);
 
         try {
+            const timestamp = Date.now();
             const urls = await Promise.all(
-                images.map(({ file }) => {
-                    const ext = file.name.split('.').pop() || 'jpg';
-                    const path = `listings/${user.uid}/${Date.now()}_${Math.random().toString(36).slice(2)}.${ext}`;
+                images.map(({ file }, idx) => {
+                    const safeName = file.name.replace(/[^a-zA-Z0-9._-]/g, '_');
+                    const path = `listings/${user.uid}/${timestamp}/${idx}_${safeName}`;
                     return storageService.uploadFile(file, path);
                 })
             );
@@ -104,10 +103,9 @@ export default function CreateListing() {
                 price: type === 'prestamo' ? 0 : Number(price),
                 priceUnit: type === 'alquiler' ? priceUnit : null,
                 urgent,
-                shipping,
-                sellerType,
                 available: true,
                 images: urls,
+                views: 0,
                 createdAt: new Date().toISOString(),
                 updatedAt: new Date().toISOString(),
             });
@@ -281,39 +279,6 @@ export default function CreateListing() {
                         className="bg-muted border-border text-foreground"
                     />
                 </div>
-
-                {/* Seller type */}
-                <div className="space-y-1">
-                    <label className="text-sm font-medium text-foreground">Tipo de vendedor</label>
-                    <div className="flex rounded-xl bg-muted p-1 gap-1">
-                        {(['particular', 'profesional'] as const).map(t => (
-                            <button
-                                key={t}
-                                type="button"
-                                onClick={() => setSellerType(t)}
-                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors capitalize ${sellerType === t ? 'bg-primary text-black' : 'text-gray-400 hover:text-foreground'}`}
-                            >
-                                {t === 'particular' ? '👤 Particular' : '🏪 Profesional'}
-                            </button>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Shipping toggle */}
-                <button
-                    type="button"
-                    onClick={() => setShipping(v => !v)}
-                    className={`w-full flex items-center gap-3 p-4 rounded-xl border transition-colors ${shipping ? 'border-primary/50 bg-primary/10' : 'border-border bg-muted'}`}
-                >
-                    <span className="text-lg">{shipping ? '📦' : '📍'}</span>
-                    <div className="text-left">
-                        <p className={`text-sm font-bold ${shipping ? 'text-primary' : 'text-foreground'}`}>Envío disponible</p>
-                        <p className="text-xs text-gray-500">Puedo enviar el artículo por mensajería</p>
-                    </div>
-                    <div className={`ml-auto w-10 h-6 rounded-full transition-colors flex items-center px-1 ${shipping ? 'bg-primary' : 'bg-muted'}`}>
-                        <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${shipping ? 'translate-x-4' : 'translate-x-0'}`} />
-                    </div>
-                </button>
 
                 {/* Urgent toggle */}
                 <button
