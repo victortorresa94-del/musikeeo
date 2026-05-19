@@ -39,6 +39,7 @@ const ReelsRow = ({ onOpen }: { onOpen: (id: string) => void }) => (
                             <img
                                 src={reel.thumbnailUrl}
                                 alt={reel.authorName}
+                                loading="lazy"
                                 className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
                             />
                         </div>
@@ -102,6 +103,7 @@ const NearbyChip = ({ user: u, onClick }: { user: UserProfile & { distance?: str
                 <img
                     src={u.photoURL || `https://i.pravatar.cc/56?u=${u.uid}`}
                     alt={u.displayName}
+                    loading="lazy"
                     className="w-full h-full object-cover"
                 />
             </div>
@@ -154,6 +156,7 @@ const ReelFeedCard = ({ reel, onPlay }: { reel: typeof MOCK_REELS[0]; onPlay: ()
                 <img
                     src={reel.authorPhoto}
                     alt={reel.authorName}
+                    loading="lazy"
                     className="h-10 w-10 rounded-full object-cover border-2 border-border"
                 />
                 <div className="flex-1">
@@ -178,6 +181,7 @@ const ReelFeedCard = ({ reel, onPlay }: { reel: typeof MOCK_REELS[0]; onPlay: ()
                 <img
                     src={reel.thumbnailUrl}
                     alt={reel.description}
+                    loading="lazy"
                     className="w-full aspect-video object-cover"
                 />
                 <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
