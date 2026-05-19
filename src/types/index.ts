@@ -308,6 +308,12 @@ export type ListingCategory =
     | 'accesorios' | 'pa_sonido' | 'iluminacion' | 'recording'
     | 'partituras' | 'otros';
 
+export type ListingType = 'venta' | 'alquiler' | 'prestamo';
+
+export type ListingCondition = 'nuevo' | 'como_nuevo' | 'bueno' | 'aceptable';
+
+export type RentalUnit = 'total' | 'dia' | 'semana';
+
 export interface Listing {
     id: string;
     userId: string;
@@ -316,21 +322,20 @@ export interface Listing {
     userLocation: string;
     userWhatsApp?: string;
 
-    title: string;
-    description: string;
+    title: string;        // max 60
+    description: string;  // max 300
     category: ListingCategory;
-    condition: 'nuevo' | 'como_nuevo' | 'bueno' | 'aceptable';
+    condition: ListingCondition;
 
-    type: 'venta' | 'alquiler' | 'prestamo';
-    price: number;
-    priceUnit?: 'total' | 'dia' | 'semana';
+    type: ListingType;
+    price: number;            // 0 si type === 'prestamo'
+    priceUnit?: RentalUnit;   // solo si type === 'alquiler'
 
     urgent: boolean;
     available: boolean;
-    shipping: boolean;
-    sellerType: 'particular' | 'profesional';
 
     images: string[];
+    views?: number;
 
     createdAt: string;
     updatedAt: string;
