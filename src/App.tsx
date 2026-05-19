@@ -193,8 +193,8 @@ function App() {
                 <Route path="/eventos/:id" element={<EventDetail />} />
                 <Route path="/messages" element={<Messages />} />
                 <Route path="/market" element={<Market />} />
-                <Route path="/market/:id" element={<ProductDetail />} />
                 <Route path="/market/create" element={<CreateListing />} />
+                <Route path="/market/:id" element={<ProductDetail />} />
                 <Route path="/projects" element={<Projects />} />
                 <Route path="/profile" element={<Profile />} />
                 <Route path="/profile/:id" element={<PublicProfile />} />
