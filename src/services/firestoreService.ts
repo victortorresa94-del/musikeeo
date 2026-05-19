@@ -56,10 +56,10 @@ export const firestoreService = {
     },
 
     // Generic Query
-    getWhere: async <T>(collectionName: string, field: string, operator: WhereFilterOp, value: any): Promise<T[]> => {
+    getWhere: async <T>(collectionName: string, field: string, operator: WhereFilterOp, value: any, limitN = 20): Promise<T[]> => {
         try {
             if (!db) throw new Error("Database not initialized");
-            const q = query(collection(db, collectionName), where(field, operator, value));
+            const q = query(collection(db, collectionName), where(field, operator, value), limit(limitN));
             const querySnapshot = await getDocs(q);
             return querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as unknown as T));
         } catch (error) {
