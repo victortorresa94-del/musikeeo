@@ -1,13 +1,26 @@
-import { collection, query, where, getDocs, addDoc, serverTimestamp } from 'firebase/firestore';
+import {
+    collection, query, where, getDocs, getDoc, doc, addDoc,
+    updateDoc, serverTimestamp
+} from 'firebase/firestore';
 import { db } from '../lib/firebase';
 
 export interface Application {
     id?: string;
     eventId: string;
-    applicantId: string; // User ID
+    applicantId: string;
+    organizerId: string;
     status: 'pending' | 'accepted' | 'rejected';
     message?: string;
     createdAt: any;
+}
+
+export interface ApplicationWithApplicant extends Application {
+    applicant?: {
+        uid: string;
+        displayName?: string;
+        photoURL?: string;
+        primaryMode?: string;
+    };
 }
 
 export const applicationService = {
@@ -27,30 +40,63 @@ export const applicationService = {
         }
     },
 
-    // Apply to an event
-    apply: async (eventId: string, userId: string, message: string = ''): Promise<string> => {
-        try {
-            // Optional: Check again if already applied to prevent duplicates
-            const already = await applicationService.hasApplied(eventId, userId);
-            if (already) throw new Error("Already applied");
+    // Apply to an event (organizerId required so the organizer's read rule is cheap)
+    apply: async (
+        eventId: string,
+        applicantId: string,
+        organizerId: string,
+        message: string = ''
+    ): Promise<string> => {
+        const already = await applicationService.hasApplied(eventId, applicantId);
+        if (already) throw new Error("Already applied");
 
-            const docRef = await addDoc(collection(db, 'applications'), {
-                eventId,
-                applicantId: userId,
-                status: 'pending',
-                message,
-                createdAt: serverTimestamp()
-            });
-            return docRef.id;
-        } catch (error) {
-            console.error("Error applying to event:", error);
-            throw error;
-        }
+        const docRef = await addDoc(collection(db, 'applications'), {
+            eventId,
+            applicantId,
+            organizerId,
+            status: 'pending',
+            message,
+            createdAt: serverTimestamp()
+        });
+        return docRef.id;
     },
 
-    // Get applications for an event (for Organizer) - Future implementation
-    // getApplicationsForEvent: async (eventId: string) => {
-    //    console.log(eventId); 
-    //    return [];
-    // }
+    // Organizer reads all applications for one of their events,
+    // joined client-side with the applicant's user profile.
+    getApplicationsForEvent: async (eventId: string): Promise<ApplicationWithApplicant[]> => {
+        const q = query(
+            collection(db, 'applications'),
+            where('eventId', '==', eventId)
+        );
+        const snap = await getDocs(q);
+        const apps = snap.docs.map(d => ({ id: d.id, ...d.data() } as Application));
+
+        const enriched = await Promise.all(apps.map(async (a) => {
+            try {
+                const userSnap = await getDoc(doc(db, 'users', a.applicantId));
+                if (userSnap.exists()) {
+                    const u = userSnap.data();
+                    return {
+                        ...a,
+                        applicant: {
+                            uid: a.applicantId,
+                            displayName: u.displayName,
+                            photoURL: u.photoURL,
+                            primaryMode: u.primaryMode
+                        }
+                    } as ApplicationWithApplicant;
+                }
+            } catch (err) {
+                console.error("Error loading applicant", a.applicantId, err);
+            }
+            return a as ApplicationWithApplicant;
+        }));
+
+        return enriched;
+    },
+
+    // Organizer updates application status
+    updateStatus: async (applicationId: string, status: 'accepted' | 'rejected'): Promise<void> => {
+        await updateDoc(doc(db, 'applications', applicationId), { status });
+    }
 };

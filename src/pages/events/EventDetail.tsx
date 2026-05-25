@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
-import { ArrowLeft, MapPin, Calendar, Clock, Music, Send } from 'lucide-react';
+import { ArrowLeft, MapPin, Calendar, Clock, Music, Send, Users, Check, X, MessageSquare } from 'lucide-react';
 import { toast } from 'sonner';
 import { eventService } from '../../services/eventService';
 import { chatService } from '../../services/chatService';
@@ -9,7 +9,7 @@ import { type Event } from '../../types';
 import { Loader2 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
-import { applicationService } from '../../services/applicationService';
+import { applicationService, type ApplicationWithApplicant } from '../../services/applicationService';
 
 export default function EventDetail() {
     const { id } = useParams();
@@ -21,6 +21,11 @@ export default function EventDetail() {
     const [isApplied, setIsApplied] = useState(false);
     const [applying, setApplying] = useState(false);
 
+    const [applications, setApplications] = useState<ApplicationWithApplicant[]>([]);
+    const [loadingApps, setLoadingApps] = useState(false);
+
+    const isOrganizer = !!event && !!user && user.uid === event.organizerId;
+
     useEffect(() => {
         const fetchEvent = async () => {
             if (!id) return;
@@ -28,10 +33,11 @@ export default function EventDetail() {
                 const data = await eventService.getEventById(id);
                 setEvent(data);
 
-                // Check application status if user is logged in
-                if (user) {
-                    const applied = await applicationService.hasApplied(id, user.uid);
-                    setIsApplied(applied);
+                if (user && data) {
+                    if (user.uid !== data.organizerId) {
+                        const applied = await applicationService.hasApplied(id, user.uid);
+                        setIsApplied(applied);
+                    }
                 }
             } catch (error) {
                 console.error("Failed to load event", error);
@@ -42,6 +48,18 @@ export default function EventDetail() {
         fetchEvent();
     }, [id, user]);
 
+    // Load applications when current user IS the organizer of this event
+    useEffect(() => {
+        if (!isOrganizer || !event) return;
+        let cancelled = false;
+        setLoadingApps(true);
+        applicationService.getApplicationsForEvent(event.id)
+            .then(apps => { if (!cancelled) setApplications(apps); })
+            .catch(err => console.error("Error loading applications:", err))
+            .finally(() => { if (!cancelled) setLoadingApps(false); });
+        return () => { cancelled = true; };
+    }, [isOrganizer, event]);
+
     const handleApply = async () => {
         if (!user) {
             toast.error("Debes iniciar sesión para postularte");
@@ -49,10 +67,14 @@ export default function EventDetail() {
             return;
         }
         if (!event) return;
+        if (!event.organizerId) {
+            toast.error("Este evento no tiene organizador asignado");
+            return;
+        }
 
         setApplying(true);
         try {
-            await applicationService.apply(event.id, user.uid);
+            await applicationService.apply(event.id, user.uid, event.organizerId);
             setIsApplied(true);
             toast.success("¡Solicitud enviada con éxito!");
         } catch (error) {
@@ -60,6 +82,28 @@ export default function EventDetail() {
             toast.error("Error al enviar solicitud. Inténtalo de nuevo.");
         } finally {
             setApplying(false);
+        }
+    };
+
+    const handleContactApplicant = async (applicantId: string) => {
+        if (!user) return;
+        try {
+            const chatId = await chatService.createChat(user.uid, applicantId);
+            navigate('/messages', { state: { selectedChatId: chatId } });
+        } catch (err) {
+            console.error(err);
+            toast.error("Error al iniciar chat");
+        }
+    };
+
+    const handleUpdateStatus = async (appId: string, status: 'accepted' | 'rejected') => {
+        try {
+            await applicationService.updateStatus(appId, status);
+            setApplications(prev => prev.map(a => a.id === appId ? { ...a, status } : a));
+            toast.success(status === 'accepted' ? "Aplicante aceptado" : "Aplicante rechazado");
+        } catch (err) {
+            console.error(err);
+            toast.error("No se pudo actualizar el estado");
         }
     };
 
@@ -127,15 +171,17 @@ export default function EventDetail() {
                                     <p className="text-2xl font-bold text-white">{event.price}€</p>
                                 </div>
                             ) : null}
-                            <Button
-                                className={`h-12 px-6 font-bold ${isApplied ? 'bg-zinc-700 text-white' : 'bg-brand-cyan text-black hover:bg-brand-cyan/90'}`}
-                                onClick={handleApply}
-                                disabled={isApplied || applying}
-                            >
-                                {applying ? <Loader2 className="h-4 w-4 animate-spin" /> :
-                                    isApplied ? "Solicitud Enviada" : "Postularme"}
-                                {!isApplied && !applying && <Send className="w-4 h-4 ml-2" />}
-                            </Button>
+                            {!isOrganizer && (
+                                <Button
+                                    className={`h-12 px-6 font-bold ${isApplied ? 'bg-zinc-700 text-white' : 'bg-brand-cyan text-black hover:bg-brand-cyan/90'}`}
+                                    onClick={handleApply}
+                                    disabled={isApplied || applying}
+                                >
+                                    {applying ? <Loader2 className="h-4 w-4 animate-spin" /> :
+                                        isApplied ? "Solicitud Enviada" : "Postularme"}
+                                    {!isApplied && !applying && <Send className="w-4 h-4 ml-2" />}
+                                </Button>
+                            )}
                         </div>
                     </div>
                 </div>
@@ -145,7 +191,7 @@ export default function EventDetail() {
                 <div className="md:col-span-2 space-y-6">
                     <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
                         <h3 className="font-heading font-bold text-white mb-4">Detalles</h3>
-                        <p className="text-gray-300 leading-relaxed">
+                        <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">
                             {event.description || "Sin descripción detallada. Contacta al organizador para más información."}
                         </p>
                     </div>
@@ -162,6 +208,90 @@ export default function EventDetail() {
                             )) || <span className="text-muted-foreground">No especificado</span>}
                         </div>
                     </div>
+
+                    {/* Applicants section — only visible to organizer */}
+                    {isOrganizer && (
+                        <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
+                            <h3 className="font-heading font-bold text-white mb-4 flex items-center gap-2">
+                                <Users className="h-5 w-5 text-brand-cyan" />
+                                Aplicantes {applications.length > 0 && <span className="text-muted-foreground text-sm">({applications.length})</span>}
+                            </h3>
+
+                            {loadingApps ? (
+                                <div className="flex items-center justify-center py-6">
+                                    <Loader2 className="h-6 w-6 animate-spin text-brand-cyan" />
+                                </div>
+                            ) : applications.length === 0 ? (
+                                <p className="text-muted-foreground text-sm">Aún no hay aplicantes a este evento.</p>
+                            ) : (
+                                <ul className="space-y-3">
+                                    {applications.map(app => (
+                                        <li key={app.id} className="bg-black/30 border border-white/5 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                                            <div className="flex items-center gap-3 flex-1 min-w-0">
+                                                <div className="h-10 w-10 rounded-full bg-zinc-800 flex items-center justify-center border border-white/10 overflow-hidden shrink-0">
+                                                    {app.applicant?.photoURL ? (
+                                                        <img src={app.applicant.photoURL} alt="" loading="lazy" className="w-full h-full object-cover" />
+                                                    ) : (
+                                                        <span className="font-bold text-white text-sm uppercase">
+                                                            {(app.applicant?.displayName || '?').substring(0, 2)}
+                                                        </span>
+                                                    )}
+                                                </div>
+                                                <div className="min-w-0">
+                                                    <p className="font-semibold text-white text-sm truncate">
+                                                        {app.applicant?.displayName || 'Usuario desconocido'}
+                                                    </p>
+                                                    {app.applicant?.primaryMode && (
+                                                        <p className="text-xs text-muted-foreground capitalize">{app.applicant.primaryMode}</p>
+                                                    )}
+                                                    {app.message && (
+                                                        <p className="text-xs text-gray-300 mt-1 line-clamp-2">{app.message}</p>
+                                                    )}
+                                                </div>
+                                            </div>
+                                            <div className="flex items-center gap-2 shrink-0">
+                                                {app.status === 'pending' ? (
+                                                    <>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="outline"
+                                                            className="h-8 border-white/10 hover:bg-white/5 text-xs gap-1"
+                                                            onClick={() => app.applicantId && handleContactApplicant(app.applicantId)}
+                                                        >
+                                                            <MessageSquare size={12} /> Chat
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            className="h-8 bg-brand-lime text-black hover:bg-brand-lime/90 text-xs gap-1"
+                                                            onClick={() => app.id && handleUpdateStatus(app.id, 'accepted')}
+                                                        >
+                                                            <Check size={12} /> Aceptar
+                                                        </Button>
+                                                        <Button
+                                                            size="sm"
+                                                            variant="ghost"
+                                                            className="h-8 text-red-400 hover:text-red-300 hover:bg-red-500/10 text-xs gap-1"
+                                                            onClick={() => app.id && handleUpdateStatus(app.id, 'rejected')}
+                                                        >
+                                                            <X size={12} /> Rechazar
+                                                        </Button>
+                                                    </>
+                                                ) : (
+                                                    <span className={`text-xs font-bold px-3 py-1 rounded-full ${
+                                                        app.status === 'accepted'
+                                                            ? 'bg-brand-lime/20 text-brand-lime'
+                                                            : 'bg-red-500/20 text-red-400'
+                                                    }`}>
+                                                        {app.status === 'accepted' ? 'Aceptado' : 'Rechazado'}
+                                                    </span>
+                                                )}
+                                            </div>
+                                        </li>
+                                    ))}
+                                </ul>
+                            )}
+                        </div>
+                    )}
                 </div>
 
                 <div className="space-y-6">
@@ -176,34 +306,33 @@ export default function EventDetail() {
                                 <p className="text-xs text-muted-foreground">Promotor Verificado</p>
                             </div>
                         </div>
-                        <Button
-                            variant="outline"
-                            className="w-full border-white/10 hover:bg-white/5 text-xs"
-                            onClick={async () => {
-                                if (!user) {
-                                    toast.error("Debes iniciar sesión");
-                                    navigate('/login');
-                                    return;
-                                }
-                                try {
-                                    // Assuming event.organizerId exists. If not available in Event type, we might need to fetch it or ensure it's there.
-                                    // The mock/type definition usually has organizerId.
-                                    // Checking 'Event' type might be good, but for now assuming standard field.
-                                    if (event.organizerId) {
+                        {!isOrganizer && (
+                            <Button
+                                variant="outline"
+                                className="w-full border-white/10 hover:bg-white/5 text-xs"
+                                onClick={async () => {
+                                    if (!user) {
+                                        toast.error("Debes iniciar sesión");
+                                        navigate('/login');
+                                        return;
+                                    }
+                                    if (!event.organizerId) {
+                                        toast.error("No se puede contactar al organizador (ID desconocido)");
+                                        return;
+                                    }
+                                    try {
                                         toast.info("Iniciando chat...");
                                         const chatId = await chatService.createChat(user.uid, event.organizerId);
                                         navigate('/messages', { state: { selectedChatId: chatId } });
-                                    } else {
-                                        toast.error("No se puede contactar al organizador (ID desconocido)");
+                                    } catch (err) {
+                                        console.error(err);
+                                        toast.error("Error al iniciar chat");
                                     }
-                                } catch (err) {
-                                    console.error(err);
-                                    toast.error("Error al iniciar chat");
-                                }
-                            }}
-                        >
-                            Enviar Mensaje
-                        </Button>
+                                }}
+                            >
+                                Enviar Mensaje
+                            </Button>
+                        )}
                     </div>
                 </div>
             </div>
