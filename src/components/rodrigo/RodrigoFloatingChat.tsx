@@ -39,7 +39,9 @@ export const RodrigoFloatingChat = () => {
     ]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
+    const [errorCount, setErrorCount] = useState(0);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const isDegraded = errorCount >= 2;
     const location = useLocation();
     const navigate = useNavigate();
 
@@ -91,9 +93,9 @@ export const RodrigoFloatingChat = () => {
         setIsTyping(true);
 
         try {
-            // Generate response using DeepSeek
             const { response, newState } = await generateResponse(content, conversationState);
             setConversationState(newState);
+            setErrorCount(0);
 
             const aiMessage: Message = {
                 id: (Date.now() + 1).toString(),
@@ -105,9 +107,7 @@ export const RodrigoFloatingChat = () => {
 
             setMessages(prev => [...prev, aiMessage]);
 
-            // Handle Event Publication Handoff
             if (response.publishEvent) {
-                // Short delay to let the user read the confirmation
                 setTimeout(() => {
                     navigate('/eventos/crear', {
                         state: { eventDraft: response.publishEvent }
@@ -117,10 +117,14 @@ export const RodrigoFloatingChat = () => {
             }
         } catch (error) {
             console.error('Error sending message:', error);
+            const newCount = errorCount + 1;
+            setErrorCount(newCount);
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
-                content: 'Perdona, he tenido un problema técnico. ¿Puedes repetirme qué necesitas?',
+                content: newCount >= 2
+                    ? 'Rodrigo no está disponible ahora mismo. Por favor, inténtalo más tarde.'
+                    : 'Perdona, he tenido un problema técnico. ¿Puedes repetirme qué necesitas?',
                 timestamp: new Date(),
             };
             setMessages(prev => [...prev, errorMessage]);
@@ -172,11 +176,13 @@ export const RodrigoFloatingChat = () => {
                                     className="size-10 rounded-full bg-cover bg-center border border-white/10"
                                     style={{ backgroundImage: `url(${RODRIGO_AVATAR})` }}
                                 />
-                                <div className="absolute -bottom-0.5 -right-0.5 size-3 bg-green-500 rounded-full border-2 border-[#0A0A0A]" />
+                                <div className={`absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-[#0A0A0A] ${isDegraded ? 'bg-red-500' : 'bg-green-500'}`} />
                             </div>
                             <div className="flex-1">
                                 <h3 className="text-sm font-bold text-white">Rodrigo</h3>
-                                <p className="text-xs text-[#FFD84D] font-medium">ONLINE</p>
+                                <p className={`text-xs font-medium ${isDegraded ? 'text-red-400' : 'text-[#FFD84D]'}`}>
+                                    {isDegraded ? 'NO DISPONIBLE' : 'ONLINE'}
+                                </p>
                             </div>
                             <button
                                 onClick={() => setIsOpen(false)}
@@ -256,9 +262,9 @@ export const RodrigoFloatingChat = () => {
                                         value={input}
                                         onChange={(e) => setInput(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
-                                        placeholder="Escríbele a Rodrigo..."
-                                        className="flex-1 bg-transparent px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none"
-                                        disabled={isTyping}
+                                        placeholder={isDegraded ? 'Rodrigo no está disponible' : 'Escríbele a Rodrigo...'}
+                                        className="flex-1 bg-transparent px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none disabled:cursor-not-allowed"
+                                        disabled={isTyping || isDegraded}
                                     />
                                     <button className="p-3 text-gray-400 hover:text-white transition-colors">
                                         <Mic size={18} />
@@ -266,7 +272,7 @@ export const RodrigoFloatingChat = () => {
                                 </div>
                                 <button
                                     onClick={() => sendMessage(input)}
-                                    disabled={isTyping || !input.trim()}
+                                    disabled={isTyping || !input.trim() || isDegraded}
                                     className="h-12 w-12 flex items-center justify-center bg-[#FFD84D] text-black rounded-xl hover:bg-[#ffe066] transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <ArrowUp size={20} />
