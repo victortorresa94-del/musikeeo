@@ -55,11 +55,11 @@ export const chatService = {
         });
     },
 
-    // Listen to messages in a chat
+    // Listen to messages in a chat (last 100, chronological order in UI)
     subscribeToMessages: (chatId: string, callback: (messages: ChatMessage[]) => void) => {
         const q = query(
             collection(db, 'chats', chatId, 'messages'),
-            orderBy('timestamp', 'asc'),
+            orderBy('timestamp', 'desc'),
             limit(100)
         );
 
@@ -68,7 +68,7 @@ export const chatService = {
                 id: doc.id,
                 ...doc.data()
             })) as ChatMessage[];
-            callback(messages);
+            callback(messages.reverse());
         });
     },
 

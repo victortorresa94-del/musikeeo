@@ -12,6 +12,15 @@ dist
 dist-ssr
 *.local
 
+# Environment variables — never commit secrets
+.env
+.env.*
+!.env.example
+
+# Build artifact dumps
+build_errors.txt
+tsc_output.txt
+
 # Editor directories and files
 .vscode/*
 !.vscode/extensions.json
