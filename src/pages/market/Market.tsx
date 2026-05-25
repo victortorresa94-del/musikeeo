@@ -120,7 +120,8 @@ export default function Market() {
         if (cat) setCategoryFilter(cat as ListingCategory);
     }, [location.search]);
 
-    const displayListings = listings.length === 0 && !loading ? MOCK_LISTINGS : listings;
+    const usingMocks = listings.length === 0 && !loading;
+    const displayListings = usingMocks ? MOCK_LISTINGS : listings;
 
     const filtered = displayListings.filter(l => {
         if (typeFilter !== 'all' && l.type !== typeFilter) return false;
@@ -261,6 +262,17 @@ export default function Market() {
                 )}
             </AnimatePresence>
 
+            {/* Demo banner */}
+            {usingMocks && (
+                <div className="bg-amber-500/10 border border-amber-500/30 text-amber-200 rounded-xl px-4 py-3 text-sm flex items-start gap-3">
+                    <span className="text-base leading-none mt-0.5">ℹ️</span>
+                    <div>
+                        <p className="font-semibold text-amber-100">Estos son anuncios de ejemplo</p>
+                        <p className="text-xs text-amber-200/80 mt-0.5">Todavía no hay anuncios reales en tu zona. Sé el primero en <button onClick={() => navigate('/market/create')} className="underline font-semibold hover:text-amber-100">publicar uno</button>.</p>
+                    </div>
+                </div>
+            )}
+
             {/* Results */}
             {loading ? (
                 <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
@@ -320,10 +332,11 @@ export default function Market() {
                                         <span className="text-muted-foreground text-xs truncate flex-1">{listing.userName}</span>
                                     </div>
                                     <button
-                                        onClick={(e) => { e.stopPropagation(); setContactListing(listing); }}
-                                        className="w-full mt-1 h-8 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold border border-primary/30 transition-colors"
+                                        onClick={(e) => { e.stopPropagation(); if (!usingMocks) setContactListing(listing); }}
+                                        disabled={usingMocks}
+                                        className="w-full mt-1 h-8 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold border border-primary/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary/10"
                                     >
-                                        Contactar
+                                        {usingMocks ? 'Ejemplo' : 'Contactar'}
                                     </button>
                                 </div>
                             </motion.div>
