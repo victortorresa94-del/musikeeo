@@ -1,0 +1,10 @@
+User-agent: *
+Allow: /
+
+# Sensitive routes — exclude from indexing
+Disallow: /panel
+Disallow: /messages
+Disallow: /onboarding
+Disallow: /api/
+
+Sitemap: https://musikeeo.com/sitemap.xml

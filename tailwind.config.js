@@ -73,6 +73,9 @@ export default {
                 tighter:  "-0.03em",
                 tightest: "-0.04em",
             },
+            padding: {
+                safe: "env(safe-area-inset-bottom)",
+            },
             borderRadius: {
                 sm:    "0.25rem",
                 md:    "0.375rem",
