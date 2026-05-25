@@ -1,22 +1,32 @@
 rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
+
+    // Helpers: max 20 MB and image-only uploads
+    function isOwner(userId) {
+      return request.auth != null && request.auth.uid == userId;
+    }
+    function isImageUnder20MB() {
+      return request.resource.size < 20 * 1024 * 1024
+        && request.resource.contentType.matches('image/.*');
+    }
+
     // Artist profile photos and multimedia
     match /artists/{userId}/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow write: if isOwner(userId) && (request.resource == null || isImageUnder20MB());
     }
 
     // Marketplace listing images
     match /listings/{userId}/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow write: if isOwner(userId) && (request.resource == null || isImageUnder20MB());
     }
 
     // User profile photos
     match /users/{userId}/{allPaths=**} {
       allow read: if true;
-      allow write: if request.auth != null && request.auth.uid == userId;
+      allow write: if isOwner(userId) && (request.resource == null || isImageUnder20MB());
     }
   }
 }
