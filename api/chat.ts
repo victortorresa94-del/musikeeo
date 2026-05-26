@@ -95,9 +95,62 @@ Si generas [PUBLISH_EVENT], NO generes [ARTISTA] ni [BOLO] en el mismo mensaje.
 Tu mensaje de texto en ese caso debe ser: "Perfecto, te llevo al formulario final para revisar y publicar."
 `;
 
+// --- Limites defensivos -----------------------------------------------------
+// Para produccion real conviene un store distribuido (p.ej. Upstash Redis).
+// Esto es defensa basica in-memory: efectiva contra rafagas en un mismo
+// contenedor caliente; en multi-instancia el limite real es N * RATE_LIMIT.
+const RATE_LIMIT = 20;          // peticiones permitidas por ventana
+const RATE_WINDOW_MS = 60_000;  // ventana de 60s
+const MAX_MESSAGE_CHARS = 1000;
+const MAX_HISTORY_ITEMS = 20;
+const MAX_HISTORY_CHARS = 6000; // suma de contenidos en history
+
+const rateStore = new Map<string, { count: number; resetAt: number }>();
+
+function getClientIp(req: any): string {
+  const fwd = (req.headers?.['x-forwarded-for'] as string | undefined)?.split(',')[0]?.trim();
+  return fwd || (req.headers?.['x-real-ip'] as string | undefined) || 'unknown';
+}
+
+function rateLimit(ip: string) {
+  const now = Date.now();
+  const entry = rateStore.get(ip);
+  if (!entry || entry.resetAt <= now) {
+    const resetAt = now + RATE_WINDOW_MS;
+    rateStore.set(ip, { count: 1, resetAt });
+    return { ok: true, remaining: RATE_LIMIT - 1, resetAt };
+  }
+  if (entry.count >= RATE_LIMIT) {
+    return { ok: false, remaining: 0, resetAt: entry.resetAt };
+  }
+  entry.count += 1;
+  return { ok: true, remaining: RATE_LIMIT - entry.count, resetAt: entry.resetAt };
+}
+
+// Poda oportunista para que el Map no crezca indefinidamente.
+function pruneRateStore() {
+  if (rateStore.size < 500) return;
+  const now = Date.now();
+  for (const [k, v] of rateStore) {
+    if (v.resetAt <= now) rateStore.delete(k);
+  }
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
+  }
+
+  pruneRateStore();
+  const ip = getClientIp(req);
+  const rl = rateLimit(ip);
+  res.setHeader('X-RateLimit-Limit', String(RATE_LIMIT));
+  res.setHeader('X-RateLimit-Remaining', String(Math.max(rl.remaining, 0)));
+  res.setHeader('X-RateLimit-Reset', String(Math.ceil(rl.resetAt / 1000)));
+  if (!rl.ok) {
+    const retryAfterSec = Math.max(1, Math.ceil((rl.resetAt - Date.now()) / 1000));
+    res.setHeader('Retry-After', String(retryAfterSec));
+    return res.status(429).json({ error: 'Too many requests', retryAfter: retryAfterSec });
   }
 
   const apiKey = process.env.OPENROUTER_API_KEY;
@@ -110,10 +163,23 @@ export default async function handler(req: any, res: any) {
   if (!message || typeof message !== 'string') {
     return res.status(400).json({ error: 'message (string) is required' });
   }
+  if (message.length > MAX_MESSAGE_CHARS) {
+    return res.status(413).json({ error: `message too long (max ${MAX_MESSAGE_CHARS} chars)` });
+  }
+  if (!Array.isArray(history)) {
+    return res.status(400).json({ error: 'history must be an array' });
+  }
+  const trimmedHistory = history
+    .filter((m: any) => m && typeof m.content === 'string' && (m.role === 'user' || m.role === 'assistant'))
+    .slice(-MAX_HISTORY_ITEMS);
+  const historyChars = trimmedHistory.reduce((acc: number, m: any) => acc + (m.content?.length ?? 0), 0);
+  if (historyChars > MAX_HISTORY_CHARS) {
+    return res.status(413).json({ error: `history too long (max ${MAX_HISTORY_CHARS} chars)` });
+  }
 
   const messages = [
     { role: 'system', content: RODRIGO_SYSTEM_PROMPT },
-    ...history.filter((m: any) => m.role !== 'system'),
+    ...trimmedHistory,
     { role: 'user', content: message },
   ];
 
