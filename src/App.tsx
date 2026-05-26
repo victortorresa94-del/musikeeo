@@ -52,6 +52,7 @@ const CookiePolicy = lazy(() => import('./pages/legal/CookiePolicy'));
 
 const CookieBanner = lazy(() => import('./components/CookieBanner'));
 const Analytics = lazy(() => import('./components/Analytics'));
+const EmailVerificationBanner = lazy(() => import('./components/EmailVerificationBanner'));
 
 // Artist/Panel Lazy Imports
 const ArtistProfilePage = lazy(() => import('./pages/artist/ArtistProfilePage'));
@@ -256,6 +257,9 @@ function App() {
           </Suspense>
           <Suspense fallback={null}>
             <Analytics />
+          </Suspense>
+          <Suspense fallback={null}>
+            <EmailVerificationBanner />
           </Suspense>
           <Toaster position="top-center" richColors />
         </Router>
