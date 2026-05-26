@@ -11,7 +11,6 @@ export const userService = {
     createUserProfile: async (uid: string, data: Partial<User>) => {
         // DEV BYPASS
         if (uid === 'dev-user-id') {
-            console.log("Dev User: returning mock profile");
             return {
                 uid,
                 email: 'dev@musikeeo.local',

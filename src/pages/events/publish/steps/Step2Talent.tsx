@@ -3,12 +3,9 @@ import { Button } from '../../../../components/ui/button';
 import { Input } from '../../../../components/ui/input';
 import { Label } from '../../../../components/ui/label';
 import { Textarea } from '../../../../components/ui/textarea';
-// Select imports removed as they are no longer used
 import { Switch } from '../../../../components/ui/switch';
-import { DollarSign, Music, Image as ImageIcon, Sparkles, Wand2 } from 'lucide-react';
-import { useRef, useState } from 'react';
-import { geminiFlash } from '../../../../lib/gemini';
-import { toast } from 'sonner';
+import { DollarSign, Music, Image as ImageIcon } from 'lucide-react';
+import { useRef } from 'react';
 
 interface StepProps {
     data: PublishEventState;
@@ -21,7 +18,6 @@ const ARTIST_TYPES = ['Banda', 'DJ', 'Solista', 'Mariachi', 'Jazz Trío', 'Orque
 
 export default function Step2Talent({ data, update, onNext, onPrev }: StepProps) {
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [isGeneratingDesc, setIsGeneratingDesc] = useState(false);
 
     const isValid = data.artistType.length > 0 && data.budget > 0 && data.description.length >= 10;
 
@@ -43,39 +39,6 @@ export default function Step2Talent({ data, update, onNext, onPrev }: StepProps)
                 update('image', reader.result as string);
             };
             reader.readAsDataURL(file);
-        }
-    };
-
-    const enhanceDescription = async () => {
-        if (data.description.length < 5) {
-            toast.error("Escribe al menos unas palabras para que la IA pueda trabajar.");
-            return;
-        }
-
-        setIsGeneratingDesc(true);
-        try {
-            const prompt = `
-                Eres un experto copywriter de eventos musicales. 
-                Mejora la siguiente descripción de un anuncio para buscar músicos.
-                
-                REGLAS:
-                1. Mantén TODOS los detalles originales (géneros, requisitos, ubicación, caché si se menciona).
-                2. Hazlo sonar profesional, atractivo y claro.
-                3. No inventes datos que no estén en el texto original (como fecha u hora si no se dicen).
-                4. Usa un tono cercano pero profesional.
-                5. Devuelve SOLO el texto mejorado, sin introducciones ni comillas.
-
-                Texto original: "${data.description}"
-            `;
-
-            const enhancedText = await geminiFlash(prompt);
-            update('description', enhancedText.trim());
-            toast.success("Descripción mejorada con IA");
-        } catch (error) {
-            console.error("AI Error:", error);
-            toast.error("Error al conectar con la IA de Rodrigo.");
-        } finally {
-            setIsGeneratingDesc(false);
         }
     };
 
@@ -136,19 +99,7 @@ export default function Step2Talent({ data, update, onNext, onPrev }: StepProps)
 
             {/* Description */}
             <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                    <Label className="text-base text-white">Descripción del Bolo</Label>
-                    <Button
-                        variant="ghost"
-                        size="sm"
-                        onClick={enhanceDescription}
-                        disabled={isGeneratingDesc}
-                        className="text-brand-cyan hover:text-brand-cyan/80 hover:bg-brand-cyan/10 h-8 gap-2 text-xs"
-                    >
-                        {isGeneratingDesc ? <Sparkles className="w-3 h-3 animate-spin" /> : <Wand2 className="w-3 h-3" />}
-                        {isGeneratingDesc ? 'Mejorando...' : 'Mejorar con IA'}
-                    </Button>
-                </div>
+                <Label className="text-base text-white">Descripción del Bolo</Label>
                 <Textarea
                     value={data.description}
                     onChange={(e) => update('description', e.target.value)}

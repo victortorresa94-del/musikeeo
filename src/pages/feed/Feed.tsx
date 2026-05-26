@@ -354,6 +354,12 @@ export default function Feed() {
                         </button>
                     </div>
 
+                    {/* Demo banner */}
+                    <div className="bg-amber-500/10 border border-amber-500/30 text-amber-200 rounded-xl px-3 py-2 text-xs flex items-start gap-2">
+                        <span className="text-sm leading-none mt-0.5">ℹ️</span>
+                        <span>Estos son reels de muestra. Pronto verás contenido de la comunidad aquí.</span>
+                    </div>
+
                     {/* Show first 3 reels as feed cards */}
                     {MOCK_REELS.slice(0, 3).map(reel => (
                         <ReelFeedCard

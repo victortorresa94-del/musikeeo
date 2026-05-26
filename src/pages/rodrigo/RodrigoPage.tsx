@@ -35,7 +35,9 @@ export default function RodrigoPage() {
     ]);
     const [input, setInput] = useState('');
     const [isTyping, setIsTyping] = useState(false);
+    const [errorCount, setErrorCount] = useState(0);
     const messagesEndRef = useRef<HTMLDivElement>(null);
+    const isDegraded = errorCount >= 2;
 
     // Auto-scroll to bottom
     useEffect(() => {
@@ -57,9 +59,9 @@ export default function RodrigoPage() {
         setIsTyping(true);
 
         try {
-            // Generate response using DeepSeek
             const { response, newState } = await generateResponse(content, conversationState);
             setConversationState(newState);
+            setErrorCount(0);
 
             const aiMessage: Message = {
                 id: (Date.now() + 1).toString(),
@@ -72,10 +74,14 @@ export default function RodrigoPage() {
             setMessages(prev => [...prev, aiMessage]);
         } catch (error) {
             console.error('Error sending message:', error);
+            const newCount = errorCount + 1;
+            setErrorCount(newCount);
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: 'assistant',
-                content: 'Perdona, he tenido un problema técnico. ¿Puedes repetirme qué necesitas?',
+                content: newCount >= 2
+                    ? 'Rodrigo no está disponible ahora mismo. Por favor, inténtalo más tarde.'
+                    : 'Perdona, he tenido un problema técnico. ¿Puedes repetirme qué necesitas?',
                 timestamp: new Date(),
             };
             setMessages(prev => [...prev, errorMessage]);
@@ -298,11 +304,13 @@ export default function RodrigoPage() {
                                     <div className="size-10 rounded-full bg-primary/10 flex items-center justify-center border border-border overflow-hidden shrink-0">
                                         <img src={RODRIGO_AVATAR} alt="Rodrigo" className="w-full h-full object-cover" />
                                     </div>
-                                    <div className="absolute -bottom-0.5 -right-0.5 size-3 bg-green-500 rounded-full border-2 border-background" />
+                                    <div className={`absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-background ${isDegraded ? 'bg-red-500' : 'bg-green-500'}`} />
                                 </div>
                                 <div className="flex-1">
                                     <h3 className="text-sm font-bold text-foreground">Rodrigo</h3>
-                                    <p className="text-xs text-muted-foreground">AI Assistant</p>
+                                    <p className={`text-xs ${isDegraded ? 'text-red-400' : 'text-muted-foreground'}`}>
+                                        {isDegraded ? 'No disponible' : 'AI Assistant'}
+                                    </p>
                                 </div>
                                 <button
                                     onClick={() => setChatOpen(false)}
@@ -370,9 +378,9 @@ export default function RodrigoPage() {
                                             value={input}
                                             onChange={(e) => setInput(e.target.value)}
                                             onKeyDown={handleKeyDown}
-                                            placeholder="Escríbele a Rodrigo..."
-                                            className="flex-1 bg-transparent px-4 py-3 text-sm text-foreground placeholder-muted-foreground focus:outline-none"
-                                            disabled={isTyping}
+                                            placeholder={isDegraded ? 'Rodrigo no está disponible' : 'Escríbele a Rodrigo...'}
+                                            className="flex-1 bg-transparent px-4 py-3 text-sm text-foreground placeholder-muted-foreground focus:outline-none disabled:cursor-not-allowed"
+                                            disabled={isTyping || isDegraded}
                                         />
                                         <button className="p-3 text-muted-foreground hover:text-foreground transition-colors">
                                             <Mic size={18} />
@@ -380,7 +388,7 @@ export default function RodrigoPage() {
                                     </div>
                                     <button
                                         onClick={() => sendMessage(input)}
-                                        disabled={isTyping || !input.trim()}
+                                        disabled={isTyping || !input.trim() || isDegraded}
                                         className="h-10 w-10 flex items-center justify-center bg-primary text-primary-foreground rounded-xl hover:brightness-105 transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                                     >
                                         <ArrowUp size={20} />

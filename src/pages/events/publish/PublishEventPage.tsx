@@ -100,19 +100,14 @@ export default function PublishEventPage() {
         setIsPublishing(true);
 
         try {
-            console.log('Publishing event...', formData);
-
             let finalImage = formData.image;
 
             // 1. Upload Image if it's base64 (starts with data:)
             if (formData.image?.startsWith('data:')) {
                 try {
                     const file = dataURLtoFile(formData.image, `event-cover-${Date.now()}.jpg`);
-                    // Upload to storage: events/UID/filename
                     const path = `events/${user.uid}/${file.name}`;
-                    console.log('Uploading image to:', path);
                     finalImage = await storageService.uploadFile(file, path);
-                    console.log('Image uploaded:', finalImage);
                 } catch (uploadError) {
                     console.error("Image upload failed:", uploadError);
                     toast.error("Error al subir la imagen. Se usará una por defecto.");

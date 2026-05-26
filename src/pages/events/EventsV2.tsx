@@ -201,6 +201,7 @@ export default function EventsV2() {
 
     const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
+    const [usingMocks, setUsingMocks] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
     const [activeType, setActiveType] = useState('Todos');
     const [cityFilter, setCityFilter] = useState('');
@@ -210,9 +211,16 @@ export default function EventsV2() {
         const fetchEvents = async () => {
             try {
                 const allEvents = await eventService.getUpcomingEvents();
-                setEvents(allEvents.length > 0 ? allEvents : MOCK_EVENTS);
+                if (allEvents.length > 0) {
+                    setEvents(allEvents);
+                    setUsingMocks(false);
+                } else {
+                    setEvents(MOCK_EVENTS);
+                    setUsingMocks(true);
+                }
             } catch {
                 setEvents(MOCK_EVENTS);
+                setUsingMocks(true);
             } finally {
                 setLoading(false);
             }
@@ -276,6 +284,17 @@ export default function EventsV2() {
                         <Plus className="h-4 w-4" /> Publicar anuncio
                     </button>
                 </div>
+
+                {/* ── Demo banner ── */}
+                {usingMocks && (
+                    <div className="mb-6 bg-amber-500/10 border border-amber-500/30 text-amber-200 rounded-xl px-4 py-3 text-sm flex items-start gap-3">
+                        <span className="text-base leading-none mt-0.5">ℹ️</span>
+                        <div>
+                            <p className="font-semibold text-amber-100">Estos son eventos de ejemplo</p>
+                            <p className="text-xs text-amber-200/80 mt-0.5">Todavía no hay oportunidades reales publicadas. Sé el primero en <button onClick={() => navigate('/publicar')} className="underline font-semibold hover:text-amber-100">publicar un anuncio</button>.</p>
+                        </div>
+                    </div>
+                )}
 
                 {/* ── Search + filters ── */}
                 <div className="mb-6 space-y-3">

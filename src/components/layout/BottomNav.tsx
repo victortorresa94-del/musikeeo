@@ -1,5 +1,5 @@
 import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Rss, Compass, Calendar, ShoppingBag, Bot } from 'lucide-react';
+import { Home, Rss, Compass, Calendar, ShoppingBag } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { motion } from 'framer-motion';
 
@@ -16,7 +16,6 @@ const NAV_ITEMS: NavItem[] = [
   { icon: Compass,     label: 'Explorar',   path: '/discover'              },
   { icon: Calendar,    label: 'Eventos',    path: '/eventos'               },
   { icon: ShoppingBag, label: 'Mercado',    path: '/market'                },
-  { icon: Bot,         label: 'Rodrigo AI', path: '/rodrigo'               },
 ];
 
 export const BottomNav = () => {

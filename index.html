@@ -1,8 +1,34 @@
 <!doctype html>
-<html lang="en" class="dark">
+<html lang="es" class="dark">
 
 <head>
   <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+
+  <!-- Primary meta -->
+  <title>Musikeeo — Conecta. Crea. Suena.</title>
+  <meta name="description" content="La PWA que conecta músicos, técnicos de sonido, promotores y tiendas de instrumentos por toda España. Encuentra bolos, contrata talento y compra equipo en un solo sitio." />
+  <meta name="keywords" content="musicos, bandas, bolos, tecnicos de sonido, promotores, eventos musicales, marketplace musical, alquiler equipo, conciertos espana" />
+  <meta name="author" content="Musikeeo" />
+  <meta name="robots" content="index, follow" />
+  <link rel="canonical" href="https://musikeeo.com/" />
+
+  <!-- Open Graph -->
+  <meta property="og:type" content="website" />
+  <meta property="og:url" content="https://musikeeo.com/" />
+  <meta property="og:title" content="Musikeeo — Conecta. Crea. Suena." />
+  <meta property="og:description" content="La PWA que conecta músicos, técnicos, promotores y tiendas por toda España. Tu red de música en vivo." />
+  <meta property="og:image" content="https://musikeeo.com/logo-musikeeo.png" />
+  <meta property="og:site_name" content="Musikeeo" />
+  <meta property="og:locale" content="es_ES" />
+
+  <!-- Twitter -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="Musikeeo — Conecta. Crea. Suena." />
+  <meta name="twitter:description" content="La PWA que conecta músicos, técnicos, promotores y tiendas por toda España." />
+  <meta name="twitter:image" content="https://musikeeo.com/logo-musikeeo.png" />
+
+  <!-- Icons & fonts -->
   <link rel="icon" type="image/png" href="/logo-musikeeo.png?v=3" />
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -11,8 +37,6 @@
     rel="stylesheet">
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1"
     rel="stylesheet" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Musikeeo</title>
 
   <!-- PWA Configuration -->
   <link rel="manifest" href="/manifest.json" />
@@ -31,7 +55,6 @@
     if ("serviceWorker" in navigator) {
       window.addEventListener("load", () => {
         navigator.serviceWorker.register("/service-worker.js")
-          .then(() => console.log("✅ Service Worker activo"))
           .catch((err) => console.error("SW error:", err));
       });
     }

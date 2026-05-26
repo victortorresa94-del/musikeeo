@@ -41,17 +41,16 @@ service cloud.firestore {
     }
 
     // Applications Collection
+    // organizerId is denormalized into the doc on create so reads stay cheap
+    // (no nested get() into events). Applicant and organizer can both read.
     match /applications/{applicationId} {
-        // Anyone logged in can apply
-        allow create: if isAuthenticated() && request.resource.data.applicantId == request.auth.uid;
-        
-        // Applicant can read their own applications
-        allow read: if isOwner(resource.data.applicantId);
-        
-        // TODO: Allow Event Organizer to read applications for their events
-        // This usually requires a "get" call which costs money/performance, 
-        // so for now we ensure secure client-side filtering or use Cloud Functions for sensitive fetching.
-        // For MVP, if we want Organizer to see, we might need to broaden this or rely on a "participants" subcollection.
+        allow create: if isAuthenticated()
+            && request.resource.data.applicantId == request.auth.uid
+            && request.resource.data.organizerId is string;
+        allow read: if isOwner(resource.data.applicantId)
+            || isOwner(resource.data.organizerId);
+        // Only the organizer can accept / reject
+        allow update: if isOwner(resource.data.organizerId);
     }
     
 
