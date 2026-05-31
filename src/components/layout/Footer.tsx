@@ -1,4 +1,4 @@
-import { Facebook, Instagram, Twitter } from 'lucide-react';
+import { Instagram, Mail } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 export const Footer = () => {
@@ -15,48 +15,67 @@ export const Footer = () => {
                         <span className="font-heading font-bold text-xl">Musikeeo</span>
                     </Link>
                     <p className="text-muted-foreground text-sm leading-relaxed">
-                        Conectando el mejor talento musical con escenarios inolvidables. La plataforma líder en booking musical en Latinoamérica.
+                        Conectamos músicos, técnicos y promotores por toda España.
+                        <br />
+                        <span className="text-primary">Conecta. Crea. Suena.</span>
                     </p>
                 </div>
 
-                {/* Links Columns */}
+                {/* Descubrir */}
                 <div>
                     <h4 className="text-white font-bold mb-6 font-heading">Descubrir</h4>
                     <ul className="flex flex-col gap-3 text-muted-foreground text-sm">
-                        <li><Link to="/artistas" className="hover:text-primary transition-colors">Músicos</Link></li>
-                        <li><Link to="/sonido" className="hover:text-primary transition-colors">DJs y Sonido</Link></li>
-                        <li><Link to="/eventos" className="hover:text-primary transition-colors">Eventos</Link></li>
+                        <li><Link to="/discover" className="hover:text-primary transition-colors">Músicos y Técnicos</Link></li>
+                        <li><Link to="/eventos" className="hover:text-primary transition-colors">Eventos y Bolos</Link></li>
+                        <li><Link to="/market" className="hover:text-primary transition-colors">Mercado</Link></li>
                         <li><Link to="/rodrigo" className="hover:text-primary transition-colors">Rodrigo AI</Link></li>
                     </ul>
                 </div>
 
+                {/* Comunidad */}
                 <div>
-                    <h4 className="text-white font-bold mb-6 font-heading">Para Músicos</h4>
+                    <h4 className="text-white font-bold mb-6 font-heading">Tu cuenta</h4>
                     <ul className="flex flex-col gap-3 text-muted-foreground text-sm">
-                        <li><Link to="/registro-musico" className="hover:text-primary transition-colors">Crear Perfil</Link></li>
-                        <li><Link to="/recursos" className="hover:text-primary transition-colors">Recursos</Link></li>
-                        <li><Link to="/comunidad" className="hover:text-primary transition-colors">Comunidad</Link></li>
-                        <li><Link to="/exito" className="hover:text-primary transition-colors">Historias de Éxito</Link></li>
+                        <li><Link to="/register" className="hover:text-primary transition-colors">Crear cuenta</Link></li>
+                        <li><Link to="/login" className="hover:text-primary transition-colors">Iniciar sesión</Link></li>
+                        <li><Link to="/publicar" className="hover:text-primary transition-colors">Publicar un bolo</Link></li>
+                        <li><Link to="/market/create" className="hover:text-primary transition-colors">Vender o alquilar</Link></li>
                     </ul>
                 </div>
 
+                {/* Legal */}
                 <div>
-                    <h4 className="text-white font-bold mb-6 font-heading">Soporte</h4>
+                    <h4 className="text-white font-bold mb-6 font-heading">Legal</h4>
                     <ul className="flex flex-col gap-3 text-muted-foreground text-sm">
-                        <li><Link to="/ayuda" className="hover:text-primary transition-colors">Centro de Ayuda</Link></li>
-                        <li><Link to="/seguridad" className="hover:text-primary transition-colors">Confianza y Seguridad</Link></li>
-                        <li><Link to="/terminos" className="hover:text-primary transition-colors">Términos de Servicio</Link></li>
+                        <li><Link to="/aviso-legal" className="hover:text-primary transition-colors">Aviso legal</Link></li>
+                        <li><Link to="/terminos" className="hover:text-primary transition-colors">Términos y condiciones</Link></li>
                         <li><Link to="/privacidad" className="hover:text-primary transition-colors">Privacidad</Link></li>
+                        <li><Link to="/cookies" className="hover:text-primary transition-colors">Cookies</Link></li>
                     </ul>
                 </div>
             </div>
 
             <div className="max-w-[1200px] mx-auto pt-8 border-t border-white/5 flex flex-col md:flex-row justify-between items-center gap-4">
-                <p className="text-muted-foreground text-xs">© 2023 Musikeeo Inc. Todos los derechos reservados.</p>
-                <div className="flex gap-6">
-                    <a href="#" className="text-gray-400 hover:text-white transition-colors"><Facebook size={20} /></a>
-                    <a href="#" className="text-gray-400 hover:text-white transition-colors"><Instagram size={20} /></a>
-                    <a href="#" className="text-gray-400 hover:text-white transition-colors"><Twitter size={20} /></a>
+                <p className="text-muted-foreground text-xs text-center md:text-left">
+                    © {new Date().getFullYear()} Musikeeo · Hecho con <span className="text-primary">♥</span> en España
+                </p>
+                <div className="flex items-center gap-5">
+                    <a
+                        href="mailto:hola@musikeeo.com"
+                        className="text-gray-400 hover:text-primary transition-colors"
+                        aria-label="Email"
+                    >
+                        <Mail size={20} />
+                    </a>
+                    <a
+                        href="https://instagram.com/musikeeo"
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-gray-400 hover:text-primary transition-colors"
+                        aria-label="Instagram"
+                    >
+                        <Instagram size={20} />
+                    </a>
                 </div>
             </div>
         </footer>
