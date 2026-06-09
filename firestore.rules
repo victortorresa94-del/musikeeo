@@ -88,6 +88,16 @@ service cloud.firestore {
       allow update, delete: if isOwner(resource.data.userId);
     }
 
+    // Reports (DMCA/LSSI moderation queue) — users can create, only admins read
+    match /reports/{reportId} {
+      allow create: if isAuthenticated()
+        && request.resource.data.reporterId == request.auth.uid
+        && request.resource.data.targetType in ['listing', 'event', 'user', 'message']
+        && request.resource.data.targetId is string
+        && request.resource.data.reason is string;
+      allow read, update, delete: if false;  // admin via Firebase console
+    }
+
     // Default deny
     match /{document=**} {
       allow read, write: if false;

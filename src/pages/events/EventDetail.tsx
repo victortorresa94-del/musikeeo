@@ -10,6 +10,7 @@ import { Loader2 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
 import { applicationService, type ApplicationWithApplicant } from '../../services/applicationService';
+import ReportButton from '../../components/legal/ReportButton';
 
 export default function EventDetail() {
     const { id } = useParams();
@@ -332,6 +333,11 @@ export default function EventDetail() {
                             >
                                 Enviar Mensaje
                             </Button>
+                        )}
+                        {!isOrganizer && (
+                            <div className="pt-3 mt-3 border-t border-white/5 flex justify-end">
+                                <ReportButton targetType="event" targetId={event.id} variant="text" />
+                            </div>
                         )}
                     </div>
                 </div>

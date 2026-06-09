@@ -6,6 +6,7 @@ import { ArrowLeft, MapPin, Tag, MessageSquare, Share2, Loader2, Zap, X, CheckCi
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import type { Listing } from '../../types';
+import ReportButton from '../../components/legal/ReportButton';
 
 const TYPE_LABELS: Record<string, string> = {
     venta: 'VENTA', alquiler: 'ALQUILER', prestamo: 'PRÉSTAMO'
@@ -169,10 +170,11 @@ export default function ProductDetail() {
                                 <span className="font-bold text-foreground uppercase">{(item.userName || 'U').substring(0, 2)}</span>
                             )}
                         </div>
-                        <div>
+                        <div className="flex-1">
                             <p className="text-xs text-muted-foreground">Publicado por</p>
                             <p className="text-sm font-semibold text-foreground">{item.userName || 'Usuario'}</p>
                         </div>
+                        <ReportButton targetType="listing" targetId={item.id} />
                     </div>
                 </div>
             </div>
