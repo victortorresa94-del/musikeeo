@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { createUserWithEmailAndPassword, updateProfile } from 'firebase/auth';
+import { createUserWithEmailAndPassword, updateProfile, sendEmailVerification } from 'firebase/auth';
 import { auth, db } from '../../lib/firebase';
 import { doc, setDoc } from 'firebase/firestore';
 import { AuthLayout } from '../../layouts/AuthLayout';
@@ -67,6 +67,16 @@ export default function Register() {
             };
 
             await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
+
+            // Email de verificación (no bloqueante: si falla, seguimos al onboarding)
+            try {
+                await sendEmailVerification(firebaseUser, {
+                    url: `${window.location.origin}/home`,
+                    handleCodeInApp: false,
+                });
+            } catch (e) {
+                console.warn('sendEmailVerification failed:', e);
+            }
 
             // Navigate to onboarding
             navigate('/onboarding');

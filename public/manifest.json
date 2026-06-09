@@ -1,11 +1,16 @@
 {
-    "name": "Musikeeo",
+    "name": "Musikeeo — Conecta. Crea. Suena.",
     "short_name": "Musikeeo",
+    "description": "La red de música en vivo que conecta músicos, técnicos, salas y tiendas en España y Europa.",
+    "lang": "es",
+    "dir": "ltr",
     "start_url": "/",
+    "scope": "/",
     "display": "standalone",
     "orientation": "portrait",
-    "background_color": "#0A0A0A",
-    "theme_color": "#FFD84D",
+    "background_color": "#101010",
+    "theme_color": "#82FF1F",
+    "categories": ["music", "social", "lifestyle"],
     "icons": [
         {
             "src": "/icons/musikeeo-192.png",

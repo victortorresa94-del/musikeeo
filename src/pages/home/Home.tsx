@@ -218,20 +218,38 @@ const Home = () => {
 
                 {/* ── Footer ───────────────────────────────────────────── */}
                 <footer className="border-t border-border bg-[#0a0a0a] px-4 md:px-10 pt-12 pb-8">
-                    <div className="max-w-5xl mx-auto flex flex-col md:flex-row md:items-start md:justify-between gap-8">
+                    <div className="max-w-5xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8">
                         <div className="max-w-xs">
                             <span className="font-heading font-black text-xl text-foreground">Musikeeo</span>
                             <p className="text-primary text-sm font-semibold mt-1">Conecta. Crea. Suena.</p>
                             <p className="text-muted-foreground text-sm mt-3 leading-relaxed">
                                 La red de música en vivo que conecta músicos, técnicos, salas y tiendas.
                             </p>
+                            <a
+                                href="mailto:hola@musikeeo.com"
+                                className="text-muted-foreground text-sm mt-3 inline-block hover:text-primary transition-colors"
+                            >
+                                hola@musikeeo.com
+                            </a>
                         </div>
-                        <nav className="flex flex-wrap gap-x-8 gap-y-3 text-sm">
-                            <Link to="/discover" className="text-muted-foreground hover:text-primary transition-colors">Explorar</Link>
-                            <Link to="/market" className="text-muted-foreground hover:text-primary transition-colors">Marketplace</Link>
-                            <Link to="/eventos" className="text-muted-foreground hover:text-primary transition-colors">Eventos</Link>
-                            <Link to="/rodrigo" className="text-muted-foreground hover:text-primary transition-colors">Rodrigo AI</Link>
-                        </nav>
+                        <div>
+                            <p className="text-foreground text-xs font-bold uppercase tracking-wide mb-3">Explora</p>
+                            <nav className="flex flex-col gap-2 text-sm">
+                                <Link to="/discover" className="text-muted-foreground hover:text-primary transition-colors">Buscar artistas</Link>
+                                <Link to="/market" className="text-muted-foreground hover:text-primary transition-colors">Marketplace</Link>
+                                <Link to="/eventos" className="text-muted-foreground hover:text-primary transition-colors">Eventos</Link>
+                                <Link to="/rodrigo" className="text-muted-foreground hover:text-primary transition-colors">Rodrigo AI</Link>
+                            </nav>
+                        </div>
+                        <div>
+                            <p className="text-foreground text-xs font-bold uppercase tracking-wide mb-3">Legal</p>
+                            <nav className="flex flex-col gap-2 text-sm">
+                                <Link to="/aviso-legal" className="text-muted-foreground hover:text-primary transition-colors">Aviso legal</Link>
+                                <Link to="/privacidad" className="text-muted-foreground hover:text-primary transition-colors">Privacidad</Link>
+                                <Link to="/cookies" className="text-muted-foreground hover:text-primary transition-colors">Cookies</Link>
+                                <Link to="/terminos" className="text-muted-foreground hover:text-primary transition-colors">Términos</Link>
+                            </nav>
+                        </div>
                     </div>
                     <div className="max-w-5xl mx-auto mt-10 pt-6 border-t border-border flex flex-col sm:flex-row justify-between items-center gap-3 text-xs text-muted-foreground">
                         <p>© {new Date().getFullYear()} Musikeeo. Todos los derechos reservados.</p>

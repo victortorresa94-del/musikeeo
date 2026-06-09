@@ -43,13 +43,15 @@ const Discover = lazy(() => import('./pages/discover/Discover'));
 const Reels = lazy(() => import('./pages/reels/Reels'));
 const RodrigoPage = lazy(() => import('./pages/rodrigo/RodrigoPage'));
 
-// Legal Pages (lazy)
-const Privacy = lazy(() => import('./pages/legal/Privacy'));
-const Terms = lazy(() => import('./pages/legal/Terms'));
+// Legal pages (public, no layout)
 const LegalNotice = lazy(() => import('./pages/legal/LegalNotice'));
-const CookiesPolicy = lazy(() => import('./pages/legal/CookiesPolicy'));
+const PrivacyPolicy = lazy(() => import('./pages/legal/PrivacyPolicy'));
+const TermsOfService = lazy(() => import('./pages/legal/TermsOfService'));
+const CookiePolicy = lazy(() => import('./pages/legal/CookiePolicy'));
 
-const CookieBanner = lazy(() => import('./components/legal/CookieBanner'));
+const CookieBanner = lazy(() => import('./components/CookieBanner'));
+const Analytics = lazy(() => import('./components/Analytics'));
+const EmailVerificationBanner = lazy(() => import('./components/EmailVerificationBanner'));
 
 // Artist/Panel Lazy Imports
 const ArtistProfilePage = lazy(() => import('./pages/artist/ArtistProfilePage'));
@@ -169,13 +171,13 @@ function App() {
               <Route path="/artistas" element={<Discover />} />
               <Route path="/sonido" element={<Discover />} />
               <Route path="/rodrigo" element={<RodrigoPage />} />
-              <Route path="/publicar" element={<PublishEventPage />} />
 
-              {/* Legal Pages (public) */}
-              <Route path="/privacidad" element={<Privacy />} />
-              <Route path="/terminos" element={<Terms />} />
+              {/* Legal — públicas, sin layout */}
               <Route path="/aviso-legal" element={<LegalNotice />} />
-              <Route path="/cookies" element={<CookiesPolicy />} />
+              <Route path="/privacidad" element={<PrivacyPolicy />} />
+              <Route path="/terminos" element={<TermsOfService />} />
+              <Route path="/cookies" element={<CookiePolicy />} />
+              <Route path="/publicar" element={<PublishEventPage />} />
 
               {/* Public Artist Profile */}
               <Route path="/artist/:slug" element={<ArtistProfilePage />} />
@@ -246,6 +248,12 @@ function App() {
           </Suspense>
           <Suspense fallback={null}>
             <CookieBanner />
+          </Suspense>
+          <Suspense fallback={null}>
+            <Analytics />
+          </Suspense>
+          <Suspense fallback={null}>
+            <EmailVerificationBanner />
           </Suspense>
           <Toaster position="top-center" richColors />
         </Router>
