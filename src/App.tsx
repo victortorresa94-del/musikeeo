@@ -13,7 +13,6 @@ function ThemeInit() {
   }, []);
   return null;
 }
-import { EventsLayout } from './layouts/EventsLayout';
 import { PanelLayout } from './layouts/PanelLayout';
 import SplashScreen from './components/layout/SplashScreen';
 const RodrigoFloatingChat = lazy(() =>
@@ -43,6 +42,14 @@ const Onboarding = lazy(() => import('./pages/onboarding/Onboarding'));
 const Discover = lazy(() => import('./pages/discover/Discover'));
 const Reels = lazy(() => import('./pages/reels/Reels'));
 const RodrigoPage = lazy(() => import('./pages/rodrigo/RodrigoPage'));
+
+// Legal Pages (lazy)
+const Privacy = lazy(() => import('./pages/legal/Privacy'));
+const Terms = lazy(() => import('./pages/legal/Terms'));
+const LegalNotice = lazy(() => import('./pages/legal/LegalNotice'));
+const CookiesPolicy = lazy(() => import('./pages/legal/CookiesPolicy'));
+
+const CookieBanner = lazy(() => import('./components/legal/CookieBanner'));
 
 // Artist/Panel Lazy Imports
 const ArtistProfilePage = lazy(() => import('./pages/artist/ArtistProfilePage'));
@@ -164,13 +171,14 @@ function App() {
               <Route path="/rodrigo" element={<RodrigoPage />} />
               <Route path="/publicar" element={<PublishEventPage />} />
 
+              {/* Legal Pages (public) */}
+              <Route path="/privacidad" element={<Privacy />} />
+              <Route path="/terminos" element={<Terms />} />
+              <Route path="/aviso-legal" element={<LegalNotice />} />
+              <Route path="/cookies" element={<CookiesPolicy />} />
+
               {/* Public Artist Profile */}
               <Route path="/artist/:slug" element={<ArtistProfilePage />} />
-
-              {/* Events V2 */}
-              <Route element={<EventsLayout />}>
-                <Route path="/eventos2" element={<EventsV2 />} />
-              </Route>
 
               <Route element={<RequireAnon />}>
                 <Route path="/login" element={<Login />} />
@@ -235,6 +243,9 @@ function App() {
           </Suspense>
           <Suspense fallback={null}>
             <RodrigoFloatingChat />
+          </Suspense>
+          <Suspense fallback={null}>
+            <CookieBanner />
           </Suspense>
           <Toaster position="top-center" richColors />
         </Router>

@@ -22,6 +22,9 @@ const registerSchema = z.object({
     name: z.string().min(2, 'El nombre debe tener al menos 2 caracteres'),
     email: z.string().email('Introduce un email válido'),
     password: z.string().min(6, 'La contraseña debe tener al menos 6 caracteres'),
+    acceptTerms: z.boolean().refine(v => v === true, {
+        message: 'Debes aceptar los términos y la política de privacidad'
+    })
 });
 
 type RegisterForm = z.infer<typeof registerSchema>;
@@ -89,7 +92,7 @@ export default function Register() {
                     <Label htmlFor="name">Nombre Completo</Label>
                     <Input
                         id="name"
-                        placeholder="Tu nombre artísitico o real"
+                        placeholder="Tu nombre artístico o real"
                         {...register('name')}
                         className={errors.name ? 'border-destructive' : ''}
                     />
@@ -120,7 +123,23 @@ export default function Register() {
                     {errors.password && <p className="text-destructive text-xs">{errors.password.message}</p>}
                 </div>
 
-                {/* Removed role selection - now handled in Onboarding */}
+                <div className="pt-1">
+                    <label className="flex items-start gap-2 text-xs text-muted-foreground cursor-pointer">
+                        <input
+                            type="checkbox"
+                            {...register('acceptTerms')}
+                            className="mt-0.5 h-4 w-4 rounded border-border bg-muted accent-primary cursor-pointer"
+                        />
+                        <span>
+                            He leído y acepto los{' '}
+                            <Link to="/terminos" target="_blank" className="text-primary underline">términos</Link>{' '}
+                            y la{' '}
+                            <Link to="/privacidad" target="_blank" className="text-primary underline">política de privacidad</Link>.
+                            Confirmo que tengo al menos 14 años.
+                        </span>
+                    </label>
+                    {errors.acceptTerms && <p className="text-destructive text-xs mt-1">{errors.acceptTerms.message}</p>}
+                </div>
 
                 <Button type="submit" className="w-full" disabled={isLoading}>
                     {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}

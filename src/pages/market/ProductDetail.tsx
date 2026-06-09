@@ -2,10 +2,11 @@ import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../components/ui/button';
-import { ArrowLeft, MapPin, Tag, MessageSquare, Share2, Loader2, Zap, Phone, X, CheckCircle2 } from 'lucide-react';
+import { ArrowLeft, MapPin, Tag, MessageSquare, Share2, Loader2, Zap, X, CheckCircle2 } from 'lucide-react';
 import { doc, getDoc } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import type { Listing } from '../../types';
+import ReportButton from '../../components/legal/ReportButton';
 
 const TYPE_LABELS: Record<string, string> = {
     venta: 'VENTA', alquiler: 'ALQUILER', prestamo: 'PRÉSTAMO'
@@ -169,10 +170,11 @@ export default function ProductDetail() {
                                 <span className="font-bold text-foreground uppercase">{(item.userName || 'U').substring(0, 2)}</span>
                             )}
                         </div>
-                        <div>
+                        <div className="flex-1">
                             <p className="text-xs text-muted-foreground">Publicado por</p>
                             <p className="text-sm font-semibold text-foreground">{item.userName || 'Usuario'}</p>
                         </div>
+                        <ReportButton targetType="listing" targetId={item.id} />
                     </div>
                 </div>
             </div>
@@ -215,26 +217,10 @@ export default function ProductDetail() {
                                         <MessageSquare size={18} className="text-primary" />
                                     </div>
                                     <div>
-                                        <p className="text-foreground font-medium text-sm">Mensaje en Musikeeo</p>
-                                        <p className="text-muted-foreground text-xs">Escríbele desde la plataforma</p>
+                                        <p className="text-foreground font-medium text-sm">Enviar mensaje</p>
+                                        <p className="text-muted-foreground text-xs">Conversa con el vendedor en Musikeeo</p>
                                     </div>
                                 </button>
-                                {item.userWhatsApp && (
-                                    <a
-                                        href={`https://wa.me/${item.userWhatsApp}?text=${encodeURIComponent(`Hola, vi tu anuncio "${item.title}" en Musikeeo 🎸`)}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-3 p-4 rounded-xl bg-muted border border-border hover:border-green-500/50 transition-colors"
-                                    >
-                                        <div className="p-2 rounded-lg bg-green-500/20">
-                                            <Phone size={18} className="text-green-400" />
-                                        </div>
-                                        <div>
-                                            <p className="text-foreground font-medium text-sm">WhatsApp</p>
-                                            <p className="text-muted-foreground text-xs">Contacto directo</p>
-                                        </div>
-                                    </a>
-                                )}
                             </div>
                         </motion.div>
                     </motion.div>

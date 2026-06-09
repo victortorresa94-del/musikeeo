@@ -6,9 +6,10 @@ import {
     addDoc,
     updateDoc,
     doc,
+    setDoc,
+    getDoc,
     onSnapshot,
     serverTimestamp,
-    getDocs,
     limit
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
@@ -93,33 +94,27 @@ export const chatService = {
         });
     },
 
-    // Start or get existing chat
+    // Start or get existing chat — idempotent: deterministic doc ID from sorted participants
+    // prevents the race where two simultaneous opens create two chats for the same pair.
     createChat: async (currentUserId: string, targetUserId: string) => {
-        // Check if chat already exists
-        // (For MVP we might just create new or suboptimal query)
-        // Ideally we keep a composite ID or query for both participants
+        if (currentUserId === targetUserId) {
+            throw new Error("Cannot create a chat with yourself");
+        }
 
-        // Simple hack: Check common chats (client-side filter for MVP robustness or complex query)
-        const q = query(
-            collection(db, 'chats'),
-            where('participants', 'array-contains', currentUserId)
-        );
+        const chatId = [currentUserId, targetUserId].sort().join('_');
+        const chatRef = doc(db, 'chats', chatId);
 
-        const snapshot = await getDocs(q);
-        const existing = snapshot.docs.find(d => {
-            const data = d.data();
-            return data.participants.includes(targetUserId);
-        });
+        // Try to read first; if exists, return its ID directly (cheap, one read)
+        const existing = await getDoc(chatRef);
+        if (existing.exists()) return chatId;
 
-        if (existing) return existing.id;
-
-        // Create new
-        const docRef = await addDoc(collection(db, 'chats'), {
+        // Create with merge=true so concurrent calls converge to the same doc
+        await setDoc(chatRef, {
             participants: [currentUserId, targetUserId],
             updatedAt: Date.now(),
             createdAt: serverTimestamp()
-        });
+        }, { merge: true });
 
-        return docRef.id;
+        return chatId;
     }
 };

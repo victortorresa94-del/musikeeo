@@ -10,6 +10,7 @@ import { Loader2 } from 'lucide-react';
 
 import { useAuth } from '../../context/AuthContext';
 import { applicationService, type ApplicationWithApplicant } from '../../services/applicationService';
+import ReportButton from '../../components/legal/ReportButton';
 
 export default function EventDetail() {
     const { id } = useParams();
@@ -119,7 +120,7 @@ export default function EventDetail() {
         return (
             <div className="text-center py-20 animate-fade-in-up">
                 <h2 className="text-2xl font-bold text-white mb-4">Evento no encontrado</h2>
-                <Button onClick={() => navigate('/events')}>Volver a Eventos</Button>
+                <Button onClick={() => navigate('/eventos')}>Volver a Eventos</Button>
             </div>
         );
     }
@@ -332,6 +333,11 @@ export default function EventDetail() {
                             >
                                 Enviar Mensaje
                             </Button>
+                        )}
+                        {!isOrganizer && (
+                            <div className="pt-3 mt-3 border-t border-white/5 flex justify-end">
+                                <ReportButton targetType="event" targetId={event.id} variant="text" />
+                            </div>
                         )}
                     </div>
                 </div>

@@ -44,7 +44,6 @@ export default function CreateListing() {
     const [condition, setCondition] = useState<ListingCondition>('bueno');
     const [description, setDescription] = useState('');
     const [location, setLocation] = useState(userProfile?.location || '');
-    const [whatsApp, setWhatsApp] = useState('');
     const [urgent, setUrgent] = useState(false);
     const [submitting, setSubmitting] = useState(false);
     const [error, setError] = useState('');
@@ -94,7 +93,6 @@ export default function CreateListing() {
                 userName: userProfile?.displayName || user.displayName || 'Usuario',
                 userAvatar: userProfile?.photoURL || user.photoURL || null,
                 userLocation: location,
-                userWhatsApp: whatsApp || null,
                 title: title.trim(),
                 description: description.trim(),
                 category,
@@ -265,17 +263,6 @@ export default function CreateListing() {
                         value={location}
                         onChange={e => setLocation(e.target.value)}
                         placeholder="Ej: Barcelona, España"
-                        className="bg-muted border-border text-foreground"
-                    />
-                </div>
-
-                {/* WhatsApp */}
-                <div className="space-y-1">
-                    <label className="text-sm font-medium text-foreground">WhatsApp <span className="text-gray-500 font-normal">(opcional)</span></label>
-                    <Input
-                        value={whatsApp}
-                        onChange={e => setWhatsApp(e.target.value)}
-                        placeholder="34612345678 (sin + ni espacios)"
                         className="bg-muted border-border text-foreground"
                     />
                 </div>

@@ -58,7 +58,7 @@ export const Navbar = () => {
 
             // Redirect to appropriate dashboard
             if (mode === 'musician') navigate('/panel/perfil');
-            else if (mode === 'organizer') navigate('/eventos2');
+            else if (mode === 'organizer') navigate('/eventos');
             else if (mode === 'provider') navigate('/panel/servicios');
 
             setIsUserMenuOpen(false);
@@ -79,7 +79,7 @@ export const Navbar = () => {
             ];
         } else if (mode === 'organizer') {
             return [
-                { icon: Calendar, label: 'Mis Eventos', href: '/eventos2' },
+                { icon: Calendar, label: 'Mis Eventos', href: '/eventos' },
                 { icon: Zap, label: 'Crear Evento', href: '/eventos/crear' },
             ];
         } else {
@@ -115,7 +115,7 @@ export const Navbar = () => {
                     <Link to="/sonido" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                         Proveedores
                     </Link>
-                    <Link to="/eventos2" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                    <Link to="/eventos" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
                         Eventos
                     </Link>
                 </nav>
@@ -244,7 +244,7 @@ export const Navbar = () => {
                 <div className="md:hidden bg-background absolute top-20 left-0 w-full h-[calc(100vh-80px)] p-6 flex flex-col gap-6 overflow-y-auto">
                     <Link to="/artistas" className="text-2xl font-heading font-bold text-foreground" onClick={() => setIsMobileMenuOpen(false)}>Músicos</Link>
                     <Link to="/sonido" className="text-2xl font-heading font-bold text-foreground" onClick={() => setIsMobileMenuOpen(false)}>Proveedores</Link>
-                    <Link to="/eventos2" className="text-2xl font-heading font-bold text-foreground" onClick={() => setIsMobileMenuOpen(false)}>Eventos</Link>
+                    <Link to="/eventos" className="text-2xl font-heading font-bold text-foreground" onClick={() => setIsMobileMenuOpen(false)}>Eventos</Link>
 
                     <hr className="border-border my-2" />
 

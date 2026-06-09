@@ -51,34 +51,33 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
             const userRef = doc(db, "users", uid);
             const userSnap = await getDoc(userRef);
             if (userSnap.exists()) {
-                setUserProfile(userSnap.data() as User);
+                const profile = userSnap.data() as User;
+                setUserProfile(profile);
+                writeCachedProfile(profile);
             } else {
                 setUserProfile(null);
             }
         } catch (error: any) {
             console.error("Error fetching user profile:", error);
 
-            // FIX: Offline Fallback
-            // If offline, we can't get the profile from Firestore.
-            // But we must NOT leave userProfile as null, or the app will redirect to Onboarding loops.
+            // Offline fallback: use cached profile if we have it, else null (forces re-auth when back online)
             if (error?.message?.includes("offline") || error?.code === 'unavailable') {
-                console.warn("Offline detected in AuthContext. Using fallback profile.");
-
-                // Try to recover from localStorage if possible (optional enhancement)
-                // For now, construct a minimal valid profile from the known Auth User
-                // We need the User object here, but it might not be set in state yet if this is called from onAuthStateChanged.
-                // However, onAuthStateChanged passes 'authUser'. We might need to pass it to this function or use current state.
-                // Let's rely on the fact that if we are here, we have a UID.
-
+                const cached = readCachedProfile(uid);
+                if (cached) {
+                    setUserProfile(cached);
+                    return;
+                }
+                // No cache + offline: minimal placeholder that does NOT assume onboarding complete.
+                // RequireAuthCompleted will redirect to /onboarding, where Onboarding shows offline error.
                 const fallbackProfile: User = {
                     uid,
-                    displayName: authUserFallback?.displayName || 'Usuario (Offline)', // We might update this if we have the auth user object available
-                    email: authUserFallback?.email || '', // We don't have email handy here easily without passing it, but it's optional in some views
+                    displayName: authUserFallback?.displayName || 'Usuario',
+                    email: authUserFallback?.email || '',
                     photoURL: authUserFallback?.photoURL || undefined,
                     createdAt: new Date().toISOString(),
-                    onboardingCompleted: true, // ASSUME COMPLETED to bypass onboarding loop
+                    onboardingCompleted: false,
                     primaryMode: 'musician',
-                    activeModes: { musician: true, organizer: false, provider: false }
+                    activeModes: { musician: false, organizer: false, provider: false }
                 };
                 setUserProfile(fallbackProfile);
                 return;
@@ -86,6 +85,25 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
             setUserProfile(null);
         }
+    };
+
+    const PROFILE_CACHE_KEY = (uid: string) => `musikeeo-profile-${uid}`;
+
+    const writeCachedProfile = (profile: User) => {
+        try {
+            localStorage.setItem(PROFILE_CACHE_KEY(profile.uid), JSON.stringify(profile));
+        } catch { /* quota or disabled — ignore */ }
+    };
+
+    const readCachedProfile = (uid: string): User | null => {
+        try {
+            const raw = localStorage.getItem(PROFILE_CACHE_KEY(uid));
+            return raw ? JSON.parse(raw) as User : null;
+        } catch { return null; }
+    };
+
+    const clearCachedProfile = (uid: string) => {
+        try { localStorage.removeItem(PROFILE_CACHE_KEY(uid)); } catch { /* ignore */ }
     };
 
     const loginWithGoogle = async () => {
@@ -126,10 +144,18 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     };
 
     const logout = async () => {
+        const uidToClear = user?.uid;
         try {
             await signOut(auth);
             setUser(null);
             setUserProfile(null);
+
+            // Cleanup user-scoped storage to avoid leaking state on shared devices
+            try {
+                sessionStorage.removeItem('rodrigo_chat_messages');
+                sessionStorage.removeItem('rodrigo_chat_state');
+                if (uidToClear) clearCachedProfile(uidToClear);
+            } catch { /* storage disabled — ignore */ }
         } catch (error) {
             console.error("Error signing out", error);
         }
