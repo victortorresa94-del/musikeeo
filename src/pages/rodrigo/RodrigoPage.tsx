@@ -232,7 +232,7 @@ export default function RodrigoPage() {
                             <h2 className="text-3xl font-bold tracking-tight mb-2">Cómo puedo ayudarte</h2>
                             <p className="text-muted-foreground">Tu asistente integral para eventos inolvidables.</p>
                         </div>
-                        <a href="/eventos2" className="text-primary text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all">
+                        <a href="/eventos" className="text-primary text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all">
                             Ver todas las funciones <ArrowRight size={16} />
                         </a>
                     </div>

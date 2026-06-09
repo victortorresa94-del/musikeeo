@@ -40,7 +40,7 @@ export default function Login() {
                 // TODO: Update this when specific mode routes are set up
                 if (userProfile.primaryMode === 'musician') navigate('/panel/perfil');
                 else if (userProfile.primaryMode === 'provider') navigate('/panel/servicios'); // Pending provider
-                else if (userProfile.primaryMode === 'organizer') navigate('/eventos2'); // Pending organizer
+                else if (userProfile.primaryMode === 'organizer') navigate('/eventos'); // Pending organizer
                 else navigate('/');
             } else {
                 navigate('/onboarding');
@@ -137,6 +137,13 @@ export default function Login() {
                 </svg>
                 Google
             </Button>
+
+            <p className="text-[11px] text-muted-foreground text-center mt-3 leading-relaxed">
+                Al iniciar sesión aceptas los{' '}
+                <Link to="/terminos" className="text-primary hover:underline">términos</Link>{' '}
+                y la{' '}
+                <Link to="/privacidad" className="text-primary hover:underline">política de privacidad</Link>.
+            </p>
 
             {import.meta.env.DEV && (
                 <Button

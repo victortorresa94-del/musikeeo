@@ -88,7 +88,7 @@ export default function PublishEventPage() {
 
     const prevStep = () => {
         if (formData.step > 1) updateField('step', formData.step - 1);
-        else navigate('/eventos2');
+        else navigate('/eventos');
     };
 
     const handlePublish = async () => {

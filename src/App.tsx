@@ -13,7 +13,6 @@ function ThemeInit() {
   }, []);
   return null;
 }
-import { EventsLayout } from './layouts/EventsLayout';
 import { PanelLayout } from './layouts/PanelLayout';
 import SplashScreen from './components/layout/SplashScreen';
 const RodrigoFloatingChat = lazy(() =>
@@ -180,11 +179,6 @@ function App() {
 
               {/* Public Artist Profile */}
               <Route path="/artist/:slug" element={<ArtistProfilePage />} />
-
-              {/* Events V2 */}
-              <Route element={<EventsLayout />}>
-                <Route path="/eventos2" element={<EventsV2 />} />
-              </Route>
 
               <Route element={<RequireAnon />}>
                 <Route path="/login" element={<Login />} />

@@ -61,7 +61,7 @@ export const Onboarding = () => {
 
     const navigateBasedOnRole = (mode?: UserMode) => {
         if (mode === 'musician') navigate('/panel/perfil');
-        else if (mode === 'organizer') navigate('/eventos2'); // Todo panel organization
+        else if (mode === 'organizer') navigate('/eventos'); // Todo panel organization
         else if (mode === 'provider') navigate('/panel/servicios');
         else navigate('/');
     };
