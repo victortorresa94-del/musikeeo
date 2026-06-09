@@ -167,7 +167,7 @@ export default function CreateEvent() {
                 price: formData.budget ? parseFloat(formData.budget) : 0, // Mapping budget to price/budget
                 tags: formData.genres
             });
-            navigate('/events');
+            navigate('/eventos');
         } catch (error) {
             console.error("Error creating event:", error);
         } finally {

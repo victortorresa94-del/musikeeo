@@ -119,7 +119,7 @@ export default function EventDetail() {
         return (
             <div className="text-center py-20 animate-fade-in-up">
                 <h2 className="text-2xl font-bold text-white mb-4">Evento no encontrado</h2>
-                <Button onClick={() => navigate('/events')}>Volver a Eventos</Button>
+                <Button onClick={() => navigate('/eventos')}>Volver a Eventos</Button>
             </div>
         );
     }

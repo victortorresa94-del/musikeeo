@@ -5,7 +5,7 @@ import {
     getDocs, startAfter, type QueryDocumentSnapshot
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
-import { Search, Plus, Zap, MapPin, MessageSquare, Phone, X, SlidersHorizontal } from 'lucide-react';
+import { Search, Plus, Zap, MapPin, MessageSquare, X, SlidersHorizontal } from 'lucide-react';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -40,14 +40,14 @@ const PAGE_SIZE = 20;
 
 // Mock listings shown when collection is empty
 const MOCK_LISTINGS: Listing[] = [
-    { id: 'mock1', userId: 'mock', userName: 'Carlos G.',     userLocation: 'Barcelona, España', userWhatsApp: undefined,    title: 'Fender Stratocaster American Standard 2019',     description: 'Excelente estado, con funda original y correa. Apenas tocada.',        category: 'guitarras', condition: 'como_nuevo', type: 'venta',    price: 850,  urgent: false, available: true, images: ['/images/market/fender_stratocaster_1768143437660.png'],   createdAt: '', updatedAt: '' },
-    { id: 'mock2', userId: 'mock', userName: 'Pro Audio BCN', userLocation: 'Barcelona, España', userWhatsApp: '34612345678', title: 'Sistema PA QSC K12.2 + Subwoofer KSub',          description: 'Alquiler por día o semana. Montaje incluido en zona BCN.',             category: 'pa_sonido', condition: 'bueno',     type: 'alquiler', price: 120,  priceUnit: 'dia', urgent: true,  available: true, images: ['/images/market/guitar_amplifier_1768143723681.png'],     createdAt: '', updatedAt: '' },
-    { id: 'mock3', userId: 'mock', userName: 'Ana M.',        userLocation: 'Madrid, España',    userWhatsApp: undefined,    title: 'Korg Minilogue XD — Sintetizador analógico',     description: 'En perfectas condiciones. Incluye fuente de alimentación.',            category: 'teclados',  condition: 'como_nuevo', type: 'venta',    price: 480,  urgent: false, available: true, images: ['/images/market/keyboard_synth_1768143696161.png'],       createdAt: '', updatedAt: '' },
-    { id: 'mock4', userId: 'mock', userName: 'Drum Studio',   userLocation: 'Valencia, España',  userWhatsApp: '34698765432', title: 'Pearl Export 5 piezas — Batería completa',       description: 'Batería de estudio. Disponible para préstamo a grupos en ensayo.',     category: 'bateria',   condition: 'bueno',     type: 'prestamo', price: 0,    urgent: false, available: true, images: ['/images/market/drum_kit_1768143481232.png'],             createdAt: '', updatedAt: '' },
-    { id: 'mock5', userId: 'mock', userName: 'Miguel R.',     userLocation: 'Sevilla, España',   userWhatsApp: undefined,    title: 'Gibson Les Paul Standard \'59 Reissue',          description: 'Guitarra eléctrica en perfecto estado. Con estuche original.',         category: 'guitarras', condition: 'bueno',     type: 'venta',    price: 2400, urgent: true,  available: true, images: ['/images/market/acoustic_guitar_1768143458560.png'],      createdAt: '', updatedAt: '' },
-    { id: 'mock6', userId: 'mock', userName: 'RecordingHouse',userLocation: 'Madrid, España',    userWhatsApp: '34677889900', title: 'Shure SM7dB + Interface Focusrite Scarlett 2i2', description: 'Kit completo para grabación vocal profesional. Alquiler por semana.', category: 'recording', condition: 'nuevo',     type: 'alquiler', price: 80,   priceUnit: 'semana', urgent: false, available: true, images: ['/images/market/microphone_pro_1768143562847.png'],       createdAt: '', updatedAt: '' },
-    { id: 'mock7', userId: 'mock', userName: 'BassGuru',      userLocation: 'Madrid, España',    userWhatsApp: undefined,    title: 'Bajo Fender Jazz Bass MIM 4 cuerdas',            description: 'Bajo en muy buen estado. Pastillas Fender Custom Shop.',              category: 'bajos',     condition: 'bueno',     type: 'venta',    price: 650,  urgent: false, available: true, images: ['/images/market/bass_guitar_1768143506123.png'],          createdAt: '', updatedAt: '' },
-    { id: 'mock8', userId: 'mock', userName: 'Audio Pro',     userLocation: 'Barcelona, España', userWhatsApp: '34699887766', title: 'Interfaz de Audio Universal Apollo Twin X',      description: 'Interfaz Thunderbolt con procesamiento UAD. Perfecto estado.',         category: 'recording', condition: 'como_nuevo', type: 'venta',    price: 950,  urgent: false, available: true, images: ['/images/market/audio_interface_1768143585622.png'],      createdAt: '', updatedAt: '' },
+    { id: 'mock1', userId: 'mock', userName: 'Carlos G.',     userLocation: 'Barcelona, España', title: 'Fender Stratocaster American Standard 2019',     description: 'Excelente estado, con funda original y correa. Apenas tocada.',        category: 'guitarras', condition: 'como_nuevo', type: 'venta',    price: 850,  urgent: false, available: true, images: ['/images/market/fender_stratocaster_1768143437660.png'],   createdAt: '', updatedAt: '' },
+    { id: 'mock2', userId: 'mock', userName: 'Pro Audio BCN', userLocation: 'Barcelona, España', title: 'Sistema PA QSC K12.2 + Subwoofer KSub',          description: 'Alquiler por día o semana. Montaje incluido en zona BCN.',             category: 'pa_sonido', condition: 'bueno',     type: 'alquiler', price: 120,  priceUnit: 'dia', urgent: true,  available: true, images: ['/images/market/guitar_amplifier_1768143723681.png'],     createdAt: '', updatedAt: '' },
+    { id: 'mock3', userId: 'mock', userName: 'Ana M.',        userLocation: 'Madrid, España',    title: 'Korg Minilogue XD — Sintetizador analógico',     description: 'En perfectas condiciones. Incluye fuente de alimentación.',            category: 'teclados',  condition: 'como_nuevo', type: 'venta',    price: 480,  urgent: false, available: true, images: ['/images/market/keyboard_synth_1768143696161.png'],       createdAt: '', updatedAt: '' },
+    { id: 'mock4', userId: 'mock', userName: 'Drum Studio',   userLocation: 'Valencia, España',  title: 'Pearl Export 5 piezas — Batería completa',       description: 'Batería de estudio. Disponible para préstamo a grupos en ensayo.',     category: 'bateria',   condition: 'bueno',     type: 'prestamo', price: 0,    urgent: false, available: true, images: ['/images/market/drum_kit_1768143481232.png'],             createdAt: '', updatedAt: '' },
+    { id: 'mock5', userId: 'mock', userName: 'Miguel R.',     userLocation: 'Sevilla, España',   title: 'Gibson Les Paul Standard \'59 Reissue',          description: 'Guitarra eléctrica en perfecto estado. Con estuche original.',         category: 'guitarras', condition: 'bueno',     type: 'venta',    price: 2400, urgent: true,  available: true, images: ['/images/market/acoustic_guitar_1768143458560.png'],      createdAt: '', updatedAt: '' },
+    { id: 'mock6', userId: 'mock', userName: 'RecordingHouse',userLocation: 'Madrid, España',    title: 'Shure SM7dB + Interface Focusrite Scarlett 2i2', description: 'Kit completo para grabación vocal profesional. Alquiler por semana.', category: 'recording', condition: 'nuevo',     type: 'alquiler', price: 80,   priceUnit: 'semana', urgent: false, available: true, images: ['/images/market/microphone_pro_1768143562847.png'],       createdAt: '', updatedAt: '' },
+    { id: 'mock7', userId: 'mock', userName: 'BassGuru',      userLocation: 'Madrid, España',    title: 'Bajo Fender Jazz Bass MIM 4 cuerdas',            description: 'Bajo en muy buen estado. Pastillas Fender Custom Shop.',              category: 'bajos',     condition: 'bueno',     type: 'venta',    price: 650,  urgent: false, available: true, images: ['/images/market/bass_guitar_1768143506123.png'],          createdAt: '', updatedAt: '' },
+    { id: 'mock8', userId: 'mock', userName: 'Audio Pro',     userLocation: 'Barcelona, España', title: 'Interfaz de Audio Universal Apollo Twin X',      description: 'Interfaz Thunderbolt con procesamiento UAD. Perfecto estado.',         category: 'recording', condition: 'como_nuevo', type: 'venta',    price: 950,  urgent: false, available: true, images: ['/images/market/audio_interface_1768143585622.png'],      createdAt: '', updatedAt: '' },
 ];
 
 export default function Market() {
@@ -395,26 +395,10 @@ export default function Market() {
                                         <MessageSquare size={18} className="text-primary" />
                                     </div>
                                     <div>
-                                        <p className="text-foreground font-medium text-sm">Mensaje en Musikeeo</p>
-                                        <p className="text-muted-foreground text-xs">Escríbele desde la plataforma</p>
+                                        <p className="text-foreground font-medium text-sm">Enviar mensaje</p>
+                                        <p className="text-muted-foreground text-xs">Conversa con el vendedor en Musikeeo</p>
                                     </div>
                                 </button>
-                                {contactListing.userWhatsApp && (
-                                    <a
-                                        href={`https://wa.me/${contactListing.userWhatsApp}?text=${encodeURIComponent(`Hola, vi tu anuncio "${contactListing.title}" en Musikeeo 🎸`)}`}
-                                        target="_blank"
-                                        rel="noopener noreferrer"
-                                        className="flex items-center gap-3 p-4 rounded-xl bg-muted border border-border hover:border-green-500/50 transition-colors"
-                                    >
-                                        <div className="p-2 rounded-lg bg-green-500/20">
-                                            <Phone size={18} className="text-green-400" />
-                                        </div>
-                                        <div>
-                                            <p className="text-foreground font-medium text-sm">WhatsApp</p>
-                                            <p className="text-muted-foreground text-xs">Contacto directo</p>
-                                        </div>
-                                    </a>
-                                )}
                             </div>
                         </motion.div>
                     </motion.div>

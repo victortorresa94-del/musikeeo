@@ -6,27 +6,27 @@ service firebase.storage {
     function isOwner(userId) {
       return request.auth != null && request.auth.uid == userId;
     }
-    function isImageUnder20MB() {
-      return request.resource.size < 20 * 1024 * 1024
-        && request.resource.contentType.matches('image/.*');
+    function isAllowedImage() {
+      return request.resource.size < 5 * 1024 * 1024
+        && request.resource.contentType.matches('image/(jpeg|png|webp|gif)');
     }
 
     // Artist profile photos and multimedia
     match /artists/{userId}/{allPaths=**} {
       allow read: if true;
-      allow write: if isOwner(userId) && (request.resource == null || isImageUnder20MB());
+      allow write: if isOwner(userId) && (request.resource == null || isAllowedImage());
     }
 
     // Marketplace listing images
     match /listings/{userId}/{allPaths=**} {
       allow read: if true;
-      allow write: if isOwner(userId) && (request.resource == null || isImageUnder20MB());
+      allow write: if isOwner(userId) && (request.resource == null || isAllowedImage());
     }
 
     // User profile photos
     match /users/{userId}/{allPaths=**} {
       allow read: if true;
-      allow write: if isOwner(userId) && (request.resource == null || isImageUnder20MB());
+      allow write: if isOwner(userId) && (request.resource == null || isAllowedImage());
     }
   }
 }
