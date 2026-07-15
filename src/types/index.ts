@@ -256,6 +256,7 @@ export interface Artist {
 
     // Settings
     isPublic: boolean;
+    acceptsHiring?: boolean; // Toggle "Disponible para contratar" (peer-to-peer)
     profileCompleteness: number; // 0-100
 
     // Timestamps
@@ -339,4 +340,65 @@ export interface Listing {
 
     createdAt: string;
     updatedAt: string;
+}
+
+// ============================================
+// Peer-to-peer hiring (músico → músico)
+// Colección Firestore: "gigCalls" + "gigCallApplications"
+// ============================================
+
+export type GigCallRole =
+    | 'voz' | 'guitarra' | 'bajo' | 'bateria' | 'teclado' | 'sax'
+    | 'trompeta' | 'violin' | 'cuerdas' | 'percusion' | 'dj' | 'productor' | 'otro';
+
+export type GigCallType =
+    | 'dep'        // sustitución puntual
+    | 'sesion'     // grabación
+    | 'colab'      // colaboración / feat
+    | 'tour'       // gira
+    | 'concierto'  // bolo único
+    | 'ensayo'
+    | 'otro';
+
+export type Compensation = 'remunerado' | 'split' | 'colaboracion';
+
+export interface GigCall {
+    id: string;
+    posterId: string;
+    posterName: string;
+    posterAvatar?: string;
+
+    title: string;         // máx 60
+    description: string;   // máx 500
+    role: GigCallRole;
+    type: GigCallType;
+    genres: string[];
+
+    date: string;          // ISO; '' si es fecha abierta
+    durationHours?: number;
+    location: string;      // ciudad
+    isRemote: boolean;
+
+    compensation: Compensation;
+    payment?: number;      // € cuando compensation === 'remunerado'
+
+    urgent: boolean;
+    available: boolean;    // false al cerrar
+    applicantCount?: number; // denormalizado para la card
+
+    createdAt: string;
+    updatedAt: string;
+    closedAt?: string;
+}
+
+export interface GigCallApplication {
+    id: string;
+    gigCallId: string;
+    applicantId: string;
+    applicantName: string;
+    applicantAvatar?: string;
+    message: string;       // máx 500
+    status: 'pending' | 'accepted' | 'rejected';
+    createdAt: string;
+    decidedAt?: string;
 }
