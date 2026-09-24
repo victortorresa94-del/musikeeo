@@ -1,4 +1,4 @@
-// Vercel Serverless Function — Rodrigo AI via OpenRouter
+// Vercel Serverless Function — Rodrigo AI via Kimi (Moonshot AI, API directa)
 // POST /api/chat  { message: string, history: {role, content}[] }
 
 const RODRIGO_SYSTEM_PROMPT = `
@@ -105,8 +105,10 @@ const MAX_MESSAGE_CHARS = 1000;
 const MAX_HISTORY_ITEMS = 20;
 const MAX_HISTORY_CHARS = 6000; // suma de contenidos en history
 
-// Modelo configurable desde Vercel (OPENROUTER_MODEL) sin tocar codigo.
-const MODEL = process.env.OPENROUTER_MODEL || 'moonshotai/kimi-k2';
+// API de Kimi (Moonshot AI), compatible con el formato OpenAI.
+// Modelo y endpoint configurables desde Vercel sin tocar codigo.
+const KIMI_BASE_URL = (process.env.KIMI_BASE_URL || 'https://api.moonshot.ai/v1').replace(/\/$/, '');
+const MODEL = process.env.KIMI_MODEL || 'kimi-k2-turbo-preview';
 const MAX_TOKENS = 800;
 
 const rateStore = new Map<string, { count: number; resetAt: number }>();
@@ -157,9 +159,9 @@ export default async function handler(req: any, res: any) {
     return res.status(429).json({ error: 'Too many requests', retryAfter: retryAfterSec });
   }
 
-  const apiKey = process.env.OPENROUTER_API_KEY;
+  const apiKey = process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY;
   if (!apiKey) {
-    console.error('OPENROUTER_API_KEY is not set');
+    console.error('KIMI_API_KEY is not set');
     return res.status(500).json({ error: 'API key not configured' });
   }
 
@@ -188,13 +190,11 @@ export default async function handler(req: any, res: any) {
   ];
 
   try {
-    const upstream = await fetch('https://openrouter.ai/api/v1/chat/completions', {
+    const upstream = await fetch(`${KIMI_BASE_URL}/chat/completions`, {
       method: 'POST',
       headers: {
         Authorization: `Bearer ${apiKey}`,
         'Content-Type': 'application/json',
-        'HTTP-Referer': 'https://musikeeo.com',
-        'X-Title': 'Musikeeo - Rodrigo',
       },
       body: JSON.stringify({
         model: MODEL,
@@ -205,8 +205,8 @@ export default async function handler(req: any, res: any) {
 
     if (!upstream.ok) {
       const errorText = await upstream.text();
-      console.error('OpenRouter error:', upstream.status, MODEL, errorText);
-      // 401 = clave, 402 = sin creditos, 400/404 = modelo invalido
+      console.error('Kimi error:', upstream.status, MODEL, errorText);
+      // 401 = clave, 429 = sin saldo/limite, 400/404 = modelo invalido
       return res.status(upstream.status).json({ error: errorText, status: upstream.status, model: MODEL });
     }
 

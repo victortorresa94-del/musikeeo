@@ -9,7 +9,7 @@ Tagline: "Conecta. Crea. Suena."
 - Frontend: React 19 + Vite + TypeScript
 - Styling: Tailwind CSS + Framer Motion
 - Backend: Firebase (Auth, Firestore, Functions, Storage)
-- AI: OpenRouter (moonshotai/kimi-k2) via Vercel serverless /api/chat
+- AI: Kimi (Moonshot AI, API directa) via Vercel serverless /api/chat
 - Deploy: Vercel → musikeeo.com (auto-deploy on push to `main`)
 - Repo: github.com/victortorresa94-del/musikeeo
 
@@ -33,15 +33,15 @@ Tagline: "Conecta. Crea. Suena."
 
 ## AI Modules
 - Rodrigo: floating chatbot (RodrigoFloatingChat) + page (/rodrigo)
-  - Engine: rodrigoEngine.ts → openrouter.ts → POST /api/chat (Vercel serverless)
-  - Model: moonshotai/kimi-k2 via OpenRouter (override con env OPENROUTER_MODEL)
-  - API key: OPENROUTER_API_KEY (Vercel env var, never in frontend bundle)
+  - Engine: rodrigoEngine.ts → openrouter.ts (wrapper cliente, nombre histórico) → POST /api/chat (Vercel serverless) → api.moonshot.ai
+  - Model: kimi-k2-turbo-preview (override con env KIMI_MODEL)
+  - API key: KIMI_API_KEY (Vercel env var, never in frontend bundle)
 
 ## Architecture Rules
 - All pages in `src/pages/`
 - Shared components in `src/components/`
 - Firebase logic in `src/services/` or `src/lib/`
-- AI calls: frontend → /api/chat serverless → OpenRouter
+- AI calls: frontend → /api/chat serverless → Kimi (Moonshot AI)
 - Types in `src/types/`
 - Hooks in `src/hooks/`
 - Vercel serverless functions in `/api/` (root level)
@@ -70,8 +70,9 @@ git push origin main  # triggers Vercel auto-deploy
 - VITE_FIREBASE_STORAGE_BUCKET
 - VITE_FIREBASE_MESSAGING_SENDER_ID
 - VITE_FIREBASE_APP_ID
-- OPENROUTER_API_KEY  ← server-side only (Vercel env), NO VITE_ prefix
-- OPENROUTER_MODEL    ← opcional, server-side; por defecto moonshotai/kimi-k2
+- KIMI_API_KEY  ← server-side only (Vercel env), NO VITE_ prefix (acepta también MOONSHOT_API_KEY)
+- KIMI_MODEL    ← opcional; por defecto kimi-k2-turbo-preview
+- KIMI_BASE_URL ← opcional; por defecto https://api.moonshot.ai/v1 (usar https://api.moonshot.cn/v1 si la key es de la plataforma china)
 
 ## Current Status
 Project is in active development. Architecture is solid, marketplace sprint in progress.
@@ -92,7 +93,7 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 
 **Decisiones técnicas tomadas:**
 - Rodrigo migrado de DeepSeek (frontend, key expuesta) → OpenRouter via Vercel serverless `/api/chat`
-- Modelo: `google/gemma-4-26b-a4b-it` (Gemma 4) — sustituido por `moonshotai/kimi-k2` (2026-09)
+- Modelo: `google/gemma-4-26b-a4b-it` (Gemma 4) — sustituido por Kimi vía API directa de Moonshot (2026-09, `KIMI_API_KEY`)
 - SplashScreen reducido de 2500ms → 600ms
 - AuthContext: `loading` resuelve al detectar auth state; `profileLoading` separado para Firestore
 - Vite config: chunking manual vendor-react / vendor-firebase / vendor-ui / vendor-utils

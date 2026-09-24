@@ -54,7 +54,7 @@ export default function PrivacyPolicy() {
             <ul>
                 <li><strong>Google LLC (Firebase / Google Cloud)</strong> — alojamiento, autenticación, base de datos, almacenamiento de archivos.</li>
                 <li><strong>Vercel Inc.</strong> — hosting de la aplicación y funciones serverless.</li>
-                <li><strong>OpenRouter</strong> — proveedor de la inferencia del asistente IA &laquo;Rodrigo&raquo; cuando el usuario lo utiliza.</li>
+                <li><strong>Moonshot AI (Kimi)</strong> — proveedor de la inferencia del asistente IA &laquo;Rodrigo&raquo; cuando el usuario lo utiliza.</li>
                 <li><strong>[Proveedor de email transaccional, si aplica]</strong></li>
                 <li><strong>[Sentry u otro error-tracker, si aplica]</strong></li>
             </ul>

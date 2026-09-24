@@ -48,7 +48,7 @@ export default function CookiePolicy() {
             <h3>Cookies de terceros</h3>
             <p>
                 Algunas funcionalidades pueden cargar recursos de terceros (Firebase, Vercel,
-                OpenRouter) que pueden establecer sus propias cookies, conforme a sus
+                Moonshot AI) que pueden establecer sus propias cookies, conforme a sus
                 respectivas políticas.
             </p>
 
