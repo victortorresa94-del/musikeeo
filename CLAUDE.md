@@ -9,7 +9,7 @@ Tagline: "Conecta. Crea. Suena."
 - Frontend: React 19 + Vite + TypeScript
 - Styling: Tailwind CSS + Framer Motion
 - Backend: Firebase (Auth, Firestore, Functions, Storage)
-- AI: OpenRouter (google/gemma-4-26b-a4b-it) via Vercel serverless /api/chat
+- AI: OpenRouter (moonshotai/kimi-k2) via Vercel serverless /api/chat
 - Deploy: Vercel → musikeeo.com (auto-deploy on push to `main`)
 - Repo: github.com/victortorresa94-del/musikeeo
 
@@ -34,7 +34,7 @@ Tagline: "Conecta. Crea. Suena."
 ## AI Modules
 - Rodrigo: floating chatbot (RodrigoFloatingChat) + page (/rodrigo)
   - Engine: rodrigoEngine.ts → openrouter.ts → POST /api/chat (Vercel serverless)
-  - Model: google/gemma-4-26b-a4b-it via OpenRouter
+  - Model: moonshotai/kimi-k2 via OpenRouter (override con env OPENROUTER_MODEL)
   - API key: OPENROUTER_API_KEY (Vercel env var, never in frontend bundle)
 
 ## Architecture Rules
@@ -71,6 +71,7 @@ git push origin main  # triggers Vercel auto-deploy
 - VITE_FIREBASE_MESSAGING_SENDER_ID
 - VITE_FIREBASE_APP_ID
 - OPENROUTER_API_KEY  ← server-side only (Vercel env), NO VITE_ prefix
+- OPENROUTER_MODEL    ← opcional, server-side; por defecto moonshotai/kimi-k2
 
 ## Current Status
 Project is in active development. Architecture is solid, marketplace sprint in progress.
@@ -91,7 +92,7 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 
 **Decisiones técnicas tomadas:**
 - Rodrigo migrado de DeepSeek (frontend, key expuesta) → OpenRouter via Vercel serverless `/api/chat`
-- Modelo: `google/gemma-4-26b-a4b-it` (Gemma 4)
+- Modelo: `google/gemma-4-26b-a4b-it` (Gemma 4) — sustituido por `moonshotai/kimi-k2` (2026-09)
 - SplashScreen reducido de 2500ms → 600ms
 - AuthContext: `loading` resuelve al detectar auth state; `profileLoading` separado para Firestore
 - Vite config: chunking manual vendor-react / vendor-firebase / vendor-ui / vendor-utils

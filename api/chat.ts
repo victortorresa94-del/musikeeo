@@ -105,6 +105,10 @@ const MAX_MESSAGE_CHARS = 1000;
 const MAX_HISTORY_ITEMS = 20;
 const MAX_HISTORY_CHARS = 6000; // suma de contenidos en history
 
+// Modelo configurable desde Vercel (OPENROUTER_MODEL) sin tocar codigo.
+const MODEL = process.env.OPENROUTER_MODEL || 'moonshotai/kimi-k2';
+const MAX_TOKENS = 800;
+
 const rateStore = new Map<string, { count: number; resetAt: number }>();
 
 function getClientIp(req: any): string {
@@ -193,15 +197,17 @@ export default async function handler(req: any, res: any) {
         'X-Title': 'Musikeeo - Rodrigo',
       },
       body: JSON.stringify({
-        model: 'google/gemma-4-26b-a4b-it',
+        model: MODEL,
         messages,
+        max_tokens: MAX_TOKENS,
       }),
     });
 
     if (!upstream.ok) {
       const errorText = await upstream.text();
-      console.error('OpenRouter error:', upstream.status, errorText);
-      return res.status(upstream.status).json({ error: errorText });
+      console.error('OpenRouter error:', upstream.status, MODEL, errorText);
+      // 401 = clave, 402 = sin creditos, 400/404 = modelo invalido
+      return res.status(upstream.status).json({ error: errorText, status: upstream.status, model: MODEL });
     }
 
     const data = await upstream.json();
