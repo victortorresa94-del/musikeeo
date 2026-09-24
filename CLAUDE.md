@@ -72,7 +72,7 @@ git push origin main  # triggers Vercel auto-deploy
 - VITE_FIREBASE_APP_ID
 - KIMI_API_KEY  ← server-side only (Vercel env), NO VITE_ prefix (acepta también MOONSHOT_API_KEY)
 - KIMI_MODEL    ← opcional; por defecto kimi-k2-turbo-preview
-- KIMI_BASE_URL ← opcional; por defecto https://api.moonshot.ai/v1 (usar https://api.moonshot.cn/v1 si la key es de la plataforma china)
+- KIMI_BASE_URL ← opcional. Si NO se fija, ante 401 se prueban en orden api.moonshot.ai → api.moonshot.cn → api.kimi.com/coding (modelo kimi-for-coding) y se recuerda el que funcione
 
 ## Current Status
 Project is in active development. Architecture is solid, marketplace sprint in progress.

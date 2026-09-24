@@ -107,9 +107,25 @@ const MAX_HISTORY_CHARS = 6000; // suma de contenidos en history
 
 // API de Kimi (Moonshot AI), compatible con el formato OpenAI.
 // Modelo y endpoint configurables desde Vercel sin tocar codigo.
-const KIMI_BASE_URL = (process.env.KIMI_BASE_URL || 'https://api.moonshot.ai/v1').replace(/\/$/, '');
+// Sin KIMI_BASE_URL fijado, si un endpoint devuelve 401 se prueba el siguiente:
+// una key de platform.moonshot.cn solo vale en .cn y una de Kimi Code en api.kimi.com.
 const MODEL = process.env.KIMI_MODEL || 'kimi-k2-turbo-preview';
+const KIMI_ENDPOINTS: { baseUrl: string; model: string }[] = process.env.KIMI_BASE_URL
+  ? [{ baseUrl: process.env.KIMI_BASE_URL.replace(/\/$/, ''), model: MODEL }]
+  : [
+      { baseUrl: 'https://api.moonshot.ai/v1', model: MODEL },
+      { baseUrl: 'https://api.moonshot.cn/v1', model: MODEL },
+      { baseUrl: 'https://api.kimi.com/coding/v1', model: process.env.KIMI_MODEL || 'kimi-for-coding' },
+    ];
 const MAX_TOKENS = 800;
+
+// Endpoint que acepto la key la ultima vez (contenedor caliente): se prueba primero.
+let workingEndpoint = 0;
+
+// Limpia la key pegada en Vercel: espacios, comillas envolventes y prefijo "Bearer ".
+function cleanApiKey(raw: string): string {
+  return raw.trim().replace(/^["']|["']$/g, '').replace(/^Bearer\s+/i, '').trim();
+}
 
 const rateStore = new Map<string, { count: number; resetAt: number }>();
 
@@ -159,7 +175,7 @@ export default async function handler(req: any, res: any) {
     return res.status(429).json({ error: 'Too many requests', retryAfter: retryAfterSec });
   }
 
-  const apiKey = process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY;
+  const apiKey = cleanApiKey(process.env.KIMI_API_KEY || process.env.MOONSHOT_API_KEY || '');
   if (!apiKey) {
     console.error('KIMI_API_KEY is not set');
     return res.status(500).json({ error: 'API key not configured' });
@@ -190,24 +206,39 @@ export default async function handler(req: any, res: any) {
   ];
 
   try {
-    const upstream = await fetch(`${KIMI_BASE_URL}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: MODEL,
-        messages,
-        max_tokens: MAX_TOKENS,
-      }),
-    });
+    const order = [workingEndpoint, ...KIMI_ENDPOINTS.keys()].filter((v, i, a) => a.indexOf(v) === i);
+    const tried: string[] = [];
+    let upstream: Response | null = null;
+    let endpoint = KIMI_ENDPOINTS[0];
 
-    if (!upstream.ok) {
-      const errorText = await upstream.text();
-      console.error('Kimi error:', upstream.status, MODEL, errorText);
-      // 401 = clave, 429 = sin saldo/limite, 400/404 = modelo invalido
-      return res.status(upstream.status).json({ error: errorText, status: upstream.status, model: MODEL });
+    for (const idx of order) {
+      endpoint = KIMI_ENDPOINTS[idx];
+      tried.push(endpoint.baseUrl);
+      upstream = await fetch(`${endpoint.baseUrl}/chat/completions`, {
+        method: 'POST',
+        headers: {
+          Authorization: `Bearer ${apiKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: endpoint.model,
+          messages,
+          max_tokens: MAX_TOKENS,
+        }),
+      });
+      if (upstream.status !== 401) {
+        workingEndpoint = idx;
+        break;
+      }
+      console.error('Kimi 401 en', endpoint.baseUrl);
+    }
+
+    if (!upstream || !upstream.ok) {
+      const status = upstream?.status ?? 500;
+      const errorText = upstream ? await upstream.text() : 'no response';
+      console.error('Kimi error:', status, endpoint.baseUrl, endpoint.model, errorText);
+      // 401 = clave (en todos los endpoints), 429 = sin saldo/limite, 400/404 = modelo invalido
+      return res.status(status).json({ error: errorText, status, model: endpoint.model, tried });
     }
 
     const data = await upstream.json();
