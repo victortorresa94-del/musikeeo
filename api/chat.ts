@@ -107,16 +107,15 @@ const MAX_HISTORY_CHARS = 6000; // suma de contenidos en history
 
 // API de Kimi (Moonshot AI), compatible con el formato OpenAI.
 // Modelo y endpoint configurables desde Vercel sin tocar codigo.
-// Sin KIMI_BASE_URL fijado, si un endpoint devuelve 401 se prueba el siguiente:
-// una key de platform.moonshot.cn solo vale en .cn y una de Kimi Code en api.kimi.com.
+// Si un endpoint devuelve 401 se prueba el siguiente: una key de platform.moonshot.cn
+// solo vale en .cn y una de Kimi Code en api.kimi.com. KIMI_BASE_URL (si existe) va primero.
 const MODEL = process.env.KIMI_MODEL || 'kimi-k2-turbo-preview';
-const KIMI_ENDPOINTS: { baseUrl: string; model: string }[] = process.env.KIMI_BASE_URL
-  ? [{ baseUrl: process.env.KIMI_BASE_URL.replace(/\/$/, ''), model: MODEL }]
-  : [
-      { baseUrl: 'https://api.moonshot.ai/v1', model: MODEL },
-      { baseUrl: 'https://api.moonshot.cn/v1', model: MODEL },
-      { baseUrl: 'https://api.kimi.com/coding/v1', model: process.env.KIMI_MODEL || 'kimi-for-coding' },
-    ];
+const KIMI_ENDPOINTS: { baseUrl: string; model: string }[] = [
+  ...(process.env.KIMI_BASE_URL ? [{ baseUrl: process.env.KIMI_BASE_URL.replace(/\/$/, ''), model: MODEL }] : []),
+  { baseUrl: 'https://api.moonshot.ai/v1', model: MODEL },
+  { baseUrl: 'https://api.moonshot.cn/v1', model: MODEL },
+  { baseUrl: 'https://api.kimi.com/coding/v1', model: 'kimi-for-coding' },
+].filter((e, i, a) => a.findIndex((x) => x.baseUrl === e.baseUrl) === i);
 const MAX_TOKENS = 800;
 
 // Endpoint que acepto la key la ultima vez (contenedor caliente): se prueba primero.
