@@ -118,8 +118,13 @@ const KIMI_ENDPOINTS: { baseUrl: string; model: string }[] = [
 ].filter((e, i, a) => a.findIndex((x) => x.baseUrl === e.baseUrl) === i);
 const MAX_TOKENS = 800;
 
-// Endpoint que acepto la key la ultima vez (contenedor caliente): se prueba primero.
+// Si el endpoint acepta la key pero el modelo da 404 ("Not found the model ... or
+// Permission denied"), la cuenta no tiene acceso a ese modelo: se prueban estos.
+const FALLBACK_MODELS = ['kimi-k2-0905-preview', 'kimi-k2-0711-preview', 'kimi-latest', 'moonshot-v1-8k'];
+
+// Endpoint y modelo que funcionaron la ultima vez (contenedor caliente): se prueban primero.
 let workingEndpoint = 0;
+let workingModel: string | null = null;
 
 // Limpia la key pegada en Vercel: espacios, comillas envolventes y prefijo "Bearer ".
 function cleanApiKey(raw: string): string {
@@ -205,26 +210,29 @@ export default async function handler(req: any, res: any) {
   ];
 
   try {
-    const order = [workingEndpoint, ...KIMI_ENDPOINTS.keys()].filter((v, i, a) => a.indexOf(v) === i);
-    const tried: string[] = [];
-    let upstream: Response | null = null;
-    let endpoint = KIMI_ENDPOINTS[0];
-
-    for (const idx of order) {
-      endpoint = KIMI_ENDPOINTS[idx];
-      tried.push(endpoint.baseUrl);
-      upstream = await fetch(`${endpoint.baseUrl}/chat/completions`, {
+    const callKimi = (baseUrl: string, model: string) =>
+      fetch(`${baseUrl}/chat/completions`, {
         method: 'POST',
         headers: {
           Authorization: `Bearer ${apiKey}`,
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          model: endpoint.model,
-          messages,
-          max_tokens: MAX_TOKENS,
-        }),
+        body: JSON.stringify({ model, messages, max_tokens: MAX_TOKENS }),
       });
+
+    const order = [workingEndpoint, ...KIMI_ENDPOINTS.keys()].filter((v, i, a) => a.indexOf(v) === i);
+    const tried: string[] = [];
+    const triedModels: string[] = [];
+    let upstream: Response | null = null;
+    let endpoint = KIMI_ENDPOINTS[0];
+    let model = endpoint.model;
+
+    // 1) Endpoint: el primero que no rechace la key (401)
+    for (const idx of order) {
+      endpoint = KIMI_ENDPOINTS[idx];
+      model = workingModel ?? endpoint.model;
+      tried.push(endpoint.baseUrl);
+      upstream = await callKimi(endpoint.baseUrl, model);
       if (upstream.status !== 401) {
         workingEndpoint = idx;
         break;
@@ -232,13 +240,27 @@ export default async function handler(req: any, res: any) {
       console.error('Kimi 401 en', endpoint.baseUrl);
     }
 
+    // 2) Modelo: si da 404 (sin acceso al modelo), probar los de respaldo
+    if (upstream?.status === 404) {
+      triedModels.push(model);
+      for (const candidate of [endpoint.model, ...FALLBACK_MODELS]) {
+        if (triedModels.includes(candidate)) continue;
+        console.error('Kimi 404 con modelo', model, '-> probando', candidate);
+        model = candidate;
+        triedModels.push(model);
+        upstream = await callKimi(endpoint.baseUrl, model);
+        if (upstream.status !== 404) break;
+      }
+    }
+
     if (!upstream || !upstream.ok) {
       const status = upstream?.status ?? 500;
       const errorText = upstream ? await upstream.text() : 'no response';
-      console.error('Kimi error:', status, endpoint.baseUrl, endpoint.model, errorText);
-      // 401 = clave (en todos los endpoints), 429 = sin saldo/limite, 400/404 = modelo invalido
-      return res.status(status).json({ error: errorText, status, model: endpoint.model, tried });
+      console.error('Kimi error:', status, endpoint.baseUrl, model, errorText);
+      // 401 = clave (en todos los endpoints), 429 = sin saldo/limite, 404 = sin acceso a ningun modelo
+      return res.status(status).json({ error: errorText, status, model, tried, triedModels });
     }
+    workingModel = model;
 
     const data = await upstream.json();
     const content: string = data.choices?.[0]?.message?.content ?? '';
