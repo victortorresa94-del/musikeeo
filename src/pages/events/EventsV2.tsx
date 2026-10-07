@@ -2,7 +2,8 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Search, Plus, SlidersHorizontal, Calendar, MapPin,
-    ArrowRight, Music, Zap, Users, Star, X
+    ArrowRight, Music, Zap, Users, Star, X,
+    Info,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { eventService } from '../../services/eventService';
@@ -117,8 +118,8 @@ const EventCardNew = ({ event, onClick }: { event: Event; onClick: () => void })
 
     const badgeColor: Record<string, string> = {
         'Urgente': 'bg-red-500 text-white',
-        'Premium': 'bg-purple-500 text-white',
-        'Nuevo': 'bg-blue-500 text-white',
+        'Premium': 'bg-primary text-primary-foreground',
+        'Nuevo': 'bg-white text-black',
     };
 
     return (
@@ -249,20 +250,6 @@ export default function EventsV2() {
 
     return (
         <div className="min-h-full bg-background">
-            {/* ── Mobile header ── */}
-            <div className="md:hidden sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-2.5 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                    <img src="/logo-musikeeo.png" alt="Musikeeo" className="h-7 w-7 rounded-lg object-contain" />
-                    <span className="font-heading font-bold text-base text-foreground">Eventos</span>
-                </div>
-                <button
-                    onClick={() => navigate('/publicar')}
-                    className="flex items-center gap-1.5 bg-primary text-primary-foreground text-xs font-bold px-3 py-1.5 rounded-full"
-                >
-                    <Plus className="h-3.5 w-3.5" /> Publicar
-                </button>
-            </div>
-
             <div className="max-w-6xl mx-auto px-4 py-6 md:px-6 md:py-8">
 
                 {/* ── Page header ── */}
@@ -279,19 +266,19 @@ export default function EventsV2() {
                     </div>
                     <button
                         onClick={() => navigate('/publicar')}
-                        className="hidden md:flex items-center gap-2 bg-primary text-primary-foreground font-bold px-4 py-2.5 rounded-xl hover:brightness-105 transition-all flex-shrink-0"
+                        className="flex items-center gap-2 bg-primary text-primary-foreground font-bold h-11 px-4 rounded-xl hover:brightness-105 transition-all flex-shrink-0"
                     >
-                        <Plus className="h-4 w-4" /> Publicar anuncio
+                        <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Publicar anuncio</span><span className="sm:hidden">Publicar</span>
                     </button>
                 </div>
 
                 {/* ── Demo banner ── */}
                 {usingMocks && (
-                    <div className="mb-6 bg-amber-500/10 border border-amber-500/30 text-amber-200 rounded-xl px-4 py-3 text-sm flex items-start gap-3">
-                        <span className="text-base leading-none mt-0.5">ℹ️</span>
+                    <div className="mb-6 bg-card border border-border rounded-xl px-4 py-3 text-sm flex items-start gap-3">
+                        <Info className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
                         <div>
-                            <p className="font-semibold text-amber-100">Estos son eventos de ejemplo</p>
-                            <p className="text-xs text-amber-200/80 mt-0.5">Todavía no hay oportunidades reales publicadas. Sé el primero en <button onClick={() => navigate('/publicar')} className="underline font-semibold hover:text-amber-100">publicar un anuncio</button>.</p>
+                            <p className="font-semibold text-foreground">Estos son eventos de ejemplo</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">Todavía no hay oportunidades reales publicadas. Sé el primero en <button onClick={() => navigate('/publicar')} className="underline font-semibold text-primary">publicar un anuncio</button>.</p>
                         </div>
                     </div>
                 )}
@@ -377,8 +364,8 @@ export default function EventsV2() {
                 <div className="grid grid-cols-3 gap-3 mb-8">
                     {[
                         { icon: Zap, label: 'Urgentes', value: events.filter(e => e.tags?.includes('Urgente')).length, color: 'text-red-500 bg-red-500/10' },
-                        { icon: Users, label: 'Organizadores', value: new Set(events.map(e => e.organizerId)).size, color: 'text-blue-500 bg-blue-500/10' },
-                        { icon: Star, label: 'Premium', value: events.filter(e => e.tags?.includes('Premium')).length, color: 'text-purple-500 bg-purple-500/10' },
+                        { icon: Users, label: 'Organizadores', value: new Set(events.map(e => e.organizerId)).size, color: 'text-primary bg-primary/10' },
+                        { icon: Star, label: 'Premium', value: events.filter(e => e.tags?.includes('Premium')).length, color: 'text-primary bg-primary/10' },
                     ].map(({ icon: Icon, label, value, color }) => (
                         <div key={label} className="bg-card border border-border rounded-xl p-3 flex items-center gap-3">
                             <div className={cn('h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0', color)}>

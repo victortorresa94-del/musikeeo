@@ -1,4 +1,4 @@
-const CACHE_NAME = "musikeeo-cache-v3";
+const CACHE_NAME = "musikeeo-cache-v4";
 const urlsToCache = ["/", "/index.html", "/manifest.json"];
 
 self.addEventListener("install", (event) => {
@@ -25,6 +25,8 @@ self.addEventListener("fetch", (event) => {
 });
 
 self.addEventListener("activate", (event) => {
+    // Tomar el control de las pestañas abiertas sin esperar a recargar
+    event.waitUntil(self.clients.claim());
     event.waitUntil(
         caches.keys().then((cacheNames) =>
             Promise.all(
