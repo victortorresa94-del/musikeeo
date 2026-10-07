@@ -288,7 +288,7 @@ const Hero = () => {
                         <span className="text-[13px] font-medium text-foreground/80">Toda la música en directo, en una app</span>
                     </motion.div>
 
-                    <motion.h1 variants={fadeUp} className="font-heading font-bold tracking-tightest leading-[0.95] text-[38px] sm:text-6xl md:text-7xl text-foreground">
+                    <motion.h1 variants={fadeUp} className="font-heading font-bold tracking-tight leading-[0.95] text-[42px] sm:text-6xl md:text-7xl text-foreground">
                         Pide{' '}
                         <span className="inline-block">
                             <AnimatePresence mode="wait" initial={false}>
@@ -467,7 +467,7 @@ const Story2am = () => (
                         </motion.li>
                     ))}
                 </ol>
-                <h2 className="mt-10 font-heading text-4xl md:text-6xl font-bold tracking-tightest leading-[0.95]">
+                <h2 className="mt-10 font-heading text-4xl md:text-6xl font-bold tracking-tight leading-[0.95]">
                     Ni un bolo se cancela por un cable<span className="text-primary">.</span>
                 </h2>
                 <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -804,7 +804,7 @@ const FinalCta = () => {
                 <div className="absolute right-8 bottom-6 md:right-16 md:bottom-12 opacity-20 scale-[4] origin-bottom-right">
                     <Equalizer className="[&>span]:bg-primary-foreground" />
                 </div>
-                <h2 className="relative font-heading text-4xl md:text-6xl font-bold tracking-tightest leading-[0.95] text-primary-foreground max-w-2xl">
+                <h2 className="relative font-heading text-4xl md:text-6xl font-bold tracking-tight leading-[0.95] text-primary-foreground max-w-2xl">
                     Tu próximo bolo empieza aquí.
                 </h2>
                 <p className="relative mt-5 text-primary-foreground/70 text-lg max-w-lg">

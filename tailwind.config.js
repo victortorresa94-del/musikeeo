@@ -64,8 +64,8 @@ export default {
                 },
             },
             fontFamily: {
-                heading: ["Jura", "-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "Roboto", "sans-serif"],
-                sans:    ["Jura", "-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "Roboto", "sans-serif"],
+                heading: ["Manrope", "-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "Roboto", "sans-serif"],
+                sans:    ["Manrope", "-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "Roboto", "sans-serif"],
                 mono:    ["ui-monospace", "'SF Mono'", "Menlo", "monospace"],
             },
             letterSpacing: {
