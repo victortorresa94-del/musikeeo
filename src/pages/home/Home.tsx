@@ -5,7 +5,8 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
     ArrowRight, ArrowUpRight, Search, Plus, MapPin, BadgeCheck, Sparkles,
     Guitar, Piano, Drum, Mic, Speaker, Headphones, Lightbulb, Wind,
-    UserPlus, MessagesSquare, Music2, Instagram, Mail,
+    UserPlus, MessagesSquare, Music2, Instagram, Mail, Check, CalendarDays,
+    SlidersHorizontal, ShoppingBag, Users, ShieldCheck, GraduationCap,
 } from 'lucide-react';
 import { db } from '../../lib/firebase';
 import { getArtists } from '../../services/artistService';
@@ -14,13 +15,71 @@ import type { Artist, Listing } from '../../types';
 
 // ─── Contenido ───────────────────────────────────────────────────────────────
 
-const ROTATING_WORDS = ['músicos', 'técnicos', 'salas', 'DJs', 'equipo'];
+const ROTATING_WORDS = ['una banda', 'un DJ', 'un técnico', 'una sala', 'un ampli'];
 
-const QUICK_SEARCHES = [
-    { label: 'Banda para boda', to: '/discover?q=boda' },
-    { label: 'DJ', to: '/discover?q=dj' },
-    { label: 'Técnico de sonido', to: '/sonido' },
-    { label: 'Alquilar PA', to: '/market?category=pa_sonido' },
+// El hero cambia de mensaje según quién llega (Blueprint 24.13: una landing por perfil)
+const SEGMENTS = [
+    {
+        key: 'busco', label: 'Busco música',
+        placeholder: 'Banda para boda, DJ, cantante…', searchTo: '/discover',
+        pitch: 'Bodas, cumpleaños, bares o empresa: encuentra artistas cerca, escúchalos y habla directo con ellos.',
+        primary: { label: 'Encontrar artistas', to: '/artistas' },
+        secondary: { label: 'Publicar mi evento', to: '/publicar' },
+    },
+    {
+        key: 'musico', label: 'Soy músico',
+        placeholder: 'Bolos, jams, busco bajista…', searchTo: '/discover',
+        pitch: 'Un perfil con tu música, vídeos y precios, y un tablón con bolos abiertos. Que te encuentren quienes buscan directo.',
+        primary: { label: 'Crear mi perfil gratis', to: '/register' },
+        secondary: { label: 'Ver bolos abiertos', to: '/eventos' },
+    },
+    {
+        key: 'sala', label: 'Tengo una sala',
+        placeholder: 'Rumba, jazz, tributo…', searchTo: '/discover',
+        pitch: 'Publica tu fecha y recibe propuestas de artistas de la zona. Llena la agenda sin perseguir a nadie.',
+        primary: { label: 'Publicar una fecha', to: '/publicar' },
+        secondary: { label: 'Ver artistas', to: '/artistas' },
+    },
+    {
+        key: 'equipo', label: 'Equipo y tiendas',
+        placeholder: 'Ampli, PA, batería…', searchTo: '/market',
+        pitch: 'Compra, alquila o presta equipo a músicos de tu ciudad. Si tienes tienda, llega a quien está tocando ahora.',
+        primary: { label: 'Publicar anuncio', to: '/market/create' },
+        secondary: { label: 'Ver mercado', to: '/market' },
+    },
+];
+
+const CHAOS = [
+    { from: 'Grupo «Bolo sábado 🎸»', text: '¿Alguien tiene el número de un bajista? El nuestro no puede', rot: -1.5 },
+    { from: 'Instagram · mensaje', text: 'Hola! Precio para una boda en junio? 🙏', rot: 1 },
+    { from: 'Técnico (visto 22:41)', text: '…', rot: -0.5 },
+    { from: 'Milanuncios', text: 'Vendo ampli, solo recogida, no reservo', rot: 1.5 },
+    { from: 'Sala Apolo · email', text: 'Perdona, ¿al final os cuadra el viernes?', rot: -1 },
+];
+
+const ORDER = [
+    'Artistas, técnicos, salas y tiendas en el mismo sitio',
+    'Perfiles con música, vídeos, precios y disponibilidad',
+    'Un tablón con bolos y fechas abiertas',
+    'Equipo para comprar, alquilar o pedir prestado cerca',
+    'Chat directo, sin intermediarios',
+];
+
+const PILLARS = [
+    { Icon: Music2, title: 'Contrata artistas', desc: 'Bandas, solistas y DJs con su música y sus precios.', to: '/artistas' },
+    { Icon: CalendarDays, title: 'Consigue bolos', desc: 'Un tablón de fechas y eventos abiertos a propuestas.', to: '/eventos' },
+    { Icon: SlidersHorizontal, title: 'Técnicos y backline', desc: 'Sonido, luces y equipo para que todo suene.', to: '/sonido' },
+    { Icon: ShoppingBag, title: 'Mercado de equipo', desc: 'Compra, alquila o presta instrumentos y PA.', to: '/market' },
+    { Icon: Users, title: 'Comunidad', desc: 'Feed y reels de la escena: qué suena y quién toca.', to: '/feed' },
+    { Icon: Sparkles, title: 'Rodrigo, tu mánager IA', desc: 'Te recomienda artistas y te ayuda a publicar.', to: '/rodrigo' },
+    { Icon: ShieldCheck, title: 'Reputación verificada', desc: 'Reseñas reales después de cada bolo.', to: '/artistas', soon: true },
+    { Icon: GraduationCap, title: 'Academia', desc: 'Aprende con quien toca de verdad.', to: '/rodrigo', soon: true },
+];
+
+const STORY = [
+    { time: '02:00', text: 'Se rompe el cable de la guitarra. Quedan dos pases.' },
+    { time: '02:03', text: 'Lo pide en Musikeeo. Hay un técnico a 10 minutos.' },
+    { time: '02:14', text: 'Cable nuevo. Siguiente canción.' },
 ];
 
 const MARQUEE = ['Rock', 'Flamenco', 'Jazz', 'DJs', 'Técnicos de sonido', 'Salas', 'Backline', 'Bodas', 'Indie', 'Rumba', 'Iluminación', 'Festivales', 'Pop', 'Clásica'];
@@ -149,6 +208,8 @@ const Hero = () => {
     const { user } = useAuth();
     const [q, setQ] = useState('');
     const [wordIdx, setWordIdx] = useState(0);
+    const [segIdx, setSegIdx] = useState(0);
+    const seg = SEGMENTS[segIdx];
 
     useEffect(() => {
         const t = setInterval(() => setWordIdx(i => (i + 1) % ROTATING_WORDS.length), 2200);
@@ -157,32 +218,35 @@ const Hero = () => {
 
     const onSearch = (e: FormEvent) => {
         e.preventDefault();
-        navigate(`/discover${q.trim() ? `?q=${encodeURIComponent(q.trim())}` : ''}`);
+        const term = q.trim() ? `?q=${encodeURIComponent(q.trim())}` : '';
+        navigate(`${seg.searchTo}${term}`);
     };
+
+    const primary = seg.key === 'musico' && user ? { label: 'Ir a mi panel', to: '/panel' } : seg.primary;
 
     return (
         <section className="relative isolate overflow-hidden min-h-[calc(100svh-3.5rem)] flex items-center">
-            {/* Fondo: foto de concierto + capas de color */}
-            <img
-                src="/images/home/hero-band.webp"
-                alt=""
-                className="absolute inset-0 -z-20 h-full w-full object-cover object-[70%_center] opacity-50 scale-105"
-                fetchPriority="high"
-            />
-            <div className="absolute inset-0 -z-10 bg-gradient-to-r from-background via-background/90 to-background/30" />
-            <div className="absolute inset-0 -z-10 bg-gradient-to-t from-background via-transparent to-background/40" />
-            <div className="absolute -top-40 -left-40 -z-10 h-[520px] w-[520px] rounded-full bg-primary/20 blur-[140px]" />
+            {/* Ilustración: la banda que llega como un pedido (Aura Studio) */}
+            <picture className="absolute inset-x-0 top-0 h-[46svh] md:inset-0 md:h-full -z-20">
+                <source media="(max-width: 767px)" srcSet="/images/home/hero-delivery-mobile.webp" />
+                <img
+                    src="/images/home/hero-delivery.webp"
+                    alt=""
+                    className="h-full w-full object-cover object-center md:object-right"
+                    fetchPriority="high"
+                />
+            </picture>
+            <div className="absolute inset-x-0 top-0 h-[46svh] md:inset-0 md:h-full -z-10 bg-gradient-to-t from-background via-background/30 to-transparent md:bg-gradient-to-r md:from-background md:from-25% md:via-background/85 md:via-45% md:to-transparent" />
 
-            <div className="w-full max-w-6xl mx-auto px-4 md:px-10 py-16 md:py-24">
-                <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.1 } } }} className="max-w-3xl">
-                    <motion.div variants={fadeUp} className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-white/5 backdrop-blur px-4 py-1.5 mb-8">
+            <div className="w-full max-w-6xl mx-auto px-4 md:px-10 pt-[40svh] pb-14 md:py-24">
+                <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.1 } } }} className="max-w-2xl">
+                    <motion.div variants={fadeUp} className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-black/40 backdrop-blur px-4 py-1.5 mb-6">
                         <Equalizer />
-                        <span className="text-xs font-semibold text-foreground/80 tracking-wide">La red de la música en directo en España</span>
+                        <span className="text-xs font-semibold text-foreground/80 tracking-wide">Toda la música en directo, en una app</span>
                     </motion.div>
 
-                    <motion.h1 variants={fadeUp} className="font-heading font-bold tracking-tightest leading-[0.95] text-[44px] sm:text-6xl md:text-7xl lg:text-[88px] text-foreground">
-                        Conecta con
-                        <br />
+                    <motion.h1 variants={fadeUp} className="font-heading font-bold tracking-tightest leading-[0.95] text-[42px] sm:text-6xl md:text-7xl text-foreground">
+                        Pide{' '}
                         <span className="relative inline-flex h-[1.05em] overflow-hidden align-bottom">
                             <AnimatePresence mode="wait">
                                 <motion.span
@@ -191,27 +255,41 @@ const Hero = () => {
                                     animate={{ y: 0 }}
                                     exit={{ y: '-100%' }}
                                     transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                                    className="text-primary"
+                                    className="text-primary whitespace-nowrap"
                                 >
                                     {ROTATING_WORDS[wordIdx]}
                                 </motion.span>
                             </AnimatePresence>
                         </span>
                         <br />
-                        cerca de ti<span className="text-primary">.</span>
+                        como pides sushi<span className="text-primary">.</span>
                     </motion.h1>
 
                     <motion.p variants={fadeUp} className="mt-6 text-lg md:text-xl text-muted-foreground max-w-xl leading-relaxed">
-                        Encuentra artistas para tu evento, consigue bolos, alquila equipo. Todo en un sitio, sin intermediarios.
+                        Hay apps para pedir comida, un taxi o un fontanero. Para la música en directo, solo grupos de WhatsApp.{' '}
+                        <span className="text-foreground font-semibold">Hasta ahora.</span>
                     </motion.p>
 
-                    {/* Buscador */}
-                    <motion.form variants={fadeUp} onSubmit={onSearch} className="mt-8 flex items-center gap-2 p-2 rounded-2xl bg-card/80 backdrop-blur-xl border border-white/10 max-w-xl shadow-2xl shadow-black/40">
+                    {/* ¿Quién eres? — el mensaje cambia según el perfil */}
+                    <motion.div variants={fadeUp} className="mt-8 inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-black/40 backdrop-blur border border-white/10">
+                        {SEGMENTS.map((s, i) => (
+                            <button
+                                key={s.key}
+                                onClick={() => setSegIdx(i)}
+                                className={`relative h-9 px-3.5 rounded-xl text-sm font-semibold transition-colors ${i === segIdx ? 'text-primary-foreground' : 'text-foreground/70 hover:text-foreground'}`}
+                            >
+                                {i === segIdx && <motion.span layoutId="seg-pill" className="absolute inset-0 rounded-xl bg-primary" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
+                                <span className="relative">{s.label}</span>
+                            </button>
+                        ))}
+                    </motion.div>
+
+                    <motion.form variants={fadeUp} onSubmit={onSearch} className="mt-3 flex items-center gap-2 p-2 rounded-2xl bg-card/90 backdrop-blur-xl border border-white/10 max-w-xl shadow-2xl shadow-black/50">
                         <Search className="ml-3 h-5 w-5 text-muted-foreground shrink-0" />
                         <input
                             value={q}
                             onChange={e => setQ(e.target.value)}
-                            placeholder="Banda de rock, DJ, técnico de sonido…"
+                            placeholder={seg.placeholder}
                             className="flex-1 min-w-0 bg-transparent h-11 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
                             aria-label="Buscar en Musikeeo"
                         />
@@ -220,33 +298,175 @@ const Hero = () => {
                         </button>
                     </motion.form>
 
-                    <motion.div variants={fadeUp} className="mt-4 flex flex-wrap gap-2">
-                        {QUICK_SEARCHES.map(s => (
-                            <Link key={s.label} to={s.to} className="px-3 py-1.5 rounded-full border border-white/10 bg-white/5 text-sm text-foreground/80 hover:border-primary/50 hover:text-primary transition-colors">
-                                {s.label}
-                            </Link>
-                        ))}
-                    </motion.div>
-
-                    <motion.div variants={fadeUp} className="mt-10 flex flex-col sm:flex-row gap-3">
-                        {user ? (
-                            <Link to="/panel" className="group h-14 px-7 rounded-2xl bg-primary text-primary-foreground font-bold text-base flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-[0_0_40px_var(--primary-glow)]">
-                                Ir a mi panel <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-                            </Link>
-                        ) : (
-                            <Link to="/register" className="group h-14 px-7 rounded-2xl bg-primary text-primary-foreground font-bold text-base flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-[0_0_40px_var(--primary-glow)]">
-                                Crear perfil gratis <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
-                            </Link>
-                        )}
-                        <Link to="/discover" className="h-14 px-7 rounded-2xl border border-white/15 bg-white/5 backdrop-blur text-foreground font-bold text-base flex items-center justify-center gap-2 hover:bg-white/10 transition-colors">
-                            Explorar sin cuenta
-                        </Link>
-                    </motion.div>
+                    <AnimatePresence mode="wait">
+                        <motion.div
+                            key={seg.key}
+                            initial={{ opacity: 0, y: 8 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            exit={{ opacity: 0, y: -8 }}
+                            transition={{ duration: 0.25 }}
+                        >
+                            <p className="mt-4 text-sm text-foreground/70">{seg.pitch}</p>
+                            <div className="mt-6 flex flex-col sm:flex-row gap-3">
+                                <Link to={primary.to} className="group h-14 px-7 rounded-2xl bg-primary text-primary-foreground font-bold text-base flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-[0_0_40px_var(--primary-glow)]">
+                                    {primary.label} <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
+                                </Link>
+                                <Link to={seg.secondary.to} className="h-14 px-7 rounded-2xl border border-white/15 bg-black/30 backdrop-blur text-foreground font-bold text-base flex items-center justify-center gap-2 hover:bg-white/10 transition-colors">
+                                    {seg.secondary.label}
+                                </Link>
+                            </div>
+                        </motion.div>
+                    </AnimatePresence>
                 </motion.div>
             </div>
         </section>
     );
 };
+
+// Hoy: el caos de siempre. Con Musikeeo: un sitio.
+const Problem = () => (
+    <section className="px-4 md:px-10 py-16 md:py-24">
+        <div className="max-w-6xl mx-auto">
+            <Reveal>
+                <SectionTitle kicker="El problema" title="Así se organiza hoy un bolo." />
+            </Reveal>
+            <div className="grid md:grid-cols-2 gap-4">
+                {/* Antes */}
+                <Reveal className="relative rounded-3xl border border-white/10 bg-card p-6 md:p-8 overflow-hidden min-h-[360px]">
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-6">Sin Musikeeo</p>
+                    <div className="relative space-y-3">
+                        {CHAOS.map((m, i) => (
+                            <motion.div
+                                key={i}
+                                initial={{ opacity: 0, x: i % 2 ? 20 : -20, rotate: 0 }}
+                                whileInView={{ opacity: 1, x: 0, rotate: m.rot }}
+                                viewport={{ once: true }}
+                                transition={{ delay: 0.15 * i, duration: 0.4 }}
+                                className={`max-w-[88%] rounded-2xl px-4 py-3 bg-background/80 border border-white/10 ${i % 2 ? 'ml-auto' : ''}`}
+                            >
+                                <p className="text-[11px] font-bold text-muted-foreground">{m.from}</p>
+                                <p className="text-sm text-foreground/90 mt-0.5">{m.text}</p>
+                            </motion.div>
+                        ))}
+                    </div>
+                </Reveal>
+                {/* Después */}
+                <Reveal delay={0.1} className="relative rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/15 via-card to-card p-6 md:p-8 overflow-hidden">
+                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-6">Con Musikeeo</p>
+                    <h3 className="font-heading text-3xl md:text-4xl font-bold tracking-tighter leading-[1.05]">Un sitio. Toda la escena.</h3>
+                    <ul className="mt-6 space-y-3">
+                        {ORDER.map(item => (
+                            <li key={item} className="flex items-start gap-3 text-foreground/90">
+                                <span className="mt-0.5 h-6 w-6 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center"><Check className="h-4 w-4" strokeWidth={3} /></span>
+                                <span>{item}</span>
+                            </li>
+                        ))}
+                    </ul>
+                </Reveal>
+            </div>
+        </div>
+    </section>
+);
+
+// Todo lo que se puede hacer: el mapa del ecosistema
+const Ecosystem = () => (
+    <section className="px-4 md:px-10 py-16 md:py-24 border-t border-white/5">
+        <div className="max-w-6xl mx-auto">
+            <Reveal>
+                <SectionTitle kicker="Todo en un sitio" title="Todo lo que la música en directo necesita." />
+            </Reveal>
+            <Reveal className="relative rounded-[2rem] overflow-hidden border border-white/10 mb-4">
+                <img src="/images/home/ecosistema.webp" alt="Mapa de Musikeeo: escenario conectado con músicos, técnicos, salas y tiendas" loading="lazy" className="w-full aspect-[16/9] object-cover" />
+            </Reveal>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
+                {PILLARS.map(({ Icon, title, desc, to, soon }, i) => (
+                    <Reveal key={title} delay={i * 0.04}>
+                        <Link to={to} className="group h-full flex gap-4 rounded-2xl border border-white/10 bg-card p-5 hover:border-primary/40 transition-colors">
+                            <div className="h-11 w-11 shrink-0 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                                <Icon className="h-5 w-5" />
+                            </div>
+                            <div className="min-w-0">
+                                <p className="font-heading font-bold text-foreground flex items-center gap-2">
+                                    {title}
+                                    {soon && <span className="text-[10px] font-bold uppercase tracking-wide px-2 py-0.5 rounded-full border border-white/15 text-muted-foreground">Pronto</span>}
+                                </p>
+                                <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{desc}</p>
+                            </div>
+                        </Link>
+                    </Reveal>
+                ))}
+            </div>
+        </div>
+    </section>
+);
+
+// La microhistoria de la marca
+const Story2am = () => (
+    <section className="relative isolate overflow-hidden py-24 md:py-36">
+        <img src="/images/home/2am.webp" alt="" loading="lazy" className="absolute inset-0 -z-20 h-full w-full object-cover" />
+        <div className="absolute inset-0 -z-10 bg-gradient-to-r from-background via-background/85 to-background/30" />
+        <div className="max-w-6xl mx-auto px-4 md:px-10">
+            <Reveal className="max-w-xl">
+                <p className="text-primary text-xs font-bold uppercase tracking-[0.2em] mb-6">Sábado, 02:00</p>
+                <ol className="space-y-4 border-l-2 border-primary/40 pl-6">
+                    {STORY.map((s, i) => (
+                        <motion.li
+                            key={s.time}
+                            initial={{ opacity: 0, x: -12 }}
+                            whileInView={{ opacity: 1, x: 0 }}
+                            viewport={{ once: true }}
+                            transition={{ delay: 0.25 * i }}
+                            className="relative"
+                        >
+                            <span className="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full bg-primary shadow-[0_0_12px_var(--primary-glow)]" />
+                            <span className="font-heading font-bold text-primary mr-3">{s.time}</span>
+                            <span className="text-foreground/90">{s.text}</span>
+                        </motion.li>
+                    ))}
+                </ol>
+                <h2 className="mt-10 font-heading text-4xl md:text-6xl font-bold tracking-tightest leading-[0.95]">
+                    Ni un bolo se cancela por un cable<span className="text-primary">.</span>
+                </h2>
+                <div className="mt-8 flex flex-col sm:flex-row gap-3">
+                    <Link to="/market" className="h-12 px-6 rounded-2xl bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors">
+                        Buscar equipo cerca <ArrowRight className="h-5 w-5" />
+                    </Link>
+                    <Link to="/sonido" className="h-12 px-6 rounded-2xl border border-white/15 bg-black/30 backdrop-blur font-bold flex items-center justify-center hover:bg-white/10 transition-colors">
+                        Ver técnicos
+                    </Link>
+                </div>
+            </Reveal>
+        </div>
+    </section>
+);
+
+// De dónde sale Musikeeo
+const Origin = () => (
+    <section className="px-4 md:px-10 py-16 md:py-24">
+        <div className="max-w-6xl mx-auto grid md:grid-cols-2 gap-8 md:gap-14 items-center">
+            <Reveal className="relative rounded-[2rem] overflow-hidden border border-white/10">
+                <img src="/images/home/boda.webp" alt="Banda de rumba tocando en una boda" loading="lazy" className="w-full aspect-[4/3] object-cover" />
+            </Reveal>
+            <Reveal delay={0.1}>
+                <p className="text-primary text-xs font-bold uppercase tracking-[0.2em] mb-4">Hecho por músicos</p>
+                <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tighter leading-[1.05]">
+                    Nace en un escenario, no en una oficina.
+                </h2>
+                <p className="mt-5 text-muted-foreground text-lg leading-relaxed">
+                    Musikeeo lo crea un músico que lleva más de diez años tocando en bodas, bares y festivales, y que se cansó de cuadrar cada bolo a base de audios, llamadas y favores.
+                </p>
+                <p className="mt-4 text-muted-foreground text-lg leading-relaxed">
+                    La idea es simple: que encontrar a la banda, al técnico, la sala o el ampli que te falta sea tan fácil como pedir la cena.
+                </p>
+                <div className="mt-8 flex items-center gap-6 font-heading text-2xl md:text-3xl font-bold tracking-tight">
+                    <span>Conecta<span className="text-primary">.</span></span>
+                    <span>Crea<span className="text-primary">.</span></span>
+                    <span>Suena<span className="text-primary">.</span></span>
+                </div>
+            </Reveal>
+        </div>
+    </section>
+);
 
 const Marquee = () => (
     <div className="relative overflow-hidden bg-primary py-4 -rotate-1 scale-[1.02] my-6" aria-hidden>
@@ -602,10 +822,14 @@ const Home = () => (
     <div className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary selection:text-primary-foreground">
         <Hero />
         <Marquee />
+        <Problem />
+        <Ecosystem />
         <Roles />
         <ArtistsRow />
+        <Story2am />
         <Gear />
         <RodrigoSection />
+        <Origin />
         <HowItWorks />
         <FinalCta />
         <HomeFooter />
