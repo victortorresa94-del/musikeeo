@@ -862,7 +862,8 @@ const HomeFooter = () => (
 // ─── Página ──────────────────────────────────────────────────────────────────
 
 const Home = () => (
-    <div className="min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary selection:text-primary-foreground">
+    // La home es siempre oscura: la marca vive en negro aunque el usuario prefiera claro
+    <div className="dark min-h-screen bg-background text-foreground overflow-x-hidden selection:bg-primary selection:text-primary-foreground">
         <Hero />
         <Marquee />
         <Problem />

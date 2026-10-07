@@ -17,7 +17,7 @@ export default function CookieBanner() {
                     role="dialog"
                     aria-live="polite"
                     aria-label="Aviso de cookies"
-                    className="fixed bottom-3 left-3 right-3 md:bottom-6 md:left-auto md:right-6 md:max-w-md z-[60]"
+                    className="fixed bottom-[calc(4.75rem+env(safe-area-inset-bottom))] left-3 right-3 md:bottom-6 md:left-auto md:right-6 md:max-w-md z-[60]"
                 >
                     <div className="bg-card border border-border rounded-2xl shadow-2xl p-5 backdrop-blur-md">
                         <div className="flex items-start gap-3 mb-4">
@@ -37,13 +37,13 @@ export default function CookieBanner() {
                         <div className="flex flex-col sm:flex-row gap-2">
                             <button
                                 onClick={reject}
-                                className="flex-1 h-10 rounded-xl bg-muted hover:bg-muted/80 text-foreground text-sm font-semibold transition-colors border border-border"
+                                className="w-full sm:flex-1 h-11 shrink-0 rounded-xl bg-muted hover:bg-muted/80 text-foreground text-sm font-semibold transition-colors border border-border"
                             >
                                 Solo necesarias
                             </button>
                             <button
                                 onClick={accept}
-                                className="flex-1 h-10 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold transition-colors"
+                                className="w-full sm:flex-1 h-11 shrink-0 rounded-xl bg-primary hover:bg-primary/90 text-primary-foreground text-sm font-bold transition-colors"
                             >
                                 Aceptar todas
                             </button>

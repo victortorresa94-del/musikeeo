@@ -1,14 +1,16 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
     Play, Heart, MessageCircle, Share2, BadgeCheck, ShoppingBag, Calendar,
     ArrowRight, Image as ImageIcon, Plus, Music2, Speaker, Sparkles, MapPin, Info, Check,
 } from 'lucide-react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
 import { useAuth } from '../../context/AuthContext';
-import { MOCK_REELS } from '../../services/reelsData';
+import { MOCK_REELS, LOCAL_REELS, MOCK_POSTS, type FeedPost } from '../../services/reelsData';
+import ReelsViewer from '../reels/ReelsViewer';
 import { eventService } from '../../services/eventService';
 import { getArtists } from '../../services/artistService';
 import type { Artist, Event, Listing } from '../../types';
@@ -35,6 +37,38 @@ const SafeImg = ({ src, alt, className, fallback }: { src?: string; alt: string;
     const [broken, setBroken] = useState(!src);
     if (broken) return <div className={cn('flex items-center justify-center bg-gradient-to-br from-primary/20 via-muted to-muted', className)}>{fallback ?? <Music2 className="h-10 w-10 text-primary/60" />}</div>;
     return <img src={src} alt={alt} loading="lazy" decoding="async" onError={() => setBroken(true)} className={className} />;
+};
+
+// Vídeo del feed: se reproduce solo cuando está en pantalla (como Instagram)
+const InlineVideo = ({ src, poster, className }: { src: string; poster: string; className?: string }) => {
+    const ref = useRef<HTMLVideoElement>(null);
+    const [near, setNear] = useState(false);
+    useEffect(() => {
+        const v = ref.current;
+        if (!v) return;
+        const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+        const io = new IntersectionObserver(([e]) => {
+            if (e.intersectionRatio > 0) setNear(true);
+            if (reduce) return;
+            if (e.intersectionRatio >= 0.6) v.play().catch(() => {});
+            else v.pause();
+        }, { threshold: [0, 0.6], rootMargin: '200px 0px' });
+        io.observe(v);
+        return () => io.disconnect();
+    }, []);
+    return (
+        <video
+            ref={ref}
+            src={near ? src : undefined}
+            poster={poster}
+            muted
+            loop
+            playsInline
+            preload="none"
+            className={className}
+            aria-hidden
+        />
+    );
 };
 
 // ─── Historias: tu reel + reels ──────────────────────────────────────────────
@@ -137,13 +171,19 @@ const ReelCard = ({ reel, onOpen }: { reel: Reel; onOpen: () => void }) => {
             </header>
 
             <div className="relative cursor-pointer select-none" onClick={onMediaTap} role="button" aria-label={`Reproducir reel de ${reel.authorName}`}>
-                <SafeImg src={reel.thumbnailUrl} alt="" className="w-full aspect-[4/5] object-cover" />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
-                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                    <span className="h-16 w-16 rounded-full bg-black/40 backdrop-blur-md border border-white/30 flex items-center justify-center">
-                        <Play className="h-7 w-7 text-white fill-white ml-1" />
-                    </span>
-                </div>
+                {reel.gumletId ? (
+                    <>
+                        <SafeImg src={reel.thumbnailUrl} alt="" className="w-full aspect-[4/5] object-cover" />
+                        <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <span className="h-16 w-16 rounded-full bg-black/40 backdrop-blur-md border border-white/30 flex items-center justify-center">
+                                <Play className="h-7 w-7 text-white fill-white ml-1" />
+                            </span>
+                        </div>
+                    </>
+                ) : (
+                    <InlineVideo src={reel.videoUrl} poster={reel.thumbnailUrl} className="w-full aspect-[4/5] object-cover bg-muted" />
+                )}
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent pointer-events-none" />
                 <span className="absolute bottom-3 right-3 text-xs font-semibold text-white/90 bg-black/50 backdrop-blur px-2 py-1 rounded-full">{fmt(reel.views)} vistas</span>
                 <AnimatePresence>
                     {burst > 0 && (
@@ -179,6 +219,57 @@ const ReelCard = ({ reel, onOpen }: { reel: Reel; onOpen: () => void }) => {
             <div className="px-4 pb-4">
                 <p className="text-sm text-foreground/90 line-clamp-2"><span className="font-bold mr-1.5">{reel.authorName.split(' ')[0]}</span>{reel.description}</p>
             </div>
+        </article>
+    );
+};
+
+// ─── Post de foto ────────────────────────────────────────────────────────────
+const PostCard = ({ post }: { post: FeedPost }) => {
+    const [liked, setLiked] = useState(false);
+    const [burst, setBurst] = useState(0);
+    const lastTap = useRef(0);
+    const like = (force?: boolean) => {
+        if (force && liked) { setBurst(b => b + 1); return; }
+        setLiked(v => !v);
+        if (!liked) setBurst(b => b + 1);
+        if (navigator.vibrate) navigator.vibrate(10);
+    };
+    const onTap = () => {
+        const now = Date.now();
+        if (now - lastTap.current < 280) { like(true); lastTap.current = 0; } else lastTap.current = now;
+    };
+    return (
+        <article className="bg-card md:border border-y border-border md:rounded-2xl overflow-hidden -mx-4 md:mx-0">
+            <header className="flex items-center gap-3 px-4 py-3">
+                <Avatar name={post.authorName} className="h-10 w-10 text-sm" />
+                <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-foreground flex items-center gap-1 truncate">
+                        {post.authorName}
+                        {post.authorVerified && <BadgeCheck className="h-4 w-4 text-primary shrink-0" aria-label="Verificado" />}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{post.authorRole}</p>
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground border border-border rounded-full px-2 py-0.5">Demo</span>
+            </header>
+            <div className="relative select-none" onClick={onTap}>
+                <SafeImg src={post.image} alt="" className="w-full aspect-[4/5] object-cover" />
+                <AnimatePresence>
+                    {burst > 0 && (
+                        <motion.div key={burst} initial={{ scale: 0.3, opacity: 0 }} animate={{ scale: [0.3, 1.15, 1], opacity: [0, 1, 1] }} exit={{ scale: 1.4, opacity: 0 }}
+                            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }} onAnimationComplete={() => setTimeout(() => setBurst(0), 250)}
+                            className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <Heart className="h-24 w-24 text-primary fill-primary" />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+            <div className="flex items-center px-2 pt-1">
+                <button onClick={() => like()} aria-pressed={liked} aria-label={liked ? 'Quitar me gusta' : 'Me gusta'} className={cn('h-11 px-2.5 flex items-center gap-1.5 rounded-xl text-sm font-semibold', liked ? 'text-primary' : 'text-foreground/80')}>
+                    <Heart className={cn('h-6 w-6', liked && 'fill-current')} /> {fmt(post.likes + (liked ? 1 : 0))}
+                </button>
+                <span className="h-11 px-2.5 flex items-center gap-1.5 text-sm font-semibold text-foreground/80"><MessageCircle className="h-6 w-6" /> {fmt(post.comments)}</span>
+            </div>
+            <p className="px-4 pb-4 text-sm text-foreground/90 line-clamp-3"><span className="font-bold mr-1.5">{post.authorName}</span>{post.caption}</p>
         </article>
     );
 };
@@ -245,6 +336,7 @@ const NewArtistsCard = ({ artists }: { artists: Artist[] }) => (
 // ─── Página ──────────────────────────────────────────────────────────────────
 type FeedItem =
     | { kind: 'reel'; id: string; reel: Reel }
+    | { kind: 'post'; id: string; post: FeedPost }
     | { kind: 'listing'; id: string; l: Listing }
     | { kind: 'event'; id: string; e: Event }
     | { kind: 'artists'; id: string };
@@ -270,11 +362,25 @@ export default function Feed() {
     }, []);
 
     const go = (path: string) => user ? navigate(path) : navigate('/login', { state: { from: '/feed' } });
-    const openReel = (id: string) => navigate(`/reels/${id}`, { state: { source: 'feed', from: '/feed' } });
+    const location = useLocation();
+    const [searchParams, setSearchParams] = useSearchParams();
+    const openReelId = searchParams.get('reel');
+    const openReel = (id: string) => setSearchParams({ reel: id });
+    const closeReel = () => {
+        // Si se abrió desde el feed, «atrás» de verdad; si entró por enlace directo, quitar el parámetro
+        if (location.key !== 'default') navigate(-1);
+        else setSearchParams({}, { replace: true });
+    };
+    const viewerIndex = openReelId ? Math.max(0, MOCK_REELS.findIndex(r => r.id === openReelId)) : 0;
 
     // Intercala lo real (bolos, mercado, artistas) entre los reels de muestra
     const items = useMemo<FeedItem[]>(() => {
-        const reels: FeedItem[] = MOCK_REELS.slice(0, 5).map(r => ({ kind: 'reel', id: r.id, reel: r }));
+        // Contenido de muestra: vídeos propios intercalados con posts de foto
+        const reels: FeedItem[] = [];
+        LOCAL_REELS.forEach((r, i) => {
+            reels.push({ kind: 'reel', id: r.id, reel: r });
+            if (MOCK_POSTS[i]) reels.push({ kind: 'post', id: MOCK_POSTS[i].id, post: MOCK_POSTS[i] });
+        });
         const real: FeedItem[] = [
             ...events.map(e => ({ kind: 'event' as const, id: `e-${e.id}`, e })),
             ...(artists.length >= 2 ? [{ kind: 'artists' as const, id: 'artists' }] : []),
@@ -311,11 +417,22 @@ export default function Feed() {
             <div className="space-y-4">
                 {items.map(it => {
                     if (it.kind === 'reel') return <ReelCard key={it.id} reel={it.reel} onOpen={() => openReel(it.reel.id)} />;
+                    if (it.kind === 'post') return <PostCard key={it.id} post={it.post} />;
                     if (it.kind === 'listing') return <ListingCard key={it.id} l={it.l} />;
                     if (it.kind === 'event') return <EventCard key={it.id} e={it.e} />;
                     return <NewArtistsCard key={it.id} artists={artists} />;
                 })}
             </div>
+
+            {/* Portal: el contenedor de página lleva transform y descolocaría el fixed */}
+            {createPortal(
+                <AnimatePresence>
+                    {openReelId && (
+                        <ReelsViewer key="viewer" reels={MOCK_REELS} initialIndex={viewerIndex} onClose={closeReel} />
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
 
             {/* Final del feed: qué hacer ahora */}
             <section className="text-center rounded-3xl border border-border bg-gradient-to-b from-primary/10 to-transparent px-6 py-10">

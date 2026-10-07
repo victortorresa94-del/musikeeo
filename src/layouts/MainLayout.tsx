@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Outlet } from 'react-router-dom';
+import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from '../components/layout/Sidebar';
 import { TopBar } from '../components/layout/TopBar';
 import { BottomNav } from '../components/layout/BottomNav';
@@ -9,8 +9,12 @@ export const MainLayout = () => {
     const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
+    // La home es siempre oscura (también su barra superior y la de navegación)
+    const { pathname } = useLocation();
+    const forceDark = pathname === '/home' || pathname === '/';
+
     return (
-        <div className="flex min-h-screen bg-background text-foreground overflow-x-clip">
+        <div className={`flex min-h-screen bg-background text-foreground overflow-x-clip ${forceDark ? 'dark' : ''}`}>
             <Sidebar />
             <div className="flex-1 flex flex-col min-w-0 relative">
                 <TopBar onMenuClick={toggleMobileMenu} />

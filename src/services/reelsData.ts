@@ -26,7 +26,65 @@ const MUSIC_THUMBNAILS = [
     '/images/home/ecosistema.webp',
 ];
 
+// Reels de muestra con vídeo propio (Aura Studio, /public/reels): se reproducen
+// solos en el feed y en el visor a pantalla completa. Marcados como demo en la UI.
+const H = 1000 * 60 * 60;
+export const LOCAL_REELS: Reel[] = [
+    {
+        id: 'demo_boda', videoUrl: '/reels/boda-rumba.mp4', thumbnailUrl: '/reels/boda-rumba.webp',
+        authorId: 'demo', authorName: 'Rumba Sur', authorPhoto: '', authorRole: 'musician', authorVerified: true,
+        description: 'Así acabó la boda en Sitges 💃 ¿Rumba hasta las 3? Siempre. #rumba #bodas #directo',
+        songTitle: 'Sarandonga (versión)', songArtist: 'Rumba Sur',
+        likes: 3120, comments: 214, shares: 98, views: 61200, timestamp: Date.now() - 3 * H,
+        tags: ['rumba', 'bodas', 'directo'], duration: 5,
+    },
+    {
+        id: 'demo_flamenco', videoUrl: '/reels/flamenco.mp4', thumbnailUrl: '/reels/flamenco.webp',
+        authorId: 'demo', authorName: 'Toni del Sur', authorPhoto: '', authorRole: 'musician', authorVerified: false,
+        description: 'Rasgueo de bulería en el tablao de los jueves. Busco cantaor para gira de verano 🎸 #flamenco #guitarra',
+        songTitle: 'Bulería del jueves', songArtist: 'Toni del Sur',
+        likes: 1840, comments: 97, shares: 41, views: 28400, timestamp: Date.now() - 7 * H,
+        tags: ['flamenco', 'guitarra'], duration: 5,
+    },
+    {
+        id: 'demo_dj', videoUrl: '/reels/dj-azotea.mp4', thumbnailUrl: '/reels/dj-azotea.webp',
+        authorId: 'demo', authorName: 'DJ Marta Vidal', authorPhoto: '', authorRole: 'musician', authorVerified: true,
+        description: 'Sunset set en una azotea de Barcelona 🌅 Libre para eventos privados en noviembre. #dj #sunset #barcelona',
+        songTitle: 'Sunset set', songArtist: 'Marta Vidal',
+        likes: 5230, comments: 311, shares: 160, views: 98700, timestamp: Date.now() - 20 * H,
+        tags: ['dj', 'sunset', 'barcelona'], duration: 5,
+    },
+    {
+        id: 'demo_monigotes', videoUrl: '/reels/banda-monigotes.mp4', thumbnailUrl: '/reels/banda-monigotes.webp',
+        authorId: 'demo', authorName: 'Musikeeo', authorPhoto: '/logo-musikeeo.png', authorRole: 'organizer', authorVerified: true,
+        description: 'Pide una banda como pides sushi 🍣🎸 Esto es Musikeeo. #musikeeo #musicaendirecto',
+        songTitle: 'Conecta. Crea. Suena.', songArtist: 'Musikeeo',
+        likes: 980, comments: 45, shares: 77, views: 12900, timestamp: Date.now() - 30 * H,
+        tags: ['musikeeo'], duration: 5,
+    },
+];
+
+// Posts de foto de muestra (imágenes propias de Aura Studio)
+export interface FeedPost {
+    id: string;
+    authorName: string;
+    authorRole: string;
+    authorVerified?: boolean;
+    image: string;
+    caption: string;
+    likes: number;
+    comments: number;
+    timestamp: number;
+}
+
+export const MOCK_POSTS: FeedPost[] = [
+    { id: 'post_2am', authorName: 'Lucía Sound', authorRole: 'Técnica de sonido', authorVerified: true, image: '/images/home/2am.webp', caption: 'Las 2:00, recogiendo después del bolo. El cable que salvó la noche lo trajo un compañero de Musikeeo en 10 minutos 🙌', likes: 742, comments: 38, timestamp: Date.now() - 5 * H },
+    { id: 'post_sala', authorName: 'Sala Luna', authorRole: 'Sala de conciertos', authorVerified: true, image: '/images/home/role-sala.webp', caption: 'Escenario listo para el ciclo de otoño. Tenemos jueves libres en noviembre: escribidnos por aquí 🎤', likes: 512, comments: 64, timestamp: Date.now() - 12 * H },
+    { id: 'post_ampli', authorName: 'Backline BCN', authorRole: 'Tienda y alquiler', authorVerified: false, image: '/images/home/role-tienda.webp', caption: 'Nuevo en el almacén para alquilar por días. Precio especial para bandas de Musikeeo ⚡', likes: 288, comments: 19, timestamp: Date.now() - 26 * H },
+];
+
 export const MOCK_REELS: Reel[] = [
+    ...LOCAL_REELS,
     {
         id: 'reel_1',
         videoUrl: getGumletPlayerUrl(GUMLET_VIDEO_IDS[0]),

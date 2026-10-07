@@ -43,6 +43,14 @@ export const RodrigoFloatingChat = () => {
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const isDegraded = errorCount >= 2;
     const location = useLocation();
+    // Al bajar, la píldora se encoge a círculo para no tapar contenido
+    const [compact, setCompact] = useState(false);
+    useEffect(() => {
+        const onScroll = () => setCompact(window.scrollY > 160);
+        onScroll();
+        window.addEventListener('scroll', onScroll, { passive: true });
+        return () => window.removeEventListener('scroll', onScroll);
+    }, [location.pathname]);
     const navigate = useNavigate();
 
     // Auto-scroll to bottom when new messages arrive
@@ -138,7 +146,8 @@ export const RodrigoFloatingChat = () => {
     };
 
     // Don't show on Rodrigo landing page (it has its own chat)
-    if (location.pathname === '/rodrigo') {
+    // Tampoco en pantallas a pantalla completa o de escritura (reels, chat, auth, publicar)
+    if (location.pathname === '/rodrigo' || /^\/(reels|messages|login|register|onboarding|publicar|forgot-password)/.test(location.pathname) || new URLSearchParams(location.search).has('reel')) {
         return null;
     }
 
@@ -148,14 +157,24 @@ export const RodrigoFloatingChat = () => {
             <AnimatePresence>
                 {!isOpen && (
                     <motion.button
-                        initial={{ scale: 0, opacity: 0 }}
+                        layout
+                        initial={{ scale: 0.6, opacity: 0 }}
                         animate={{ scale: 1, opacity: 1 }}
-                        exit={{ scale: 0, opacity: 0 }}
+                        exit={{ scale: 0.6, opacity: 0 }}
+                        transition={{ type: 'spring', stiffness: 420, damping: 32 }}
                         onClick={() => setIsOpen(true)}
-                        className="fixed bottom-[76px] right-4 z-40 flex h-12 w-12 items-center justify-center rounded-full bg-[#FFD84D] text-black shadow-[0_4px_20px_rgba(250,208,56,0.4)] transition-transform hover:scale-110 active:scale-95 overflow-hidden border-2 border-[#FFD84D] md:bottom-6 md:right-6"
-                        title="Habla con Rodrigo"
+                        aria-label="Habla con Rodrigo, tu mánager IA"
+                        className={`fixed right-4 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:bottom-6 md:right-6 z-40 flex items-center gap-2 h-12 rounded-full bg-card/95 backdrop-blur-xl border border-primary/50 pl-1 shadow-[0_8px_30px_rgba(0,0,0,0.5)] active:scale-95 ${compact ? 'pr-1' : 'pr-4'}`}
                     >
-                        <img src={RODRIGO_AVATAR} alt="Rodrigo" loading="lazy" className="w-full h-full object-cover" />
+                        <span className="relative h-10 w-10 shrink-0">
+                            <img src={RODRIGO_AVATAR} alt="" loading="lazy" className="h-10 w-10 rounded-full object-cover" />
+                            <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary border-2 border-card" />
+                        </span>
+                        {!compact && (
+                            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm font-bold text-foreground whitespace-nowrap">
+                                Rodrigo <span className="text-primary">IA</span>
+                            </motion.span>
+                        )}
                     </motion.button>
                 )}
             </AnimatePresence>
@@ -167,7 +186,7 @@ export const RodrigoFloatingChat = () => {
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="fixed bottom-[148px] right-2 z-50 w-[min(400px,calc(100vw-16px))] h-[min(560px,calc(100dvh-200px))] bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden md:bottom-24 md:right-6"
+                        className="fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom))] right-2 z-50 w-[min(400px,calc(100vw-16px))] h-[min(560px,calc(100dvh-200px))] bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden md:bottom-24 md:right-6"
                     >
                         {/* Header */}
                         <div className="flex items-center gap-3 p-4 border-b border-white/10 bg-[#0A0A0A]">
