@@ -37,6 +37,8 @@ Tagline: "Conecta. Crea. Suena."
   - Engine: rodrigoEngine.ts → openrouter.ts (wrapper cliente, nombre histórico) → POST /api/chat (Vercel serverless) → api.moonshot.ai
   - Model: kimi-k2-turbo-preview (override con env KIMI_MODEL)
   - API key: KIMI_API_KEY (Vercel env var, never in frontend bundle)
+  - Prompt real: `api/chat.ts` (RODRIGO_SYSTEM_PROMPT del servidor; `src/lib/rodrigoPrompt.ts` es una copia antigua)
+  - Borradores desde el chat: Rodrigo emite bloques `[CREAR_ANUNCIO]`, `[PUBLISH_EVENT]` (bolo) y `[CREAR_PERFIL]` → `rodrigoEngine.parseResponse` → `RodrigoDraftCard` (resumen + «Publicar»). Nada se publica sin que el usuario pulse; publica con su sesión vía `src/services/rodrigoActions.ts` (mismos campos que los formularios). Sin sesión → login y vuelta
 
 ## Architecture Rules
 - All pages in `src/pages/`

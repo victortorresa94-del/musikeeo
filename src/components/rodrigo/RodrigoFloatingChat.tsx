@@ -1,7 +1,7 @@
 import { useState, useEffect, useRef } from 'react';
-import { X, ArrowUp, Mic, Music, Search, Calendar } from 'lucide-react';
+import { X, ArrowUp, Mic, Music, Search, Calendar, ShoppingBag, UserRound } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useLocation } from 'react-router-dom';
 import {
     generateResponse,
     createInitialState,
@@ -9,6 +9,7 @@ import {
 } from '../../lib/rodrigoEngine';
 import type { ConversationState, ParsedResponse } from '../../lib/rodrigoEngine';
 import { ArtistRecommendations, BoloRecommendations } from './ArtistRecommendation';
+import { RodrigoDraftCard, draftsFrom } from './RodrigoDraftCard';
 
 const RODRIGO_AVATAR = '/rodrigo-persona.png';
 
@@ -23,7 +24,9 @@ interface Message {
 const QUICK_ACTIONS = [
     { icon: Search, label: 'Buscar músicos', prompt: 'Quiero buscar músicos para un evento' },
     { icon: Music, label: 'Soy músico', prompt: 'Soy músico y busco bolos' },
-    { icon: Calendar, label: 'Crear evento', prompt: 'Quiero crear un evento' },
+    { icon: Calendar, label: 'Publicar bolo', prompt: 'Quiero publicar un bolo' },
+    { icon: ShoppingBag, label: 'Vender equipo', prompt: 'Quiero vender o alquilar equipo' },
+    { icon: UserRound, label: 'Crear mi perfil', prompt: 'Soy músico y quiero crear mi perfil' },
 ];
 
 export const RodrigoFloatingChat = () => {
@@ -52,7 +55,6 @@ export const RodrigoFloatingChat = () => {
         window.addEventListener('scroll', onScroll, { passive: true });
         return () => window.removeEventListener('scroll', onScroll);
     }, [location.pathname]);
-    const navigate = useNavigate();
 
     // Auto-scroll to bottom when new messages arrive
     useEffect(() => {
@@ -116,14 +118,6 @@ export const RodrigoFloatingChat = () => {
 
             setMessages(prev => [...prev, aiMessage]);
 
-            if (response.publishEvent) {
-                setTimeout(() => {
-                    navigate('/eventos/crear', {
-                        state: { eventDraft: response.publishEvent }
-                    });
-                    setIsOpen(false);
-                }, 2000);
-            }
         } catch (error) {
             console.error('Error sending message:', error);
             const newCount = errorCount + 1;
@@ -239,6 +233,11 @@ export const RodrigoFloatingChat = () => {
                                         {message.parsedContent?.bolos && message.parsedContent.bolos.length > 0 && (
                                             <BoloRecommendations bolos={message.parsedContent.bolos} />
                                         )}
+
+                                        {/* Borradores que Rodrigo prepara (anuncio, bolo, perfil) */}
+                                        {draftsFrom(message.parsedContent).map((d, i) => (
+                                            <RodrigoDraftCard key={`${message.id}-${i}`} draft={d} />
+                                        ))}
                                     </div>
                                 </div>
                             ))}

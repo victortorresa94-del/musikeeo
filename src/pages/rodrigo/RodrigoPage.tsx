@@ -11,6 +11,7 @@ import {
 } from '../../lib/rodrigoEngine';
 import type { ConversationState, ParsedResponse } from '../../lib/rodrigoEngine';
 import { ArtistRecommendations, BoloRecommendations } from '../../components/rodrigo/ArtistRecommendation';
+import { RodrigoDraftCard, draftsFrom } from '../../components/rodrigo/RodrigoDraftCard';
 
 const RODRIGO_AVATAR = '/rodrigo-persona.png';
 
@@ -347,6 +348,10 @@ export default function RodrigoPage() {
                                             {message.parsedContent?.bolos && message.parsedContent.bolos.length > 0 && (
                                                 <BoloRecommendations bolos={message.parsedContent.bolos} />
                                             )}
+
+                                            {draftsFrom(message.parsedContent).map((d, i) => (
+                                                <RodrigoDraftCard key={`${message.id}-${i}`} draft={d} />
+                                            ))}
                                         </div>
                                     </div>
                                 ))}
