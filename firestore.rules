@@ -12,11 +12,33 @@ service cloud.firestore {
       return isAuthenticated() && request.auth.uid == userId;
     }
 
-    // Users Collection
-    // Public read for basic info, private write
+    // Campos de confianza que solo un admin (consola / Admin SDK) puede tocar
+    function touchesTrustFields() {
+      return request.resource.data.keys().hasAny(['verified', 'stats'])
+        && (resource == null
+            || request.resource.data.diff(resource.data).affectedKeys().hasAny(['verified', 'stats']));
+    }
+
+    // Users Collection — PRIVADO (contiene email). Solo el dueño lee y escribe.
+    // Lo que ven los demás está en publicProfiles.
     match /users/{userId} {
+      allow read: if isOwner(userId);
+      allow create, update: if isOwner(userId) && !touchesTrustFields();
+      allow delete: if isOwner(userId);
+    }
+
+    // Perfil público (sin email). Lectura abierta; el dueño solo escribe campos permitidos.
+    match /publicProfiles/{userId} {
       allow read: if true;
-      allow write: if isOwner(userId);
+      allow create, update: if isOwner(userId)
+        && request.resource.data.uid == userId
+        && request.resource.data.keys().hasOnly([
+             'uid', 'displayName', 'photoURL', 'primaryMode', 'activeModes',
+             'location', 'bio', 'skills', 'genres', 'tags', 'createdAt',
+             'verified', 'stats'
+           ])
+        && !touchesTrustFields();
+      allow delete: if isOwner(userId);
     }
 
     // Artists Collection
@@ -68,9 +90,13 @@ service cloud.firestore {
     // Chats Collection
     match /chats/{chatId} {
       // Allow create if authenticated and you are one of the participants
-      allow create: if isAuthenticated() && request.resource.data.participants.hasAny([request.auth.uid]);
-      // Allow read if you are a participant
-      allow read: if isAuthenticated() && resource.data.participants.hasAny([request.auth.uid]);
+      allow create: if isAuthenticated()
+        && request.resource.data.participants.hasAny([request.auth.uid])
+        && request.resource.data.participants.size() == 2;
+      // Read if you are a participant. resource == null permite que createChat
+      // compruebe si el chat ya existe (si no, getDoc daba permission-denied).
+      allow read: if isAuthenticated()
+        && (resource == null || resource.data.participants.hasAny([request.auth.uid]));
       // Allow update if you are a participant (e.g. updating lastMessage)
       allow update: if isAuthenticated() && resource.data.participants.hasAny([request.auth.uid]);
 

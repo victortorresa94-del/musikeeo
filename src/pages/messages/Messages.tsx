@@ -1,5 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { Search, Phone, Video, MoreVertical, Send, Mic, ArrowLeft } from 'lucide-react';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
@@ -19,6 +19,17 @@ export default function Messages() {
     const [inputText, setInputText] = useState("");
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [mobileView, setMobileView] = useState<'list' | 'chat'>('list');
+    const navigate = useNavigate();
+
+    // "Contactar" desde mercado/perfiles llega como /messages?userId=X:
+    // crea (o reutiliza) el chat y lo abre.
+    useEffect(() => {
+        const targetId = new URLSearchParams(location.search).get('userId');
+        if (!user || !targetId || targetId === user.uid) return;
+        chatService.createChat(user.uid, targetId)
+            .then(chatId => navigate('/messages', { replace: true, state: { selectedChatId: chatId } }))
+            .catch(err => console.error('No se pudo abrir el chat:', err));
+    }, [user, location.search, navigate]);
 
     // Handle navigation from other pages with a pre-selected chat
     useEffect(() => {
@@ -49,7 +60,7 @@ export default function Messages() {
                 let otherUser = undefined;
                 if (otherId) {
                     try {
-                        const userProfile = await userService.getUserProfile(otherId);
+                        const userProfile = await userService.getPublicProfile(otherId);
                         if (userProfile) {
                             otherUser = {
                                 uid: userProfile.uid,

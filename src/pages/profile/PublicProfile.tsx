@@ -38,7 +38,7 @@ export default function PublicProfile() {
             if (!id) return;
             try {
                 // Fetch basic user profile
-                const userData = await userService.getUserProfile(id);
+                const userData = await userService.getPublicProfile(id);
 
                 // Fetch artist profile
                 const artistData = await getArtistByUserId(id);

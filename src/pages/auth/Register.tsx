@@ -11,6 +11,7 @@ import { Button } from '../../components/ui/button';
 import { Input } from '../../components/ui/input';
 import { AlertCircle, Loader2 } from 'lucide-react';
 import type { User } from '../../types';
+import { userService } from '../../services/userService';
 
 const Label = ({ children, htmlFor }: { children: React.ReactNode; htmlFor?: string }) => (
     <label htmlFor={htmlFor} className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70 mb-2 block">
@@ -67,6 +68,7 @@ export default function Register() {
             };
 
             await setDoc(doc(db, 'users', firebaseUser.uid), newUser);
+            await userService.syncPublicProfile(firebaseUser.uid, newUser);
 
             // Email de verificación (no bloqueante: si falla, seguimos al onboarding)
             try {

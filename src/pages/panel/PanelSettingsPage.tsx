@@ -90,7 +90,8 @@ export default function PanelSettingsPage() {
             listingsSnap.docs.forEach(d => batch.update(d.ref, { available: false, deletedByUser: true }));
             await batch.commit();
 
-            // Delete user profile doc
+            // Delete user profile docs (privado + público)
+            await deleteDoc(doc(db, 'publicProfiles', user.uid));
             await deleteDoc(doc(db, 'users', user.uid));
 
             // Delete Firebase Auth account (must be recent login — Firebase exigirá re-auth si no)

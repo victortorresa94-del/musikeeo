@@ -1,8 +1,9 @@
 import {
-    collection, query, where, getDocs, getDoc, doc, addDoc,
+    collection, query, where, getDocs, doc, addDoc,
     updateDoc, serverTimestamp
 } from 'firebase/firestore';
 import { db } from '../lib/firebase';
+import { userService } from './userService';
 
 export interface Application {
     id?: string;
@@ -73,9 +74,8 @@ export const applicationService = {
 
         const enriched = await Promise.all(apps.map(async (a) => {
             try {
-                const userSnap = await getDoc(doc(db, 'users', a.applicantId));
-                if (userSnap.exists()) {
-                    const u = userSnap.data();
+                const u = await userService.getPublicProfile(a.applicantId);
+                if (u) {
                     return {
                         ...a,
                         applicant: {

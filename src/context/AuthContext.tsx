@@ -3,6 +3,7 @@ import { type User as FirebaseUser, onAuthStateChanged, GoogleAuthProvider, sign
 import { auth, db } from "../lib/firebase";
 import { doc, setDoc, getDoc } from "firebase/firestore";
 import type { User } from "../types";
+import { userService } from '../services/userService';
 
 interface AuthContextType {
     user: FirebaseUser | null;
@@ -54,6 +55,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 const profile = userSnap.data() as User;
                 setUserProfile(profile);
                 writeCachedProfile(profile);
+                // Mantiene publicProfiles al día (y lo crea para usuarios anteriores a la migración)
+                userService.syncPublicProfile(uid, profile);
             } else {
                 setUserProfile(null);
             }
@@ -133,6 +136,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                     }
                 };
                 await setDoc(userRef, newUser);
+                userService.syncPublicProfile(newUser.uid, newUser);
                 setUserProfile(newUser);
             } else {
                 setUserProfile(userSnap.data() as User);
