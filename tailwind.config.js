@@ -64,9 +64,9 @@ export default {
                 },
             },
             fontFamily: {
-                heading: ["'Space Grotesk'", "'Inter'", "sans-serif"],
-                sans:    ["'Inter'", "sans-serif"],
-                mono:    ["'Rubik Mono One'", "monospace"],
+                heading: ["-apple-system", "BlinkMacSystemFont", "'SF Pro Display'", "'Segoe UI'", "Roboto", "'Helvetica Neue'", "Arial", "sans-serif"],
+                sans:    ["-apple-system", "BlinkMacSystemFont", "'SF Pro Text'", "'Segoe UI'", "Roboto", "'Helvetica Neue'", "Arial", "sans-serif"],
+                mono:    ["ui-monospace", "'SF Mono'", "Menlo", "monospace"],
             },
             letterSpacing: {
                 tight:    "-0.02em",

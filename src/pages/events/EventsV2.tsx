@@ -2,7 +2,7 @@ import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import {
     Search, Plus, SlidersHorizontal, Calendar, MapPin,
-    ArrowRight, Music, Zap, Users, Star, X,
+    ArrowRight, Music, X,
     Info,
 } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -144,7 +144,7 @@ const EventCardNew = ({ event, onClick }: { event: Event; onClick: () => void })
                 {/* Date badge */}
                 <div className="absolute top-3 left-3 bg-background/95 backdrop-blur-sm rounded-xl px-2.5 py-1.5 text-center min-w-[44px]">
                     <p className="text-[10px] font-bold text-primary uppercase leading-none">{month}</p>
-                    <p className="text-lg font-black text-foreground leading-tight">{day}</p>
+                    <p className="text-lg font-bold text-foreground leading-tight">{day}</p>
                 </div>
 
                 {/* Tags */}
@@ -158,7 +158,7 @@ const EventCardNew = ({ event, onClick }: { event: Event; onClick: () => void })
 
                 {/* Price bottom right */}
                 <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl">
-                    <span className="text-primary font-black text-sm">
+                    <span className="text-primary font-bold text-sm">
                         {event.price ? `${event.price.toLocaleString()}€` : 'A negociar'}
                     </span>
                 </div>
@@ -255,10 +255,10 @@ export default function EventsV2() {
                 {/* ── Page header ── */}
                 <div className="flex items-start justify-between gap-4 mb-6">
                     <div>
-                        <h1 className="text-2xl md:text-3xl font-heading font-black text-foreground tracking-tight">
-                            Tablón de Oportunidades
+                        <h1 className="text-[34px] leading-tight font-heading font-bold text-foreground tracking-tight">
+                            Bolos
                         </h1>
-                        <p className="text-muted-foreground mt-1">
+                        <p className="text-muted-foreground text-[15px] mt-0.5">
                             {loading ? 'Cargando...' : (
                                 <><span className="font-bold text-foreground">{filteredEvents.length}</span> oportunidades abiertas</>
                             )}
@@ -266,7 +266,7 @@ export default function EventsV2() {
                     </div>
                     <button
                         onClick={() => navigate('/publicar')}
-                        className="flex items-center gap-2 bg-primary text-primary-foreground font-bold h-11 px-4 rounded-xl hover:brightness-105 transition-all flex-shrink-0"
+                        className="mt-2 flex items-center gap-1.5 bg-primary text-primary-foreground text-[15px] font-semibold h-9 px-3.5 rounded-full active:opacity-80 flex-shrink-0"
                     >
                         <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Publicar anuncio</span><span className="sm:hidden">Publicar</span>
                     </button>
@@ -348,35 +348,16 @@ export default function EventsV2() {
                                 key={type}
                                 onClick={() => setActiveType(type)}
                                 className={cn(
-                                    'flex-shrink-0 h-8 px-4 rounded-full text-sm font-medium border transition-all',
+                                    'flex-shrink-0 h-8 px-3.5 rounded-full text-[14px] font-medium transition-colors',
                                     activeType === type
-                                        ? 'bg-primary text-primary-foreground border-primary shadow-sm'
-                                        : 'bg-muted border-border text-muted-foreground hover:border-primary/40 hover:text-foreground'
+                                        ? 'bg-foreground text-background'
+                                        : 'bg-foreground/[0.07] text-foreground/85'
                                 )}
                             >
                                 {type}
                             </button>
                         ))}
                     </div>
-                </div>
-
-                {/* ── Stats row ── */}
-                <div className="grid grid-cols-3 gap-3 mb-8">
-                    {[
-                        { icon: Zap, label: 'Urgentes', value: events.filter(e => e.tags?.includes('Urgente')).length, color: 'text-red-500 bg-red-500/10' },
-                        { icon: Users, label: 'Organizadores', value: new Set(events.map(e => e.organizerId)).size, color: 'text-primary bg-primary/10' },
-                        { icon: Star, label: 'Premium', value: events.filter(e => e.tags?.includes('Premium')).length, color: 'text-primary bg-primary/10' },
-                    ].map(({ icon: Icon, label, value, color }) => (
-                        <div key={label} className="bg-card border border-border rounded-xl p-3 flex items-center gap-3">
-                            <div className={cn('h-8 w-8 rounded-lg flex items-center justify-center flex-shrink-0', color)}>
-                                <Icon className="h-4 w-4" />
-                            </div>
-                            <div>
-                                <p className="text-lg font-black text-foreground leading-none">{value}</p>
-                                <p className="text-xs text-muted-foreground">{label}</p>
-                            </div>
-                        </div>
-                    ))}
                 </div>
 
                 {/* ── Events grid ── */}

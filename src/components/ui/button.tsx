@@ -9,7 +9,7 @@ const buttonVariants = cva(
     variants: {
       variant: {
         primary:
-          "bg-primary text-primary-foreground font-semibold rounded-xl hover:brightness-105 active:scale-95 hover:shadow-[0_0_20px_var(--primary-glow)]",
+          "bg-primary text-primary-foreground font-semibold rounded-xl hover:brightness-105 active:scale-95 hover:",
         ghost:
           "border border-primary/40 text-primary bg-transparent hover:bg-primary/10 rounded-xl active:scale-95",
         surface:
@@ -23,9 +23,9 @@ const buttonVariants = cva(
         outline:
           "border border-primary/40 text-primary bg-transparent hover:bg-primary/10 rounded-xl active:scale-95",
         glow:
-          "bg-primary text-primary-foreground font-semibold rounded-xl hover:brightness-105 active:scale-95 shadow-[0_0_20px_var(--primary-glow)] hover:shadow-[0_0_30px_var(--primary-glow)]",
+          "bg-primary text-primary-foreground font-semibold rounded-xl hover:brightness-105 active:scale-95 hover:",
         default:
-          "bg-primary text-primary-foreground font-semibold rounded-xl hover:brightness-105 active:scale-95 hover:shadow-[0_0_20px_var(--primary-glow)]",
+          "bg-primary text-primary-foreground font-semibold rounded-xl hover:brightness-105 active:scale-95 hover:",
         secondary:
           "bg-muted text-foreground border border-border hover:bg-muted/80 rounded-xl active:scale-95",
       },

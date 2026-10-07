@@ -34,14 +34,14 @@ const SEGMENTS = [
         secondary: { label: 'Ver bolos abiertos', to: '/eventos' },
     },
     {
-        key: 'sala', label: 'Tengo una sala',
+        key: 'sala', label: 'Tengo sala',
         placeholder: 'Rumba, jazz, tributo…', searchTo: '/discover',
         pitch: 'Publica tu fecha y recibe propuestas de artistas de la zona. Llena la agenda sin perseguir a nadie.',
         primary: { label: 'Publicar una fecha', to: '/publicar' },
         secondary: { label: 'Ver artistas', to: '/artistas' },
     },
     {
-        key: 'equipo', label: 'Equipo y tiendas',
+        key: 'equipo', label: 'Equipo',
         placeholder: 'Ampli, PA, batería…', searchTo: '/market',
         pitch: 'Compra, alquila o presta equipo a músicos de tu ciudad. Si tienes tienda, llega a quien está tocando ahora.',
         primary: { label: 'Publicar anuncio', to: '/market/create' },
@@ -180,7 +180,7 @@ const Reveal = ({ children, className, delay = 0 }: { children: React.ReactNode;
 const SectionTitle = ({ kicker, title, action }: { kicker: string; title: string; action?: React.ReactNode }) => (
     <div className="flex items-end justify-between gap-4 mb-8 md:mb-10">
         <div>
-            <p className="text-primary text-xs font-bold uppercase tracking-[0.2em] mb-3">{kicker}</p>
+            <p className="text-primary text-sm font-semibold mb-3">{kicker}</p>
             <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tighter leading-[1.05] text-foreground">{title}</h2>
         </div>
         {action}
@@ -283,9 +283,9 @@ const Hero = () => {
 
             <div className="w-full max-w-6xl mx-auto px-4 md:px-10 pt-[40svh] pb-14 md:py-24">
                 <motion.div initial="hidden" animate="show" variants={{ show: { transition: { staggerChildren: 0.1 } } }} className="max-w-2xl">
-                    <motion.div variants={fadeUp} className="inline-flex items-center gap-3 rounded-full border border-white/10 bg-black/40 backdrop-blur px-4 py-1.5 mb-6">
+                    <motion.div variants={fadeUp} className="inline-flex items-center gap-2.5 rounded-full bg-white/[0.08] backdrop-blur px-3 py-1 mb-5">
                         <Equalizer />
-                        <span className="text-xs font-semibold text-foreground/80 tracking-wide">Toda la música en directo, en una app</span>
+                        <span className="text-[13px] font-medium text-foreground/80">Toda la música en directo, en una app</span>
                     </motion.div>
 
                     <motion.h1 variants={fadeUp} className="font-heading font-bold tracking-tightest leading-[0.95] text-[42px] sm:text-6xl md:text-7xl text-foreground">
@@ -314,20 +314,20 @@ const Hero = () => {
                     </motion.p>
 
                     {/* ¿Quién eres? — el mensaje cambia según el perfil */}
-                    <motion.div variants={fadeUp} className="mt-8 inline-flex flex-wrap gap-1 p-1 rounded-2xl bg-black/40 backdrop-blur border border-white/10">
+                    <motion.div variants={fadeUp} className="mt-8 flex w-full sm:w-auto sm:inline-flex gap-0.5 p-0.5 rounded-[11px] bg-white/[0.12] backdrop-blur overflow-x-auto hide-scrollbar">
                         {SEGMENTS.map((s, i) => (
                             <button
                                 key={s.key}
                                 onClick={() => setSegIdx(i)}
-                                className={`relative h-9 px-3.5 rounded-xl text-sm font-semibold transition-colors ${i === segIdx ? 'text-primary-foreground' : 'text-foreground/70 hover:text-foreground'}`}
+                                className={`relative shrink-0 flex-1 sm:flex-none whitespace-nowrap h-8 px-3 rounded-[9px] text-[13px] font-semibold transition-colors ${i === segIdx ? 'text-black' : 'text-foreground/70'}`}
                             >
-                                {i === segIdx && <motion.span layoutId="seg-pill" className="absolute inset-0 rounded-xl bg-primary" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
+                                {i === segIdx && <motion.span layoutId="seg-pill" className="absolute inset-0 rounded-[9px] bg-white shadow-sm" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
                                 <span className="relative">{s.label}</span>
                             </button>
                         ))}
                     </motion.div>
 
-                    <motion.form variants={fadeUp} onSubmit={onSearch} className="mt-3 flex items-center gap-2 p-2 rounded-2xl bg-card/90 backdrop-blur-xl border border-white/10 max-w-xl shadow-2xl shadow-black/50">
+                    <motion.form variants={fadeUp} onSubmit={onSearch} className="mt-3 flex items-center gap-2 p-1.5 rounded-[14px] bg-white/[0.08] backdrop-blur-xl max-w-xl">
                         <Search className="ml-3 h-5 w-5 text-muted-foreground shrink-0" />
                         <input
                             value={q}
@@ -336,7 +336,7 @@ const Hero = () => {
                             className="flex-1 min-w-0 bg-transparent h-11 text-base text-foreground placeholder:text-muted-foreground focus:outline-none"
                             aria-label="Buscar en Musikeeo"
                         />
-                        <button type="submit" className="h-11 px-5 rounded-xl bg-primary text-primary-foreground font-bold hover:bg-primary/90 transition-colors shrink-0">
+                        <button type="submit" className="h-10 px-4 rounded-[10px] bg-primary text-primary-foreground text-[15px] font-semibold active:opacity-80 shrink-0">
                             Buscar
                         </button>
                     </motion.form>
@@ -351,10 +351,10 @@ const Hero = () => {
                         >
                             <p className="mt-4 text-sm text-foreground/70">{seg.pitch}</p>
                             <div className="mt-6 flex flex-col sm:flex-row gap-3">
-                                <Link to={primary.to} className="group h-14 px-7 rounded-2xl bg-primary text-primary-foreground font-bold text-base flex items-center justify-center gap-2 hover:bg-primary/90 transition-all shadow-[0_0_40px_var(--primary-glow)]">
+                                <Link to={primary.to} className="group h-[52px] px-6 rounded-[14px] bg-primary text-primary-foreground font-semibold text-[17px] flex items-center justify-center gap-2 hover:bg-primary/90 transition-all">
                                     {primary.label} <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                                 </Link>
-                                <Link to={seg.secondary.to} className="h-14 px-7 rounded-2xl border border-white/15 bg-black/30 backdrop-blur text-foreground font-bold text-base flex items-center justify-center gap-2 hover:bg-white/10 transition-colors">
+                                <Link to={seg.secondary.to} className="h-[52px] px-6 rounded-[14px] border border-white/15 bg-black/30 backdrop-blur text-foreground font-semibold text-[17px] flex items-center justify-center gap-2 hover:bg-white/10 transition-colors">
                                     {seg.secondary.label}
                                 </Link>
                             </div>
@@ -376,7 +376,7 @@ const Problem = () => (
             <div className="grid md:grid-cols-2 gap-4">
                 {/* Antes */}
                 <Reveal className="relative rounded-3xl border border-white/10 bg-card p-6 md:p-8 overflow-hidden min-h-[360px]">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-muted-foreground mb-6">Sin Musikeeo</p>
+                    <p className="text-sm font-semibold text-muted-foreground mb-6">Sin Musikeeo</p>
                     <div className="relative space-y-3">
                         {CHAOS.map((m, i) => (
                             <motion.div
@@ -394,13 +394,13 @@ const Problem = () => (
                     </div>
                 </Reveal>
                 {/* Después */}
-                <Reveal delay={0.1} className="relative rounded-3xl border border-primary/30 bg-gradient-to-br from-primary/15 via-card to-card p-6 md:p-8 overflow-hidden">
-                    <p className="text-xs font-bold uppercase tracking-[0.2em] text-primary mb-6">Con Musikeeo</p>
+                <Reveal delay={0.1} className="relative rounded-3xl border border-white/[0.08] bg-card p-6 md:p-8 overflow-hidden">
+                    <p className="text-sm font-semibold text-primary mb-6">Con Musikeeo</p>
                     <h3 className="font-heading text-3xl md:text-4xl font-bold tracking-tighter leading-[1.05]">Un sitio. Toda la escena.</h3>
                     <ul className="mt-6 space-y-3">
                         {ORDER.map(item => (
                             <li key={item} className="flex items-start gap-3 text-foreground/90">
-                                <span className="mt-0.5 h-6 w-6 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center"><Check className="h-4 w-4" strokeWidth={3} /></span>
+                                <span className="mt-0.5 h-6 w-6 shrink-0 rounded-full bg-white text-black flex items-center justify-center"><Check className="h-4 w-4" strokeWidth={3} /></span>
                                 <span>{item}</span>
                             </li>
                         ))}
@@ -425,7 +425,7 @@ const Ecosystem = () => (
                 {PILLARS.map(({ Icon, title, desc, to, soon }, i) => (
                     <Reveal key={title} delay={i * 0.04}>
                         <Link to={to} className="group h-full flex gap-4 rounded-2xl border border-white/10 bg-card p-5 hover:border-primary/40 transition-colors">
-                            <div className="h-11 w-11 shrink-0 rounded-xl bg-primary/10 text-primary flex items-center justify-center">
+                            <div className="h-11 w-11 shrink-0 rounded-xl bg-white/[0.06] text-foreground flex items-center justify-center">
                                 <Icon className="h-5 w-5" />
                             </div>
                             <div className="min-w-0">
@@ -450,7 +450,7 @@ const Story2am = () => (
         <div className="absolute inset-0 -z-10 bg-gradient-to-r from-background via-background/85 to-background/30" />
         <div className="max-w-6xl mx-auto px-4 md:px-10">
             <Reveal className="max-w-xl">
-                <p className="text-primary text-xs font-bold uppercase tracking-[0.2em] mb-6">Sábado, 02:00</p>
+                <p className="text-primary text-sm font-semibold mb-6">Sábado, 02:00</p>
                 <ol className="space-y-4 border-l-2 border-primary/40 pl-6">
                     {STORY.map((s, i) => (
                         <motion.li
@@ -461,7 +461,7 @@ const Story2am = () => (
                             transition={{ delay: 0.25 * i }}
                             className="relative"
                         >
-                            <span className="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full bg-primary shadow-[0_0_12px_var(--primary-glow)]" />
+                            <span className="absolute -left-[31px] top-1.5 h-3 w-3 rounded-full bg-primary" />
                             <span className="font-heading font-bold text-primary mr-3">{s.time}</span>
                             <span className="text-foreground/90">{s.text}</span>
                         </motion.li>
@@ -471,10 +471,10 @@ const Story2am = () => (
                     Ni un bolo se cancela por un cable<span className="text-primary">.</span>
                 </h2>
                 <div className="mt-8 flex flex-col sm:flex-row gap-3">
-                    <Link to="/market" className="h-12 px-6 rounded-2xl bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors">
+                    <Link to="/market" className="h-12 px-5 rounded-[14px] bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2 hover:bg-primary/90 transition-colors">
                         Buscar equipo cerca <ArrowRight className="h-5 w-5" />
                     </Link>
-                    <Link to="/sonido" className="h-12 px-6 rounded-2xl border border-white/15 bg-black/30 backdrop-blur font-bold flex items-center justify-center hover:bg-white/10 transition-colors">
+                    <Link to="/sonido" className="h-12 px-5 rounded-[14px] border border-white/15 bg-black/30 backdrop-blur font-bold flex items-center justify-center hover:bg-white/10 transition-colors">
                         Ver técnicos
                     </Link>
                 </div>
@@ -491,7 +491,7 @@ const Origin = () => (
                 <img src="/images/home/boda.webp" alt="Banda de rumba tocando en una boda" loading="lazy" className="w-full aspect-[4/3] object-cover" />
             </Reveal>
             <Reveal delay={0.1}>
-                <p className="text-primary text-xs font-bold uppercase tracking-[0.2em] mb-4">Hecho por músicos</p>
+                <p className="text-primary text-sm font-semibold mb-4">Hecho por músicos</p>
                 <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tighter leading-[1.05]">
                     Nace en un escenario, no en una oficina.
                 </h2>
@@ -512,15 +512,15 @@ const Origin = () => (
 );
 
 const Marquee = () => (
-    <div className="relative overflow-hidden bg-primary py-4 -rotate-1 scale-[1.02] my-6" aria-hidden>
+    <div className="relative overflow-hidden border-y border-white/[0.06] py-4 my-2 [mask-image:linear-gradient(90deg,transparent,black_12%,black_88%,transparent)]" aria-hidden>
         <motion.div
             className="flex w-max gap-8 whitespace-nowrap"
             animate={{ x: ['0%', '-50%'] }}
             transition={{ duration: 40, repeat: Infinity, ease: 'linear' }}
         >
             {[...MARQUEE, ...MARQUEE].map((w, i) => (
-                <span key={i} className="flex items-center gap-8 font-heading font-bold uppercase text-xl md:text-2xl tracking-tight text-primary-foreground">
-                    {w} <Music2 className="h-5 w-5 opacity-60" />
+                <span key={i} className="flex items-center gap-8 font-heading font-semibold text-lg md:text-xl tracking-tight text-foreground/45">
+                    {w} <span className="h-1 w-1 rounded-full bg-foreground/30" />
                 </span>
             ))}
         </motion.div>
@@ -679,7 +679,7 @@ const Gear = () => {
                             <p className="font-heading text-2xl md:text-3xl font-bold tracking-tight">¿Tienes equipo cogiendo polvo?</p>
                             <p className="text-muted-foreground mt-2 max-w-md">Véndelo, alquílalo o préstalo a músicos de tu zona. Publicar es gratis.</p>
                         </div>
-                        <Link to="/market/create" className="relative shrink-0 h-12 px-6 rounded-2xl bg-primary text-primary-foreground font-bold flex items-center gap-2 hover:bg-primary/90 transition-colors">
+                        <Link to="/market/create" className="relative shrink-0 h-12 px-5 rounded-[14px] bg-primary text-primary-foreground font-bold flex items-center gap-2 hover:bg-primary/90 transition-colors">
                             <Plus className="h-5 w-5" /> Publicar anuncio
                         </Link>
                     </Reveal>
@@ -718,11 +718,11 @@ const Gear = () => {
 
 const RodrigoSection = () => (
     <section className="px-4 md:px-10 py-16 md:py-24">
-        <div className="max-w-6xl mx-auto relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-card via-card to-primary/10 p-8 md:p-14">
+        <div className="max-w-6xl mx-auto relative overflow-hidden rounded-[2rem] border border-white/10 bg-gradient-to-br from-card to-card p-8 md:p-14">
             <div className="absolute -bottom-32 -right-32 h-96 w-96 rounded-full bg-primary/15 blur-[120px]" />
             <div className="relative grid md:grid-cols-2 gap-10 md:gap-14 items-center">
                 <Reveal>
-                    <p className="inline-flex items-center gap-2 text-primary text-xs font-bold uppercase tracking-[0.2em] mb-4">
+                    <p className="inline-flex items-center gap-2 text-primary text-sm font-semibold mb-4">
                         <Sparkles className="h-4 w-4" /> Inteligencia artificial
                     </p>
                     <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tighter leading-[1.05]">
@@ -731,7 +731,7 @@ const RodrigoSection = () => (
                     <p className="mt-5 text-muted-foreground text-lg leading-relaxed max-w-md">
                         Cuéntale qué necesitas y te recomienda artistas, te ayuda a publicar tu evento o a poner precio a tu bolo.
                     </p>
-                    <Link to="/rodrigo" className="group mt-8 inline-flex h-12 px-6 rounded-2xl bg-foreground text-background font-bold items-center gap-2 hover:opacity-90 transition-opacity">
+                    <Link to="/rodrigo" className="group mt-8 inline-flex h-12 px-5 rounded-[14px] bg-foreground text-background font-bold items-center gap-2 hover:opacity-90 transition-opacity">
                         Hablar con Rodrigo <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                     </Link>
                 </Reveal>
@@ -784,7 +784,7 @@ const HowItWorks = () => (
                 {STEPS.map(({ Icon, title, desc }, i) => (
                     <Reveal key={title} delay={i * 0.08} className="relative rounded-3xl border border-white/10 bg-card p-7 overflow-hidden">
                         <span className="absolute -top-4 right-4 font-heading text-[120px] font-bold leading-none text-white/[0.04] select-none">0{i + 1}</span>
-                        <div className="h-12 w-12 rounded-2xl bg-primary/10 text-primary flex items-center justify-center">
+                        <div className="h-12 w-12 rounded-2xl bg-white/[0.06] text-foreground flex items-center justify-center">
                             <Icon className="h-6 w-6" />
                         </div>
                         <h3 className="mt-6 font-heading text-xl font-bold tracking-tight">{title}</h3>
@@ -811,10 +811,10 @@ const FinalCta = () => {
                     Crea tu perfil gratis y deja que la música haga el resto.
                 </p>
                 <div className="relative mt-8 flex flex-col sm:flex-row gap-3">
-                    <Link to={user ? '/panel' : '/register'} className="group h-14 px-7 rounded-2xl bg-primary-foreground text-primary font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
+                    <Link to={user ? '/panel' : '/register'} className="group h-[52px] px-6 rounded-[14px] bg-primary-foreground text-primary font-bold flex items-center justify-center gap-2 hover:opacity-90 transition-opacity">
                         {user ? 'Completar mi perfil' : 'Crear perfil gratis'} <ArrowRight className="h-5 w-5 transition-transform group-hover:translate-x-1" />
                     </Link>
-                    <Link to="/publicar" className="h-14 px-7 rounded-2xl border-2 border-primary-foreground/20 text-primary-foreground font-bold flex items-center justify-center hover:bg-primary-foreground/5 transition-colors">
+                    <Link to="/publicar" className="h-[52px] px-6 rounded-[14px] border-2 border-primary-foreground/20 text-primary-foreground font-bold flex items-center justify-center hover:bg-primary-foreground/5 transition-colors">
                         Busco músicos para un evento
                     </Link>
                 </div>
@@ -843,7 +843,7 @@ const HomeFooter = () => (
                 { title: 'Legal', links: [['Aviso legal', '/aviso-legal'], ['Privacidad', '/privacidad'], ['Cookies', '/cookies'], ['Términos', '/terminos']] },
             ].map(col => (
                 <div key={col.title}>
-                    <p className="text-xs font-bold uppercase tracking-[0.15em] text-foreground mb-4">{col.title}</p>
+                    <p className="text-xs font-semibold text-muted-foreground text-foreground mb-4">{col.title}</p>
                     <nav className="flex flex-col gap-2.5 text-sm">
                         {col.links.map(([label, to]) => (
                             <Link key={to} to={to} className="text-muted-foreground hover:text-primary transition-colors">{label}</Link>

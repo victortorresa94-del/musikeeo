@@ -462,7 +462,7 @@ export default function PanelProfilePage() {
                             <button
                                 onClick={handleSave}
                                 disabled={saving}
-                                className={`px-6 py-2.5 rounded-lg text-sm font-bold shadow-[0_0_15px_rgba(255,216,77,0.3)] transition-all flex items-center gap-2 disabled:opacity-50 ${showSuccess
+                                className={`px-6 py-2.5 rounded-lg text-sm font-bold transition-all flex items-center gap-2 disabled:opacity-50 ${showSuccess
                                     ? 'bg-green-500 text-foreground hover:bg-green-600'
                                     : 'bg-primary text-black hover:bg-primary-hover'
                                     }`}

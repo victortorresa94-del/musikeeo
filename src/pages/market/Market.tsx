@@ -5,7 +5,7 @@ import {
     getDocs, startAfter, type QueryDocumentSnapshot
 } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
-import { Search, Plus, Zap, MapPin, MessageSquare, X, SlidersHorizontal } from 'lucide-react';
+import { Search, Plus, Zap, MapPin, MessageSquare, X, SlidersHorizontal, Info } from 'lucide-react';
 import { Input } from '../../components/ui/input';
 import { Button } from '../../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -27,13 +27,7 @@ const CATEGORIES: { value: ListingCategory | 'all'; label: string; emoji: string
 ];
 
 const TYPE_LABELS: Record<string, string> = {
-    venta: 'VENTA', alquiler: 'ALQUILER', prestamo: 'PRÉSTAMO'
-};
-
-const TYPE_COLORS: Record<string, string> = {
-    venta: 'bg-muted text-muted-foreground',
-    alquiler: 'bg-muted text-muted-foreground',
-    prestamo: 'bg-muted text-muted-foreground',
+    venta: 'Venta', alquiler: 'Alquiler', prestamo: 'Préstamo'
 };
 
 const PAGE_SIZE = 20;
@@ -158,11 +152,11 @@ export default function Market() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-2xl md:text-3xl font-bold text-foreground">Mercado</h1>
-                    <p className="text-sm text-muted-foreground mt-0.5">Compra, alquila o presta equipo</p>
+                    <h1 className="text-[34px] leading-tight font-bold tracking-tight text-foreground">Mercado</h1>
+                    <p className="text-[15px] text-muted-foreground mt-0.5">Compra, alquila o presta equipo</p>
                 </div>
                 <Button
-                    className="bg-primary text-primary-foreground hover:bg-primary/90 font-semibold h-10 px-4 rounded-2xl shadow-[0_4px_20px_var(--primary-glow)]"
+                    className="bg-primary text-primary-foreground hover:bg-primary/90 text-[15px] font-semibold h-9 px-3.5 rounded-full"
                     onClick={() => navigate('/market/create')}
                 >
                     <Plus className="h-4 w-4 mr-1.5" /> Publicar
@@ -175,7 +169,7 @@ export default function Market() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Buscar guitarra, micro, correa..."
-                        className="pl-10 bg-muted border-border rounded-xl h-12"
+                        className="pl-9 bg-white/[0.08] border-0 rounded-[12px] h-10 text-[16px] md:text-sm"
                         value={searchText}
                         onChange={e => setSearchText(e.target.value)}
                     />
@@ -184,7 +178,7 @@ export default function Market() {
                     variant="outline"
                     size="icon"
                     onClick={() => setShowFilters(v => !v)}
-                    className={`rounded-xl h-12 w-12 shrink-0 ${showFilters ? 'bg-primary/10 border-primary/50 text-primary' : 'bg-muted border-border hover:bg-muted text-muted-foreground'}`}
+                    className={`rounded-[12px] h-10 w-10 shrink-0 border-0 ${showFilters ? 'bg-white text-black' : 'bg-white/[0.08] text-foreground'}`}
                 >
                     <SlidersHorizontal className="h-4 w-4" />
                 </Button>
@@ -196,13 +190,13 @@ export default function Market() {
                     <button
                         key={c.value}
                         onClick={() => setCategoryFilter(c.value)}
-                        className={`shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium transition-colors border ${
+                        className={`shrink-0 h-8 px-3.5 rounded-full text-[14px] font-medium transition-colors ${
                             categoryFilter === c.value
-                                ? 'bg-primary/10 text-primary border-primary/30'
-                                : 'bg-muted text-muted-foreground border-border hover:text-foreground'
+                                ? 'bg-foreground text-background'
+                                : 'bg-foreground/[0.07] text-foreground/85'
                         }`}
                     >
-                        <span>{c.emoji}</span> {c.label}
+                        {c.label}
                     </button>
                 ))}
             </div>
@@ -264,11 +258,11 @@ export default function Market() {
 
             {/* Demo banner */}
             {usingMocks && (
-                <div className="bg-amber-500/10 border border-amber-500/30 text-amber-200 rounded-xl px-4 py-3 text-sm flex items-start gap-3">
-                    <span className="text-base leading-none mt-0.5">ℹ️</span>
+                <div className="bg-card border border-border rounded-xl px-4 py-3 text-sm flex items-start gap-3">
+                    <Info className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <div>
-                        <p className="font-semibold text-amber-100">Estos son anuncios de ejemplo</p>
-                        <p className="text-xs text-amber-200/80 mt-0.5">Todavía no hay anuncios reales en tu zona. Sé el primero en <button onClick={() => navigate('/market/create')} className="underline font-semibold hover:text-amber-100">publicar uno</button>.</p>
+                        <p className="font-semibold text-foreground">Estos son anuncios de ejemplo</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Todavía no hay anuncios reales en tu zona. Sé el primero en <button onClick={() => navigate('/market/create')} className="underline font-semibold text-primary">publicar uno</button>.</p>
                     </div>
                 </div>
             )}
@@ -294,7 +288,7 @@ export default function Market() {
                             <motion.div
                                 key={listing.id}
                                 whileHover={{ y: -2 }}
-                                className="bg-card border border-border rounded-2xl overflow-hidden hover:border-[var(--border-hi)] transition-colors flex flex-col cursor-pointer"
+                                className="bg-card rounded-2xl overflow-hidden flex flex-col cursor-pointer active:scale-[0.98] transition-transform"
                                 onClick={() => navigate(`/market/${listing.id}`)}
                             >
                                 <div className="aspect-square bg-muted relative overflow-hidden">
@@ -303,20 +297,18 @@ export default function Market() {
                                     ) : (
                                         <div className="w-full h-full flex items-center justify-center text-4xl">🎵</div>
                                     )}
-                                    <div className="absolute top-2 left-2 flex flex-col gap-1">
-                                        {listing.urgent && (
-                                            <span className="bg-red-500/10 text-red-500 text-xs font-bold px-2 py-0.5 rounded-full flex items-center gap-0.5">
-                                                <Zap size={8} className="fill-current" /> URGENTE
-                                            </span>
-                                        )}
-                                        <span className={`text-[9px] font-bold px-2 py-0.5 rounded-full ${TYPE_COLORS[listing.type]}`}>
+                                    <div className="absolute top-2 left-2 right-2 flex flex-wrap gap-1">
+                                        <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-black/60 backdrop-blur text-white">
                                             {TYPE_LABELS[listing.type]}
                                         </span>
+                                        {listing.urgent && (
+                                            <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-red-500 text-white">Urgente</span>
+                                        )}
                                     </div>
                                 </div>
                                 <div className="p-3 flex flex-col gap-1.5 flex-1">
                                     <p className="text-sm font-semibold text-foreground tracking-tight leading-tight line-clamp-2">{listing.title}</p>
-                                    <p className="text-lg font-black text-primary tracking-tighter">{formatPrice(listing)}</p>
+                                    <p className="text-[17px] font-semibold text-foreground tracking-tight">{formatPrice(listing)}</p>
                                     <div className="flex items-center gap-1 text-xs text-muted-foreground">
                                         <MapPin size={10} />
                                         <span className="truncate">{listing.userLocation}</span>
@@ -331,13 +323,14 @@ export default function Market() {
                                         )}
                                         <span className="text-muted-foreground text-xs truncate flex-1">{listing.userName}</span>
                                     </div>
-                                    <button
-                                        onClick={(e) => { e.stopPropagation(); if (!usingMocks) setContactListing(listing); }}
-                                        disabled={usingMocks}
-                                        className="w-full mt-1 h-8 rounded-xl bg-primary/10 hover:bg-primary/20 text-primary text-xs font-semibold border border-primary/30 transition-colors disabled:opacity-40 disabled:cursor-not-allowed disabled:hover:bg-primary/10"
-                                    >
-                                        {usingMocks ? 'Ejemplo' : 'Contactar'}
-                                    </button>
+                                    {!usingMocks && (
+                                        <button
+                                            onClick={(e) => { e.stopPropagation(); setContactListing(listing); }}
+                                            className="w-full mt-1 h-9 rounded-[10px] bg-white/[0.08] text-foreground text-[14px] font-semibold active:opacity-60"
+                                        >
+                                            Contactar
+                                        </button>
+                                    )}
                                 </div>
                             </motion.div>
                         ))}

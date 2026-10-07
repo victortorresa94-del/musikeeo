@@ -46,7 +46,8 @@ export const RodrigoFloatingChat = () => {
     // Al bajar, la píldora se encoge a círculo para no tapar contenido
     const [compact, setCompact] = useState(false);
     useEffect(() => {
-        const onScroll = () => setCompact(window.scrollY > 160);
+        // Píldora solo en la portada de la home; en el resto, círculo para no tapar contenido
+        const onScroll = () => setCompact(window.scrollY > 160 || !['/home', '/'].includes(location.pathname));
         onScroll();
         window.addEventListener('scroll', onScroll, { passive: true });
         return () => window.removeEventListener('scroll', onScroll);
@@ -164,15 +165,15 @@ export const RodrigoFloatingChat = () => {
                         transition={{ type: 'spring', stiffness: 420, damping: 32 }}
                         onClick={() => setIsOpen(true)}
                         aria-label="Habla con Rodrigo, tu mánager IA"
-                        className={`fixed right-4 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:bottom-6 md:right-6 z-40 flex items-center gap-2 h-12 rounded-full bg-card/95 backdrop-blur-xl border border-primary/50 pl-1 shadow-[0_8px_30px_rgba(0,0,0,0.5)] active:scale-95 ${compact ? 'pr-1' : 'pr-4'}`}
+                        className={`fixed right-4 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:bottom-6 md:right-6 z-40 flex items-center gap-2 h-12 rounded-full bg-card/95 backdrop-blur-xl border border-white/10 pl-1 shadow-[0_8px_30px_rgba(0,0,0,0.5)] active:scale-95 ${compact ? 'pr-1' : 'pr-4'}`}
                     >
                         <span className="relative h-10 w-10 shrink-0">
                             <img src={RODRIGO_AVATAR} alt="" loading="lazy" className="h-10 w-10 rounded-full object-cover" />
                             <span className="absolute -bottom-0.5 -right-0.5 h-3 w-3 rounded-full bg-primary border-2 border-card" />
                         </span>
                         {!compact && (
-                            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-sm font-bold text-foreground whitespace-nowrap">
-                                Rodrigo <span className="text-primary">IA</span>
+                            <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="text-[15px] font-semibold text-foreground whitespace-nowrap">
+                                Rodrigo
                             </motion.span>
                         )}
                     </motion.button>

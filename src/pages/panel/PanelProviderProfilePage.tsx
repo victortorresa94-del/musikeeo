@@ -183,7 +183,7 @@ export default function PanelProviderProfilePage() {
                         <button
                             onClick={handleSave}
                             disabled={saving}
-                            className="px-6 py-2.5 rounded-lg bg-primary text-black text-sm font-bold hover:bg-primary/90 shadow-[0_0_15px_rgba(130,255,31,0.3)] transition-all flex items-center gap-2 disabled:opacity-50"
+                            className="px-6 py-2.5 rounded-lg bg-primary text-black text-sm font-bold hover:bg-primary/90 transition-all flex items-center gap-2 disabled:opacity-50"
                         >
                             <Save size={16} />
                             {saving ? 'Guardando...' : 'Guardar Cambios'}

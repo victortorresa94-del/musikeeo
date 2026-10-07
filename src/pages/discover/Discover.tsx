@@ -229,10 +229,10 @@ export default function Discover() {
 
             <div className="flex-1 min-w-0 pb-28 md:pb-10">
                 {/* ── Cabecera fija: búsqueda + filtros (siempre a mano con el pulgar) ── */}
-                <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 bg-background/90 backdrop-blur-xl border-b border-border">
+                <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 bg-background/85 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/[0.06]">
                     <div className="px-4 md:px-8 pt-3 pb-3 space-y-3">
                         {/* Artistas | Técnicos */}
-                        <div className="flex items-center gap-1 p-1 rounded-2xl bg-muted w-full sm:w-auto sm:inline-flex" role="tablist" aria-label="Qué buscas">
+                        <div className="flex items-center gap-0.5 p-0.5 rounded-[11px] bg-white/[0.08] w-full sm:w-auto sm:inline-flex" role="tablist" aria-label="Qué buscas">
                             {[
                                 { to: '/discover', label: 'Artistas', Icon: Music2, active: !isSoundServices },
                                 { to: '/sonido', label: 'Técnicos', Icon: Speaker, active: isSoundServices },
@@ -243,11 +243,11 @@ export default function Discover() {
                                     role="tab"
                                     aria-selected={t.active}
                                     className={cn(
-                                        'flex-1 sm:flex-none h-10 px-5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors',
-                                        t.active ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                                        'flex-1 sm:flex-none h-8 px-5 rounded-[9px] text-[13px] font-semibold flex items-center justify-center gap-1.5 transition-colors',
+                                        t.active ? 'bg-white text-black shadow-sm' : 'text-muted-foreground'
                                     )}
                                 >
-                                    <t.Icon className="h-4 w-4" /> {t.label}
+                                    {t.label}
                                 </Link>
                             ))}
                         </div>
@@ -255,11 +255,11 @@ export default function Discover() {
                         <div className="flex items-center gap-2">
                             <label className="relative flex-1">
                                 <span className="sr-only">Buscar {nounPlural}</span>
-                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 pointer-events-none" />
+                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 pointer-events-none" />
                                 <input
                                     type="search"
                                     enterKeyHint="search"
-                                    className="w-full rounded-2xl border border-border bg-card h-12 pl-10 pr-10 text-base md:text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                                    className="w-full rounded-[12px] bg-white/[0.08] h-10 pl-9 pr-9 text-[16px] md:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:bg-white/[0.12]"
                                     placeholder={isSoundServices ? 'Sonido, luces, backline, ciudad…' : 'Nombre, estilo o ciudad…'}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -272,7 +272,7 @@ export default function Discover() {
                             </label>
                             <button
                                 onClick={() => setIsMobileFiltersOpen(true)}
-                                className="lg:hidden relative h-12 w-12 shrink-0 rounded-2xl border border-border bg-card flex items-center justify-center text-foreground hover:border-primary/50 transition-colors"
+                                className="lg:hidden relative h-10 w-10 shrink-0 rounded-[12px] bg-white/[0.08] flex items-center justify-center text-foreground active:opacity-60"
                                 aria-label={`Filtros${activeCount ? ` (${activeCount} activos)` : ''}`}
                             >
                                 <SlidersHorizontal className="h-5 w-5" />
@@ -293,8 +293,8 @@ export default function Discover() {
                                             onClick={() => toggleGenre(g)}
                                             aria-pressed={on}
                                             className={cn(
-                                                'shrink-0 h-9 px-4 rounded-full text-sm font-semibold border transition-colors',
-                                                on ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground/80 border-border hover:border-primary/50'
+                                                'shrink-0 h-8 px-3.5 rounded-full text-[14px] font-medium border transition-colors',
+                                                on ? 'bg-white text-black border-white' : 'bg-white/[0.07] text-foreground/85 border-transparent'
                                             )}
                                         >
                                             {g}
@@ -403,9 +403,9 @@ export default function Discover() {
 }
 
 const ActiveChip = ({ label, onRemove, icon }: { label: string; onRemove: () => void; icon?: React.ReactNode }) => (
-    <span className="inline-flex items-center gap-1.5 h-8 pl-3 pr-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-sm font-semibold">
+    <span className="inline-flex items-center gap-1.5 h-8 pl-3 pr-1 rounded-full bg-white/[0.08] text-foreground text-sm font-medium">
         {icon}{label}
-        <button onClick={onRemove} aria-label={`Quitar ${label}`} className="h-6 w-6 rounded-full flex items-center justify-center hover:bg-primary/20">
+        <button onClick={onRemove} aria-label={`Quitar ${label}`} className="h-6 w-6 rounded-full flex items-center justify-center text-muted-foreground">
             <X className="h-3.5 w-3.5" />
         </button>
     </span>
@@ -414,7 +414,7 @@ const ActiveChip = ({ label, onRemove, icon }: { label: string; onRemove: () => 
 // Sin perfiles todavía (lanzamiento): convertir el vacío en invitación
 const EmptyLaunch = ({ isSoundServices }: { isSoundServices: boolean }) => (
     <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-primary/15 via-card to-card p-7 md:p-10">
-        <p className="text-primary text-xs font-bold uppercase tracking-[0.2em] mb-3">Estamos arrancando</p>
+        <p className="text-primary text-sm font-semibold mb-3">Estamos arrancando</p>
         <h2 className="font-heading text-2xl md:text-3xl font-bold tracking-tight max-w-md">
             {isSoundServices ? 'Los primeros técnicos se llevan la portada.' : 'Los primeros artistas se llevan la portada.'}
         </h2>

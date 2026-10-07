@@ -115,7 +115,7 @@ export default function ProductDetail() {
                 <div className="space-y-6">
                     <div>
                         <div className="flex justify-between items-start">
-                            <h1 className="text-2xl font-black tracking-tighter text-foreground mb-2">{item.title}</h1>
+                            <h1 className="text-2xl font-bold tracking-tighter text-foreground mb-2">{item.title}</h1>
                             <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted rounded-full">
                                 <Share2 className="h-5 w-5" />
                             </Button>
@@ -136,7 +136,7 @@ export default function ProductDetail() {
                         </div>
                     </div>
 
-                    <div className="text-4xl font-black tracking-tighter text-primary">
+                    <div className="text-4xl font-bold tracking-tighter text-primary">
                         {formatPrice(item)}
                     </div>
 

@@ -156,7 +156,7 @@ export const Onboarding = () => {
                     </div>
                 )}
                 <img src="/logo-musikeeo.png" alt="M" className="h-16 w-auto mx-auto mb-4" />
-                <h1 className="text-4xl md:text-5xl font-heading font-black text-white mb-4 tracking-tight">
+                <h1 className="text-4xl md:text-5xl font-heading font-bold text-white mb-4 tracking-tight">
                     ¿Para qué quieres usar Musikeeo?
                 </h1>
                 <p className="text-xl text-muted-foreground">

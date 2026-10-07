@@ -38,7 +38,7 @@ export const Hero = () => {
                 </div>
 
                 {/* Heading */}
-                <h1 className="text-white text-4xl sm:text-5xl md:text-7xl font-black leading-[1.1] tracking-tight font-heading drop-shadow-2xl">
+                <h1 className="text-white text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.1] tracking-tight font-heading drop-shadow-2xl">
                     Todo lo que la música necesita<span className="text-primary">.</span>
                 </h1>
 
@@ -51,7 +51,7 @@ export const Hero = () => {
                 <div className="flex flex-col sm:flex-row gap-3 w-full justify-center">
                     <Link
                         to="/discover"
-                        className="h-14 px-8 rounded-lg bg-primary hover:bg-primary/90 text-black text-base font-bold flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(130,255,31,0.4)] hover:shadow-[0_0_30px_rgba(130,255,31,0.6)] hover:-translate-y-1"
+                        className="h-14 px-8 rounded-lg bg-primary hover:bg-primary/90 text-black text-base font-bold flex items-center justify-center gap-2 transition-all hover: hover:-translate-y-1"
                     >
                         <Search size={20} className="stroke-[3]" />
                         Buscar artistas

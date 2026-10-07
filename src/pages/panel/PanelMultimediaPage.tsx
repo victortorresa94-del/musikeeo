@@ -172,7 +172,7 @@ export default function PanelMultimediaPage() {
             <header className="sticky top-0 z-10 bg-background/80 backdrop-blur-md border-b border-border px-6 py-5 md:px-10">
                 <div className="max-w-5xl mx-auto flex flex-wrap items-center justify-between gap-4">
                     <div className="flex flex-col gap-1">
-                        <h1 className="text-foreground text-2xl md:text-3xl font-black tracking-tight">Mi Música y Vídeos</h1>
+                        <h1 className="text-foreground text-2xl md:text-3xl font-bold tracking-tight">Mi Música y Vídeos</h1>
                         <p className="text-muted-foreground text-sm md:text-base font-medium">Gestiona cómo te ven y te escuchan tus clientes.</p>
                     </div>
                     <div className="flex items-center gap-3">

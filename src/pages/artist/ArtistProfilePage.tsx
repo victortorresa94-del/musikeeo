@@ -189,7 +189,7 @@ export default function ArtistProfilePage() {
                         {/* Info */}
                         <div className="flex-1 pb-2">
                             <div className="flex flex-wrap items-center gap-3 mb-2">
-                                <h1 className="text-3xl md:text-4xl font-black tracking-tight">{artist.artistName}</h1>
+                                <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{artist.artistName}</h1>
                                 {artist.isVerified && (
                                     <span className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold">
                                         <CheckCircle size={14} /> Verificado
@@ -219,7 +219,7 @@ export default function ArtistProfilePage() {
                             </button>
                             <button
                                 onClick={handleContact}
-                                className="h-12 px-6 rounded-xl bg-primary hover:bg-primary-hover text-black font-bold flex items-center gap-2 shadow-[0_0_20px_rgba(255,216,77,0.3)] transition-all"
+                                className="h-12 px-6 rounded-xl bg-primary hover:bg-primary-hover text-black font-bold flex items-center gap-2 transition-all"
                             >
                                 <MessageCircle size={18} />
                                 Contactar
@@ -269,7 +269,7 @@ export default function ArtistProfilePage() {
                                 <div
                                     key={pkg.id}
                                     className={`relative p-5 rounded-xl bg-card border transition-all cursor-pointer ${selectedPackage?.id === pkg.id
-                                        ? 'border-primary shadow-[0_0_20px_rgba(255,216,77,0.15)]'
+                                        ? 'border-primary'
                                         : 'border-border hover:border-border/60'
                                         }`}
                                     onClick={() => setSelectedPackage(pkg)}
@@ -281,7 +281,7 @@ export default function ArtistProfilePage() {
                                                 <Clock size={12} /> {pkg.duration}h
                                             </p>
                                         </div>
-                                        <span className="text-primary text-2xl font-black">{pkg.price}€</span>
+                                        <span className="text-primary text-2xl font-bold">{pkg.price}€</span>
                                     </div>
                                     <p className="text-muted-foreground text-sm line-clamp-2">{pkg.description}</p>
 
@@ -383,7 +383,7 @@ export default function ArtistProfilePage() {
                         <div className="bg-card rounded-2xl p-6 border border-border shadow-xl">
                             <div className="flex items-center justify-between mb-4">
                                 <span className="text-muted-foreground text-sm">Desde</span>
-                                <span className="text-foreground text-3xl font-black">{artist.priceFrom || artist.packages[0]?.price || 0}€</span>
+                                <span className="text-foreground text-3xl font-bold">{artist.priceFrom || artist.packages[0]?.price || 0}€</span>
                             </div>
 
                             {selectedPackage && (
@@ -395,7 +395,7 @@ export default function ArtistProfilePage() {
 
                             <button
                                 onClick={handleBooking}
-                                className="w-full h-12 bg-primary hover:bg-primary-hover text-black font-bold rounded-xl shadow-[0_0_20px_rgba(255,216,77,0.3)] transition-all flex items-center justify-center gap-2"
+                                className="w-full h-12 bg-primary hover:bg-primary-hover text-black font-bold rounded-xl transition-all flex items-center justify-center gap-2"
                             >
                                 <CalendarIcon size={18} />
                                 Solicitar Presupuesto

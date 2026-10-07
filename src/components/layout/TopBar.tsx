@@ -32,13 +32,13 @@ export const TopBar = ({ onMenuClick: _onMenuClick }: TopBarProps) => {
       <Link
         to="/login"
         state={loginState}
-        className="h-9 px-3 rounded-xl text-sm font-semibold text-foreground hover:bg-muted flex items-center transition-colors"
+        className="h-8 px-2.5 text-[15px] font-medium text-foreground/90 flex items-center active:opacity-60"
       >
         Entrar
       </Link>
       <Link
         to="/register"
-        className="h-9 px-4 rounded-xl text-sm font-bold bg-primary text-primary-foreground hover:bg-primary/90 flex items-center transition-colors"
+        className="h-8 px-3.5 rounded-full text-[15px] font-semibold bg-foreground text-background flex items-center active:opacity-80"
       >
         Crear cuenta
       </Link>
@@ -48,12 +48,10 @@ export const TopBar = ({ onMenuClick: _onMenuClick }: TopBarProps) => {
   return (
     <>
       {/* MOBILE — barra mínima con logo y acceso */}
-      <header className="md:hidden sticky top-[env(safe-area-inset-top)] z-30 h-14 px-4 flex items-center justify-between bg-background/90 backdrop-blur-md border-b border-border">
+      <header className="md:hidden sticky top-[env(safe-area-inset-top)] z-30 h-14 px-4 flex items-center justify-between bg-background/85 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/[0.06]">
         <Link to="/home" className="flex items-center gap-2">
           <img src="/logo-musikeeo.png" alt="" className="h-7 w-7 rounded-lg object-contain" />
-          <span className="font-heading font-bold text-sm tracking-wide text-foreground">
-            MUSIK<span className="text-primary">EEO</span>
-          </span>
+          <span className="font-heading font-semibold text-[17px] tracking-tight text-foreground">Musikeeo</span>
         </Link>
         <div className="flex items-center gap-1">
           {!loading && !user && guestActions}

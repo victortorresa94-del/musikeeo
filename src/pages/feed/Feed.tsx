@@ -24,7 +24,7 @@ const fmt = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1).replace('.0', ''
 const Avatar = ({ src, name, className }: { src?: string; name: string; className?: string }) => {
     const [broken, setBroken] = useState(!src);
     return broken ? (
-        <div className={cn('rounded-full bg-gradient-to-br from-primary/70 to-primary/30 flex items-center justify-center font-heading font-bold text-primary-foreground', className)}>
+        <div className={cn('rounded-full bg-white/[0.1] flex items-center justify-center font-heading font-semibold text-foreground/90', className)}>
             {name.slice(0, 1).toUpperCase()}
         </div>
     ) : (
@@ -76,14 +76,14 @@ const StoriesRow = ({ onOpen, onCreate, signedIn }: { onOpen: (id: string) => vo
     <section aria-label="Reels" className="-mx-4 px-4 md:mx-0 md:px-0">
         <div className="flex gap-3.5 overflow-x-auto hide-scrollbar pb-1">
             <button onClick={onCreate} className="flex flex-col items-center gap-1.5 shrink-0 w-[68px]">
-                <span className="h-[68px] w-[68px] rounded-full border-2 border-dashed border-primary/50 flex items-center justify-center text-primary bg-primary/5">
+                <span className="h-[68px] w-[68px] rounded-full bg-white/[0.07] flex items-center justify-center text-foreground">
                     <Plus className="h-6 w-6" />
                 </span>
                 <span className="text-[11px] text-foreground/80 truncate w-full text-center">{signedIn ? 'Tu reel' : 'Súbete'}</span>
             </button>
             {MOCK_REELS.slice(0, 8).map(reel => (
                 <button key={reel.id} onClick={() => onOpen(reel.id)} className="flex flex-col items-center gap-1.5 shrink-0 w-[68px]" aria-label={`Ver reel de ${reel.authorName}`}>
-                    <span className="h-[68px] w-[68px] rounded-full p-[2.5px] bg-gradient-to-tr from-primary via-primary to-amber-200">
+                    <span className="h-[68px] w-[68px] rounded-full p-[2px] bg-gradient-to-tr from-primary to-amber-200">
                         <span className="block h-full w-full rounded-full p-[2px] bg-background">
                             <SafeImg src={reel.thumbnailUrl} alt="" className="h-full w-full rounded-full object-cover" fallback={<span className="font-heading font-bold text-primary">{reel.authorName[0]}</span>} />
                         </span>
@@ -196,7 +196,7 @@ const ReelCard = ({ reel, onOpen }: { reel: Reel; onOpen: () => void }) => {
                             onAnimationComplete={() => setTimeout(() => setBurst(0), 250)}
                             className="absolute inset-0 flex items-center justify-center pointer-events-none"
                         >
-                            <Heart className="h-24 w-24 text-primary fill-primary drop-shadow-[0_0_24px_rgba(0,0,0,0.5)]" />
+                            <Heart className="h-24 w-24 text-primary fill-primary drop-" />
                         </motion.div>
                     )}
                 </AnimatePresence>
@@ -276,7 +276,7 @@ const PostCard = ({ post }: { post: FeedPost }) => {
 
 // ─── Tarjetas reales ─────────────────────────────────────────────────────────
 const Kicker = ({ Icon, children }: { Icon: React.ElementType; children: React.ReactNode }) => (
-    <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-primary mb-2"><Icon className="h-3.5 w-3.5" />{children}</p>
+    <p className="flex items-center gap-1.5 text-xs font-semibold text-primary mb-2"><Icon className="h-3.5 w-3.5" />{children}</p>
 );
 
 const ListingCard = ({ l }: { l: Listing }) => (
@@ -401,8 +401,8 @@ export default function Feed() {
 
             <nav aria-label="Atajos" className="flex gap-2 overflow-x-auto hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
                 {SHORTCUTS.map(s => (
-                    <Link key={s.to} to={s.to} className="shrink-0 h-10 px-4 rounded-full bg-card border border-border flex items-center gap-2 text-sm font-semibold text-foreground/85 hover:border-primary/50 hover:text-primary transition-colors">
-                        <s.Icon className="h-4 w-4 text-primary" /> {s.label}
+                    <Link key={s.to} to={s.to} className="shrink-0 h-9 px-3.5 rounded-full bg-white/[0.07] flex items-center gap-2 text-[14px] font-medium text-foreground/90 active:opacity-60">
+                        <s.Icon className="h-4 w-4 text-foreground/70" /> {s.label}
                     </Link>
                 ))}
             </nav>

@@ -146,7 +146,7 @@ const ReelItem = ({
                         onAnimationComplete={() => setTimeout(() => setBurst(0), 250)}
                         className="absolute inset-0 z-10 flex items-center justify-center pointer-events-none"
                     >
-                        <Heart className="h-28 w-28 text-primary fill-primary drop-shadow-[0_0_30px_rgba(0,0,0,0.5)]" />
+                        <Heart className="h-28 w-28 text-primary fill-primary drop-" />
                     </motion.div>
                 )}
             </AnimatePresence>

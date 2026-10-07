@@ -223,7 +223,7 @@ export const Navbar = () => {
 
                     <Link
                         to="/rodrigo"
-                        className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover px-5 text-black text-sm font-bold transition-all transform hover:scale-105 shadow-[0_0_15px_rgba(255,216,77,0.3)] hover:shadow-[0_0_25px_rgba(255,216,77,0.5)]"
+                        className="flex h-10 items-center justify-center gap-2 rounded-lg bg-primary hover:bg-primary-hover px-5 text-black text-sm font-bold transition-all transform hover:scale-105 hover:"
                     >
                         <Zap size={16} />
                         Habla con Rodrigo

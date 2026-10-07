@@ -1,7 +1,6 @@
-import { useLocation, useNavigate } from 'react-router-dom';
-import { Home, Rss, Compass, Calendar, ShoppingBag } from 'lucide-react';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, PlaySquare, Search, CalendarDays, ShoppingBag } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { motion } from 'framer-motion';
 
 interface NavItem {
   icon: React.ElementType;
@@ -11,58 +10,40 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { icon: Home,        label: 'Inicio',     path: '/home',     exact: true },
-  { icon: Rss,         label: 'Feed',       path: '/feed'                  },
-  { icon: Compass,     label: 'Explorar',   path: '/discover'              },
-  { icon: Calendar,    label: 'Eventos',    path: '/eventos'               },
-  { icon: ShoppingBag, label: 'Mercado',    path: '/market'                },
+  { icon: Home,         label: 'Inicio',   path: '/home', exact: true },
+  { icon: PlaySquare,   label: 'Feed',     path: '/feed' },
+  { icon: Search,       label: 'Explorar', path: '/discover' },
+  { icon: CalendarDays, label: 'Bolos',    path: '/eventos' },
+  { icon: ShoppingBag,  label: 'Mercado',  path: '/market' },
 ];
 
+// Barra de pestañas estilo iOS: sin píldoras de color, la activa en blanco
 export const BottomNav = () => {
-  const location = useLocation();
-  const navigate  = useNavigate();
-
+  const { pathname } = useLocation();
   const isActive = (item: NavItem) =>
-    item.exact ? location.pathname === item.path : location.pathname.startsWith(item.path);
+    item.exact ? pathname === item.path : pathname.startsWith(item.path) || (item.path === '/discover' && /^\/(artistas|sonido)/.test(pathname));
 
   return (
-    <nav className={cn(
-      'md:hidden fixed bottom-0 left-0 right-0 z-50',
-      'bg-background/95 backdrop-blur-xl border-t border-border',
-      'pb-safe'
-    )}>
-      <div className="flex items-center justify-around h-16 px-1">
+    <nav
+      aria-label="Navegación principal"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/85 backdrop-blur-2xl backdrop-saturate-150 border-t border-white/[0.06] pb-safe"
+    >
+      <div className="flex items-stretch justify-around h-[52px]">
         {NAV_ITEMS.map((item) => {
           const active = isActive(item);
-          const Icon   = item.icon;
+          const Icon = item.icon;
           return (
-            <button
+            <Link
               key={item.path}
-              onClick={() => navigate(item.path)}
-              aria-label={item.label}
-              className="relative flex flex-col items-center justify-center flex-1 h-full gap-0.5 transition-colors"
+              to={item.path}
+              aria-current={active ? 'page' : undefined}
+              className="flex flex-1 flex-col items-center justify-center gap-[3px] active:opacity-60 transition-opacity"
             >
-              <motion.div
-                animate={{ scale: active ? 1.05 : 1 }}
-                transition={{ type: 'spring', stiffness: 400, damping: 20 }}
-                className={cn(
-                  'flex items-center justify-center rounded-2xl transition-all',
-                  active
-                    ? 'bg-primary px-3 py-1.5'
-                    : 'px-3 py-1.5'
-                )}
-              >
-                <Icon
-                  className={cn('h-5 w-5', active ? 'text-primary-foreground' : 'text-muted-foreground')}
-                />
-              </motion.div>
-              <span className={cn(
-                'text-[9px] font-medium transition-colors leading-none',
-                active ? 'text-primary' : 'text-muted-foreground'
-              )}>
+              <Icon className={cn('h-[23px] w-[23px]', active ? 'text-foreground' : 'text-muted-foreground')} strokeWidth={active ? 2.2 : 1.7} />
+              <span className={cn('text-[10px] leading-none tracking-[0.01em]', active ? 'text-foreground font-semibold' : 'text-muted-foreground font-medium')}>
                 {item.label}
               </span>
-            </button>
+            </Link>
           );
         })}
       </div>

@@ -147,7 +147,7 @@ export default function PanelCalendarPage() {
                             <ChevronRight size={16} className="mx-1" />
                             <span className="text-foreground">Calendario</span>
                         </nav>
-                        <h1 className="text-foreground text-3xl md:text-4xl font-black tracking-tight">Disponibilidad y Calendario</h1>
+                        <h1 className="text-foreground text-3xl md:text-4xl font-bold tracking-tight">Disponibilidad y Calendario</h1>
                         <p className="text-muted-foreground text-base max-w-2xl">Gestiona tus fechas disponibles, bloquea días de descanso y sincroniza tus bolos.</p>
                     </div>
                     <span className="flex items-center gap-2 h-10 px-5 bg-muted text-muted-foreground text-sm font-bold rounded-lg border border-border cursor-not-allowed" title="Próximamente">
@@ -229,7 +229,7 @@ export default function PanelCalendarPage() {
                                             onClick={() => handleDayClick(date, status?.status)}
                                             disabled={!isCurrentMonth}
                                             className={`aspect-square p-2 rounded-xl bg-background border transition-all flex flex-col items-start justify-between ${!isCurrentMonth ? 'opacity-30 cursor-not-allowed border-transparent' : statusStyles[status?.status || 'none']
-                                                } ${today ? 'ring-2 ring-primary shadow-[0_0_15px_rgba(255,216,77,0.15)]' : ''}`}
+                                                } ${today ? 'ring-2 ring-primary' : ''}`}
                                         >
                                             <span className={`text-sm font-medium ${status?.status === 'available' ? 'text-primary font-bold' : 'text-foreground'
                                                 } ${today ? 'bg-primary text-black rounded-full size-6 flex items-center justify-center -mt-1 -ml-1' : ''}`}>
@@ -296,7 +296,7 @@ export default function PanelCalendarPage() {
                                                         <span className="text-xs font-bold text-primary uppercase">
                                                             {MONTHS[date.getMonth()].slice(0, 3)}
                                                         </span>
-                                                        <span className="text-lg font-black text-foreground">{date.getDate()}</span>
+                                                        <span className="text-lg font-bold text-foreground">{date.getDate()}</span>
                                                     </div>
                                                     <div>
                                                         <h4 className="text-foreground font-bold leading-tight">{gig.eventName || 'Evento'}</h4>
