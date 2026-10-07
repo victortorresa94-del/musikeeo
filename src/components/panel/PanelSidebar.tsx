@@ -1,5 +1,5 @@
 import { Link, useLocation } from 'react-router-dom';
-import { LogOut } from 'lucide-react';
+import { LogOut, ChevronLeft } from 'lucide-react';
 import { useAuth } from '../../context/AuthContext';
 import { NAVIGATION_CONFIG, COMMON_LINKS } from '../../config/navigation';
 import type { UserMode } from '../../types';
@@ -48,6 +48,13 @@ export const PanelSidebar = () => {
                         {loading ? 'Cargando...' : getModeLabel(activeMode)}
                     </p>
                 </div>
+            </div>
+
+            {/* Salida del panel a la app */}
+            <div className="px-4 pb-2">
+                <Link to="/home" className="flex items-center gap-2 h-10 px-3 rounded-xl text-sm font-semibold text-foreground bg-white/[0.06] active:opacity-60">
+                    <ChevronLeft className="h-4 w-4" /> Volver a Musikeeo
+                </Link>
             </div>
 
             {/* Navigation Links */}

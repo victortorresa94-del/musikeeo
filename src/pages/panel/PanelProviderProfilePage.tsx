@@ -171,7 +171,7 @@ export default function PanelProviderProfilePage() {
 
             {/* Floating Action Bar */}
             {hasChanges && (
-                <div className="fixed bottom-0 left-0 md:left-[280px] right-0 p-4 bg-background border-t border-border flex justify-between items-center z-30">
+                <div className="fixed bottom-[calc(52px+env(safe-area-inset-bottom))] md:bottom-0 left-0 md:left-[280px] right-0 p-4 bg-background border-t border-border flex justify-between items-center z-30">
                     <p className="text-muted-foreground text-sm hidden sm:block">Tienes cambios sin guardar</p>
                     <div className="flex items-center gap-3 ml-auto">
                         <button

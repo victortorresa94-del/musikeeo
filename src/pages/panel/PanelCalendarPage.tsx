@@ -325,13 +325,13 @@ export default function PanelCalendarPage() {
             </div>
 
             {/* FAB */}
-            <div className="fixed bottom-8 right-8 z-50">
+            <div className="fixed left-4 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:left-auto md:bottom-8 md:right-8 z-40">
                 <button
                     onClick={() => setShowBlockModal(true)}
-                    className="flex items-center gap-3 bg-primary hover:bg-primary-hover text-black px-6 py-4 rounded-2xl shadow-[0_8px_30px_rgba(255,216,77,0.3)] hover:shadow-[0_8px_35px_rgba(255,216,77,0.4)] transition-all transform hover:-translate-y-1 font-bold text-base"
+                    className="flex items-center gap-2 bg-primary text-primary-foreground h-12 px-5 rounded-full font-semibold text-[15px] active:opacity-80 shadow-[0_8px_30px_rgba(0,0,0,0.5)]"
                 >
                     <Plus size={20} />
-                    <span>Añadir Fecha de Bloqueo</span>
+                    <span>Bloquear fecha</span>
                 </button>
             </div>
 
