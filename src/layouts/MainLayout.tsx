@@ -10,11 +10,11 @@ export const MainLayout = () => {
     const toggleMobileMenu = () => setIsMobileMenuOpen(!isMobileMenuOpen);
 
     return (
-        <div className="flex min-h-screen bg-background text-foreground overflow-hidden">
+        <div className="flex min-h-screen bg-background text-foreground overflow-x-clip">
             <Sidebar />
             <div className="flex-1 flex flex-col min-w-0 relative">
                 <TopBar onMenuClick={toggleMobileMenu} />
-                <main className="flex-1 overflow-y-auto scroll-smooth pb-24 md:pb-6 relative z-0">
+                <main className="flex-1 pb-24 md:pb-6 relative z-0">
                     <div className="animate-fade-in-up w-full">
                         <Outlet />
                     </div>

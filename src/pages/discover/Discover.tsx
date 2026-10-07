@@ -1,12 +1,17 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useLocation, useSearchParams, Link } from 'react-router-dom';
-import { Search, Music, Filter, Calendar, MapPin, Star, CheckCircle, Users } from 'lucide-react';
+import { motion } from 'framer-motion';
+import {
+    Search, SlidersHorizontal, Calendar, MapPin, BadgeCheck, Users, X,
+    Music2, Speaker, Sparkles, ArrowRight, ArrowUpDown,
+} from 'lucide-react';
 
 import { DiscoverSidebar } from '../../components/discover/DiscoverSidebar';
 import { ProviderSidebar } from '../../components/discover/ProviderSidebar';
 import { MobileFilterDrawer } from '../../components/discover/MobileFilterDrawer';
 import { getArtists } from '../../services/artistService';
 import { getPublicProviders } from '../../services/providerService';
+import { cn } from '../../lib/utils';
 
 import type { Artist, ProviderProfile } from '../../types';
 
@@ -14,13 +19,15 @@ import type { Artist, ProviderProfile } from '../../types';
 interface UnifiedArtist {
     id: string;
     slug?: string;
+    userId?: string;
     name: string;
     city: string;
     coverImage: string;
     rating: number;
+    reviewCount: number;
     verified: boolean;
     type: 'musician' | 'band' | 'artist' | 'technician';
-    role: string; // "Banda", "DJ", "Técnico", or first genre
+    role: string;
     genres: string[];
     priceFrom?: number;
     availability?: { date: string; status: string }[];
@@ -31,460 +38,465 @@ interface UnifiedArtist {
     coverage?: string;
 }
 
+// Atajos de estilo: lo que más se busca para directo en España
+const QUICK_GENRES = ['Pop', 'Rock', 'Flamenco', 'Latin', 'Jazz', 'Electrónica', 'Indie', 'Soul', 'Folk'];
+
+const SORTS = ['Relevancia', 'Mejor valorados', 'Precio: menor a mayor', 'Precio: mayor a menor'] as const;
+type Sort = typeof SORTS[number];
+
+const DEFAULT_FILTERS = {
+    city: null as string | null,
+    genres: [] as string[],
+    format: null as string | null,
+    priceRange: [100, 2000] as [number, number],
+    dateFrom: null as string | null,
+    dateTo: null as string | null,
+    // Provider specific
+    type: null as string | null,
+    services: [] as string[],
+    equipment: [] as string[],
+    coverage: null as string | null,
+};
+
 export default function Discover() {
     const [isMobileFiltersOpen, setIsMobileFiltersOpen] = useState(false);
     const location = useLocation();
-    const [searchParams] = useSearchParams();
+    const [searchParams, setSearchParams] = useSearchParams();
     const isSoundServices = location.pathname === '/sonido';
 
-    // Data from Firestore
     const [firestoreArtists, setFirestoreArtists] = useState<Artist[]>([]);
     const [firestoreProviders, setFirestoreProviders] = useState<ProviderProfile[]>([]);
     const [loading, setLoading] = useState(true);
 
-    // Read URL params for initial filter state
-    const urlQuery = searchParams.get('q') || '';
-    const urlCity = searchParams.get('city') || '';
-    const urlDate = searchParams.get('date') || '';
-
     const [filters, setFilters] = useState({
-        city: urlCity || null as string | null,
-        genres: [] as string[],
-        format: null as string | null,
-        priceRange: [100, 2000] as [number, number],
-        dateFrom: urlDate || null as string | null,
-        dateTo: null as string | null,
-        // Provider specific
-        type: null as string | null,
-        services: [] as string[],
-        equipment: [] as string[],
-        coverage: null as string | null,
+        ...DEFAULT_FILTERS,
+        city: searchParams.get('city') || null,
+        dateFrom: searchParams.get('date') || null,
     });
+    const [searchQuery, setSearchQuery] = useState(searchParams.get('q') || '');
+    const [sortOption, setSortOption] = useState<Sort>('Relevancia');
 
-    const [searchQuery, setSearchQuery] = useState(urlQuery);
-    const [sortOption, setSortOption] = useState<string>('Relevancia');
-
-    // Load data from Firestore
     useEffect(() => {
-        loadData();
+        (async () => {
+            try {
+                const [artists, providers] = await Promise.all([getArtists(), getPublicProviders()]);
+                setFirestoreArtists(artists);
+                setFirestoreProviders(providers);
+            } catch (error) {
+                console.error('Error loading data:', error);
+            } finally {
+                setLoading(false);
+            }
+        })();
     }, []);
 
-    const loadData = async () => {
-        try {
-            const [artists, providers] = await Promise.all([
-                getArtists(),
-                getPublicProviders()
-            ]);
-            setFirestoreArtists(artists);
-            setFirestoreProviders(providers);
-        } catch (error) {
-            console.error('Error loading data:', error);
-        } finally {
-            setLoading(false);
-        }
-    };
+    // La búsqueda vive en la URL: se puede compartir y sobrevive al "atrás"
+    useEffect(() => {
+        const t = setTimeout(() => {
+            const next = new URLSearchParams(searchParams);
+            if (searchQuery.trim()) next.set('q', searchQuery.trim()); else next.delete('q');
+            if (next.toString() !== searchParams.toString()) setSearchParams(next, { replace: true });
+        }, 300);
+        return () => clearTimeout(t);
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [searchQuery]);
 
-    // Handle filter changes
     const handleFilterChange = (key: string, value: any) => {
         setFilters(prev => ({ ...prev, [key]: value }));
     };
 
-    // Combine Firestore Data into UnifiedArtist[]
+    const toggleGenre = (genre: string) => {
+        setFilters(prev => ({
+            ...prev,
+            genres: prev.genres.includes(genre) ? prev.genres.filter(g => g !== genre) : [...prev.genres, genre],
+        }));
+    };
+
+    const clearAll = () => {
+        setFilters({ ...DEFAULT_FILTERS });
+        setSearchQuery('');
+    };
+
     const allArtists: UnifiedArtist[] = useMemo(() => {
         if (isSoundServices) {
             return firestoreProviders.map(p => ({
                 id: p.id,
+                userId: p.userId,
                 name: p.businessName,
-                city: 'España', // Placeholder until Provider has city
+                city: p.coverageAreas?.[0] || 'España',
                 coverImage: '',
                 rating: 0,
+                reviewCount: 0,
                 verified: false,
-                type: 'technician',
-                role: p.providerType,
-                genres: p.services,
-                priceFrom: undefined,
-                availability: [],
-                providerType: p.providerType === 'empresa' ? 'Empresa' : 'Freelance',
+                type: 'technician' as const,
+                role: p.providerType === 'empresa' ? 'Empresa' : 'Freelance',
+                genres: p.services || [],
+                providerType: p.providerType === 'empresa' ? 'Empresa' as const : 'Freelance' as const,
                 services: p.services,
                 equipment: p.equipmentTypes,
-                coverage: p.coverageAreas ? p.coverageAreas[0] : ''
+                coverage: p.coverageAreas ? p.coverageAreas[0] : '',
             }));
         }
 
         return firestoreArtists.map(a => {
             const isBand = a.genres.some(g => g.toLowerCase() === 'banda') || a.tags.some(t => t.toLowerCase() === 'banda');
-
             return {
                 id: a.id,
                 slug: a.slug,
+                userId: a.userId,
                 name: a.artistName,
                 city: a.city,
-                coverImage: a.coverPhoto || a.profilePhoto || '',
+                coverImage: a.profilePhoto || a.coverPhoto || a.multimedia?.photos?.[0]?.url || '',
                 rating: a.rating,
+                reviewCount: a.reviewCount || 0,
                 verified: a.isVerified,
-                type: isBand ? 'band' : 'musician',
+                type: isBand ? 'band' as const : 'musician' as const,
                 role: a.genres[0] || 'Artista',
                 genres: a.genres,
                 priceFrom: a.priceFrom,
                 availability: a.availability || [],
-                providerType: undefined,
-                services: undefined,
-                equipment: undefined,
-                coverage: undefined
             };
         });
     }, [isSoundServices, firestoreArtists, firestoreProviders]);
 
-    // Filter Logic
     const filteredArtists = useMemo(() => {
         return allArtists.filter(artist => {
-            // 1. Search Query
             if (searchQuery) {
                 const query = searchQuery.toLowerCase();
-                const matchesName = artist.name.toLowerCase().includes(query);
-                const matchesCity = artist.city.toLowerCase().includes(query);
-                const matchesGenre = artist.genres.some(g => g.toLowerCase().includes(query));
-                const matchesRole = artist.role.toLowerCase().includes(query);
-
-                if (!matchesName && !matchesCity && !matchesGenre && !matchesRole) return false;
+                const hit = artist.name.toLowerCase().includes(query)
+                    || artist.city.toLowerCase().includes(query)
+                    || artist.genres.some(g => g.toLowerCase().includes(query))
+                    || artist.role.toLowerCase().includes(query);
+                if (!hit) return false;
             }
 
-            // 2. City Filter
-            if (filters.city) {
-                if (!artist.city.toLowerCase().includes(filters.city.toLowerCase())) return false;
-            }
+            if (filters.city && !artist.city.toLowerCase().includes(filters.city.toLowerCase())) return false;
 
-            // Provider Filters
             if (isSoundServices) {
                 if (filters.type && artist.providerType !== filters.type) return false;
-                if (filters.services && filters.services.length > 0) {
-                    const hasService = filters.services.some(s => artist.services?.includes(s));
-                    if (!hasService) return false;
-                }
-                if (filters.equipment && filters.equipment.length > 0) {
-                    const hasEquipment = filters.equipment.some(e => artist.equipment?.includes(e));
-                    if (!hasEquipment) return false;
-                }
+                if (filters.services.length > 0 && !filters.services.some(s => artist.services?.includes(s))) return false;
+                if (filters.equipment.length > 0 && !filters.equipment.some(e => artist.equipment?.includes(e))) return false;
                 if (filters.coverage && artist.coverage !== filters.coverage) return false;
                 return true;
             }
 
-            // 3. Genre Filter
             if (filters.genres.length > 0) {
                 const artistGenres = artist.genres.map(g => g.toLowerCase());
-                const selectedGenresLower = filters.genres.map(g => g.toLowerCase());
-                const hasMatch = selectedGenresLower.some(g => artistGenres.includes(g));
-                if (!hasMatch) return false;
+                if (!filters.genres.some(g => artistGenres.includes(g.toLowerCase()))) return false;
             }
 
-            // 4. Format Filter
             if (filters.format) {
                 if (filters.format === 'Banda' && artist.type !== 'band') return false;
-                if (filters.format === 'Solista' && (artist.type === 'band')) return false;
+                if (filters.format === 'Solista' && artist.type === 'band') return false;
             }
 
-            // 5. Date Availability Filter
             if (filters.dateFrom) {
-                if (artist.availability && artist.availability.length > 0) {
-                    const isAvailable = artist.availability.some(
-                        d => d.date === filters.dateFrom && d.status === 'available'
-                    );
-                    if (!isAvailable) return false;
-                }
-                if (!artist.availability || artist.availability.length === 0) {
-                    return false;
-                }
+                const isAvailable = artist.availability?.some(d => d.date === filters.dateFrom && d.status === 'available');
+                if (!isAvailable) return false;
             }
 
             return true;
         });
     }, [allArtists, searchQuery, filters, isSoundServices]);
 
-    // Sorting Logic
     const sortedArtists = useMemo(() => {
         const sorted = [...filteredArtists];
+        if (sortOption === 'Precio: menor a mayor') return sorted.sort((a, b) => (a.priceFrom ?? Infinity) - (b.priceFrom ?? Infinity));
+        if (sortOption === 'Precio: mayor a menor') return sorted.sort((a, b) => (b.priceFrom || 0) - (a.priceFrom || 0));
+        if (sortOption === 'Mejor valorados') return sorted.sort((a, b) => b.rating - a.rating);
+        // Relevancia: verificados y perfiles con foto primero
+        return sorted.sort((a, b) =>
+            Number(b.verified) - Number(a.verified)
+            || Number(!!b.coverImage) - Number(!!a.coverImage)
+            || b.rating - a.rating);
+    }, [filteredArtists, sortOption]);
 
-        if (sortOption === 'Precio: Menor a Mayor') {
-            return sorted.sort((a, b) => (a.priceFrom || 0) - (b.priceFrom || 0));
-        }
-        if (sortOption === 'Precio: Mayor a Menor') {
-            return sorted.sort((a, b) => (b.priceFrom || 0) - (a.priceFrom || 0));
-        }
-        if (sortOption === 'Mejor valorados') {
-            return sorted.sort((a, b) => b.rating - a.rating);
-        }
+    // Nº de filtros activos (para el badge del botón)
+    const activeCount = (filters.city ? 1 : 0) + filters.genres.length + (filters.format ? 1 : 0) + (filters.dateFrom ? 1 : 0)
+        + (filters.type ? 1 : 0) + filters.services.length + filters.equipment.length + (filters.coverage ? 1 : 0);
+    const hasAnyFilter = activeCount > 0 || !!searchQuery;
 
-        // Default: Relevancia
-        if (filters.dateFrom) {
-            return sorted.sort((a, b) => {
-                const aAvail = a.availability?.some(d => d.date === filters.dateFrom && d.status === 'available') ? 1 : 0;
-                const bAvail = b.availability?.some(d => d.date === filters.dateFrom && d.status === 'available') ? 1 : 0;
-                if (aAvail !== bAvail) return bAvail - aAvail;
-                return b.rating - a.rating;
-            });
-        }
-
-        return sorted.sort((a, b) => b.rating - a.rating);
-    }, [filteredArtists, sortOption, filters.dateFrom]);
+    const nounPlural = isSoundServices ? 'técnicos y proveedores' : 'artistas';
 
     return (
-        <div className="flex h-screen w-full flex-col bg-background text-foreground font-sans overflow-hidden">
+        <div className="flex w-full min-h-full bg-background text-foreground">
+            {/* Filtros de escritorio */}
+            {isSoundServices ? (
+                <ProviderSidebar filters={filters} onFilterChange={handleFilterChange} className="hidden lg:flex sticky top-14 h-[calc(100vh-3.5rem)]" />
+            ) : (
+                <DiscoverSidebar filters={filters} onFilterChange={handleFilterChange} className="hidden lg:flex sticky top-14 h-[calc(100vh-3.5rem)]" />
+            )}
 
-            <div className="flex flex-1 overflow-hidden">
-                {/* Sidebar Filters */}
-                {isSoundServices ? (
-                    <ProviderSidebar
-                        filters={filters}
-                        onFilterChange={handleFilterChange}
-                        className="hidden lg:flex"
-                    />
-                ) : (
-                    <DiscoverSidebar
-                        filters={filters}
-                        onFilterChange={handleFilterChange}
-                        className="hidden lg:flex"
-                    />
-                )}
-
-                {/* Main Content Area */}
-                <main className="flex-1 overflow-y-auto bg-background p-4 md:p-8 pb-32 relative">
-
-                    {/* ── Explorar Hub ── */}
-                    <div className="mb-8">
-                        <h1 className="text-2xl font-black text-foreground mb-1 font-heading tracking-tight">Explorar</h1>
-                        <p className="text-sm text-muted-foreground mb-4">Músicos, técnicos, salas y eventos de toda España</p>
-                        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-                            {/* Músicos destacados */}
-                            <div className="bg-card border border-border rounded-2xl p-4 cursor-pointer hover:-translate-y-0.5 transition-all group">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-10 h-10 rounded-xl bg-purple-500/10 border border-purple-500/20 flex items-center justify-center flex-shrink-0">
-                                        <Music size={18} className="text-purple-500" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-bold text-foreground">Músicos destacados</p>
-                                        <p className="text-xs text-muted-foreground">Guitarristas, DJs, cantantes…</p>
-                                    </div>
-                                </div>
-                                <div className="flex flex-wrap gap-1">
-                                    {['Rock', 'Jazz', 'Electrónica', 'Flamenco'].map(g => (
-                                        <span key={g} className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{g}</span>
-                                    ))}
-                                </div>
-                            </div>
-                            {/* Técnicos destacados */}
-                            <div className="bg-card border border-border rounded-2xl p-4 cursor-pointer hover:-translate-y-0.5 transition-all group">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-10 h-10 rounded-xl bg-blue-500/10 border border-blue-500/20 flex items-center justify-center flex-shrink-0">
-                                        <Star size={18} className="text-blue-500" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-bold text-foreground">Técnicos destacados</p>
-                                        <p className="text-xs text-muted-foreground">FOH, monitores, iluminación…</p>
-                                    </div>
-                                </div>
-                                <div className="flex flex-wrap gap-1">
-                                    {['FOH', 'PA', 'Backline', 'Iluminación'].map(g => (
-                                        <span key={g} className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{g}</span>
-                                    ))}
-                                </div>
-                            </div>
-                            {/* Próximos eventos */}
-                            <div className="bg-card border border-border rounded-2xl p-4 cursor-pointer hover:-translate-y-0.5 transition-all group">
-                                <div className="flex items-center gap-3 mb-2">
-                                    <div className="w-10 h-10 rounded-xl bg-cyan-500/10 border border-cyan-500/20 flex items-center justify-center flex-shrink-0">
-                                        <Calendar size={18} className="text-cyan-500" />
-                                    </div>
-                                    <div>
-                                        <p className="text-sm font-bold text-foreground">Próximos eventos</p>
-                                        <p className="text-xs text-muted-foreground">Festivales, conciertos, bolos…</p>
-                                    </div>
-                                </div>
-                                <div className="flex flex-wrap gap-1">
-                                    {['Festival', 'Sala', 'Privado', 'Gira'].map(g => (
-                                        <span key={g} className="text-[10px] bg-muted text-muted-foreground px-2 py-0.5 rounded-full">{g}</span>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-
-                    {/* Header of Grid */}
-                    <div className="mb-6 flex flex-col sm:flex-row sm:items-end justify-between gap-4">
-                        <div>
-                            <h1 className="text-xl font-bold text-foreground mb-1 font-heading">
-                                {isSoundServices ? 'Proveedores' : 'Artistas'}
-                            </h1>
-                            <p className="text-muted-foreground">
-                                {loading ? 'Cargando...' : `${sortedArtists.length} ${isSoundServices ? 'profesionales' : 'artistas'} disponibles`}
-                                {filters.dateFrom && ` para el ${new Date(filters.dateFrom).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', timeZone: 'UTC' })}`}
-                            </p>
+            <div className="flex-1 min-w-0 pb-28 md:pb-10">
+                {/* ── Cabecera fija: búsqueda + filtros (siempre a mano con el pulgar) ── */}
+                <div className="sticky top-14 z-20 bg-background/90 backdrop-blur-xl border-b border-border">
+                    <div className="px-4 md:px-8 pt-3 pb-3 space-y-3">
+                        {/* Artistas | Técnicos */}
+                        <div className="flex items-center gap-1 p-1 rounded-2xl bg-muted w-full sm:w-auto sm:inline-flex" role="tablist" aria-label="Qué buscas">
+                            {[
+                                { to: '/discover', label: 'Artistas', Icon: Music2, active: !isSoundServices },
+                                { to: '/sonido', label: 'Técnicos', Icon: Speaker, active: isSoundServices },
+                            ].map(t => (
+                                <Link
+                                    key={t.to}
+                                    to={t.to + (searchQuery ? `?q=${encodeURIComponent(searchQuery)}` : '')}
+                                    role="tab"
+                                    aria-selected={t.active}
+                                    className={cn(
+                                        'flex-1 sm:flex-none h-10 px-5 rounded-xl text-sm font-bold flex items-center justify-center gap-2 transition-colors',
+                                        t.active ? 'bg-primary text-primary-foreground' : 'text-muted-foreground hover:text-foreground'
+                                    )}
+                                >
+                                    <t.Icon className="h-4 w-4" /> {t.label}
+                                </Link>
+                            ))}
                         </div>
 
-                        <div className="flex flex-col sm:flex-row gap-4">
-                            {/* Date Filter Chip */}
-                            {filters.dateFrom && (
-                                <div className="flex items-center gap-2 bg-primary/10 border border-primary/30 px-3 py-2 rounded-lg text-sm">
-                                    <Calendar size={16} className="text-primary" />
-                                    <span className="text-primary font-medium">
-                                        {new Date(filters.dateFrom).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', timeZone: 'UTC' })}
-                                    </span>
-                                    <button
-                                        onClick={() => handleFilterChange('dateFrom', null)}
-                                        className="text-primary hover:text-foreground ml-1"
-                                    >
-                                        ×
-                                    </button>
-                                </div>
-                            )}
-
-                            {/* In-page Search */}
-                            <div className="relative w-full sm:w-64">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
+                        <div className="flex items-center gap-2">
+                            <label className="relative flex-1">
+                                <span className="sr-only">Buscar {nounPlural}</span>
+                                <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4 pointer-events-none" />
                                 <input
-                                    className="w-full rounded-xl border border-border bg-muted h-12 pl-10 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none"
-                                    placeholder="Buscar artistas..."
+                                    type="search"
+                                    enterKeyHint="search"
+                                    className="w-full rounded-2xl border border-border bg-card h-12 pl-10 pr-10 text-base md:text-sm text-foreground placeholder:text-muted-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none"
+                                    placeholder={isSoundServices ? 'Sonido, luces, backline, ciudad…' : 'Nombre, estilo o ciudad…'}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
                                 />
-                            </div>
-
-                            <div className="flex items-center gap-3">
-                                <span className="text-sm text-muted-foreground whitespace-nowrap">Ordenar por:</span>
-                                <select
-                                    className="rounded-lg border-border bg-card py-2 pl-3 pr-10 text-sm font-medium text-foreground focus:border-primary outline-none cursor-pointer"
-                                    value={sortOption}
-                                    onChange={(e) => setSortOption(e.target.value)}
-                                >
-                                    <option>Relevancia</option>
-                                    <option>Precio: Menor a Mayor</option>
-                                    <option>Precio: Mayor a Menor</option>
-                                    <option>Mejor valorados</option>
-                                </select>
-                            </div>
+                                {searchQuery && (
+                                    <button onClick={() => setSearchQuery('')} aria-label="Borrar búsqueda" className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground hover:text-foreground">
+                                        <X className="h-4 w-4" />
+                                    </button>
+                                )}
+                            </label>
+                            <button
+                                onClick={() => setIsMobileFiltersOpen(true)}
+                                className="lg:hidden relative h-12 w-12 shrink-0 rounded-2xl border border-border bg-card flex items-center justify-center text-foreground hover:border-primary/50 transition-colors"
+                                aria-label={`Filtros${activeCount ? ` (${activeCount} activos)` : ''}`}
+                            >
+                                <SlidersHorizontal className="h-5 w-5" />
+                                {activeCount > 0 && (
+                                    <span className="absolute -top-1 -right-1 min-w-5 h-5 px-1 rounded-full bg-primary text-primary-foreground text-[11px] font-bold flex items-center justify-center">{activeCount}</span>
+                                )}
+                            </button>
                         </div>
+
+                        {/* Chips de estilo (artistas) */}
+                        {!isSoundServices && (
+                            <div className="flex gap-2 overflow-x-auto hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+                                {QUICK_GENRES.map(g => {
+                                    const on = filters.genres.includes(g);
+                                    return (
+                                        <button
+                                            key={g}
+                                            onClick={() => toggleGenre(g)}
+                                            aria-pressed={on}
+                                            className={cn(
+                                                'shrink-0 h-9 px-4 rounded-full text-sm font-semibold border transition-colors',
+                                                on ? 'bg-primary text-primary-foreground border-primary' : 'bg-card text-foreground/80 border-border hover:border-primary/50'
+                                            )}
+                                        >
+                                            {g}
+                                        </button>
+                                    );
+                                })}
+                            </div>
+                        )}
                     </div>
-
-                    {/* Grid */}
-                    {loading ? (
-                        <div className="flex items-center justify-center py-20">
-                            <div className="animate-spin rounded-full h-12 w-12 border-4 border-primary border-t-transparent" />
-                        </div>
-                    ) : sortedArtists.length > 0 ? (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                            {sortedArtists.map((artist) => (
-                                <ArtistCard key={artist.id} artist={artist} dateFilter={filters.dateFrom} />
-                            ))}
-                        </div>
-                    ) : (
-                        <div className="text-center py-20 bg-muted/30 rounded-2xl border border-border border-dashed">
-                            <Music className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                            <p className="text-lg text-foreground font-bold">No se encontraron resultados.</p>
-                            <p className="text-muted-foreground">Intenta ajustar tus filtros de búsqueda.</p>
-                        </div>
-                    )}
-                </main>
-
-                {/* Mobile Filter Button */}
-                <div className="lg:hidden fixed bottom-6 right-6 z-40">
-                    <button
-                        onClick={() => setIsMobileFiltersOpen(true)}
-                        className="flex items-center gap-2 bg-primary text-black font-bold px-6 py-3 rounded-full shadow-lg hover:bg-primary-hover transition-transform hover:scale-105"
-                    >
-                        <Filter size={20} />
-                        Filtros
-                    </button>
                 </div>
 
-                {/* Mobile Filter Drawer */}
-                <MobileFilterDrawer
-                    isOpen={isMobileFiltersOpen}
-                    onClose={() => setIsMobileFiltersOpen(false)}
-                    filters={filters}
-                    onFilterChange={handleFilterChange}
-                    isSoundServices={isSoundServices}
-                />
+                <div className="px-4 md:px-8 pt-5">
+                    {/* Resumen + orden */}
+                    <div className="flex items-center justify-between gap-3 mb-4">
+                        <p className="text-sm text-muted-foreground" aria-live="polite">
+                            {loading ? 'Buscando…' : (
+                                <>
+                                    <span className="text-foreground font-bold">{sortedArtists.length}</span> {nounPlural}
+                                    {filters.dateFrom && ` libres el ${new Date(filters.dateFrom).toLocaleDateString('es-ES', { day: 'numeric', month: 'long', timeZone: 'UTC' })}`}
+                                </>
+                            )}
+                        </p>
+                        <label className="relative flex items-center gap-1.5 text-sm text-muted-foreground">
+                            <ArrowUpDown className="h-4 w-4" />
+                            <span className="sr-only">Ordenar por</span>
+                            <select
+                                className="appearance-none bg-transparent pr-1 text-sm font-semibold text-foreground outline-none cursor-pointer"
+                                value={sortOption}
+                                onChange={(e) => setSortOption(e.target.value as Sort)}
+                            >
+                                {SORTS.map(s => <option key={s} className="bg-card">{s}</option>)}
+                            </select>
+                        </label>
+                    </div>
+
+                    {/* Filtros activos */}
+                    {hasAnyFilter && (
+                        <div className="flex flex-wrap items-center gap-2 mb-5">
+                            {searchQuery && <ActiveChip label={`“${searchQuery}”`} onRemove={() => setSearchQuery('')} />}
+                            {filters.city && <ActiveChip label={filters.city} onRemove={() => handleFilterChange('city', null)} />}
+                            {filters.dateFrom && (
+                                <ActiveChip
+                                    label={new Date(filters.dateFrom).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', timeZone: 'UTC' })}
+                                    icon={<Calendar className="h-3.5 w-3.5" />}
+                                    onRemove={() => handleFilterChange('dateFrom', null)}
+                                />
+                            )}
+                            {filters.format && <ActiveChip label={filters.format} onRemove={() => handleFilterChange('format', null)} />}
+                            {filters.genres.map(g => <ActiveChip key={g} label={g} onRemove={() => toggleGenre(g)} />)}
+                            {[...filters.services, ...filters.equipment].map(s => (
+                                <ActiveChip key={s} label={s} onRemove={() => {
+                                    handleFilterChange('services', filters.services.filter(x => x !== s));
+                                    handleFilterChange('equipment', filters.equipment.filter(x => x !== s));
+                                }} />
+                            ))}
+                            <button onClick={clearAll} className="text-sm font-semibold text-primary hover:underline px-1">Borrar todo</button>
+                        </div>
+                    )}
+
+                    {/* Resultados */}
+                    {loading ? (
+                        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-5" aria-hidden>
+                            {[...Array(6)].map((_, i) => (
+                                <div key={i} className="rounded-2xl overflow-hidden border border-border bg-card">
+                                    <div className="aspect-[4/5] bg-muted animate-pulse" />
+                                    <div className="p-3 space-y-2">
+                                        <div className="h-3.5 w-3/4 rounded bg-muted animate-pulse" />
+                                        <div className="h-3 w-1/2 rounded bg-muted animate-pulse" />
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    ) : sortedArtists.length > 0 ? (
+                        <div className="grid grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 md:gap-5">
+                            {sortedArtists.map((artist, i) => (
+                                <ArtistCard key={artist.id} artist={artist} dateFilter={filters.dateFrom} index={i} />
+                            ))}
+                        </div>
+                    ) : hasAnyFilter ? (
+                        <div className="text-center py-14 px-6 rounded-3xl border border-dashed border-border bg-card/50">
+                            <Search className="mx-auto h-10 w-10 text-muted-foreground mb-4" />
+                            <p className="font-heading text-lg font-bold">Nada con esos filtros</p>
+                            <p className="text-sm text-muted-foreground mt-1 mb-6">Prueba con menos estilos u otra ciudad.</p>
+                            <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                                <button onClick={clearAll} className="h-11 px-5 rounded-xl bg-primary text-primary-foreground font-bold">Borrar filtros</button>
+                                <Link to="/rodrigo" className="h-11 px-5 rounded-xl border border-border font-bold flex items-center justify-center gap-2 hover:border-primary/50">
+                                    <Sparkles className="h-4 w-4 text-primary" /> Pídeselo a Rodrigo
+                                </Link>
+                            </div>
+                        </div>
+                    ) : (
+                        <EmptyLaunch isSoundServices={isSoundServices} />
+                    )}
+                </div>
             </div>
+
+            <MobileFilterDrawer
+                isOpen={isMobileFiltersOpen}
+                onClose={() => setIsMobileFiltersOpen(false)}
+                filters={filters}
+                onFilterChange={handleFilterChange}
+                isSoundServices={isSoundServices}
+            />
         </div>
     );
 }
 
-// New Artist Card Component with availability indicator
-function ArtistCard({ artist, dateFilter }: { artist: UnifiedArtist; dateFilter: string | null }) {
-    const isAvailable = dateFilter && artist.availability?.some(
-        d => d.date === dateFilter && d.status === 'available'
-    );
+const ActiveChip = ({ label, onRemove, icon }: { label: string; onRemove: () => void; icon?: React.ReactNode }) => (
+    <span className="inline-flex items-center gap-1.5 h-8 pl-3 pr-1 rounded-full bg-primary/10 border border-primary/30 text-primary text-sm font-semibold">
+        {icon}{label}
+        <button onClick={onRemove} aria-label={`Quitar ${label}`} className="h-6 w-6 rounded-full flex items-center justify-center hover:bg-primary/20">
+            <X className="h-3.5 w-3.5" />
+        </button>
+    </span>
+);
 
-    // Link to artist profile page if it's a Firestore artist with slug
-    const linkTo = artist.slug ? `/artist/${artist.slug}` : `/profile/${artist.id}`;
+// Sin perfiles todavía (lanzamiento): convertir el vacío en invitación
+const EmptyLaunch = ({ isSoundServices }: { isSoundServices: boolean }) => (
+    <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-primary/15 via-card to-card p-7 md:p-10">
+        <p className="text-primary text-xs font-bold uppercase tracking-[0.2em] mb-3">Estamos arrancando</p>
+        <h2 className="font-heading text-2xl md:text-3xl font-bold tracking-tight max-w-md">
+            {isSoundServices ? 'Los primeros técnicos se llevan la portada.' : 'Los primeros artistas se llevan la portada.'}
+        </h2>
+        <p className="text-muted-foreground mt-3 max-w-md">
+            {isSoundServices
+                ? 'Crea tu perfil de sonido, luces o backline gratis y aparece aquí cuando lleguen las salas y los eventos.'
+                : 'Crea tu perfil gratis con tu música, vídeos y precios, y aparece aquí cuando busquen directo en tu ciudad.'}
+        </p>
+        <div className="mt-6 flex flex-col sm:flex-row gap-3">
+            <Link to="/register" className="h-12 px-6 rounded-2xl bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2">
+                Crear mi perfil <ArrowRight className="h-5 w-5" />
+            </Link>
+            <Link to="/rodrigo" className="h-12 px-6 rounded-2xl border border-white/15 font-bold flex items-center justify-center gap-2 hover:bg-white/5">
+                <Sparkles className="h-4 w-4 text-primary" /> Busco música para un evento
+            </Link>
+        </div>
+    </div>
+);
+
+function ArtistCard({ artist, dateFilter, index }: { artist: UnifiedArtist; dateFilter: string | null; index: number }) {
+    const isAvailable = dateFilter && artist.availability?.some(d => d.date === dateFilter && d.status === 'available');
+    const linkTo = artist.type === 'technician'
+        ? `/profile/${artist.userId || artist.id}`
+        : artist.slug ? `/artist/${artist.slug}` : `/profile/${artist.userId || artist.id}`;
+    const hasReviews = artist.reviewCount > 0 && artist.rating > 0;
 
     return (
-        <Link
-            to={linkTo}
-            className="group relative flex flex-col bg-card border border-border rounded-2xl overflow-hidden hover:-translate-y-0.5 hover:shadow-lg transition-all duration-300"
+        <motion.div
+            initial={{ opacity: 0, y: 12 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ delay: Math.min(index, 8) * 0.03, duration: 0.3 }}
         >
-            {/* Image */}
-            <div className="relative aspect-[4/3] overflow-hidden">
-                <div
-                    className="w-full h-full bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-                    style={{
-                        backgroundImage: `url(${artist.coverImage || 'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400'})`
-                    }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+            <Link
+                to={linkTo}
+                className="group flex flex-col h-full bg-card border border-border rounded-2xl overflow-hidden hover:border-primary/40 active:scale-[0.98] transition-all"
+            >
+                <div className="relative aspect-[4/5] overflow-hidden bg-muted">
+                    {artist.coverImage ? (
+                        <img src={artist.coverImage} alt={artist.name} loading="lazy" decoding="async" className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105" />
+                    ) : (
+                        <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/25 via-muted to-muted">
+                            {artist.type === 'technician'
+                                ? <Speaker className="h-12 w-12 text-primary/70" />
+                                : <span className="font-heading text-6xl font-bold text-primary/70">{artist.name.slice(0, 1).toUpperCase()}</span>}
+                        </div>
+                    )}
+                    <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
 
-                {/* Badges */}
-                <div className="absolute top-3 left-3 flex gap-2">
-                    {artist.verified && (
-                        <span className="flex items-center gap-1 bg-primary/10 text-primary border border-primary/30 px-2 py-0.5 rounded-full text-xs font-semibold">
-                            <CheckCircle size={10} /> Pro
-                        </span>
-                    )}
-                    {isAvailable && (
-                        <span className="flex items-center gap-1 bg-green-500/90 text-white px-2 py-1 rounded-full text-[10px] font-bold">
-                            <Calendar size={10} /> Disponible
-                        </span>
-                    )}
+                    <div className="absolute top-2 left-2 flex flex-wrap gap-1.5">
+                        {isAvailable && (
+                            <span className="flex items-center gap-1 bg-primary text-primary-foreground px-2 py-0.5 rounded-full text-[11px] font-bold">
+                                <Calendar className="h-3 w-3" /> Libre
+                            </span>
+                        )}
+                        {artist.type === 'band' && (
+                            <span className="flex items-center gap-1 bg-black/60 backdrop-blur text-white px-2 py-0.5 rounded-full text-[11px] font-semibold">
+                                <Users className="h-3 w-3" /> Banda
+                            </span>
+                        )}
+                    </div>
+
+                    {artist.priceFrom ? (
+                        <span className="absolute bottom-2 left-2 text-white text-sm font-bold drop-shadow">desde {artist.priceFrom}€</span>
+                    ) : null}
                 </div>
 
-                {/* Price */}
-                {artist.priceFrom && (
-                    <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-sm px-2 py-1 rounded-lg text-white text-sm font-bold">
-                        Desde {artist.priceFrom}€
-                    </div>
-                )}
-            </div>
-
-            {/* Content */}
-            <div className="p-4 flex flex-col gap-2">
-                <div className="flex items-start justify-between gap-2">
-                    <div>
-                        <h3 className="text-sm font-semibold text-foreground tracking-tight group-hover:text-primary transition-colors line-clamp-1">
-                            {artist.name}
-                        </h3>
-                        <p className="text-xs text-muted-foreground flex items-center gap-1 mt-0.5">
-                            <MapPin size={12} /> {artist.city}
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-1 bg-muted px-2 py-1 rounded-lg shrink-0">
-                        <Star size={12} className="text-primary fill-primary" />
-                        <span className="text-foreground text-xs font-bold">{artist.rating?.toFixed(1) || '5.0'}</span>
+                <div className="p-3 flex flex-col gap-1 min-w-0">
+                    <p className="font-heading font-bold text-sm md:text-base text-foreground leading-tight flex items-center gap-1 min-w-0">
+                        <span className="truncate">{artist.name}</span>
+                        {artist.verified && <BadgeCheck className="h-4 w-4 text-primary shrink-0" aria-label="Verificado" />}
+                    </p>
+                    <p className="text-xs text-muted-foreground flex items-center gap-1 min-w-0">
+                        <MapPin className="h-3 w-3 shrink-0" /> <span className="truncate">{artist.city || 'España'}</span>
+                    </p>
+                    <div className="flex items-center justify-between gap-2 mt-1">
+                        <span className="text-[11px] text-foreground/70 truncate">{artist.genres.slice(0, 2).join(' · ') || artist.role}</span>
+                        {hasReviews
+                            ? <span className="text-[11px] font-bold text-foreground shrink-0">★ {artist.rating.toFixed(1)}</span>
+                            : <span className="text-[10px] font-bold uppercase tracking-wide text-primary shrink-0">Nuevo</span>}
                     </div>
                 </div>
-
-                {/* Genres */}
-                <div className="flex flex-wrap gap-1.5 mt-1">
-                    {artist.genres?.slice(0, 2).map((genre: string) => (
-                        <span key={genre} className="text-[10px] px-2 py-0.5 rounded-full bg-muted text-muted-foreground border border-border">
-                            {genre}
-                        </span>
-                    ))}
-                    {artist.type === 'band' && (
-                        <span className="text-[10px] px-2 py-0.5 rounded-full bg-primary/10 text-primary border border-primary/20 flex items-center gap-1">
-                            <Users size={10} /> Banda
-                        </span>
-                    )}
-                </div>
-            </div>
-        </Link>
+            </Link>
+        </motion.div>
     );
 }

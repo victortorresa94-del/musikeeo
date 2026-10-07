@@ -14,15 +14,16 @@ const GUMLET_VIDEO_IDS = [
 const getGumletPlayerUrl = (videoId: string) => `https://play.gumlet.io/embed/${videoId}`;
 
 // Thumbnails musicales de alta calidad para cada video
+// Miniaturas propias (Aura Studio, /public): sin depender de Unsplash
 const MUSIC_THUMBNAILS = [
-    'https://images.unsplash.com/photo-1493225457124-a3eb161ffa5f?w=400&q=80', // Concierto
-    'https://images.unsplash.com/photo-1511192336575-5a79af67a629?w=400&q=80', // Estudio
-    'https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=400&q=80', // DJ
-    'https://images.unsplash.com/photo-1519892300165-cb5542fb47c7?w=400&q=80', // Batería
-    'https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=400&q=80', // Guitarra
-    'https://images.unsplash.com/photo-1501386761578-eac5c94b800a?w=400&q=80', // Festival
-    'https://images.unsplash.com/photo-1471478331149-c72f17e33c73?w=400&q=80', // Piano
-    'https://images.unsplash.com/photo-1470225620780-dba8ba36b745?w=400&q=80', // Fiesta
+    '/images/home/boda.webp',
+    '/images/home/role-musico.webp',
+    '/images/home/role-dj.webp',
+    '/images/home/2am.webp',
+    '/images/home/role-sala.webp',
+    '/images/home/role-tienda.webp',
+    '/images/home/role-tecnico.webp',
+    '/images/home/ecosistema.webp',
 ];
 
 export const MOCK_REELS: Reel[] = [
@@ -32,7 +33,7 @@ export const MOCK_REELS: Reel[] = [
         thumbnailUrl: MUSIC_THUMBNAILS[0],
         authorId: 'user_1',
         authorName: 'Lucas Guitar',
-        authorPhoto: 'https://i.pravatar.cc/150?u=1',
+        authorPhoto: '',
         authorRole: 'musician',
         authorVerified: true,
         description: '🎸 "Mi Estrella Blanca" - Nueva canción que estamos trabajando. ¿Qué os parece? #guitar #original #music',
@@ -53,7 +54,7 @@ export const MOCK_REELS: Reel[] = [
         thumbnailUrl: MUSIC_THUMBNAILS[1],
         authorId: 'user_2',
         authorName: 'Ana Vocals',
-        authorPhoto: 'https://i.pravatar.cc/150?u=2',
+        authorPhoto: '',
         authorRole: 'musician',
         authorVerified: true,
         description: '✨ Sesión de estudio grabando nuevas voces! El productor está flipando 🎤 #vocals #recording #studio',
@@ -74,7 +75,7 @@ export const MOCK_REELS: Reel[] = [
         thumbnailUrl: MUSIC_THUMBNAILS[2],
         authorId: 'user_3',
         authorName: 'DJ Electronic',
-        authorPhoto: 'https://i.pravatar.cc/150?u=3',
+        authorPhoto: '',
         authorRole: 'musician',
         authorVerified: false,
         description: '🔥 Preview del set de anoche en Razzmatazz! La gente estaba increíble 🎉 #dj #electronic #barcelona',
@@ -95,7 +96,7 @@ export const MOCK_REELS: Reel[] = [
         thumbnailUrl: MUSIC_THUMBNAILS[3],
         authorId: 'user_4',
         authorName: 'Drums Master',
-        authorPhoto: 'https://i.pravatar.cc/150?u=4',
+        authorPhoto: '',
         authorRole: 'musician',
         authorVerified: true,
         description: '🥁 Grabando las pistas de batería para el nuevo álbum! Este ritmo va a pegar fuerte 💥 #drums #recording',
@@ -115,7 +116,7 @@ export const MOCK_REELS: Reel[] = [
         thumbnailUrl: MUSIC_THUMBNAILS[4],
         authorId: 'user_1',
         authorName: 'Lucas Guitar',
-        authorPhoto: 'https://i.pravatar.cc/150?u=1',
+        authorPhoto: '',
         authorRole: 'musician',
         authorVerified: true,
         description: '🌙 Late night vibes en el estudio. Trabajando en algo especial... 🎸✨ #guitar #studio #newmusic',
@@ -135,7 +136,7 @@ export const MOCK_REELS: Reel[] = [
         thumbnailUrl: MUSIC_THUMBNAILS[5],
         authorId: 'user_5',
         authorName: 'Marc Sound Tech',
-        authorPhoto: 'https://i.pravatar.cc/150?u=5',
+        authorPhoto: '',
         authorRole: 'provider',
         authorVerified: true,
         description: '🎚️ Preparando el sonido para el festival de este finde! Todo listo para que suene brutal 🔊 #soundtech #festival',
@@ -155,7 +156,7 @@ export const MOCK_REELS: Reel[] = [
         thumbnailUrl: MUSIC_THUMBNAILS[6],
         authorId: 'user_2',
         authorName: 'Ana Vocals',
-        authorPhoto: 'https://i.pravatar.cc/150?u=2',
+        authorPhoto: '',
         authorRole: 'musician',
         authorVerified: true,
         description: '🎵 Ensayando para el concierto de mañana! Los nervios a tope pero con muchas ganas 🎤💪 #rehearsal #concert',
@@ -176,7 +177,7 @@ export const MOCK_REELS: Reel[] = [
         thumbnailUrl: MUSIC_THUMBNAILS[7],
         authorId: 'user_3',
         authorName: 'DJ Electronic',
-        authorPhoto: 'https://i.pravatar.cc/150?u=3',
+        authorPhoto: '',
         authorRole: 'musician',
         authorVerified: false,
         description: '🎉 Anoche en Apolo fue INCREÍBLE! Gracias a todos los que vinisteis 🔥 #dj #party #barcelona #apolo',
@@ -199,7 +200,7 @@ export const MOCK_REEL_COMMENTS: Record<string, ReelComment[]> = {
             id: 'comment_1',
             authorId: 'user_2',
             authorName: 'Ana Vocals',
-            authorPhoto: 'https://i.pravatar.cc/150?u=2',
+            authorPhoto: '',
             content: '¡Este tema está increíble! 🔥 La melodía es preciosa',
             timestamp: Date.now() - 1000 * 60 * 30,
             likes: 45,
@@ -209,7 +210,7 @@ export const MOCK_REEL_COMMENTS: Record<string, ReelComment[]> = {
             id: 'comment_2',
             authorId: 'user_3',
             authorName: 'DJ Electronic',
-            authorPhoto: 'https://i.pravatar.cc/150?u=3',
+            authorPhoto: '',
             content: 'Me encantaría hacer un remix de esto 👀🎧',
             timestamp: Date.now() - 1000 * 60 * 45,
             likes: 23,
@@ -219,7 +220,7 @@ export const MOCK_REEL_COMMENTS: Record<string, ReelComment[]> = {
             id: 'comment_3',
             authorId: 'user_4',
             authorName: 'Drums Master',
-            authorPhoto: 'https://i.pravatar.cc/150?u=4',
+            authorPhoto: '',
             content: '¡Colaboramos pronto! Quedaría genial con batería 🥁🎸',
             timestamp: Date.now() - 1000 * 60 * 60,
             likes: 67,
@@ -231,7 +232,7 @@ export const MOCK_REEL_COMMENTS: Record<string, ReelComment[]> = {
             id: 'comment_4',
             authorId: 'user_1',
             authorName: 'Lucas Guitar',
-            authorPhoto: 'https://i.pravatar.cc/150?u=1',
+            authorPhoto: '',
             content: '¡Esa voz! Siempre impresionante 👏 El productor tiene razón en flipar',
             timestamp: Date.now() - 1000 * 60 * 120,
             likes: 89,
@@ -241,7 +242,7 @@ export const MOCK_REEL_COMMENTS: Record<string, ReelComment[]> = {
             id: 'comment_5',
             authorId: 'user_5',
             authorName: 'Marc Sound Tech',
-            authorPhoto: 'https://i.pravatar.cc/150?u=5',
+            authorPhoto: '',
             content: 'El sonido del estudio se nota de calidad! Si necesitas mezcla, cuenta conmigo 🎚️',
             timestamp: Date.now() - 1000 * 60 * 180,
             likes: 34,
@@ -253,7 +254,7 @@ export const MOCK_REEL_COMMENTS: Record<string, ReelComment[]> = {
             id: 'comment_6',
             authorId: 'user_2',
             authorName: 'Ana Vocals',
-            authorPhoto: 'https://i.pravatar.cc/150?u=2',
+            authorPhoto: '',
             content: '¡Qué energía! Me arrepiento de no haber ido 😭',
             timestamp: Date.now() - 1000 * 60 * 60 * 3,
             likes: 56,
@@ -265,7 +266,7 @@ export const MOCK_REEL_COMMENTS: Record<string, ReelComment[]> = {
             id: 'comment_7',
             authorId: 'user_1',
             authorName: 'Lucas Guitar',
-            authorPhoto: 'https://i.pravatar.cc/150?u=1',
+            authorPhoto: '',
             content: 'Ese groove es una locura! 🔥 Necesito esos drums en mi próximo track',
             timestamp: Date.now() - 1000 * 60 * 60 * 5,
             likes: 78,

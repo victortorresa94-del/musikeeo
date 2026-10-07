@@ -62,7 +62,7 @@ const ReelItem = ({
             id: `comment_new_${Date.now()}`,
             authorId: 'current_user',
             authorName: 'Tú',
-            authorPhoto: 'https://i.pravatar.cc/150?u=current',
+            authorPhoto: '',
             content: newComment,
             timestamp: Date.now(),
             likes: 0,
@@ -148,14 +148,20 @@ const ReelItem = ({
                         onClick={() => onNavigateProfile(reel.authorId)}
                         className="block"
                     >
-                        <img
-                            src={reel.authorPhoto}
-                            alt={reel.authorName}
-                            className="h-12 w-12 rounded-full border-2 border-white object-cover shadow-lg"
-                        />
+                        {reel.authorPhoto ? (
+                            <img
+                                src={reel.authorPhoto}
+                                alt={reel.authorName}
+                                className="h-12 w-12 rounded-full border-2 border-white object-cover shadow-lg"
+                            />
+                        ) : (
+                            <span className="h-12 w-12 rounded-full border-2 border-white bg-primary text-primary-foreground font-heading font-bold flex items-center justify-center shadow-lg">
+                                {reel.authorName.slice(0, 1)}
+                            </span>
+                        )}
                     </button>
                     {reel.authorVerified && (
-                        <div className="absolute -bottom-1 -right-1 bg-brand-cyan rounded-full p-0.5">
+                        <div className="absolute -bottom-1 -right-1 bg-primary rounded-full p-0.5">
                             <BadgeCheck className="h-3 w-3 text-black" />
                         </div>
                     )}
@@ -278,11 +284,17 @@ const ReelItem = ({
                             ) : (
                                 comments.map(comment => (
                                     <div key={comment.id} className="flex gap-3">
-                                        <img
-                                            src={comment.authorPhoto}
-                                            alt={comment.authorName}
-                                            className="h-10 w-10 rounded-full object-cover shrink-0"
-                                        />
+                                        {comment.authorPhoto && !comment.authorPhoto.includes('pravatar') ? (
+                                            <img
+                                                src={comment.authorPhoto}
+                                                alt={comment.authorName}
+                                                className="h-10 w-10 rounded-full object-cover shrink-0"
+                                            />
+                                        ) : (
+                                            <span className="h-10 w-10 rounded-full bg-muted text-foreground font-bold flex items-center justify-center shrink-0">
+                                                {comment.authorName.slice(0, 1)}
+                                            </span>
+                                        )}
                                         <div className="flex-1">
                                             <div className="flex items-center gap-2">
                                                 <span className="font-bold text-white text-sm">
@@ -315,11 +327,7 @@ const ReelItem = ({
                             onSubmit={handleSubmitComment}
                             className="p-4 border-t border-white/10 flex items-center gap-3"
                         >
-                            <img
-                                src="https://i.pravatar.cc/150?u=current"
-                                alt="Tu foto"
-                                className="h-10 w-10 rounded-full object-cover"
-                            />
+                            <span className="h-10 w-10 shrink-0 rounded-full bg-primary text-primary-foreground font-bold flex items-center justify-center" aria-hidden>Tú</span>
                             <input
                                 type="text"
                                 value={newComment}

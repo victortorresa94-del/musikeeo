@@ -1,381 +1,336 @@
-import { useEffect, useState } from 'react';
-import { motion } from 'framer-motion';
+import { useEffect, useMemo, useRef, useState } from 'react';
+import { AnimatePresence, motion } from 'framer-motion';
 import {
-    Search, Bell, MessageCircle, Play, Heart, MessageCircle as CommentIcon,
-    Share2, BadgeCheck, ShoppingBag, Calendar, ArrowRight, Image as ImageIcon,
-    Zap, Plus, Film
+    Play, Heart, MessageCircle, Share2, BadgeCheck, ShoppingBag, Calendar,
+    ArrowRight, Image as ImageIcon, Plus, Music2, Speaker, Sparkles, MapPin, Info, Check,
 } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
+import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
+import { db } from '../../lib/firebase';
 import { useAuth } from '../../context/AuthContext';
-import { userService } from '../../services/userService';
 import { MOCK_REELS } from '../../services/reelsData';
-import type { UserProfile } from '../../types';
+import { eventService } from '../../services/eventService';
+import { getArtists } from '../../services/artistService';
+import type { Artist, Event, Listing } from '../../types';
 import { cn } from '../../lib/utils';
 
-// ─── Reels / Stories row ──────────────────────────────────────────────────────
-const ReelsRow = ({ onOpen }: { onOpen: (id: string) => void }) => (
-    <section className="mb-5">
-        <div className="flex items-center justify-between mb-3">
-            <h2 className="text-sm font-bold text-foreground flex items-center gap-1.5">
-                <Film className="h-4 w-4 text-primary" /> Reels
-            </h2>
-            <button
-                onClick={() => onOpen(MOCK_REELS[0].id)}
-                className="text-xs text-primary font-medium hover:underline"
-            >
-                Ver todos
-            </button>
+type Reel = typeof MOCK_REELS[number];
+
+const fmt = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1).replace('.0', '')}K` : String(n);
+
+// ─── Avatar con inicial si la foto no carga (nada de caras inventadas) ───────
+const Avatar = ({ src, name, className }: { src?: string; name: string; className?: string }) => {
+    const [broken, setBroken] = useState(!src);
+    return broken ? (
+        <div className={cn('rounded-full bg-gradient-to-br from-primary/70 to-primary/30 flex items-center justify-center font-heading font-bold text-primary-foreground', className)}>
+            {name.slice(0, 1).toUpperCase()}
         </div>
-        <div className="flex gap-3 overflow-x-auto pb-1 hide-scrollbar -mx-4 px-4">
-            {MOCK_REELS.slice(0, 8).map((reel) => (
-                <button
-                    key={reel.id}
-                    onClick={() => onOpen(reel.id)}
-                    className="flex flex-col items-center gap-1.5 flex-shrink-0 group"
-                >
-                    {/* Thumbnail with play overlay */}
-                    <div className="relative w-16 h-16">
-                        <div className="w-16 h-16 rounded-full ring-2 ring-primary ring-offset-2 ring-offset-background overflow-hidden">
-                            <img
-                                src={reel.thumbnailUrl}
-                                alt={reel.authorName}
-                                loading="lazy"
-                                className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
-                            />
-                        </div>
-                        <div className="absolute inset-0 flex items-center justify-center">
-                            <div className="bg-black/40 rounded-full p-1 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-opacity">
-                                <Play className="h-3 w-3 text-white fill-white" />
-                            </div>
-                        </div>
-                    </div>
-                    <span className="text-[10px] text-muted-foreground truncate max-w-[64px] text-center leading-tight">
-                        {reel.authorName.split(' ')[0]}
+    ) : (
+        <img src={src} alt="" loading="lazy" onError={() => setBroken(true)} className={cn('rounded-full object-cover', className)} />
+    );
+};
+
+// Imagen con respaldo de marca si falla la red
+const SafeImg = ({ src, alt, className, fallback }: { src?: string; alt: string; className?: string; fallback?: React.ReactNode }) => {
+    const [broken, setBroken] = useState(!src);
+    if (broken) return <div className={cn('flex items-center justify-center bg-gradient-to-br from-primary/20 via-muted to-muted', className)}>{fallback ?? <Music2 className="h-10 w-10 text-primary/60" />}</div>;
+    return <img src={src} alt={alt} loading="lazy" decoding="async" onError={() => setBroken(true)} className={className} />;
+};
+
+// ─── Historias: tu reel + reels ──────────────────────────────────────────────
+const StoriesRow = ({ onOpen, onCreate, signedIn }: { onOpen: (id: string) => void; onCreate: () => void; signedIn: boolean }) => (
+    <section aria-label="Reels" className="-mx-4 px-4 md:mx-0 md:px-0">
+        <div className="flex gap-3.5 overflow-x-auto hide-scrollbar pb-1">
+            <button onClick={onCreate} className="flex flex-col items-center gap-1.5 shrink-0 w-[68px]">
+                <span className="h-[68px] w-[68px] rounded-full border-2 border-dashed border-primary/50 flex items-center justify-center text-primary bg-primary/5">
+                    <Plus className="h-6 w-6" />
+                </span>
+                <span className="text-[11px] text-foreground/80 truncate w-full text-center">{signedIn ? 'Tu reel' : 'Súbete'}</span>
+            </button>
+            {MOCK_REELS.slice(0, 8).map(reel => (
+                <button key={reel.id} onClick={() => onOpen(reel.id)} className="flex flex-col items-center gap-1.5 shrink-0 w-[68px]" aria-label={`Ver reel de ${reel.authorName}`}>
+                    <span className="h-[68px] w-[68px] rounded-full p-[2.5px] bg-gradient-to-tr from-primary via-primary to-amber-200">
+                        <span className="block h-full w-full rounded-full p-[2px] bg-background">
+                            <SafeImg src={reel.thumbnailUrl} alt="" className="h-full w-full rounded-full object-cover" fallback={<span className="font-heading font-bold text-primary">{reel.authorName[0]}</span>} />
+                        </span>
                     </span>
+                    <span className="text-[11px] text-muted-foreground truncate w-full text-center">{reel.authorName.split(' ')[0]}</span>
                 </button>
             ))}
         </div>
     </section>
 );
 
-// ─── Create post ──────────────────────────────────────────────────────────────
-const CreatePostCard = ({ user }: { user: any }) => {
-    const navigate = useNavigate();
-    // Sin sesión, cualquier acción de publicar lleva al login y vuelve al feed
-    const go = (path: string) => user ? navigate(path) : navigate('/login', { state: { from: '/feed' } });
-    const initials = user?.displayName
-        ? user.displayName.slice(0, 2).toUpperCase()
-        : 'TU';
-    return (
-        <div className="bg-card border border-border rounded-2xl p-4 mb-4">
-            <div className="flex items-center gap-3 mb-3">
-                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-primary/70 to-primary/40 flex items-center justify-center flex-shrink-0">
-                    {user?.photoURL
-                        ? <img src={user.photoURL} className="h-9 w-9 rounded-full object-cover" alt="" />
-                        : <span className="text-xs font-bold text-primary-foreground">{initials}</span>
-                    }
-                </div>
-                <div onClick={() => go('/panel/multimedia')} className="flex-1 bg-muted border border-border rounded-full px-4 py-2 text-sm text-muted-foreground cursor-pointer hover:border-primary/30 transition-colors">
-                    {user ? '¿Qué estás creando hoy?' : 'Entra para publicar tu música'}
-                </div>
-            </div>
-            <div className="flex items-center gap-1 pt-2 border-t border-border -mx-1">
-                <button onClick={() => go('/panel/multimedia')} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-xs font-medium">
-                    <ImageIcon className="h-4 w-4" /> Foto/Video
-                </button>
-                <button onClick={() => go('/publicar')} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-xs font-medium">
-                    <Calendar className="h-4 w-4" /> Evento
-                </button>
-                <button onClick={() => go('/market/create')} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-xs font-medium">
-                    <ShoppingBag className="h-4 w-4" /> Vender
-                </button>
-            </div>
-        </div>
-    );
-};
+// ─── Atajos ──────────────────────────────────────────────────────────────────
+const SHORTCUTS = [
+    { to: '/artistas', label: 'Artistas', Icon: Music2 },
+    { to: '/eventos', label: 'Bolos', Icon: Calendar },
+    { to: '/sonido', label: 'Técnicos', Icon: Speaker },
+    { to: '/market', label: 'Mercado', Icon: ShoppingBag },
+    { to: '/rodrigo', label: 'Rodrigo IA', Icon: Sparkles },
+];
 
-// ─── Nearby user chip ─────────────────────────────────────────────────────────
-const NearbyChip = ({ user: u, onClick }: { user: UserProfile & { distance?: string }; onClick: () => void }) => (
-    <motion.button
-        whileHover={{ scale: 1.05 }}
-        onClick={onClick}
-        className="flex flex-col items-center gap-1 flex-shrink-0"
-    >
-        <div className="relative">
-            <div className="h-14 w-14 rounded-full ring-2 ring-primary ring-offset-2 ring-offset-background overflow-hidden bg-muted">
-                <img
-                    src={u.photoURL || `https://i.pravatar.cc/56?u=${u.uid}`}
-                    alt={u.displayName}
-                    loading="lazy"
-                    className="w-full h-full object-cover"
-                />
-            </div>
-            <span className="absolute -bottom-0.5 -right-0.5 h-4 w-4 bg-primary rounded-full border-2 border-background" />
+// ─── Publicar ────────────────────────────────────────────────────────────────
+const Composer = ({ user, go }: { user: any; go: (p: string) => void }) => (
+    <div className="bg-card border border-border rounded-2xl p-3">
+        <div className="flex items-center gap-3">
+            <Avatar src={user?.photoURL} name={user?.displayName || 'Tú'} className="h-10 w-10 text-sm shrink-0" />
+            <button onClick={() => go('/panel/multimedia')} className="flex-1 h-11 text-left bg-muted border border-border rounded-full px-4 text-sm text-muted-foreground hover:border-primary/40 transition-colors">
+                {user ? '¿Qué estás tocando estos días?' : 'Entra y comparte tu música'}
+            </button>
         </div>
-        <span className="text-[10px] text-muted-foreground truncate max-w-[60px] text-center">
-            {u.displayName?.split(' ')[0] || 'Usuario'}
-        </span>
-    </motion.button>
+        <div className="grid grid-cols-3 gap-1 mt-2">
+            {[
+                { label: 'Vídeo', Icon: ImageIcon, to: '/panel/multimedia' },
+                { label: 'Evento', Icon: Calendar, to: '/publicar' },
+                { label: 'Vender', Icon: ShoppingBag, to: '/market/create' },
+            ].map(a => (
+                <button key={a.label} onClick={() => go(a.to)} className="h-11 flex items-center justify-center gap-2 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted hover:text-primary transition-colors">
+                    <a.Icon className="h-[18px] w-[18px]" /> {a.label}
+                </button>
+            ))}
+        </div>
+    </div>
 );
 
-// ─── Empty feed CTA ───────────────────────────────────────────────────────────
-const EmptyFeed = ({ onExplore }: { onExplore: () => void }) => (
-    <motion.div
-        initial={{ opacity: 0, y: 12 }}
-        animate={{ opacity: 1, y: 0 }}
-        className="text-center py-12 border border-dashed border-border rounded-2xl bg-card"
-    >
-        <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
-            <Film className="h-8 w-8 text-primary" />
-        </div>
-        <h3 className="text-lg font-bold text-foreground mb-1">Tu feed está vacío</h3>
-        <p className="text-muted-foreground text-sm max-w-xs mx-auto mb-5">
-            Sigue a músicos, técnicos y organizadores para ver su contenido aquí
-        </p>
-        <button
-            onClick={onExplore}
-            className="inline-flex items-center gap-2 bg-primary text-primary-foreground font-bold px-5 py-2.5 rounded-xl hover:brightness-105 transition-all text-sm"
-        >
-            <Zap className="h-4 w-4" /> Explorar artistas
-        </button>
-    </motion.div>
-);
-
-// ─── Reel preview card (for showing reels inline in feed) ─────────────────────
-const ReelFeedCard = ({ reel, onPlay }: { reel: typeof MOCK_REELS[0]; onPlay: () => void }) => {
+// ─── Tarjeta de reel ─────────────────────────────────────────────────────────
+const ReelCard = ({ reel, onOpen }: { reel: Reel; onOpen: () => void }) => {
     const [liked, setLiked] = useState(false);
-    const [likeCount, setLikeCount] = useState(reel.likes);
+    const [burst, setBurst] = useState(0);
+    const lastTap = useRef(0);
 
-    const fmt = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}K` : String(n);
+    const like = (force?: boolean) => {
+        if (force && liked) { setBurst(b => b + 1); return; }
+        setLiked(v => !v);
+        if (!liked) setBurst(b => b + 1);
+        if (navigator.vibrate) navigator.vibrate(10);
+    };
 
-    return (
-        <motion.article
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            className="bg-card border border-border rounded-2xl overflow-hidden"
-        >
-            {/* Header */}
-            <div className="flex items-center gap-3 p-4">
-                <img
-                    src={reel.authorPhoto}
-                    alt={reel.authorName}
-                    loading="lazy"
-                    className="h-10 w-10 rounded-full object-cover border-2 border-border"
-                />
-                <div className="flex-1">
-                    <div className="flex items-center gap-1.5">
-                        <span className="font-bold text-sm text-foreground">{reel.authorName}</span>
-                        {reel.authorVerified && (
-                            <BadgeCheck className="h-3.5 w-3.5 text-primary" />
-                        )}
-                    </div>
-                    <span className="text-xs text-muted-foreground capitalize">{reel.authorRole}</span>
-                </div>
-                <span className="text-xs text-muted-foreground bg-primary/10 text-primary px-2 py-0.5 rounded-full font-medium">
-                    🎬 Reel
-                </span>
-            </div>
+    // Un toque abre el reel; doble toque da like (como en Instagram)
+    const onMediaTap = () => {
+        const now = Date.now();
+        if (now - lastTap.current < 280) { like(true); lastTap.current = 0; return; }
+        lastTap.current = now;
+        setTimeout(() => { if (lastTap.current === now) onOpen(); }, 290);
+    };
 
-            {/* Video thumbnail */}
-            <div
-                className="relative cursor-pointer group"
-                onClick={onPlay}
-            >
-                <img
-                    src={reel.thumbnailUrl}
-                    alt={reel.description}
-                    loading="lazy"
-                    className="w-full aspect-video object-cover"
-                />
-                <div className="absolute inset-0 bg-black/30 flex items-center justify-center group-hover:bg-black/40 transition-colors">
-                    <div className="bg-white/20 backdrop-blur-md p-4 rounded-full border border-white/30 group-hover:scale-110 transition-transform">
-                        <Play className="h-8 w-8 text-white fill-white" />
-                    </div>
-                </div>
-                {reel.songTitle && (
-                    <div className="absolute bottom-3 left-3 right-3 flex items-center gap-2 bg-black/60 backdrop-blur-sm rounded-xl px-3 py-2">
-                        <div className="h-7 w-7 bg-white/20 rounded-full flex items-center justify-center flex-shrink-0">
-                            <span className="text-sm">🎵</span>
-                        </div>
-                        <div className="flex-1 overflow-hidden">
-                            <p className="text-white text-xs font-medium truncate">{reel.songTitle}</p>
-                            <p className="text-white/60 text-[10px] truncate">{reel.songArtist}</p>
-                        </div>
-                        <span className="text-white/60 text-xs flex-shrink-0">{fmt(reel.views)} views</span>
-                    </div>
-                )}
-            </div>
-
-            {/* Description */}
-            <div className="px-4 pt-3 pb-1">
-                <p className="text-sm text-foreground line-clamp-2">{reel.description}</p>
-                {reel.tags && reel.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                        {reel.tags.slice(0, 4).map(tag => (
-                            <span key={tag} className="text-primary text-xs">#{tag}</span>
-                        ))}
-                    </div>
-                )}
-            </div>
-
-            {/* Actions */}
-            <div className="px-4 py-3 flex items-center gap-1 border-t border-border mt-2">
-                <button
-                    onClick={() => { setLiked(v => !v); setLikeCount(v => liked ? v - 1 : v + 1); }}
-                    className={cn('flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm transition-colors hover:bg-muted', liked ? 'text-red-500' : 'text-muted-foreground')}
-                >
-                    <Heart className={cn('h-4 w-4', liked && 'fill-current')} />
-                    {fmt(likeCount)}
-                </button>
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm text-muted-foreground hover:bg-muted hover:text-primary transition-colors">
-                    <CommentIcon className="h-4 w-4" /> {fmt(reel.comments)}
-                </button>
-                <button className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-sm text-muted-foreground hover:bg-muted hover:text-primary transition-colors">
-                    <Share2 className="h-4 w-4" /> {fmt(reel.shares)}
-                </button>
-            </div>
-        </motion.article>
-    );
-};
-
-// ─── Main Feed ────────────────────────────────────────────────────────────────
-export default function Feed() {
-    const navigate = useNavigate();
-    const { user } = useAuth();
-    const [nearbyUsers, setNearbyUsers] = useState<(UserProfile & { distance?: string })[]>([]);
-
-    useEffect(() => {
-        userService.getNearbyUsers().then(setNearbyUsers).catch(() => {});
-    }, []);
-
-    const openReel = (id: string) => {
-        navigate(`/reels/${id}`, { state: { source: 'feed', from: '/feed' } });
+    const share = async () => {
+        const url = `${window.location.origin}/reels/${reel.id}`;
+        try {
+            if (navigator.share) await navigator.share({ title: reel.authorName, text: reel.description, url });
+            else { await navigator.clipboard.writeText(url); }
+        } catch { /* cancelado */ }
     };
 
     return (
-        <div className="max-w-2xl mx-auto pb-24">
+        <article className="bg-card md:border border-y border-border md:rounded-2xl overflow-hidden -mx-4 md:mx-0">
+            <header className="flex items-center gap-3 px-4 py-3">
+                <Avatar src={reel.authorPhoto} name={reel.authorName} className="h-10 w-10 text-sm" />
+                <div className="flex-1 min-w-0">
+                    <p className="font-bold text-sm text-foreground flex items-center gap-1 truncate">
+                        {reel.authorName}
+                        {reel.authorVerified && <BadgeCheck className="h-4 w-4 text-primary shrink-0" aria-label="Verificado" />}
+                    </p>
+                    <p className="text-xs text-muted-foreground">{reel.songTitle ? `♪ ${reel.songTitle}` : 'Reel'}</p>
+                </div>
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground border border-border rounded-full px-2 py-0.5">Demo</span>
+            </header>
 
-            {/* ── Mobile header ── */}
-            <div className="md:hidden sticky top-0 z-20 bg-background/95 backdrop-blur-md border-b border-border px-4 py-2.5 flex items-center justify-between -mx-4 mb-4">
-                <div className="flex items-center gap-2">
-                    <img src="/logo-musikeeo.png" alt="Musikeeo" className="h-7 w-7 rounded-lg object-contain" />
-                    <span className="font-heading font-bold text-base tracking-wide text-foreground">
-                        MUSIK<span className="text-primary">EEO</span>
+            <div className="relative cursor-pointer select-none" onClick={onMediaTap} role="button" aria-label={`Reproducir reel de ${reel.authorName}`}>
+                <SafeImg src={reel.thumbnailUrl} alt="" className="w-full aspect-[4/5] object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-t from-black/50 via-transparent to-transparent" />
+                <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                    <span className="h-16 w-16 rounded-full bg-black/40 backdrop-blur-md border border-white/30 flex items-center justify-center">
+                        <Play className="h-7 w-7 text-white fill-white ml-1" />
                     </span>
                 </div>
-                <div className="flex items-center gap-1">
-                    <button
-                        onClick={() => navigate('/discover')}
-                        className="p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                    >
-                        <Search className="h-5 w-5" />
-                    </button>
-                    <button
-                        onClick={() => navigate('/messages')}
-                        className="relative p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors"
-                    >
-                        <MessageCircle className="h-5 w-5" />
-                        <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-primary border border-background" />
-                    </button>
-                    <button className="relative p-2 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-colors">
-                        <Bell className="h-5 w-5" />
-                        <span className="absolute top-1.5 right-1.5 h-2 w-2 rounded-full bg-destructive border border-background" />
-                    </button>
-                </div>
-            </div>
-
-            <div className="px-4 md:px-0 pt-4 md:pt-6 space-y-4">
-
-                {/* ── Reels row ── */}
-                <ReelsRow onOpen={openReel} />
-
-                {/* ── Talento cercano ── */}
-                {nearbyUsers.length > 0 && (
-                    <section className="mb-2">
-                        <h2 className="text-sm font-bold text-foreground mb-3">Talento cerca de ti</h2>
-                        <div className="flex gap-4 overflow-x-auto pb-1 hide-scrollbar">
-                            {/* Add your story */}
-                            <div className="flex flex-col items-center gap-1.5 flex-shrink-0">
-                                <div className="relative h-14 w-14 rounded-full bg-muted border-2 border-dashed border-border flex items-center justify-center cursor-pointer hover:border-primary/40 transition-colors">
-                                    <Plus className="h-5 w-5 text-muted-foreground" />
-                                </div>
-                                <span className="text-[10px] text-muted-foreground">Tu historia</span>
-                            </div>
-                            {nearbyUsers.slice(0, 8).map(u => (
-                                <NearbyChip
-                                    key={u.uid}
-                                    user={u}
-                                    onClick={() => navigate(`/profile/${u.uid}`)}
-                                />
-                            ))}
-                        </div>
-                    </section>
-                )}
-
-                {/* ── Quick banners ── */}
-                <div className="grid grid-cols-2 gap-3">
-                    <button
-                        onClick={() => navigate('/market')}
-                        className="flex items-center gap-3 bg-card border border-border rounded-2xl p-3 hover:border-primary/30 transition-colors text-left group"
-                    >
-                        <div className="h-9 w-9 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <ShoppingBag className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="overflow-hidden">
-                            <p className="text-xs font-bold text-foreground leading-tight">Mercado</p>
-                            <p className="text-[10px] text-muted-foreground">Compra y alquila</p>
-                        </div>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground ml-auto group-hover:text-primary transition-colors flex-shrink-0" />
-                    </button>
-                    <button
-                        onClick={() => navigate('/eventos')}
-                        className="flex items-center gap-3 bg-card border border-border rounded-2xl p-3 hover:border-primary/30 transition-colors text-left group"
-                    >
-                        <div className="h-9 w-9 bg-primary/10 rounded-xl flex items-center justify-center flex-shrink-0">
-                            <Calendar className="h-5 w-5 text-primary" />
-                        </div>
-                        <div className="overflow-hidden">
-                            <p className="text-xs font-bold text-foreground leading-tight">Eventos</p>
-                            <p className="text-[10px] text-muted-foreground">Bolos y sesiones</p>
-                        </div>
-                        <ArrowRight className="h-4 w-4 text-muted-foreground ml-auto group-hover:text-primary transition-colors flex-shrink-0" />
-                    </button>
-                </div>
-
-                {/* ── Create post ── */}
-                <CreatePostCard user={user} />
-
-                {/* ── Feed: reels inline ── */}
-                <div className="space-y-4">
-                    <div className="flex items-center justify-between">
-                        <h2 className="text-sm font-bold text-foreground">Para ti</h2>
-                        <button
-                            onClick={() => navigate('/discover')}
-                            className="text-xs text-primary font-medium hover:underline flex items-center gap-1"
+                <span className="absolute bottom-3 right-3 text-xs font-semibold text-white/90 bg-black/50 backdrop-blur px-2 py-1 rounded-full">{fmt(reel.views)} vistas</span>
+                <AnimatePresence>
+                    {burst > 0 && (
+                        <motion.div
+                            key={burst}
+                            initial={{ scale: 0.3, opacity: 0 }}
+                            animate={{ scale: [0.3, 1.15, 1], opacity: [0, 1, 1] }}
+                            exit={{ scale: 1.4, opacity: 0 }}
+                            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+                            onAnimationComplete={() => setTimeout(() => setBurst(0), 250)}
+                            className="absolute inset-0 flex items-center justify-center pointer-events-none"
                         >
-                            Explorar <ArrowRight className="h-3 w-3" />
-                        </button>
-                    </div>
-
-                    {/* Demo banner */}
-                    <div className="bg-amber-500/10 border border-amber-500/30 text-amber-200 rounded-xl px-3 py-2 text-xs flex items-start gap-2">
-                        <span className="text-sm leading-none mt-0.5">ℹ️</span>
-                        <span>Estos son reels de muestra. Pronto verás contenido de la comunidad aquí.</span>
-                    </div>
-
-                    {/* Show first 3 reels as feed cards */}
-                    {MOCK_REELS.slice(0, 3).map(reel => (
-                        <ReelFeedCard
-                            key={reel.id}
-                            reel={reel}
-                            onPlay={() => openReel(reel.id)}
-                        />
-                    ))}
-
-                    {/* Empty feed CTA after reels */}
-                    <EmptyFeed onExplore={() => navigate('/discover')} />
-                </div>
+                            <Heart className="h-24 w-24 text-primary fill-primary drop-shadow-[0_0_24px_rgba(0,0,0,0.5)]" />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
             </div>
+
+            <div className="flex items-center px-2 pt-1">
+                <button onClick={() => like()} aria-pressed={liked} aria-label={liked ? 'Quitar me gusta' : 'Me gusta'} className={cn('h-11 px-2.5 flex items-center gap-1.5 rounded-xl text-sm font-semibold transition-colors', liked ? 'text-primary' : 'text-foreground/80 hover:text-foreground')}>
+                    <motion.span animate={liked ? { scale: [1, 1.3, 1] } : { scale: 1 }} transition={{ duration: 0.3 }}>
+                        <Heart className={cn('h-6 w-6', liked && 'fill-current')} />
+                    </motion.span>
+                    {fmt(reel.likes + (liked ? 1 : 0))}
+                </button>
+                <button onClick={onOpen} aria-label="Comentarios" className="h-11 px-2.5 flex items-center gap-1.5 rounded-xl text-sm font-semibold text-foreground/80 hover:text-foreground">
+                    <MessageCircle className="h-6 w-6" /> {fmt(reel.comments)}
+                </button>
+                <button onClick={share} aria-label="Compartir" className="h-11 px-2.5 flex items-center gap-1.5 rounded-xl text-sm font-semibold text-foreground/80 hover:text-foreground">
+                    <Share2 className="h-6 w-6" />
+                </button>
+            </div>
+            <div className="px-4 pb-4">
+                <p className="text-sm text-foreground/90 line-clamp-2"><span className="font-bold mr-1.5">{reel.authorName.split(' ')[0]}</span>{reel.description}</p>
+            </div>
+        </article>
+    );
+};
+
+// ─── Tarjetas reales ─────────────────────────────────────────────────────────
+const Kicker = ({ Icon, children }: { Icon: React.ElementType; children: React.ReactNode }) => (
+    <p className="flex items-center gap-1.5 text-[11px] font-bold uppercase tracking-[0.15em] text-primary mb-2"><Icon className="h-3.5 w-3.5" />{children}</p>
+);
+
+const ListingCard = ({ l }: { l: Listing }) => (
+    <Link to={`/market/${l.id}`} className="flex gap-3 bg-card border border-border rounded-2xl p-3 hover:border-primary/40 active:scale-[0.99] transition-all">
+        <SafeImg src={l.images?.[0]} alt={l.title} className="h-24 w-24 rounded-xl object-cover shrink-0" fallback={<ShoppingBag className="h-8 w-8 text-primary/60" />} />
+        <div className="min-w-0 flex flex-col">
+            <Kicker Icon={ShoppingBag}>{l.type === 'alquiler' ? 'Se alquila' : l.type === 'prestamo' ? 'Se presta' : 'Se vende'}</Kicker>
+            <p className="font-semibold text-sm leading-snug line-clamp-2">{l.title}</p>
+            <div className="mt-auto flex items-center gap-2 text-xs text-muted-foreground">
+                <span className="font-heading text-base font-bold text-primary">{l.type === 'prestamo' ? 'Gratis' : `${l.price}€`}</span>
+                {l.userLocation && <span className="truncate flex items-center gap-0.5"><MapPin className="h-3 w-3" />{l.userLocation.split(',')[0]}</span>}
+            </div>
+        </div>
+    </Link>
+);
+
+const EventCard = ({ e }: { e: Event }) => {
+    const d = new Date(e.date);
+    const valid = !isNaN(d.getTime());
+    return (
+        <Link to={`/eventos/${e.id}`} className="flex gap-3 bg-card border border-border rounded-2xl p-3 hover:border-primary/40 active:scale-[0.99] transition-all">
+            <div className="h-24 w-20 shrink-0 rounded-xl bg-primary text-primary-foreground flex flex-col items-center justify-center">
+                {valid ? (
+                    <>
+                        <span className="text-xs font-bold uppercase">{d.toLocaleDateString('es-ES', { month: 'short' })}</span>
+                        <span className="font-heading text-3xl font-bold leading-none">{d.getDate()}</span>
+                    </>
+                ) : <Calendar className="h-7 w-7" />}
+            </div>
+            <div className="min-w-0 flex flex-col">
+                <Kicker Icon={Calendar}>Bolo abierto</Kicker>
+                <p className="font-semibold text-sm leading-snug line-clamp-2">{e.title}</p>
+                <p className="mt-auto text-xs text-muted-foreground flex items-center gap-1 truncate"><MapPin className="h-3 w-3 shrink-0" />{e.location}{e.price ? ` · ${e.price}€` : ''}</p>
+            </div>
+        </Link>
+    );
+};
+
+const NewArtistsCard = ({ artists }: { artists: Artist[] }) => (
+    <section className="bg-card border border-border rounded-2xl p-4">
+        <div className="flex items-center justify-between mb-3">
+            <Kicker Icon={Music2}>Nuevos en Musikeeo</Kicker>
+            <Link to="/artistas" className="text-xs font-semibold text-primary -mt-2">Ver todos</Link>
+        </div>
+        <div className="flex gap-3 overflow-x-auto hide-scrollbar -mx-4 px-4">
+            {artists.map(a => (
+                <Link key={a.id} to={a.slug ? `/artist/${a.slug}` : `/profile/${a.userId}`} className="shrink-0 w-28 text-center">
+                    <Avatar src={a.profilePhoto} name={a.artistName} className="h-20 w-20 mx-auto text-2xl" />
+                    <p className="mt-2 text-sm font-semibold truncate">{a.artistName}</p>
+                    <p className="text-[11px] text-muted-foreground truncate">{a.genres?.[0] || a.city}</p>
+                </Link>
+            ))}
+        </div>
+    </section>
+);
+
+// ─── Página ──────────────────────────────────────────────────────────────────
+type FeedItem =
+    | { kind: 'reel'; id: string; reel: Reel }
+    | { kind: 'listing'; id: string; l: Listing }
+    | { kind: 'event'; id: string; e: Event }
+    | { kind: 'artists'; id: string };
+
+export default function Feed() {
+    const navigate = useNavigate();
+    const { user } = useAuth();
+    const [listings, setListings] = useState<Listing[]>([]);
+    const [events, setEvents] = useState<Event[]>([]);
+    const [artists, setArtists] = useState<Artist[]>([]);
+
+    useEffect(() => {
+        getDocs(query(collection(db, 'listings'), where('available', '==', true), orderBy('urgent', 'desc'), orderBy('createdAt', 'desc'), limit(4)))
+            .then(s => setListings(s.docs.map(d => ({ id: d.id, ...d.data() } as Listing))))
+            .catch(() => {});
+        eventService.getUpcomingEvents()
+            .then(list => {
+                const now = Date.now();
+                setEvents(list.filter(e => !e.date || new Date(e.date).getTime() >= now - 86400000).slice(0, 3));
+            })
+            .catch(() => {});
+        getArtists().then(list => setArtists(list.filter(a => a.artistName).slice(0, 10))).catch(() => {});
+    }, []);
+
+    const go = (path: string) => user ? navigate(path) : navigate('/login', { state: { from: '/feed' } });
+    const openReel = (id: string) => navigate(`/reels/${id}`, { state: { source: 'feed', from: '/feed' } });
+
+    // Intercala lo real (bolos, mercado, artistas) entre los reels de muestra
+    const items = useMemo<FeedItem[]>(() => {
+        const reels: FeedItem[] = MOCK_REELS.slice(0, 5).map(r => ({ kind: 'reel', id: r.id, reel: r }));
+        const real: FeedItem[] = [
+            ...events.map(e => ({ kind: 'event' as const, id: `e-${e.id}`, e })),
+            ...(artists.length >= 2 ? [{ kind: 'artists' as const, id: 'artists' }] : []),
+            ...listings.map(l => ({ kind: 'listing' as const, id: `l-${l.id}`, l })),
+        ];
+        const out: FeedItem[] = [];
+        const max = Math.max(reels.length, real.length);
+        for (let i = 0; i < max; i++) {
+            if (real[i]) out.push(real[i]);
+            if (reels[i]) out.push(reels[i]);
+        }
+        return out;
+    }, [events, artists, listings]);
+
+    return (
+        <div className="max-w-xl mx-auto px-4 pt-4 md:pt-8 pb-28 space-y-4">
+            <StoriesRow onOpen={openReel} onCreate={() => go('/panel/multimedia')} signedIn={!!user} />
+
+            <nav aria-label="Atajos" className="flex gap-2 overflow-x-auto hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
+                {SHORTCUTS.map(s => (
+                    <Link key={s.to} to={s.to} className="shrink-0 h-10 px-4 rounded-full bg-card border border-border flex items-center gap-2 text-sm font-semibold text-foreground/85 hover:border-primary/50 hover:text-primary transition-colors">
+                        <s.Icon className="h-4 w-4 text-primary" /> {s.label}
+                    </Link>
+                ))}
+            </nav>
+
+            <Composer user={user} go={go} />
+
+            <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
+                <Info className="h-3.5 w-3.5 shrink-0" />
+                <span>Los reels marcados como <b className="text-foreground/80">Demo</b> son de ejemplo mientras llega la comunidad.</span>
+            </div>
+
+            <div className="space-y-4">
+                {items.map(it => {
+                    if (it.kind === 'reel') return <ReelCard key={it.id} reel={it.reel} onOpen={() => openReel(it.reel.id)} />;
+                    if (it.kind === 'listing') return <ListingCard key={it.id} l={it.l} />;
+                    if (it.kind === 'event') return <EventCard key={it.id} e={it.e} />;
+                    return <NewArtistsCard key={it.id} artists={artists} />;
+                })}
+            </div>
+
+            {/* Final del feed: qué hacer ahora */}
+            <section className="text-center rounded-3xl border border-border bg-gradient-to-b from-primary/10 to-transparent px-6 py-10">
+                <span className="mx-auto h-12 w-12 rounded-full bg-primary text-primary-foreground flex items-center justify-center"><Check className="h-6 w-6" strokeWidth={3} /></span>
+                <h2 className="mt-4 font-heading text-xl font-bold">Estás al día</h2>
+                <p className="text-sm text-muted-foreground mt-1 mb-6 max-w-xs mx-auto">
+                    {user ? 'Sube un vídeo tocando y aparece aquí para toda la escena.' : 'Crea tu perfil gratis para publicar y que te encuentren.'}
+                </p>
+                <div className="flex flex-col sm:flex-row gap-2 justify-center">
+                    <button onClick={() => user ? navigate('/panel/multimedia') : navigate('/register')} className="h-12 px-6 rounded-2xl bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2">
+                        {user ? 'Subir un vídeo' : 'Crear mi perfil'} <ArrowRight className="h-5 w-5" />
+                    </button>
+                    <Link to="/artistas" className="h-12 px-6 rounded-2xl border border-border font-bold flex items-center justify-center hover:border-primary/50">Explorar artistas</Link>
+                </div>
+            </section>
         </div>
     );
 }
