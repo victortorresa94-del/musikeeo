@@ -141,6 +141,20 @@
     pointer-events: none;
   }
 
+  /* Sin zoom accidental en iPhone:
+     - doble toque: touch-action manipulation (el pellizco con dos dedos sigue funcionando)
+     - al enfocar un campo: iOS amplía si la letra es < 16px, así que en móvil todos a 16px */
+  html {
+    touch-action: manipulation;
+    -webkit-text-size-adjust: 100%;
+    text-size-adjust: 100%;
+  }
+  @media (max-width: 767px) {
+    input, textarea, select {
+      font-size: 16px !important;
+    }
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Manrope', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;

@@ -81,6 +81,11 @@ git push origin main  # triggers Vercel auto-deploy
 - Navegar es público: /home, /feed, /discover, /artistas, /sonido, /eventos(/:id), /market(/:id), /profile/:id, /reels
 - Requieren cuenta (RequireAuthCompleted → /login con `state.from` y vuelta tras entrar): /messages, /market/create, /eventos/crear, /projects, /profile; /publicar requiere sesión (RequireAuthSimple)
 
+## Cuenta y datos de prueba (producción, 2026-10)
+- Cuenta: victortorresa94+musikeeo-dev@gmail.com (uid YEj8ANe4aEeYDl6Zabg1chbD6oC3), displayName «Musikeeo Dev». La contraseña la tiene Víctor (no va en el repo)
+- Publicado con esa cuenta: artista «Banda de Pruebas Musikeeo» (/artist/banda-de-pruebas-musikeeo), técnico «Sonido de Pruebas BCN», 6 anuncios y 4 bolos. Todos los textos acaban en «Contenido de prueba de Musikeeo.» para poder localizarlos y borrarlos
+- Se creó por la API REST de Firebase (Auth + Firestore) con la sesión de esa cuenta, respetando las reglas
+
 ## Current Status
 Project is in active development. Architecture is solid, marketplace sprint in progress.
 
