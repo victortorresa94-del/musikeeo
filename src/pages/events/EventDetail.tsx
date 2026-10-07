@@ -64,7 +64,7 @@ export default function EventDetail() {
     const handleApply = async () => {
         if (!user) {
             toast.error("Debes iniciar sesión para postularte");
-            navigate('/login');
+            navigate('/login', { state: { from: `/eventos/${id}` } });
             return;
         }
         if (!event) return;
@@ -314,7 +314,7 @@ export default function EventDetail() {
                                 onClick={async () => {
                                     if (!user) {
                                         toast.error("Debes iniciar sesión");
-                                        navigate('/login');
+                                        navigate('/login', { state: { from: `/eventos/${id}` } });
                                         return;
                                     }
                                     if (!event.organizerId) {

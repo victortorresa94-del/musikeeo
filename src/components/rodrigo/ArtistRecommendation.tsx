@@ -107,7 +107,7 @@ export function BoloCard({ bolo }: BoloCardProps) {
 
                 {/* Action */}
                 <Link
-                    to={bolo.link || '/events'}
+                    to={bolo.link || '/eventos'}
                     className="block w-full text-center py-2 mt-2 rounded-lg bg-[#FFD84D]/10 text-[#FFD84D] hover:bg-[#FFD84D]/20 font-medium text-sm transition-colors"
                 >
                     Ver detalles y postular

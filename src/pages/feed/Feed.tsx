@@ -60,6 +60,9 @@ const ReelsRow = ({ onOpen }: { onOpen: (id: string) => void }) => (
 
 // ─── Create post ──────────────────────────────────────────────────────────────
 const CreatePostCard = ({ user }: { user: any }) => {
+    const navigate = useNavigate();
+    // Sin sesión, cualquier acción de publicar lleva al login y vuelve al feed
+    const go = (path: string) => user ? navigate(path) : navigate('/login', { state: { from: '/feed' } });
     const initials = user?.displayName
         ? user.displayName.slice(0, 2).toUpperCase()
         : 'TU';
@@ -72,18 +75,18 @@ const CreatePostCard = ({ user }: { user: any }) => {
                         : <span className="text-xs font-bold text-primary-foreground">{initials}</span>
                     }
                 </div>
-                <div className="flex-1 bg-muted border border-border rounded-full px-4 py-2 text-sm text-muted-foreground cursor-pointer hover:border-primary/30 transition-colors">
-                    ¿Qué estás creando hoy?
+                <div onClick={() => go('/panel/multimedia')} className="flex-1 bg-muted border border-border rounded-full px-4 py-2 text-sm text-muted-foreground cursor-pointer hover:border-primary/30 transition-colors">
+                    {user ? '¿Qué estás creando hoy?' : 'Entra para publicar tu música'}
                 </div>
             </div>
             <div className="flex items-center gap-1 pt-2 border-t border-border -mx-1">
-                <button className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-xs font-medium">
+                <button onClick={() => go('/panel/multimedia')} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-xs font-medium">
                     <ImageIcon className="h-4 w-4" /> Foto/Video
                 </button>
-                <button className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-xs font-medium">
+                <button onClick={() => go('/publicar')} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-xs font-medium">
                     <Calendar className="h-4 w-4" /> Evento
                 </button>
-                <button className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-xs font-medium">
+                <button onClick={() => go('/market/create')} className="flex-1 flex items-center justify-center gap-1.5 py-1.5 rounded-xl text-muted-foreground hover:bg-muted hover:text-primary transition-colors text-xs font-medium">
                     <ShoppingBag className="h-4 w-4" /> Vender
                 </button>
             </div>

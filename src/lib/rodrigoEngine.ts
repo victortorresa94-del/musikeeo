@@ -112,7 +112,7 @@ function parseBolos(content: string): BoloOpportunity[] {
             ubicacion: extractField(block, 'Ubicación') || '',
             formatoBuscado: extractField(block, 'Formato buscado') || '',
             cache: extractField(block, 'Caché') || '',
-            link: extractField(block, 'Link') || '/events',
+            link: extractField(block, 'Link') || '/eventos',
         };
         bolos.push(bolo);
     }

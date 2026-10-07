@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -26,6 +26,9 @@ type LoginForm = z.infer<typeof loginSchema>;
 
 export default function Login() {
     const navigate = useNavigate();
+    const location = useLocation();
+    // Página que pidió login (p.ej. /market/create): volver ahí tras entrar
+    const from = (location.state as { from?: string } | null)?.from;
     const [error, setError] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(false);
 
@@ -36,17 +39,16 @@ export default function Login() {
     useEffect(() => {
         if (userProfile) {
             if (userProfile.onboardingCompleted) {
-                // Redirect to the dashboard of their primary mode
-                // TODO: Update this when specific mode routes are set up
-                if (userProfile.primaryMode === 'musician') navigate('/panel/perfil');
-                else if (userProfile.primaryMode === 'provider') navigate('/panel/servicios'); // Pending provider
-                else if (userProfile.primaryMode === 'organizer') navigate('/eventos'); // Pending organizer
-                else navigate('/');
+                if (from) navigate(from, { replace: true });
+                else if (userProfile.primaryMode === 'musician') navigate('/panel/perfil');
+                else if (userProfile.primaryMode === 'provider') navigate('/panel/servicios-tecnicos');
+                else if (userProfile.primaryMode === 'organizer') navigate('/panel/eventos');
+                else navigate('/home');
             } else {
                 navigate('/onboarding');
             }
         }
-    }, [userProfile, navigate]);
+    }, [userProfile, navigate, from]);
 
     const { register, handleSubmit, formState: { errors } } = useForm<LoginForm>({
         resolver: zodResolver(loginSchema),

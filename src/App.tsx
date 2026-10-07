@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate, Outlet } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import { useState, useEffect, Suspense, lazy } from 'react';
 import { MainLayout } from './layouts/MainLayout';
@@ -8,8 +8,9 @@ import { Loader2 } from 'lucide-react';
 function ThemeInit() {
   useEffect(() => {
     const saved = localStorage.getItem('musikeeo-theme');
-    if (saved === 'dark') document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
+    // Musikeeo es dark-first: solo modo claro si el usuario lo eligió explícitamente
+    if (saved === 'light') document.documentElement.classList.remove('dark');
+    else document.documentElement.classList.add('dark');
   }, []);
   return null;
 }
@@ -66,17 +67,20 @@ const PanelSettingsPage = lazy(() => import('./pages/panel/PanelSettingsPage'));
 // Guard: Requires Auth only (for Onboarding)
 const RequireAuthSimple = () => {
   const { user, loading } = useAuth();
+  const location = useLocation();
   if (loading) return <div className="h-screen w-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
-  if (!user) return <Navigate to="/login" replace />;
+  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
   return <Outlet />;
 };
 
-// Guard: Requires Auth + Onboarding Completed
+// Guard: Requires Auth + Onboarding Completed (para ACCIONES: publicar, mensajes, perfil propio).
+// Se anida dentro de MainLayout, así que solo renderiza el Outlet.
 const RequireAuthCompleted = () => {
   const { user, userProfile, loading, profileLoading } = useAuth();
+  const location = useLocation();
 
-  if (loading || profileLoading) return <div className="h-screen w-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin" /></div>;
-  if (!user) return <Navigate to="/login" replace />;
+  if (loading || profileLoading) return <div className="h-full min-h-[60vh] w-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  if (!user) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
 
   if (!userProfile) {
     console.warn("RequireAuthCompleted: User exists but no profile found. Redirecting to onboarding.");
@@ -87,7 +91,7 @@ const RequireAuthCompleted = () => {
     return <Navigate to="/onboarding" replace />;
   }
 
-  return <MainLayout />;
+  return <Outlet />;
 };
 
 // Guard for Panel routes
@@ -141,9 +145,12 @@ const RootRoute = () => {
 
 // Check if already logged in to redirect from auth pages
 const RequireAnon = () => {
-  const { user, loading } = useAuth();
-  if (!loading && user) {
-    return <Navigate to="/home" replace />;
+  const { user, userProfile, loading, profileLoading } = useAuth();
+  const location = useLocation();
+  const from = (location.state as { from?: string } | null)?.from;
+  if (!loading && !profileLoading && user) {
+    if (userProfile && !userProfile.onboardingCompleted) return <Navigate to="/onboarding" replace />;
+    return <Navigate to={from || '/home'} replace />;
   }
 
   return <Outlet />;
@@ -168,8 +175,6 @@ function App() {
             <Routes>
               {/* Root: authenticated → /home, else → landing */}
               <Route path="/" element={<RootRoute />} />
-              <Route path="/artistas" element={<Discover />} />
-              <Route path="/sonido" element={<Discover />} />
               <Route path="/rodrigo" element={<RodrigoPage />} />
 
               {/* Legal — públicas, sin layout */}
@@ -177,7 +182,6 @@ function App() {
               <Route path="/privacidad" element={<PrivacyPolicy />} />
               <Route path="/terminos" element={<TermsOfService />} />
               <Route path="/cookies" element={<CookiePolicy />} />
-              <Route path="/publicar" element={<PublishEventPage />} />
 
               {/* Public Artist Profile */}
               <Route path="/artist/:slug" element={<ArtistProfilePage />} />
@@ -190,29 +194,32 @@ function App() {
               {/* Onboarding - Protected but no layout */}
               <Route element={<RequireAuthSimple />}>
                 <Route path="/onboarding" element={<Onboarding />} />
+                <Route path="/publicar" element={<PublishEventPage />} />
               </Route>
 
-              {/* Public App Routes (MainLayout, no auth required) */}
               <Route element={<MainLayout />}>
+                {/* Públicas: todo se puede VER sin cuenta */}
                 <Route path="/home" element={<Home />} />
-              </Route>
-
-              {/* Protected App Routes (MainLayout) */}
-              <Route element={<RequireAuthCompleted />}>
                 <Route path="/feed" element={<Feed />} />
                 <Route path="/discover" element={<Discover />} />
+                <Route path="/artistas" element={<Discover />} />
+                <Route path="/sonido" element={<Discover />} />
                 <Route path="/eventos" element={<EventsV2 />} />
                 <Route path="/eventos/:id" element={<EventDetail />} />
-                <Route path="/messages" element={<Messages />} />
                 <Route path="/market" element={<Market />} />
-                <Route path="/market/create" element={<CreateListing />} />
                 <Route path="/market/:id" element={<ProductDetail />} />
-                <Route path="/projects" element={<Projects />} />
-                <Route path="/profile" element={<Profile />} />
                 <Route path="/profile/:id" element={<PublicProfile />} />
                 <Route path="/reels" element={<Reels />} />
                 <Route path="/reels/:id" element={<Reels />} />
-                <Route path="/eventos/crear" element={<CreateEvent />} />
+
+                {/* Acciones: publicar, escribir y gestionar requieren cuenta */}
+                <Route element={<RequireAuthCompleted />}>
+                  <Route path="/messages" element={<Messages />} />
+                  <Route path="/market/create" element={<CreateListing />} />
+                  <Route path="/eventos/crear" element={<CreateEvent />} />
+                  <Route path="/projects" element={<Projects />} />
+                  <Route path="/profile" element={<Profile />} />
+                </Route>
               </Route>
 
               {/* Panel Routes */}

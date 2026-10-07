@@ -64,7 +64,7 @@ export default {
                 },
             },
             fontFamily: {
-                heading: ["'Inter'", "sans-serif"],
+                heading: ["'Space Grotesk'", "'Inter'", "sans-serif"],
                 sans:    ["'Inter'", "sans-serif"],
                 mono:    ["'Rubik Mono One'", "monospace"],
             },

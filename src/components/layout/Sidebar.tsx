@@ -1,4 +1,4 @@
-import { NavLink } from 'react-router-dom';
+import { Link, NavLink } from 'react-router-dom';
 import {
   Home,
   Rss,
@@ -79,7 +79,30 @@ export const Sidebar = () => {
         ))}
       </nav>
 
+      {/* Invitado: invitación a unirse */}
+      {!user && (
+        <div className="mx-3 mb-3 mt-auto rounded-2xl border border-primary/20 bg-gradient-to-b from-primary/10 to-transparent p-4">
+          <p className="font-heading font-bold text-foreground leading-tight">Únete a Musikeeo</p>
+          <p className="text-xs text-muted-foreground mt-1 leading-relaxed">
+            Gratis. Publica, contacta y consigue bolos.
+          </p>
+          <Link
+            to="/register"
+            className="mt-3 h-9 w-full rounded-xl bg-primary text-primary-foreground text-sm font-bold flex items-center justify-center hover:bg-primary/90 transition-colors"
+          >
+            Crear cuenta
+          </Link>
+          <Link
+            to="/login"
+            className="mt-1.5 h-8 w-full rounded-xl text-sm font-semibold text-muted-foreground hover:text-foreground flex items-center justify-center transition-colors"
+          >
+            Ya tengo cuenta
+          </Link>
+        </div>
+      )}
+
       {/* Footer */}
+      {user && (
       <div className="border-t border-border mx-2 mb-2 mt-auto">
         <div className="bg-background rounded-xl p-3 mt-2">
           {/* User info */}
@@ -119,6 +142,7 @@ export const Sidebar = () => {
           </div>
         </div>
       </div>
+      )}
     </aside>
   );
 };

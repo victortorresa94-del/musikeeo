@@ -4,8 +4,8 @@ type Theme = 'light' | 'dark';
 
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
-    if (typeof window === 'undefined') return 'light';
-    return (localStorage.getItem('musikeeo-theme') as Theme) ?? 'light';
+    if (typeof window === 'undefined') return 'dark';
+    return (localStorage.getItem('musikeeo-theme') as Theme) ?? 'dark';
   });
 
   useEffect(() => {

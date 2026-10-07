@@ -412,7 +412,7 @@ export default function EventsV2() {
                             <EventCardNew
                                 key={event.id}
                                 event={event}
-                                onClick={() => navigate(`/events/${event.id}`)}
+                                onClick={() => navigate(`/eventos/${event.id}`)}
                             />
                         ))}
                     </div>

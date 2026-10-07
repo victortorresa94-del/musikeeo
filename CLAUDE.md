@@ -14,8 +14,9 @@ Tagline: "Conecta. Crea. Suena."
 - Repo: github.com/victortorresa94-del/musikeeo
 
 ## Branding
-- Primary: #82FF1F (neon green)
-- Background: #101010
+- Primary: amarillo #FFD60A (token `primary` en src/index.css). Decidido 2026-10: el verde #82FF1F queda solo en theme-color/manifest
+- Tema: dark por defecto (modo claro solo si el usuario lo elige)
+- Background: #0A0A0A
 - Fonts: Space Grotesk (headings) + Inter (body)
 - Style: Dark, modern, energetic
 
@@ -73,6 +74,10 @@ git push origin main  # triggers Vercel auto-deploy
 - KIMI_API_KEY  ← server-side only (Vercel env), NO VITE_ prefix (acepta también MOONSHOT_API_KEY)
 - KIMI_MODEL    ← opcional; por defecto kimi-k2-turbo-preview. Ante 404 (cuenta sin acceso al modelo) se prueban kimi-k2-0905-preview → kimi-k2-0711-preview → kimi-latest → moonshot-v1-8k
 - KIMI_BASE_URL ← opcional; si se fija se prueba primero. Ante 401 se prueban en orden api.moonshot.ai → api.moonshot.cn → api.kimi.com/coding (modelo kimi-for-coding) y se recuerda el que funcione
+
+## Acceso
+- Navegar es público: /home, /feed, /discover, /artistas, /sonido, /eventos(/:id), /market(/:id), /profile/:id, /reels
+- Requieren cuenta (RequireAuthCompleted → /login con `state.from` y vuelta tras entrar): /messages, /market/create, /eventos/crear, /projects, /profile; /publicar requiere sesión (RequireAuthSimple)
 
 ## Current Status
 Project is in active development. Architecture is solid, marketplace sprint in progress.
