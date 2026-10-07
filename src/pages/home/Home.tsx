@@ -1,4 +1,4 @@
-import { useEffect, useState, type FormEvent } from 'react';
+import { useEffect, useRef, useState, type FormEvent } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -227,6 +227,31 @@ const HeroMedia = () => {
     );
 };
 
+// Vídeo en bucle que solo se descarga al acercarse a la pantalla (secciones de abajo).
+const LazyLoopVideo = ({ src, poster, alt, className }: { src: string; poster: string; alt: string; className?: string }) => {
+    const ref = useRef<HTMLVideoElement>(null);
+    const [load, setLoad] = useState(false);
+    const reduceMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    useEffect(() => {
+        if (reduceMotion || !ref.current) return;
+        const io = new IntersectionObserver(([e]) => { if (e.isIntersecting) { setLoad(true); io.disconnect(); } }, { rootMargin: '300px' });
+        io.observe(ref.current);
+        return () => io.disconnect();
+    }, [reduceMotion]);
+    // Al añadir el <source> tarde hay que recargar el vídeo para que arranque
+    useEffect(() => {
+        if (!load || !ref.current) return;
+        ref.current.load();
+        ref.current.play().catch(() => {});
+    }, [load]);
+    if (reduceMotion) return <img src={poster} alt={alt} loading="lazy" className={className} />;
+    return (
+        <video ref={ref} className={className} poster={poster} autoPlay muted loop playsInline preload="none" aria-label={alt}>
+            {load && <source src={src} type="video/mp4" />}
+        </video>
+    );
+};
+
 const Hero = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -394,7 +419,7 @@ const Ecosystem = () => (
                 <SectionTitle kicker="Todo en un sitio" title="Todo lo que la música en directo necesita." />
             </Reveal>
             <Reveal className="relative rounded-[2rem] overflow-hidden border border-white/10 mb-4">
-                <img src="/images/home/ecosistema.webp" alt="Mapa de Musikeeo: escenario conectado con músicos, técnicos, salas y tiendas" loading="lazy" className="w-full aspect-[16/9] object-cover" />
+                <LazyLoopVideo src="/videos/ecosistema.mp4" poster="/images/home/ecosistema.webp" alt="Mapa de Musikeeo: escenario conectado con músicos, técnicos, salas y tiendas" className="w-full aspect-[16/9] object-cover" />
             </Reveal>
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
                 {PILLARS.map(({ Icon, title, desc, to, soon }, i) => (
