@@ -203,6 +203,30 @@ const Equalizer = ({ className = '' }: { className?: string }) => (
 
 // ─── Secciones ───────────────────────────────────────────────────────────────
 
+// La banda en bucle (vídeo de Aura Studio). La imagen hace de póster mientras
+// carga, y se queda quieta si el usuario pide reducir movimiento.
+const HeroMedia = () => {
+    const isMobile = typeof window !== 'undefined' && window.matchMedia('(max-width: 767px)').matches;
+    const reduceMotion = typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+    const poster = isMobile ? '/images/home/hero-delivery-mobile.webp' : '/images/home/hero-delivery.webp';
+    const cls = 'h-full w-full object-cover object-center md:object-right';
+    if (reduceMotion) return <img src={poster} alt="" className={cls} fetchPriority="high" />;
+    return (
+        <video
+            className={cls}
+            poster={poster}
+            autoPlay
+            muted
+            loop
+            playsInline
+            preload="auto"
+            aria-hidden
+        >
+            <source src={isMobile ? '/videos/hero-banda-mobile.mp4' : '/videos/hero-banda.mp4'} type="video/mp4" />
+        </video>
+    );
+};
+
 const Hero = () => {
     const navigate = useNavigate();
     const { user } = useAuth();
@@ -227,15 +251,9 @@ const Hero = () => {
     return (
         <section className="relative isolate overflow-hidden min-h-[calc(100svh-3.5rem)] flex items-center">
             {/* Ilustración: la banda que llega como un pedido (Aura Studio) */}
-            <picture className="absolute inset-x-0 top-0 h-[46svh] md:inset-0 md:h-full -z-20">
-                <source media="(max-width: 767px)" srcSet="/images/home/hero-delivery-mobile.webp" />
-                <img
-                    src="/images/home/hero-delivery.webp"
-                    alt=""
-                    className="h-full w-full object-cover object-center md:object-right"
-                    fetchPriority="high"
-                />
-            </picture>
+            <div className="absolute inset-x-0 top-0 h-[46svh] md:inset-0 md:h-full -z-20">
+                <HeroMedia />
+            </div>
             <div className="absolute inset-x-0 top-0 h-[46svh] md:inset-0 md:h-full -z-10 bg-gradient-to-t from-background via-background/30 to-transparent md:bg-gradient-to-r md:from-background md:from-25% md:via-background/85 md:via-45% md:to-transparent" />
 
             <div className="w-full max-w-6xl mx-auto px-4 md:px-10 pt-[40svh] pb-14 md:py-24">

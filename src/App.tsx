@@ -25,6 +25,7 @@ import { Toaster } from 'sonner';
 // Lazy Imports
 const Login = lazy(() => import('./pages/auth/Login'));
 const Register = lazy(() => import('./pages/auth/Register'));
+const ForgotPassword = lazy(() => import('./pages/auth/ForgotPassword'));
 const NotFound = lazy(() => import('./pages/NotFound'));
 const Home = lazy(() => import('./pages/home/Home'));
 const Feed = lazy(() => import('./pages/feed/Feed'));
@@ -189,6 +190,7 @@ function App() {
               <Route element={<RequireAnon />}>
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/forgot-password" element={<ForgotPassword />} />
               </Route>
 
               {/* Onboarding - Protected but no layout */}

@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Mic, Speaker, Crown, Check, Loader2 } from 'lucide-react';
+import { Mic, Speaker, Crown, Check, Loader2, Store } from 'lucide-react';
 // import { Button } from '../../components/ui/button';
 import { Card } from '../../components/ui/card';
 import { useAuth } from '../../context/AuthContext';
@@ -32,8 +32,19 @@ const ROLES = [
         description: 'Ofrezco sonido, luces o servicios técnicos.',
         color: 'text-purple-400',
         bg: 'bg-purple-500/10'
+    },
+    {
+        // Tienda: usa el modo proveedor y empieza publicando en el mercado
+        id: 'store',
+        title: 'Tienda / Alquiler',
+        icon: Store,
+        description: 'Vendo o alquilo instrumentos y equipo.',
+        color: 'text-primary',
+        bg: 'bg-primary/10'
     }
 ];
+
+const roleToMode = (id: string): UserMode => (id === 'store' ? 'provider' : id as UserMode);
 
 export const Onboarding = () => {
     const navigate = useNavigate();
@@ -42,6 +53,7 @@ export const Onboarding = () => {
     const { user, userProfile, refreshProfile } = useAuth();
     const [step, setStep] = useState(1);
     const [selectedMode, setSelectedMode] = useState<UserMode | null>(null);
+    const [selectedRoleId, setSelectedRoleId] = useState<string | null>(null);
     // const [isSubmitting, setIsSubmitting] = useState(false);
 
     const [error, setError] = useState<string | null>(null);
@@ -59,15 +71,17 @@ export const Onboarding = () => {
         }
     }, [step]);
 
-    const navigateBasedOnRole = (mode?: UserMode) => {
-        if (mode === 'musician') navigate('/panel/perfil');
-        else if (mode === 'organizer') navigate('/eventos'); // Todo panel organization
-        else if (mode === 'provider') navigate('/panel/servicios');
-        else navigate('/');
+    const navigateBasedOnRole = (mode?: UserMode, roleId?: string | null) => {
+        if (roleId === 'store') navigate('/market/create');
+        else if (mode === 'musician') navigate('/panel/perfil');
+        else if (mode === 'organizer') navigate('/panel/eventos');
+        else if (mode === 'provider') navigate('/panel/servicios-tecnicos');
+        else navigate('/home');
     };
 
-    const handleModeSelect = (modeId: string) => {
-        setSelectedMode(modeId as UserMode);
+    const handleModeSelect = (roleId: string) => {
+        setSelectedRoleId(roleId);
+        setSelectedMode(roleToMode(roleId));
         // Small delay for UI animation
         setTimeout(() => setStep(2), 300);
     };
@@ -109,7 +123,7 @@ export const Onboarding = () => {
 
             // Fallback navigation
             setTimeout(() => {
-                navigateBasedOnRole(selectedMode);
+                navigateBasedOnRole(selectedMode, selectedRoleId);
             }, 1000);
 
         } catch (error: any) {
@@ -120,13 +134,14 @@ export const Onboarding = () => {
             if (error?.message?.includes("offline")) {
                 console.warn("Offline error detected. Proceeding confidently.");
                 setTimeout(() => {
-                    navigateBasedOnRole(selectedMode);
+                    navigateBasedOnRole(selectedMode, selectedRoleId);
                 }, 1000);
                 return;
             }
 
-            // DEBUG: Show actual error to user to diagnose
-            setError(`Error: ${error.message || "Unknown error"}`);
+            setError(error?.message === 'Timeout'
+                ? 'La conexión va lenta. Comprueba tu internet y vuelve a elegir tu perfil.'
+                : 'No hemos podido guardar tu perfil. Inténtalo de nuevo.');
             // setIsSubmitting(false); // Stop loop/loader so user sees error
             setStep(1); // Go back to try again
         }
@@ -157,13 +172,13 @@ export const Onboarding = () => {
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             exit={{ opacity: 0, y: -20 }}
-                            className="grid grid-cols-1 md:grid-cols-3 gap-6"
+                            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6"
                         >
                             {ROLES.map((role) => (
                                 <Card
                                     key={role.id}
                                     className={`cursor-pointer hover:-translate-y-2 transition-all duration-300 border-2 bg-surface hover:border-primary/50 group h-full
-                                    ${selectedMode === role.id ? 'border-primary ring-2 ring-primary/20 bg-surface-highlight' : 'border-transparent'}`}
+                                    ${selectedRoleId === role.id ? 'border-primary ring-2 ring-primary/20 bg-surface-highlight' : 'border-transparent'}`}
                                     onClick={() => handleModeSelect(role.id)}
                                 >
                                     <div className="p-8 flex flex-col items-center text-center h-full">
@@ -173,7 +188,7 @@ export const Onboarding = () => {
                                         <h3 className="font-heading font-bold text-2xl text-white mb-3">{role.title}</h3>
                                         <p className="text-muted-foreground leading-relaxed">{role.description}</p>
 
-                                        {selectedMode === role.id && (
+                                        {selectedRoleId === role.id && (
                                             <div className="mt-6 text-primary">
                                                 <Check className="h-8 w-8 mx-auto" />
                                             </div>
