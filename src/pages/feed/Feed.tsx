@@ -170,7 +170,7 @@ const ReelCard = ({ reel, onOpen }: { reel: Reel; onOpen: () => void }) => {
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground border border-border rounded-full px-2 py-0.5">Demo</span>
             </header>
 
-            <div className="relative cursor-pointer select-none" onClick={onMediaTap} role="button" aria-label={`Reproducir reel de ${reel.authorName}`}>
+            <div className="relative cursor-pointer select-none touch-manipulation" onClick={onMediaTap} role="button" aria-label={`Reproducir reel de ${reel.authorName}`}>
                 {reel.gumletId ? (
                     <>
                         <SafeImg src={reel.thumbnailUrl} alt="" className="w-full aspect-[4/5] object-cover" />
@@ -251,7 +251,7 @@ const PostCard = ({ post }: { post: FeedPost }) => {
                 </div>
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground border border-border rounded-full px-2 py-0.5">Demo</span>
             </header>
-            <div className="relative select-none" onClick={onTap}>
+            <div className="relative select-none touch-manipulation" onClick={onTap}>
                 <SafeImg src={post.image} alt="" className="w-full aspect-[4/5] object-cover" />
                 <AnimatePresence>
                     {burst > 0 && (

@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { useNavigate } from 'react-router-dom';
 import {
     ChevronLeft, Heart, MessageCircle, Send, Bookmark, BadgeCheck, Music2,
@@ -118,7 +118,7 @@ const ReelItem = ({
             )}
 
             {/* Capa de toques (encima del vídeo, debajo de los botones) */}
-            {isNative && <div className="absolute inset-0 z-10" onClick={onTap} />}
+            {isNative && <div className="absolute inset-0 z-10 touch-manipulation" onClick={onTap} />}
 
             <div className="absolute inset-x-0 top-0 h-32 bg-gradient-to-b from-black/50 to-transparent pointer-events-none z-10" />
             <div className="absolute inset-x-0 bottom-0 h-72 bg-gradient-to-t from-black/80 via-black/30 to-transparent pointer-events-none z-10" />
@@ -311,15 +311,31 @@ export default function ReelsViewer({ reels, initialIndex = 0, onClose, onLoadMo
         return () => window.removeEventListener('keydown', onKey);
     }, [current, go, onClose, commentsFor]);
 
+    // Deslizar hacia la derecha = volver (como Instagram): el reel se arrastra
+    // y el fondo se aclara dejando ver lo que hay detrás
+    const dragX = useMotionValue(0);
+    const backdrop = useTransform(dragX, [0, 320], [1, 0.25]);
+
     return (
         <motion.div
             initial={{ opacity: 0, scale: 0.98 }}
             animate={{ opacity: 1, scale: 1 }}
             exit={{ opacity: 0 }}
             transition={{ duration: 0.2 }}
-            className="fixed inset-0 z-[70] bg-black"
+            className="fixed inset-0 z-[70]"
         >
-            <div className="absolute inset-0 md:inset-y-0 md:left-1/2 md:-translate-x-1/2 md:w-[min(100%,calc(100dvh*9/16))]">
+            <motion.div className="absolute inset-0 bg-black" style={{ opacity: backdrop }} aria-hidden />
+            <motion.div
+                className="absolute inset-0"
+                style={{ x: dragX }}
+                drag={commentsFor ? false : 'x'}
+                dragDirectionLock
+                dragConstraints={{ left: 0, right: 0 }}
+                dragElastic={{ left: 0, right: 0.9 }}
+                dragMomentum={false}
+                onDragEnd={(_, info) => { if (info.offset.x > 110 || info.velocity.x > 600) onClose(); }}
+            >
+            <div className="absolute inset-0 md:inset-y-0 md:left-1/2 md:-translate-x-1/2 md:w-[min(100%,calc(100dvh*9/16))] bg-black">
                 <div ref={containerRef} className="h-full w-full overflow-y-scroll snap-y snap-mandatory overscroll-contain hide-scrollbar">
                     {reels.map((reel, i) => (
                         <div key={reel.id} data-index={i} className="h-full w-full snap-start snap-always">
@@ -348,6 +364,7 @@ export default function ReelsViewer({ reels, initialIndex = 0, onClose, onLoadMo
                     {commentsFor && <CommentsSheet reel={commentsFor} onClose={() => setCommentsFor(null)} />}
                 </AnimatePresence>
             </div>
+            </motion.div>
         </motion.div>
     );
 }
