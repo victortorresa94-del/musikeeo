@@ -229,7 +229,7 @@ export default function Discover() {
 
             <div className="flex-1 min-w-0 pb-28 md:pb-10">
                 {/* ── Cabecera fija: búsqueda + filtros (siempre a mano con el pulgar) ── */}
-                <div className="sticky top-14 z-20 bg-background/90 backdrop-blur-xl border-b border-border">
+                <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 bg-background/90 backdrop-blur-xl border-b border-border">
                     <div className="px-4 md:px-8 pt-3 pb-3 space-y-3">
                         {/* Artistas | Técnicos */}
                         <div className="flex items-center gap-1 p-1 rounded-2xl bg-muted w-full sm:w-auto sm:inline-flex" role="tablist" aria-label="Qué buscas">

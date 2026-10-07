@@ -290,15 +290,15 @@ const Hero = () => {
 
                     <motion.h1 variants={fadeUp} className="font-heading font-bold tracking-tightest leading-[0.95] text-[42px] sm:text-6xl md:text-7xl text-foreground">
                         Pide{' '}
-                        <span className="relative inline-flex h-[1.05em] overflow-hidden align-bottom">
-                            <AnimatePresence mode="wait">
+                        <span className="inline-block">
+                            <AnimatePresence mode="wait" initial={false}>
                                 <motion.span
                                     key={ROTATING_WORDS[wordIdx]}
-                                    initial={{ y: '100%' }}
-                                    animate={{ y: 0 }}
-                                    exit={{ y: '-100%' }}
-                                    transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
-                                    className="text-primary whitespace-nowrap"
+                                    initial={{ opacity: 0, y: '0.25em' }}
+                                    animate={{ opacity: 1, y: 0 }}
+                                    exit={{ opacity: 0, y: '-0.25em' }}
+                                    transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+                                    className="inline-block text-primary whitespace-nowrap"
                                 >
                                     {ROTATING_WORDS[wordIdx]}
                                 </motion.span>

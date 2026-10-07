@@ -5,7 +5,7 @@ type Theme = 'light' | 'dark';
 export function useTheme() {
   const [theme, setTheme] = useState<Theme>(() => {
     if (typeof window === 'undefined') return 'dark';
-    return (localStorage.getItem('musikeeo-theme') as Theme) ?? 'dark';
+    return (localStorage.getItem('musikeeo-theme-v2') as Theme) ?? 'dark';
   });
 
   useEffect(() => {
@@ -15,7 +15,7 @@ export function useTheme() {
     } else {
       root.classList.remove('dark');
     }
-    localStorage.setItem('musikeeo-theme', theme);
+    localStorage.setItem('musikeeo-theme-v2', theme);
   }, [theme]);
 
   const toggle = () => setTheme(prev => (prev === 'light' ? 'dark' : 'light'));

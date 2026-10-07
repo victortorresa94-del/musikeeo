@@ -48,7 +48,7 @@ export const TopBar = ({ onMenuClick: _onMenuClick }: TopBarProps) => {
   return (
     <>
       {/* MOBILE — barra mínima con logo y acceso */}
-      <header className="md:hidden sticky top-0 z-30 h-14 px-4 flex items-center justify-between bg-background/90 backdrop-blur-md border-b border-border">
+      <header className="md:hidden sticky top-[env(safe-area-inset-top)] z-30 h-14 px-4 flex items-center justify-between bg-background/90 backdrop-blur-md border-b border-border">
         <Link to="/home" className="flex items-center gap-2">
           <img src="/logo-musikeeo.png" alt="" className="h-7 w-7 rounded-lg object-contain" />
           <span className="font-heading font-bold text-sm tracking-wide text-foreground">

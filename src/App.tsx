@@ -7,7 +7,8 @@ import { Loader2 } from 'lucide-react';
 // Apply saved theme before first render to prevent flash
 function ThemeInit() {
   useEffect(() => {
-    const saved = localStorage.getItem('musikeeo-theme');
+    // v2: la versión anterior guardaba 'light' por defecto a todo el mundo
+    const saved = localStorage.getItem('musikeeo-theme-v2');
     // Musikeeo es dark-first: solo modo claro si el usuario lo eligió explícitamente
     if (saved === 'light') document.documentElement.classList.remove('dark');
     else document.documentElement.classList.add('dark');
