@@ -20,7 +20,7 @@ const ROTATING_WORDS = ['una banda', 'un DJ', 'un técnico', 'una sala', 'un amp
 // El hero cambia de mensaje según quién llega (Blueprint 24.13: una landing por perfil)
 const SEGMENTS = [
     {
-        key: 'busco', label: 'Busco música',
+        key: 'busco', label: 'Contratar',
         placeholder: 'Banda para boda, DJ, cantante…', searchTo: '/discover',
         pitch: 'Bodas, cumpleaños, bares o empresa: encuentra artistas cerca, escúchalos y habla directo con ellos.',
         primary: { label: 'Encontrar artistas', to: '/artistas' },
@@ -288,7 +288,7 @@ const Hero = () => {
                         <span className="text-[13px] font-medium text-foreground/80">Toda la música en directo, en una app</span>
                     </motion.div>
 
-                    <motion.h1 variants={fadeUp} className="font-heading font-bold tracking-tightest leading-[0.95] text-[42px] sm:text-6xl md:text-7xl text-foreground">
+                    <motion.h1 variants={fadeUp} className="font-heading font-bold tracking-tightest leading-[0.95] text-[38px] sm:text-6xl md:text-7xl text-foreground">
                         Pide{' '}
                         <span className="inline-block">
                             <AnimatePresence mode="wait" initial={false}>
@@ -319,7 +319,7 @@ const Hero = () => {
                             <button
                                 key={s.key}
                                 onClick={() => setSegIdx(i)}
-                                className={`relative shrink-0 flex-1 sm:flex-none whitespace-nowrap h-8 px-3 rounded-[9px] text-[13px] font-semibold transition-colors ${i === segIdx ? 'text-black' : 'text-foreground/70'}`}
+                                className={`relative shrink-0 flex-1 sm:flex-none whitespace-nowrap h-8 px-2 rounded-[9px] text-[13px] font-semibold transition-colors ${i === segIdx ? 'text-black' : 'text-foreground/70'}`}
                             >
                                 {i === segIdx && <motion.span layoutId="seg-pill" className="absolute inset-0 rounded-[9px] bg-white shadow-sm" transition={{ type: 'spring', stiffness: 500, damping: 40 }} />}
                                 <span className="relative">{s.label}</span>

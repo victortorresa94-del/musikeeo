@@ -17,7 +17,7 @@ Tagline: "Conecta. Crea. Suena."
 - Primary: amarillo #FFD60A (token `primary` en src/index.css). Decidido 2026-10: el verde #82FF1F queda solo en theme-color/manifest
 - Tema: dark por defecto (modo claro solo si el usuario lo elige)
 - Background: #0A0A0A
-- Fonts: tipografía del sistema (San Francisco en Apple, Roboto en Android): `-apple-system, BlinkMacSystemFont, 'SF Pro Text'…` en tailwind `sans`/`heading`. Sin Google Fonts (2026-10)
+- Fonts: Jura (variable 300–700) alojada en /public/fonts (latin y latin-ext), con preload en index.html y @font-face en src/index.css. Texto base a peso 500 (Jura es fina) y titulares 700 con tracking -0.025em (2026-10)
 - Style: Dark, limpio, estilo iOS. Amarillo SOLO para la acción principal de cada pantalla; chips, pestañas y controles segmentados en blanco/gris (seleccionado = blanco con texto negro). Barra inferior estilo iOS sin píldoras de color. Títulos grandes de página a 34px (iOS large title). Botones: h-9 rounded-full (compactos) o h-[52px] rounded-[14px] (principales). Nada de brillos ni sombras de color
 
 ## Business Model

@@ -47,7 +47,7 @@ export const RodrigoFloatingChat = () => {
     const [compact, setCompact] = useState(false);
     useEffect(() => {
         // Píldora solo en la portada de la home; en el resto, círculo para no tapar contenido
-        const onScroll = () => setCompact(window.scrollY > 160 || !['/home', '/'].includes(location.pathname));
+        const onScroll = () => setCompact(true); // Siempre círculo: la píldora tapaba el buscador de la portada
         onScroll();
         window.addEventListener('scroll', onScroll, { passive: true });
         return () => window.removeEventListener('scroll', onScroll);

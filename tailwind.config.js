@@ -64,8 +64,8 @@ export default {
                 },
             },
             fontFamily: {
-                heading: ["-apple-system", "BlinkMacSystemFont", "'SF Pro Display'", "'Segoe UI'", "Roboto", "'Helvetica Neue'", "Arial", "sans-serif"],
-                sans:    ["-apple-system", "BlinkMacSystemFont", "'SF Pro Text'", "'Segoe UI'", "Roboto", "'Helvetica Neue'", "Arial", "sans-serif"],
+                heading: ["Jura", "-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "Roboto", "sans-serif"],
+                sans:    ["Jura", "-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "Roboto", "sans-serif"],
                 mono:    ["ui-monospace", "'SF Mono'", "Menlo", "monospace"],
             },
             letterSpacing: {
