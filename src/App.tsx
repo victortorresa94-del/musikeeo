@@ -139,11 +139,17 @@ const PanelGateway = () => {
   return <Navigate to="/panel/perfil" replace />;
 };
 
-// Smart root: always redirect to /home (public landing)
+// La home es el escaparate para quien llega sin cuenta. Con cuenta, se entra al feed.
 const RootRoute = () => {
-  const { loading } = useAuth();
+  const { user, loading } = useAuth();
   if (loading) return <div className="h-screen w-full flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
-  return <Navigate to="/home" replace />;
+  return <Navigate to={user ? '/feed' : '/home'} replace />;
+};
+
+const HomeOrFeed = () => {
+  const { user, loading } = useAuth();
+  if (!loading && user) return <Navigate to="/feed" replace />;
+  return <Home />;
 };
 
 // Check if already logged in to redirect from auth pages
@@ -153,7 +159,7 @@ const RequireAnon = () => {
   const from = (location.state as { from?: string } | null)?.from;
   if (!loading && !profileLoading && user) {
     if (userProfile && !userProfile.onboardingCompleted) return <Navigate to="/onboarding" replace />;
-    return <Navigate to={from || '/home'} replace />;
+    return <Navigate to={from || '/feed'} replace />;
   }
 
   return <Outlet />;
@@ -204,7 +210,7 @@ function App() {
 
               <Route element={<MainLayout />}>
                 {/* Públicas: todo se puede VER sin cuenta */}
-                <Route path="/home" element={<Home />} />
+                <Route path="/home" element={<HomeOrFeed />} />
                 <Route path="/feed" element={<Feed />} />
                 <Route path="/discover" element={<Discover />} />
                 <Route path="/artistas" element={<Discover />} />

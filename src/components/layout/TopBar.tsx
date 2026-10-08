@@ -49,7 +49,7 @@ export const TopBar = ({ onMenuClick: _onMenuClick }: TopBarProps) => {
     <>
       {/* MOBILE — barra mínima con logo y acceso */}
       <header className="md:hidden sticky top-[env(safe-area-inset-top)] z-30 h-14 px-4 flex items-center justify-between bg-background/85 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/[0.06]">
-        <Link to="/home" className="flex items-center gap-2">
+        <Link to={user ? '/feed' : '/home'} className="flex items-center gap-2">
           <img src="/logo-musikeeo.png" alt="" className="h-7 w-7 rounded-lg object-contain" />
           <span className="font-heading font-semibold text-[17px] tracking-tight text-foreground">Musikeeo</span>
         </Link>
@@ -63,13 +63,6 @@ export const TopBar = ({ onMenuClick: _onMenuClick }: TopBarProps) => {
                 aria-label="Mensajes"
               >
                 <MessageCircle className="h-5 w-5" />
-              </button>
-              <button
-                className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/70 to-primary/40 flex items-center justify-center"
-                onClick={() => navigate('/panel')}
-                aria-label="Mi panel"
-              >
-                <span className="font-bold text-xs text-primary-foreground">{initials}</span>
               </button>
             </>
           )}

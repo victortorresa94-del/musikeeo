@@ -39,11 +39,7 @@ export default function Login() {
     useEffect(() => {
         if (userProfile) {
             if (userProfile.onboardingCompleted) {
-                if (from) navigate(from, { replace: true });
-                else if (userProfile.primaryMode === 'musician') navigate('/panel/perfil');
-                else if (userProfile.primaryMode === 'provider') navigate('/panel/servicios-tecnicos');
-                else if (userProfile.primaryMode === 'organizer') navigate('/panel/eventos');
-                else navigate('/home');
+                navigate(from || '/feed', { replace: true });
             } else {
                 navigate('/onboarding');
             }

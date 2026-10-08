@@ -20,13 +20,15 @@ interface NavItem {
 }
 
 const NAV_ITEMS: NavItem[] = [
-  { icon: Home,        label: 'Inicio',     path: '/home'     },
   { icon: Rss,         label: 'Feed',       path: '/feed'     },
   { icon: Compass,     label: 'Explorar',   path: '/discover' },
-  { icon: Calendar,    label: 'Eventos',    path: '/eventos'  },
+  { icon: Calendar,    label: 'Bolos',      path: '/eventos'  },
   { icon: ShoppingBag, label: 'Mercado',    path: '/market'   },
   { icon: Bot,         label: 'Rodrigo AI', path: '/rodrigo'  },
 ];
+// La home solo se enseña a quien no tiene cuenta; con cuenta, «Mi perfil»
+const GUEST_ITEMS: NavItem[] = [{ icon: Home, label: 'Inicio', path: '/home' }, ...NAV_ITEMS];
+const USER_ITEMS: NavItem[] = [...NAV_ITEMS, { icon: User, label: 'Mi perfil', path: '/panel' }];
 
 export const Sidebar = () => {
   const { user, userProfile, logout } = useAuth();
@@ -51,7 +53,7 @@ export const Sidebar = () => {
 
       {/* Navigation */}
       <nav className="flex-1 px-3 py-4 space-y-0.5 overflow-y-auto">
-        {NAV_ITEMS.map((item) => (
+        {(user ? USER_ITEMS : GUEST_ITEMS).map((item) => (
           <NavLink
             key={item.path}
             to={item.path}
