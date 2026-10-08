@@ -6,7 +6,7 @@
 
 Al final de cada pieza, la voz dice **«Muuu-sii-keeeeeo»**: largo y con orgullo, como un presentador de estadio, pero sin gritar. En pantalla, el logo con «Musikeeeeeeo» estirándose al ritmo de la voz y un ecualizador amarillo. Debajo: «musikeeo.com · Gratis en tu móvil».
 
-Toma elegida: la C (estilo presentador). Se usa siempre la misma grabación para que se reconozca.
+Desde el 8-oct el final dice «Musikeeeeeeooo» (se estiran la e y la o; la u y la i ya no). Tomas nuevas D y E; la C («Muuu-sii-keeeeeo») queda descartada. Se usa siempre la misma grabación para que se reconozca.
 
 ## Vídeo 1 · Presentación (hecho, 47 s)
 
@@ -25,6 +25,24 @@ Muy básico y fácil de entender. Pregunta sobre imagen real y corte seco a amar
 | Todo lo encuentras en Musikeeo. | Lista: Bolos, Artistas, Técnicos, Mercado, Salas, Rodrigo IA | Firma sonora |
 
 Se pueden sacar cortes de 6 s (una pregunta + respuesta + firma) para anuncios cortos.
+
+### Versión 2 con planos rodados con Kling (pendiente de saldo)
+
+Víctor, 8-oct: la v1 con clips de archivo no vale; los planos de las preguntas se generan con Kling y el final dice «Musikeeeeeeooo». Plan del equipo del estudio (asientos 14 dirección creativa, 19 guion, 04 prompting, 06 coste):
+
+- Cada pregunta es una mini escena con gente real y un gesto que se entiende en un segundo. La respuesta sigue siendo corte seco a amarillo con la pantalla real de la app (en código, gratis y exacta).
+- Método: foto «de iPhone» con GPT Image 2.5 Flare (9:16, 0,05 €) → validar → Kling 3.0 imagen a vídeo, 5 s (0,95 €). El sonido de Kling no se usa: va la voz y la música propias.
+- Presupuesto: 5 fotos + 5 planos ≈ 5 €; con una repetición, ≈ 6 €.
+
+| # | Pregunta | Foto (primer fotograma) | Lo que hace en el plano (prompt de Kling) |
+|---|---|---|---|
+| 1 | ¿Necesitas bolos? | Guitarrista rumbero en el borde de la cama, de noche, guitarra en las piernas, calendario de pared vacío | He scrolls his phone, sighs and lets himself fall back on the bed with the guitar on his chest. Handheld, natural |
+| 2 | ¿Necesitas artistas? | Dueño de un bar de Gràcia junto a un escenario diminuto vacío, con un micro solo y el bar lleno | He taps the lonely microphone, looks at the waiting customers and shrugs at the camera |
+| 3 | ¿Necesitas un técnico de sonido? | Cantante en una sala pequeña, en mitad del bolo, la mesa de mezclas del fondo vacía | Loud feedback: she winces and covers her ears, the front row covers their ears too |
+| 4 | ¿Una guitarra de segunda mano? | Chaval de noche delante del escaparate de una tienda de guitarras con el precio a la vista | He looks at the price, then at the few coins in his hand, and puffs his cheeks |
+| 5 | Todo lo encuentras en Musikeeo. | El guitarrista del plano 1 (misma cara, con referencia) tocando en una sala llena | The crowd jumps and cheers, he smiles and nods to the beat |
+
+Cierre: logo + «Musikeeeeeeooo» (tomas D y E de la firma nueva, 8-oct; elige Víctor).
 
 ## Serie 3 · Sketches «Me ha pasado» (guiones, sin grabar)
 
