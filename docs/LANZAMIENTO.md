@@ -27,7 +27,7 @@ Lo que sí falta son **5 bloqueantes**, casi todos pequeños, y el más importan
 |---|---|---|
 | **Avisos por email** | Si alguien te escribe o se postula a tu bolo, no te enteras si no abres la app. Firebase Functions + Resend | 1 día |
 | **Verificar el email** | Se envía el correo pero no se exige: es fácil crear cuentas falsas | 2 h |
-| **Botones que no hacen nada o mienten** | «Solicitar presupuesto» en el perfil de artista solo enseña un aviso (no envía nada); campana de notificaciones sin función; llamada y videollamada en mensajes; «En línea» siempre fijo | 4 h |
+| **Botones que no hacen nada o mienten** | «Solicitar presupuesto» en el perfil de artista solo enseña un aviso (no envía nada); campana de notificaciones sin función; (llamada, videollamada y «En línea» en mensajes ya quitados) | 4 h |
 | **Pantallas con datos de ejemplo** | `Profile.tsx` (bolos y TrustScore inventados), `PublicProfile` (reels de ejemplo), `Projects` (siempre de ejemplo y sin reglas en Firestore) | 4 h |
 | **Panel de organizador roto** | Usa la colección `organizers`, que no tiene reglas (todo denegado); «Mis eventos» enseña los de todos | 2 h |
 | **Límite de uso de Rodrigo** | `/api/chat` no pide sesión y el límite es por servidor: alguien puede gastar el saldo de Kimi. Pedir sesión o App Check | 2 h |
@@ -45,7 +45,7 @@ Lo que sí falta son **5 bloqueantes**, casi todos pequeños, y el más importan
 
 ## 4. Después del lanzamiento (v2, no bloquea)
 
-- **Pagos**: Stripe Connect para reservar y cobrar con comisión del 10 %, señal y devolución.
+- **Pagos**: Stripe Connect para reservar y cobrar con comisión del 10 %, señal y devolución. El plan completo (cómo evitar que se contacten por fuera, precios y orden) está en `docs/MONETIZACION.md`.
 - **Reputación verificada**: reseñas después de cada bolo (TrustScore real).
 - **Plan Pro**: más visibilidad, estadísticas, IA avanzada.
 - Notificaciones push, academia, sincronizar Google Calendar.
@@ -57,7 +57,7 @@ Lo que sí falta son **5 bloqueantes**, casi todos pequeños, y el más importan
 - Navegación pública sin cuenta; publicar, escribir y el perfil propio piden login y devuelven a donde estabas.
 - Con cuenta, la app abre en el Feed; menú Feed · Explorar · Bolos · Mercado · Perfil.
 - Emails privados (`users` solo para su dueño, `publicProfiles` sin email) — reglas desplegadas.
-- «Contactar» abre el chat; el primer chat ya se puede crear.
+- «Contactar» abre el chat; el chat funciona en el móvil (pantalla completa, sin botones falsos).
 - Recuperar contraseña, rol de Tienda en el registro.
 - Rodrigo prepara borradores de anuncio, bolo y perfil que el usuario publica con un toque.
 - Feed con vídeos que se reproducen solos y visor de reels tipo Instagram (deslizar, doble toque, volver deslizando).
