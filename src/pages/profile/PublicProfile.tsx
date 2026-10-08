@@ -161,7 +161,7 @@ export default function PublicProfile() {
                     </div>
 
                     <div className="flex gap-3 mb-2">
-                        <Button className="bg-primary text-black hover:bg-primary/90 font-bold px-6" onClick={() => navigate('/messages')}>
+                        <Button className="bg-primary text-black hover:bg-primary/90 font-bold px-6" onClick={() => navigate(profile.uid ? `/messages?userId=${profile.uid}` : '/messages')}>
                             <MessageSquare className="w-4 h-4 mr-2" />
                             Contactar
                         </Button>
