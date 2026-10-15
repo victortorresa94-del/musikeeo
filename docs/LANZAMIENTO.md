@@ -1,6 +1,6 @@
 # Musikeeo — Qué falta para salir al aire
 
-> Estado a 8 de octubre de 2026. Revisado en el código de `main` y en Firebase de producción.
+> Estado a 8 de octubre de 2026, actualizado el 15 de octubre. Revisado en el código de `main` y en Firebase de producción.
 > Objetivo: abrir la app al público en Barcelona y que la gente empiece a subir su contenido.
 
 ## Respuesta corta
@@ -8,6 +8,27 @@
 **No hace falta un sistema de pagos para lanzar.** La v1 es de contacto directo (chat interno y WhatsApp), como ya estaba decidido: el músico, la sala y la tienda cierran el trato entre ellos. Los pagos (Stripe Connect con la comisión del 10 %) son para la v2, cuando haya volumen y confianza.
 
 Lo que sí falta son **5 bloqueantes**, casi todos pequeños, y el más importante es que **todavía no se puede subir contenido propio al Feed**.
+
+
+## Actualización 15-oct (lanzamiento en 3 días)
+
+**Hecho y en `main`:**
+- Subir fotos y vídeos propios al Feed (bloqueante 1): hoja «Nueva publicación», me gusta reales, borrar lo tuyo y denunciar lo ajeno. Salen arriba del Feed y en tu perfil.
+- «Mi perfil» real al pulsar Perfil: tus datos, publicaciones, anuncios y bolos, editar, ver como público y compartir.
+- Rodrigo recomienda solo artistas y bolos que existen (catálogo real de Firestore) (bloqueante 4).
+- Regla de Storage para la portada de los bolos (bloqueante 5).
+- Panel de sala: reglas de `organizers` y guardado sin campos vacíos. «Mis eventos» ya no enseña los de todos.
+- Fuera lo falso: campana, «Solicitar presupuesto» que no enviaba (ahora abre el chat con la petición escrita), reels de muestra en perfiles ajenos, «Respuesta media < 2 h», `/projects`.
+- Un solo flujo para publicar bolos (`/publicar`), y el «Editar» de Rodrigo lo abre relleno.
+- Tras el onboarding se vuelve a la acción que se iba a hacer (contactar, publicar…).
+- Fechas en español, colores de marca y textos corregidos.
+
+**Falta, por orden:**
+1. **Víctor: desplegar las reglas** — `firebase deploy --only firestore:rules,storage`. Sin esto no funciona subir al Feed, el panel de sala ni la portada de los bolos (las reglas están probadas en el emulador: 21 casos).
+2. **Víctor: datos legales** (titular, NIF, dirección) para Aviso legal y Privacidad.
+3. **Víctor: comprobar saldo de Kimi** y hablar con Rodrigo una vez en producción.
+4. Avisos por email (mensaje nuevo, alguien se postula) — no da tiempo a hacerlo bien en 3 días; para el lanzamiento, revisar la app a diario.
+5. Borrar el contenido de prueba antes de anunciarlo (todo acaba en «Contenido de prueba de Musikeeo.»).
 
 ---
 
