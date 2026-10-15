@@ -56,28 +56,34 @@ Si es clara, entra directamente en el flujo. Si es ambigua, haz UNA sola pregunt
 
 RITMO: 1 dato por turno, 1 pregunta por turno, 1 avance visible por turno.
 
-RECOMENDACIONES DE ARTISTAS — usa SIEMPRE este formato:
+RECOMENDAR ARTISTAS Y BOLOS — SOLO LOS QUE EXISTEN
+
+Al final de estas instrucciones tienes el CATÁLOGO REAL de Musikeeo: los artistas con perfil público y los bolos abiertos ahora mismo.
+REGLA DURA: nunca inventes un artista, un bolo, un precio, una reseña ni un enlace. Solo puedes recomendar lo que sale en el catálogo, con sus datos tal cual.
+Si nada del catálogo encaja (otra ciudad, otro estilo) dilo claro y en una frase, y propón lo útil: publicar el bolo para que le escriban los artistas (deja el borrador [PUBLISH_EVENT]) o buscar en Explorar (/discover).
+
+Formato para un artista del catálogo:
 
 [ARTISTA]
-Nombre: {nombre del artista}
-Formato: {dúo, banda, DJ, etc.}
-Estilo: {jazz, pop, covers, etc.}
-Por qué encaja: {explicación breve}
-Precio orientativo: {rango de precio}
-Link: /artista/{id-ficticio}
+Nombre: {nombre tal cual}
+Formato: {si se sabe; si no, omite la línea}
+Estilo: {sus géneros}
+Por qué encaja: {explicación breve con lo que te ha contado el usuario}
+Precio orientativo: {"desde X €" si el catálogo lo dice; si no, "a consultar"}
+Link: /artist/{slug del catálogo}
 [/ARTISTA]
 
 Muestra máximo 3 artistas.
 
-BÚSQUEDA DE BOLOS — usa este formato:
+Formato para un bolo del catálogo:
 
 [BOLO]
-Título: {nombre del evento}
+Título: {título tal cual}
 Fecha: {fecha}
 Ubicación: {ciudad}
-Formato buscado: {dúo, banda, etc.}
-Caché: {rango}
-Link: /evento/{id-ficticio}
+Formato buscado: {si se sabe; si no, omite la línea}
+Caché: {"X €" si el catálogo lo dice; si no, "a consultar"}
+Link: /eventos/{id del catálogo}
 [/BOLO]
 
 PUBLICAR DESDE EL CHAT — BORRADORES
@@ -196,6 +202,71 @@ function pruneRateStore() {
   }
 }
 
+// ─── Catálogo real para que Rodrigo no se invente nada ──────────────────────
+// Lectura pública de Firestore por REST (las mismas reglas que ve cualquier visitante).
+const FB_PROJECT = process.env.VITE_FIREBASE_PROJECT_ID || 'musikeeo-8e766';
+const FB_KEY = process.env.VITE_FIREBASE_API_KEY || 'AIzaSyDTak4DoBdDDcQKqCS5bKVsDwAEYBs52RI';
+const CATALOG_TTL_MS = 5 * 60 * 1000;
+let catalogCache: { text: string; at: number } | null = null;
+
+const fsVal = (v: any): any => {
+  if (!v) return undefined;
+  if ('stringValue' in v) return v.stringValue;
+  if ('integerValue' in v) return Number(v.integerValue);
+  if ('doubleValue' in v) return v.doubleValue;
+  if ('booleanValue' in v) return v.booleanValue;
+  if ('arrayValue' in v) return (v.arrayValue.values || []).map(fsVal);
+  return undefined;
+};
+
+async function runQuery(collectionId: string, extra: Record<string, unknown> = {}) {
+  const url = `https://firestore.googleapis.com/v1/projects/${FB_PROJECT}/databases/(default)/documents:runQuery?key=${FB_KEY}`;
+  const r = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ structuredQuery: { from: [{ collectionId }], limit: 40, ...extra } }),
+    signal: AbortSignal.timeout(4000),
+  });
+  if (!r.ok) throw new Error(`Firestore ${collectionId} ${r.status}`);
+  const rows: any[] = await r.json();
+  return rows.filter(x => x.document).map(x => {
+    const f = x.document.fields || {};
+    const out: Record<string, any> = { id: x.document.name.split('/').pop() };
+    for (const k of Object.keys(f)) out[k] = fsVal(f[k]);
+    return out;
+  });
+}
+
+async function getCatalog(): Promise<string> {
+  if (catalogCache && Date.now() - catalogCache.at < CATALOG_TTL_MS) return catalogCache.text;
+  try {
+    const [artists, events] = await Promise.all([
+      runQuery('artists', { where: { fieldFilter: { field: { fieldPath: 'isPublic' }, op: 'EQUAL', value: { booleanValue: true } } } }),
+      runQuery('events'),
+    ]);
+    const now = Date.now() - 86400000;
+    const test = (x: any) => /Contenido de prueba de Musikeeo/.test(`${x.bio || ''} ${x.description || ''}`) ? ' (PRUEBA)' : '';
+    const a = artists.filter(x => x.artistName && x.slug).slice(0, 30).map(x =>
+      `- ${x.artistName}${test(x)} · ${[x.city, (x.genres || []).slice(0, 4).join(', ')].filter(Boolean).join(' · ')}${x.priceFrom ? ` · desde ${x.priceFrom} €` : ''} · slug: ${x.slug}`);
+    const e = events.filter(x => x.title && (!x.date || new Date(x.date).getTime() >= now)).slice(0, 20).map(x =>
+      `- ${x.title}${test(x)} · ${x.date ? new Date(x.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 'fecha a concretar'} · ${x.location || 'ubicación a concretar'}${x.price ? ` · ${x.price} €` : ''} · id: ${x.id}`);
+    const text = `CATÁLOGO REAL DE MUSIKEEO (actualizado ${new Date().toLocaleString('es-ES')})
+
+ARTISTAS CON PERFIL PÚBLICO:
+${a.length ? a.join('\n') : '(todavía ninguno)'}
+
+BOLOS ABIERTOS:
+${e.length ? e.join('\n') : '(todavía ninguno)'}
+
+Los marcados (PRUEBA) son de ejemplo: si los recomiendas, avisa de que son de prueba.`;
+    catalogCache = { text, at: Date.now() };
+    return text;
+  } catch (err) {
+    console.warn('Catálogo de Rodrigo no disponible:', err);
+    return 'CATÁLOGO REAL DE MUSIKEEO: no disponible ahora mismo. No recomiendes artistas ni bolos concretos; manda al usuario a /discover o /eventos.';
+  }
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -237,8 +308,9 @@ export default async function handler(req: any, res: any) {
     return res.status(413).json({ error: `history too long (max ${MAX_HISTORY_CHARS} chars)` });
   }
 
+  const catalog = await getCatalog();
   const messages = [
-    { role: 'system', content: RODRIGO_SYSTEM_PROMPT },
+    { role: 'system', content: `${RODRIGO_SYSTEM_PROMPT}\n\n${catalog}` },
     ...trimmedHistory,
     { role: 'user', content: message },
   ];
