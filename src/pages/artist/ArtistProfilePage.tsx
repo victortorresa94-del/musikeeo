@@ -57,8 +57,7 @@ export default function ArtistProfilePage() {
 
     const handleContact = async () => {
         if (!user) {
-            toast.error("Debes iniciar sesión para contactar");
-            navigate('/login');
+            navigate('/login', { state: { from: `/artist/${slug}` } });
             return;
         }
         if (!artist) return;
@@ -73,13 +72,16 @@ export default function ArtistProfilePage() {
         }
     };
 
+    // Abre el chat con el artista con la petición ya escrita; el usuario la completa y la envía
     const handleBooking = () => {
+        if (!artist) return;
+        const texto = `Hola, ${artist.artistName}. Me gustaría pedir presupuesto para un bolo.\nFecha: \nLugar: \nTipo de evento: \nDuración aproximada: `;
+        const target = `/messages?userId=${artist.userId}&texto=${encodeURIComponent(texto)}`;
         if (!user) {
-            navigate('/login');
+            navigate('/login', { state: { from: target } });
             return;
         }
-        // Stub for booking
-        toast.success(`Solicitud de presupuesto enviada a ${artist?.artistName}`);
+        navigate(target);
     };
 
     // Calendar days generator
@@ -401,7 +403,6 @@ export default function ArtistProfilePage() {
                                 Solicitar Presupuesto
                             </button>
 
-                            <p className="text-center text-muted-foreground text-xs mt-3">Respuesta media: &lt; 2 horas</p>
                         </div>
 
                         {/* Mini Calendar */}

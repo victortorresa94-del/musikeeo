@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Bell, MessageCircle, Search } from 'lucide-react';
+import { MessageCircle, Search } from 'lucide-react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { ThemeToggle } from '../ui/ThemeToggle';
@@ -108,13 +108,6 @@ export const TopBar = ({ onMenuClick: _onMenuClick }: TopBarProps) => {
                 <MessageCircle className="h-5 w-5" />
               </button>
 
-              {/* Notifications */}
-              <button
-                className="relative flex items-center justify-center h-10 w-10 rounded-xl text-muted-foreground hover:text-foreground hover:bg-muted transition-all"
-                aria-label="Notificaciones"
-              >
-                <Bell className="h-5 w-5" />
-              </button>
 
               {/* User avatar */}
               <button

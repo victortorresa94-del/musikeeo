@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
-import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import { useParams, useNavigate } from 'react-router-dom';
 import { Button } from '../../components/ui/button';
 import { ArrowLeft, MessageSquare, MapPin, Music, Play, Grid3X3, Film, BadgeCheck } from 'lucide-react';
 import { userService } from '../../services/userService';
 import { getArtistByUserId } from '../../services/artistService';
 import { type UserProfile } from '../../types';
-import { type Reel } from '../../types/reels';
-import { getReelsByUser, MOCK_REELS } from '../../services/reelsData';
+import { postService } from '../../services/postService';
+import type { Post } from '../../types';
 import { Loader2 } from 'lucide-react';
 
 // Combined profile type for display
@@ -27,11 +27,10 @@ interface DisplayProfile extends Omit<Partial<UserProfile>, 'role'> {
 export default function PublicProfile() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const location = useLocation();
     const [profile, setProfile] = useState<DisplayProfile | null>(null);
     const [loading, setLoading] = useState(true);
     const [activeTab, setActiveTab] = useState<'portfolio' | 'videos'>('videos');
-    const [userReels, setUserReels] = useState<Reel[]>([]);
+    const [userReels, setUserReels] = useState<Post[]>([]);
 
     useEffect(() => {
         const fetchProfile = async () => {
@@ -69,14 +68,8 @@ export default function PublicProfile() {
 
                 setProfile(displayData);
 
-                // Cargar reels del usuario
-                const reels = getReelsByUser(id);
-                if (reels.length > 0) {
-                    setUserReels(reels);
-                } else {
-                    // Solo cargar mocks si no hay nada
-                    setUserReels(MOCK_REELS.slice(0, 4));
-                }
+                // Sus publicaciones reales del Feed (nada de reels de muestra)
+                if (id) setUserReels(await postService.byAuthor(id).catch(() => []));
             } catch (error) {
                 console.error("Error loading profile", error);
             } finally {
@@ -86,20 +79,8 @@ export default function PublicProfile() {
         fetchProfile();
     }, [id]);
 
-    const handleOpenReel = (reel: Reel) => {
-        navigate(`/reels/${reel.id}`, {
-            state: {
-                source: 'profile',
-                userId: id,
-                from: location.pathname
-            }
-        });
-    };
-
-    const formatNumber = (num: number) => {
-        if (num >= 1000000) return `${(num / 1000000).toFixed(1)}M`;
-        if (num >= 1000) return `${(num / 1000).toFixed(1)}K`;
-        return num.toString();
+    const handleOpenReel = (post: Post) => {
+        navigate(post.mediaType === 'video' ? `/feed?reel=${post.id}` : '/feed');
     };
 
     if (loading) {
@@ -273,8 +254,8 @@ export default function PublicProfile() {
                                     className="aspect-[9/16] bg-card rounded-lg overflow-hidden relative group"
                                 >
                                     <img
-                                        src={reel.thumbnailUrl}
-                                        alt={reel.description}
+                                        src={reel.mediaType === 'video' ? reel.posterUrl : reel.mediaUrl}
+                                        alt={reel.caption}
                                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
                                     />
 
@@ -288,16 +269,9 @@ export default function PublicProfile() {
                                         </div>
                                     </div>
 
-                                    {/* Views count */}
-                                    <div className="absolute bottom-2 left-2 flex items-center gap-1 text-white text-xs font-medium">
-                                        <Play className="h-3 w-3 fill-white" />
-                                        {formatNumber(reel.views)}
-                                    </div>
-
-                                    {/* Duration */}
-                                    <div className="absolute bottom-2 right-2 text-white text-xs font-medium bg-black/50 px-1.5 py-0.5 rounded">
-                                        0:{reel.duration < 10 ? `0${reel.duration}` : reel.duration}
-                                    </div>
+                                    {reel.mediaType === 'video' && (
+                                        <Play className="absolute top-2 right-2 h-4 w-4 text-white fill-white drop-shadow" />
+                                    )}
                                 </button>
                             ))}
 
@@ -305,7 +279,7 @@ export default function PublicProfile() {
                             {userReels.length === 0 && (
                                 <div className="col-span-3 py-16 text-center">
                                     <Film className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                                    <p className="text-muted-foreground">Este usuario aún no ha subido videos</p>
+                                    <p className="text-muted-foreground">Todavía no ha publicado nada</p>
                                 </div>
                             )}
                         </div>

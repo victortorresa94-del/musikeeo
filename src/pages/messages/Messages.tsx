@@ -166,14 +166,19 @@ export default function Messages() {
     useEffect(() => {
         if (!user || !targetUser) return;
         if (targetUser === user.uid) { navigate('/messages', { replace: true }); return; }
+        const texto = params.get('texto');
         chatService.createChat(user.uid, targetUser)
-            .then(chatId => navigate(`/messages?chat=${chatId}`, { replace: true }))
+            .then(chatId => {
+                // Un texto sugerido (p. ej. «pedir presupuesto») queda escrito, sin enviarse
+                if (texto) setDrafts(d => (d[chatId] ? d : { ...d, [chatId]: texto }));
+                navigate(`/messages?chat=${chatId}`, { replace: true });
+            })
             .catch(err => {
                 console.error('No se pudo abrir el chat:', err);
                 setError('No se pudo abrir la conversación. Inténtalo de nuevo.');
                 navigate('/messages', { replace: true });
             });
-    }, [user, targetUser, navigate]);
+    }, [user, targetUser, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
 
     // Las pantallas antiguas mandan el chat en location.state: lo pasamos a la URL
     // para que «atrás» funcione y se pueda recargar.
