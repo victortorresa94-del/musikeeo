@@ -340,3 +340,20 @@ export interface Listing {
     createdAt: string;
     updatedAt: string;
 }
+
+// Publicación propia en el Feed (foto o vídeo)
+export interface Post {
+    id: string;
+    authorId: string;
+    authorName: string;
+    authorPhoto?: string;
+    authorRole?: UserMode;
+    mediaType: 'image' | 'video';
+    mediaUrl: string;
+    mediaPath: string;       // ruta en Storage, para borrarla
+    posterUrl?: string;      // miniatura del vídeo
+    posterPath?: string;
+    caption: string;
+    likeCount: number;
+    createdAt: string;       // ISO
+}

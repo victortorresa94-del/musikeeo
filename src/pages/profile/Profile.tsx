@@ -3,7 +3,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import { collection, getDocs, limit, query, where } from 'firebase/firestore';
 import {
     MapPin, Share2, Pencil, MessageCircle, CalendarDays, Settings, LogOut, ChevronRight,
-    Image as ImageIcon, ShoppingBag, Plus, Eye, Sparkles,
+    Image as ImageIcon, ShoppingBag, Plus, Eye, Sparkles, Play,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { db } from '../../lib/firebase';
@@ -12,7 +12,8 @@ import { useAuth } from '../../context/AuthContext';
 import { getArtistByUserId } from '../../services/artistService';
 import { getProviderByUserId } from '../../services/providerService';
 import { eventService } from '../../services/eventService';
-import type { Artist, Event, Listing, ProviderProfile, UserMode } from '../../types';
+import { postService } from '../../services/postService';
+import type { Artist, Event, Listing, Post, ProviderProfile, UserMode } from '../../types';
 
 const ROLE_LABEL: Record<UserMode, string> = {
     musician: 'Músico · Banda',
@@ -42,19 +43,21 @@ export default function Profile() {
     const [provider, setProvider] = useState<ProviderProfile | null>(null);
     const [listings, setListings] = useState<Listing[]>([]);
     const [events, setEvents] = useState<Event[]>([]);
+    const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
-    const [tab, setTab] = useState<'anuncios' | 'bolos'>('anuncios');
+    const [tab, setTab] = useState<'posts' | 'anuncios' | 'bolos'>('posts');
     const [photoBroken, setPhotoBroken] = useState(false);
 
     useEffect(() => {
         if (!user) return;
         let cancelled = false;
         (async () => {
-            const [a, p, l, e] = await Promise.allSettled([
+            const [a, p, l, e, ps] = await Promise.allSettled([
                 getArtistByUserId(user.uid),
                 getProviderByUserId(user.uid),
                 getDocs(query(collection(db, 'listings'), where('userId', '==', user.uid), limit(30))),
                 eventService.getEventsByOrganizer(user.uid),
+                postService.byAuthor(user.uid),
             ]);
             if (cancelled) return;
             if (a.status === 'fulfilled') setArtist(a.value);
@@ -65,9 +68,14 @@ export default function Profile() {
                 setListings(list);
             }
             if (e.status === 'fulfilled') {
-                const list = [...e.value].sort((x, y) => String(y.date || '').localeCompare(String(x.date || '')));
-                setEvents(list);
-                if (list.length > 0 && (l.status !== 'fulfilled' || l.value.empty)) setTab('bolos');
+                setEvents([...e.value].sort((x, y) => String(y.date || '').localeCompare(String(x.date || ''))));
+            }
+            const myPosts = ps.status === 'fulfilled' ? ps.value : [];
+            setPosts(myPosts);
+            // Abre en la pestaña que tenga algo
+            if (myPosts.length === 0) {
+                if (l.status === 'fulfilled' && !l.value.empty) setTab('anuncios');
+                else if (e.status === 'fulfilled' && e.value.length > 0) setTab('bolos');
             }
             setLoading(false);
         })();
@@ -161,11 +169,11 @@ export default function Profile() {
 
             {/* Lo que he publicado */}
             <div className="mt-7 flex p-0.5 rounded-[10px] bg-white/[0.07]">
-                {([['anuncios', `Anuncios · ${listings.length}`], ['bolos', `Bolos · ${events.length}`]] as const).map(([key, label]) => (
+                {([['posts', `Publicaciones · ${posts.length}`], ['anuncios', `Anuncios · ${listings.length}`], ['bolos', `Bolos · ${events.length}`]] as const).map(([key, label]) => (
                     <button
                         key={key}
                         onClick={() => setTab(key)}
-                        className={cn('flex-1 h-8 rounded-[8px] text-[13px] font-semibold transition-colors',
+                        className={cn('flex-1 h-8 rounded-[8px] text-[12px] font-semibold whitespace-nowrap px-1 transition-colors',
                             tab === key ? 'bg-foreground text-background' : 'text-muted-foreground')}
                     >
                         {label}
@@ -179,6 +187,21 @@ export default function Profile() {
                         {[0, 1].map(i => <div key={i} className="aspect-[4/5] rounded-2xl bg-white/[0.06] animate-pulse" />)}
                     </div>
                 )}
+
+                {!loading && tab === 'posts' && (posts.length === 0 ? (
+                    <Empty icon={ImageIcon} text="Sube un vídeo tocando o una foto del bolo: es lo primero que mira quien te quiere contratar." cta="Publicar en el Feed" to="/feed" />
+                ) : (
+                    <div className="grid grid-cols-3 gap-0.5 -mx-4">
+                        {posts.map(p => (
+                            <Link key={p.id} to={p.mediaType === 'video' ? `/feed?reel=${p.id}` : '/feed'} className="relative aspect-[4/5] bg-white/[0.05] active:opacity-80">
+                                {(p.mediaType === 'video' ? p.posterUrl : p.mediaUrl)
+                                    ? <img src={p.mediaType === 'video' ? p.posterUrl : p.mediaUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                                    : <Play className="h-6 w-6 text-muted-foreground absolute inset-0 m-auto" />}
+                                {p.mediaType === 'video' && <Play className="absolute top-1.5 right-1.5 h-4 w-4 text-white fill-white drop-shadow" />}
+                            </Link>
+                        ))}
+                    </div>
+                ))}
 
                 {!loading && tab === 'anuncios' && (listings.length === 0 ? (
                     <Empty icon={ShoppingBag} text="No tienes anuncios. Vende, alquila o presta tu equipo." cta="Publicar anuncio" to="/market/create" />

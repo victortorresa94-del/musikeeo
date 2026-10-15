@@ -114,11 +114,39 @@ service cloud.firestore {
       allow update, delete: if isOwner(resource.data.userId);
     }
 
+    // Publicaciones del Feed (fotos y vídeos). Cualquiera las ve; solo el autor
+    // las crea, edita el texto o las borra. El contador de me gusta lo mueve
+    // cualquiera con sesión, de uno en uno y sin tocar nada más.
+    match /posts/{postId} {
+      allow read: if true;
+      allow create: if isAuthenticated()
+        && request.resource.data.authorId == request.auth.uid
+        && request.resource.data.mediaType in ['image', 'video']
+        && request.resource.data.mediaUrl is string
+        && request.resource.data.caption is string
+        && request.resource.data.caption.size() <= 500
+        && request.resource.data.likeCount == 0;
+      allow update: if (isOwner(resource.data.authorId)
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['caption'])
+          && request.resource.data.caption.size() <= 500)
+        || (isAuthenticated()
+          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount'])
+          && (request.resource.data.likeCount == resource.data.likeCount + 1
+              || request.resource.data.likeCount == resource.data.likeCount - 1));
+      allow delete: if isOwner(resource.data.authorId);
+
+      // Un me gusta por persona: el id del documento es su uid
+      match /likes/{likerId} {
+        allow read: if true;
+        allow create, delete: if isOwner(likerId);
+      }
+    }
+
     // Reports (DMCA/LSSI moderation queue) — users can create, only admins read
     match /reports/{reportId} {
       allow create: if isAuthenticated()
         && request.resource.data.reporterId == request.auth.uid
-        && request.resource.data.targetType in ['listing', 'event', 'user', 'message']
+        && request.resource.data.targetType in ['listing', 'event', 'user', 'message', 'post']
         && request.resource.data.targetId is string
         && request.resource.data.reason is string;
       allow read, update, delete: if false;  // admin via Firebase console

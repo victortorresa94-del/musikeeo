@@ -23,6 +23,20 @@ service firebase.storage {
       allow write: if isOwner(userId) && (request.resource == null || isAllowedImage());
     }
 
+    // Fotos y vídeos del Feed: foto hasta 10 MB, vídeo hasta 100 MB
+    match /posts/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner(userId) && (request.resource == null
+        || (request.resource.size < 10 * 1024 * 1024 && request.resource.contentType.matches('image/(jpeg|png|webp|gif)'))
+        || (request.resource.size < 100 * 1024 * 1024 && request.resource.contentType.matches('video/(mp4|quicktime|webm)')));
+    }
+
+    // Portada de los bolos
+    match /events/{userId}/{allPaths=**} {
+      allow read: if true;
+      allow write: if isOwner(userId) && (request.resource == null || isAllowedImage());
+    }
+
     // User profile photos
     match /users/{userId}/{allPaths=**} {
       allow read: if true;

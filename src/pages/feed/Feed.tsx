@@ -4,7 +4,9 @@ import { AnimatePresence, motion } from 'framer-motion';
 import {
     Play, Heart, MessageCircle, Share2, BadgeCheck, ShoppingBag, Calendar,
     ArrowRight, Image as ImageIcon, Plus, Music2, Speaker, Sparkles, MapPin, Info, Check,
+    MoreHorizontal, Trash2, Flag,
 } from 'lucide-react';
+import { toast } from 'sonner';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { collection, query, where, orderBy, limit, getDocs } from 'firebase/firestore';
 import { db } from '../../lib/firebase';
@@ -13,7 +15,9 @@ import { MOCK_REELS, LOCAL_REELS, MOCK_POSTS, type FeedPost } from '../../servic
 import ReelsViewer from '../reels/ReelsViewer';
 import { eventService } from '../../services/eventService';
 import { getArtists } from '../../services/artistService';
-import type { Artist, Event, Listing } from '../../types';
+import type { Artist, Event, Listing, Post } from '../../types';
+import { postService } from '../../services/postService';
+import { NewPostSheet } from '../../components/feed/NewPostSheet';
 import { cn } from '../../lib/utils';
 
 type Reel = typeof MOCK_REELS[number];
@@ -105,21 +109,21 @@ const SHORTCUTS = [
 ];
 
 // ─── Publicar ────────────────────────────────────────────────────────────────
-const Composer = ({ user, go }: { user: any; go: (p: string) => void }) => (
+const Composer = ({ user, go, onCreate }: { user: any; go: (p: string) => void; onCreate: () => void }) => (
     <div className="bg-card border border-border rounded-2xl p-3">
         <div className="flex items-center gap-3">
             <Avatar src={user?.photoURL} name={user?.displayName || 'Tú'} className="h-10 w-10 text-sm shrink-0" />
-            <button onClick={() => go('/panel/multimedia')} className="flex-1 h-11 text-left bg-muted border border-border rounded-full px-4 text-sm text-muted-foreground hover:border-primary/40 transition-colors">
+            <button onClick={onCreate} className="flex-1 h-11 text-left bg-muted border border-border rounded-full px-4 text-sm text-muted-foreground hover:border-primary/40 transition-colors">
                 {user ? '¿Qué estás tocando estos días?' : 'Entra y comparte tu música'}
             </button>
         </div>
         <div className="grid grid-cols-3 gap-1 mt-2">
             {[
-                { label: 'Vídeo', Icon: ImageIcon, to: '/panel/multimedia' },
-                { label: 'Evento', Icon: Calendar, to: '/publicar' },
+                { label: 'Foto o vídeo', Icon: ImageIcon, to: '' },
+                { label: 'Bolo', Icon: Calendar, to: '/publicar' },
                 { label: 'Vender', Icon: ShoppingBag, to: '/market/create' },
             ].map(a => (
-                <button key={a.label} onClick={() => go(a.to)} className="h-11 flex items-center justify-center gap-2 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted hover:text-primary transition-colors">
+                <button key={a.label} onClick={() => a.to ? go(a.to) : onCreate()} className="h-11 flex items-center justify-center gap-2 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted hover:text-primary transition-colors">
                     <a.Icon className="h-[18px] w-[18px]" /> {a.label}
                 </button>
             ))}
@@ -274,6 +278,105 @@ const PostCard = ({ post }: { post: FeedPost }) => {
     );
 };
 
+// ─── Publicación real de la comunidad ───────────────────────────────────────
+const RealPostCard = ({ post, liked, myId, onLike, onOpen, onDelete }: {
+    post: Post; liked: boolean; myId?: string;
+    onLike: (p: Post, liked: boolean) => void; onOpen: () => void; onDelete: (p: Post) => void;
+}) => {
+    const [burst, setBurst] = useState(0);
+    const [menu, setMenu] = useState(false);
+    const lastTap = useRef(0);
+    const mine = myId === post.authorId;
+    const like = (force?: boolean) => {
+        if (force && liked) { setBurst(b => b + 1); return; }
+        if (!liked) setBurst(b => b + 1);
+        onLike(post, !liked);
+        if (navigator.vibrate) navigator.vibrate(10);
+    };
+    const onTap = () => {
+        const now = Date.now();
+        if (now - lastTap.current < 280) { like(true); lastTap.current = 0; return; }
+        lastTap.current = now;
+        if (post.mediaType === 'video') setTimeout(() => { if (lastTap.current === now) onOpen(); }, 290);
+    };
+    const share = async () => {
+        const url = `${window.location.origin}/feed?reel=${post.id}`;
+        try {
+            if (navigator.share) await navigator.share({ title: post.authorName, text: post.caption, url });
+            else { await navigator.clipboard.writeText(url); toast.success('Enlace copiado'); }
+        } catch { /* cancelado */ }
+    };
+    const report = async () => {
+        setMenu(false);
+        if (!myId) { toast('Entra para denunciar una publicación'); return; }
+        try { await postService.report(post.id, myId, 'contenido inapropiado'); toast.success('Gracias. Lo revisamos.'); }
+        catch { toast.error('No se pudo enviar la denuncia'); }
+    };
+    const when = (() => {
+        const m = Math.floor((Date.now() - new Date(post.createdAt).getTime()) / 60000);
+        if (m < 60) return `hace ${Math.max(1, m)} min`;
+        if (m < 1440) return `hace ${Math.floor(m / 60)} h`;
+        return new Date(post.createdAt).toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+    })();
+    return (
+        <article className="bg-card md:border border-y border-border md:rounded-2xl overflow-hidden -mx-4 md:mx-0">
+            <header className="flex items-center gap-3 px-4 py-3">
+                <Link to={`/profile/${post.authorId}`} className="flex items-center gap-3 flex-1 min-w-0 active:opacity-70">
+                    <Avatar src={post.authorPhoto} name={post.authorName} className="h-10 w-10 text-sm" />
+                    <span className="min-w-0">
+                        <span className="block font-bold text-sm text-foreground truncate">{post.authorName}</span>
+                        <span className="block text-xs text-muted-foreground">{when}</span>
+                    </span>
+                </Link>
+                <div className="relative">
+                    <button onClick={() => setMenu(v => !v)} aria-label="Más opciones" className="h-9 w-9 -mr-2 flex items-center justify-center text-muted-foreground active:opacity-60">
+                        <MoreHorizontal className="h-5 w-5" />
+                    </button>
+                    {menu && (
+                        <div className="absolute right-0 top-10 z-20 w-44 rounded-xl bg-[#1c1c1e] border border-white/10 overflow-hidden shadow-xl">
+                            {mine
+                                ? <button onClick={() => { setMenu(false); onDelete(post); }} className="w-full h-11 px-3 flex items-center gap-2 text-[14px] text-red-400 active:bg-white/5"><Trash2 className="h-4 w-4" /> Eliminar</button>
+                                : <button onClick={report} className="w-full h-11 px-3 flex items-center gap-2 text-[14px] text-foreground active:bg-white/5"><Flag className="h-4 w-4" /> Denunciar</button>}
+                        </div>
+                    )}
+                </div>
+            </header>
+            <div className="relative cursor-pointer select-none touch-manipulation bg-black" onClick={onTap} role="button" aria-label={post.mediaType === 'video' ? `Abrir vídeo de ${post.authorName}` : 'Foto'}>
+                {post.mediaType === 'video'
+                    ? <InlineVideo src={post.mediaUrl} poster={post.posterUrl || ''} className="w-full aspect-[4/5] object-cover bg-muted" />
+                    : <SafeImg src={post.mediaUrl} alt="" className="w-full max-h-[75vh] object-cover" />}
+                <AnimatePresence>
+                    {burst > 0 && (
+                        <motion.div key={burst} initial={{ scale: 0.3, opacity: 0 }} animate={{ scale: [0.3, 1.15, 1], opacity: [0, 1, 1] }} exit={{ scale: 1.4, opacity: 0 }}
+                            transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }} onAnimationComplete={() => setTimeout(() => setBurst(0), 250)}
+                            className="absolute inset-0 flex items-center justify-center pointer-events-none">
+                            <Heart className="h-24 w-24 text-primary fill-primary" />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+            <div className="flex items-center px-2 pt-1">
+                <button onClick={() => like()} aria-pressed={liked} aria-label={liked ? 'Quitar me gusta' : 'Me gusta'} className={cn('h-11 px-2.5 flex items-center gap-1.5 rounded-xl text-sm font-semibold', liked ? 'text-primary' : 'text-foreground/80')}>
+                    <Heart className={cn('h-6 w-6', liked && 'fill-current')} /> {post.likeCount > 0 ? fmt(post.likeCount) : ''}
+                </button>
+                <Link to={`/messages?userId=${post.authorId}`} aria-label="Escribir" className="h-11 px-2.5 flex items-center text-foreground/80">
+                    <MessageCircle className="h-6 w-6" />
+                </Link>
+                <button onClick={share} aria-label="Compartir" className="h-11 px-2.5 flex items-center text-foreground/80">
+                    <Share2 className="h-6 w-6" />
+                </button>
+            </div>
+            {post.caption && <p className="px-4 pb-4 text-sm text-foreground/90 whitespace-pre-line line-clamp-4"><span className="font-bold mr-1.5">{post.authorName}</span>{post.caption}</p>}
+        </article>
+    );
+};
+
+const postToReel = (p: Post): Reel => ({
+    id: p.id, videoUrl: p.mediaUrl, thumbnailUrl: p.posterUrl || '', description: p.caption,
+    authorId: p.authorId, authorName: p.authorName, authorPhoto: p.authorPhoto || '', authorRole: p.authorRole || 'musician',
+    likes: p.likeCount, comments: 0, shares: 0, views: 0, timestamp: new Date(p.createdAt).getTime(), duration: 0,
+});
+
 // ─── Tarjetas reales ─────────────────────────────────────────────────────────
 const Kicker = ({ Icon, children }: { Icon: React.ElementType; children: React.ReactNode }) => (
     <p className="flex items-center gap-1.5 text-xs font-semibold text-primary mb-2"><Icon className="h-3.5 w-3.5" />{children}</p>
@@ -337,6 +440,7 @@ const NewArtistsCard = ({ artists }: { artists: Artist[] }) => (
 type FeedItem =
     | { kind: 'reel'; id: string; reel: Reel }
     | { kind: 'post'; id: string; post: FeedPost }
+    | { kind: 'mine'; id: string; p: Post }
     | { kind: 'listing'; id: string; l: Listing }
     | { kind: 'event'; id: string; e: Event }
     | { kind: 'artists'; id: string };
@@ -347,6 +451,9 @@ export default function Feed() {
     const [listings, setListings] = useState<Listing[]>([]);
     const [events, setEvents] = useState<Event[]>([]);
     const [artists, setArtists] = useState<Artist[]>([]);
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+    const [composerOpen, setComposerOpen] = useState(false);
 
     useEffect(() => {
         getDocs(query(collection(db, 'listings'), where('available', '==', true), orderBy('urgent', 'desc'), orderBy('createdAt', 'desc'), limit(4)))
@@ -359,7 +466,32 @@ export default function Feed() {
             })
             .catch(() => {});
         getArtists().then(list => setArtists(list.filter(a => a.artistName).slice(0, 10))).catch(() => {});
+        postService.recent(20).then(setPosts).catch(err => console.warn('No se pudieron cargar las publicaciones', err));
     }, []);
+
+    useEffect(() => {
+        if (!user || posts.length === 0) return;
+        postService.likedBy(user.uid, posts.map(p => p.id)).then(setLikedIds).catch(() => {});
+    }, [user, posts.length]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const openComposer = () => user ? setComposerOpen(true) : navigate('/login', { state: { from: '/feed' } });
+
+    const toggleLike = async (p: Post, liked: boolean) => {
+        if (!user) { navigate('/login', { state: { from: '/feed' } }); return; }
+        const apply = (on: boolean) => {
+            setLikedIds(prev => { const n = new Set(prev); if (on) n.add(p.id); else n.delete(p.id); return n; });
+            setPosts(prev => prev.map(x => x.id === p.id ? { ...x, likeCount: Math.max(0, x.likeCount + (on ? 1 : -1)) } : x));
+        };
+        apply(liked);
+        try { await postService.setLike(p.id, user.uid, liked); }
+        catch { apply(!liked); toast.error('No se pudo guardar el me gusta'); }
+    };
+
+    const deletePost = async (p: Post) => {
+        if (!window.confirm('¿Eliminar esta publicación?')) return;
+        try { await postService.remove(p); setPosts(prev => prev.filter(x => x.id !== p.id)); toast.success('Publicación eliminada'); }
+        catch { toast.error('No se pudo eliminar'); }
+    };
 
     const go = (path: string) => user ? navigate(path) : navigate('/login', { state: { from: '/feed' } });
     const location = useLocation();
@@ -371,7 +503,9 @@ export default function Feed() {
         if (location.key !== 'default') navigate(-1);
         else setSearchParams({}, { replace: true });
     };
-    const viewerIndex = openReelId ? Math.max(0, MOCK_REELS.findIndex(r => r.id === openReelId)) : 0;
+    // El visor recorre primero los vídeos reales y luego los de muestra
+    const viewerReels = useMemo(() => [...posts.filter(p => p.mediaType === 'video').map(postToReel), ...MOCK_REELS], [posts]);
+    const viewerIndex = openReelId ? Math.max(0, viewerReels.findIndex(r => r.id === openReelId)) : 0;
 
     // Intercala lo real (bolos, mercado, artistas) entre los reels de muestra
     const items = useMemo<FeedItem[]>(() => {
@@ -386,18 +520,19 @@ export default function Feed() {
             ...(artists.length >= 2 ? [{ kind: 'artists' as const, id: 'artists' }] : []),
             ...listings.map(l => ({ kind: 'listing' as const, id: `l-${l.id}`, l })),
         ];
-        const out: FeedItem[] = [];
+        // Lo que sube la gente va primero, más reciente arriba
+        const out: FeedItem[] = posts.map(p => ({ kind: 'mine' as const, id: `p-${p.id}`, p }));
         const max = Math.max(reels.length, real.length);
         for (let i = 0; i < max; i++) {
             if (real[i]) out.push(real[i]);
             if (reels[i]) out.push(reels[i]);
         }
         return out;
-    }, [events, artists, listings]);
+    }, [events, artists, listings, posts]);
 
     return (
         <div className="max-w-xl mx-auto px-4 pt-4 md:pt-8 pb-28 space-y-4">
-            <StoriesRow onOpen={openReel} onCreate={() => go('/panel/multimedia')} signedIn={!!user} />
+            <StoriesRow onOpen={openReel} onCreate={openComposer} signedIn={!!user} />
 
             <nav aria-label="Atajos" className="flex gap-2 overflow-x-auto hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
                 {SHORTCUTS.map(s => (
@@ -407,7 +542,8 @@ export default function Feed() {
                 ))}
             </nav>
 
-            <Composer user={user} go={go} />
+            <Composer user={user} go={go} onCreate={openComposer} />
+            <NewPostSheet open={composerOpen} onClose={() => setComposerOpen(false)} onPosted={p => setPosts(prev => [p, ...prev])} />
 
             <div className="flex items-center gap-2 text-xs text-muted-foreground px-1">
                 <Info className="h-3.5 w-3.5 shrink-0" />
@@ -418,6 +554,7 @@ export default function Feed() {
                 {items.map(it => {
                     if (it.kind === 'reel') return <ReelCard key={it.id} reel={it.reel} onOpen={() => openReel(it.reel.id)} />;
                     if (it.kind === 'post') return <PostCard key={it.id} post={it.post} />;
+                    if (it.kind === 'mine') return <RealPostCard key={it.id} post={it.p} liked={likedIds.has(it.p.id)} myId={user?.uid} onLike={toggleLike} onOpen={() => openReel(it.p.id)} onDelete={deletePost} />;
                     if (it.kind === 'listing') return <ListingCard key={it.id} l={it.l} />;
                     if (it.kind === 'event') return <EventCard key={it.id} e={it.e} />;
                     return <NewArtistsCard key={it.id} artists={artists} />;
@@ -428,7 +565,7 @@ export default function Feed() {
             {createPortal(
                 <AnimatePresence>
                     {openReelId && (
-                        <ReelsViewer key="viewer" reels={MOCK_REELS} initialIndex={viewerIndex} onClose={closeReel} />
+                        <ReelsViewer key="viewer" reels={viewerReels} initialIndex={viewerIndex} onClose={closeReel} />
                     )}
                 </AnimatePresence>,
                 document.body
@@ -442,7 +579,7 @@ export default function Feed() {
                     {user ? 'Sube un vídeo tocando y aparece aquí para toda la escena.' : 'Crea tu perfil gratis para publicar y que te encuentren.'}
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2 justify-center">
-                    <button onClick={() => user ? navigate('/panel/multimedia') : navigate('/register')} className="h-12 px-6 rounded-2xl bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2">
+                    <button onClick={() => user ? openComposer() : navigate('/register')} className="h-12 px-6 rounded-2xl bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2">
                         {user ? 'Subir un vídeo' : 'Crear mi perfil'} <ArrowRight className="h-5 w-5" />
                     </button>
                     <Link to="/artistas" className="h-12 px-6 rounded-2xl border border-border font-bold flex items-center justify-center hover:border-primary/50">Explorar artistas</Link>
