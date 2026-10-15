@@ -1,304 +1,265 @@
-import { useState, useEffect } from 'react';
-import { useParams, useNavigate } from 'react-router-dom';
-import { Button } from '../../components/ui/button';
-import { ArrowLeft, MessageSquare, MapPin, Music, Play, Grid3X3, Film, BadgeCheck } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { collection, getDocs, limit, query, where } from 'firebase/firestore';
+import {
+    ChevronLeft, MapPin, MessageCircle, Share2, BadgeCheck, Play, ChevronRight,
+    Image as ImageIcon, ShoppingBag, CalendarDays, Music2,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { db } from '../../lib/firebase';
+import { cn } from '../../lib/utils';
+import { useAuth } from '../../context/AuthContext';
 import { userService } from '../../services/userService';
 import { getArtistByUserId } from '../../services/artistService';
-import { type UserProfile } from '../../types';
+import { getProviderByUserId } from '../../services/providerService';
+import { eventService } from '../../services/eventService';
 import { postService } from '../../services/postService';
-import type { Post } from '../../types';
-import { Loader2 } from 'lucide-react';
+import type { Artist, Event, Listing, Post, ProviderProfile, UserMode } from '../../types';
 
-// Combined profile type for display
-interface DisplayProfile extends Omit<Partial<UserProfile>, 'role'> {
-    role: string;
+const ROLE_LABEL: Record<UserMode, string> = {
+    musician: 'Músico · Banda',
+    organizer: 'Sala · Promotor',
+    provider: 'Técnico · Empresa de sonido',
+};
+
+const priceOf = (l: Listing) =>
+    l.type === 'prestamo' ? 'Préstamo' : `${l.price} €${l.type === 'alquiler' && l.priceUnit ? `/${l.priceUnit}` : ''}`;
+
+const dateOf = (iso: string) => {
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? '' : d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+};
+
+interface Base {
+    name: string;
+    photo?: string;
+    role?: UserMode;
     location?: string;
     bio?: string;
-    skills?: string[];
-    genres?: string[];
-    stats?: {
-        gigs: number;
-        rating: number;
-        reviews: number;
-    };
-    verified?: boolean;
 }
 
+// Perfil de otra persona: solo lo que existe de verdad (nada de seguidores ni ratings inventados)
 export default function PublicProfile() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const [profile, setProfile] = useState<DisplayProfile | null>(null);
+    const { user } = useAuth();
+    const [base, setBase] = useState<Base | null>(null);
+    const [artist, setArtist] = useState<Artist | null>(null);
+    const [provider, setProvider] = useState<ProviderProfile | null>(null);
+    const [posts, setPosts] = useState<Post[]>([]);
+    const [listings, setListings] = useState<Listing[]>([]);
+    const [events, setEvents] = useState<Event[]>([]);
     const [loading, setLoading] = useState(true);
-    const [activeTab, setActiveTab] = useState<'portfolio' | 'videos'>('videos');
-    const [userReels, setUserReels] = useState<Post[]>([]);
+    const [notFound, setNotFound] = useState(false);
+    const [tab, setTab] = useState<'posts' | 'anuncios' | 'bolos'>('posts');
+    const [photoBroken, setPhotoBroken] = useState(false);
 
     useEffect(() => {
-        const fetchProfile = async () => {
-            if (!id) return;
-            try {
-                // Fetch basic user profile
-                const userData = await userService.getPublicProfile(id);
-
-                // Fetch artist profile
-                const artistData = await getArtistByUserId(id);
-
-                if (!userData && !artistData) {
-                    setProfile(null);
-                    return;
-                }
-
-                // Merge data for display
-                const displayData: DisplayProfile = {
-                    ...userData,
-                    uid: userData?.uid || artistData?.userId || id,
-                    displayName: artistData?.artistName || userData?.displayName || 'Usuario',
-                    photoURL: artistData?.profilePhoto || userData?.photoURL,
-                    role: artistData ? 'Músico' : (userData?.primaryMode || 'Usuario'),
-                    location: artistData?.city || '',
-                    bio: artistData?.bio || '',
-                    skills: artistData?.tags || [],
-                    genres: artistData?.genres || [],
-                    verified: artistData?.isVerified || false,
-                    stats: {
-                        gigs: artistData?.gigsCompleted || 0,
-                        rating: artistData?.rating || 0,
-                        reviews: artistData?.reviewCount || 0
-                    }
-                };
-
-                setProfile(displayData);
-
-                // Sus publicaciones reales del Feed (nada de reels de muestra)
-                if (id) setUserReels(await postService.byAuthor(id).catch(() => []));
-            } catch (error) {
-                console.error("Error loading profile", error);
-            } finally {
-                setLoading(false);
-            }
-        };
-        fetchProfile();
+        if (!id) return;
+        let cancelled = false;
+        setLoading(true);
+        (async () => {
+            const [pp, a, pr, ps, l, e] = await Promise.allSettled([
+                userService.getPublicProfile(id),
+                getArtistByUserId(id),
+                getProviderByUserId(id),
+                postService.byAuthor(id),
+                getDocs(query(collection(db, 'listings'), where('userId', '==', id), limit(30))),
+                eventService.getEventsByOrganizer(id),
+            ]);
+            if (cancelled) return;
+            const profile = pp.status === 'fulfilled' ? pp.value : null;
+            const art = a.status === 'fulfilled' ? a.value : null;
+            const prov = pr.status === 'fulfilled' ? pr.value : null;
+            if (!profile && !art && !prov) { setNotFound(true); setLoading(false); return; }
+            setArtist(art); setProvider(prov);
+            setBase({
+                name: art?.artistName || prov?.businessName || profile?.displayName || 'Usuario de Musikeeo',
+                photo: art?.profilePhoto || profile?.photoURL || undefined,
+                role: art ? 'musician' : prov ? 'provider' : profile?.primaryMode,
+                location: art?.city || profile?.location || '',
+                bio: art?.bio || profile?.bio || '',
+            });
+            const myPosts = ps.status === 'fulfilled' ? ps.value : [];
+            const myListings = l.status === 'fulfilled'
+                ? l.value.docs.map(d => ({ id: d.id, ...d.data() }) as Listing).filter(x => x.available !== false)
+                    .sort((x, y) => String(y.createdAt || '').localeCompare(String(x.createdAt || '')))
+                : [];
+            const myEvents = e.status === 'fulfilled'
+                ? [...e.value].sort((x, y) => String(y.date || '').localeCompare(String(x.date || '')))
+                : [];
+            setPosts(myPosts); setListings(myListings); setEvents(myEvents);
+            setTab(myPosts.length ? 'posts' : myListings.length ? 'anuncios' : myEvents.length ? 'bolos' : 'posts');
+            setLoading(false);
+        })();
+        return () => { cancelled = true; };
     }, [id]);
 
-    const handleOpenReel = (post: Post) => {
-        navigate(post.mediaType === 'video' ? `/feed?reel=${post.id}` : '/feed');
+    if (id && user?.uid === id) return <Navigate to="/profile" replace />;
+
+    const back = () => {
+        const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
+        if (idx > 0) navigate(-1); else navigate('/discover');
     };
+
+    const share = async () => {
+        const url = window.location.href;
+        try {
+            if (navigator.share) await navigator.share({ title: `${base?.name} en Musikeeo`, url });
+            else { await navigator.clipboard.writeText(url); toast.success('Enlace copiado'); }
+        } catch { /* cancelado */ }
+    };
+
+    const contact = () => navigate(`/messages?userId=${id}`);
 
     if (loading) {
         return (
-            <div className="h-[50vh] flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+            <div className="max-w-2xl mx-auto px-4 pt-14">
+                <div className="flex items-center gap-4">
+                    <span className="h-[84px] w-[84px] rounded-full bg-white/[0.07] animate-pulse" />
+                    <span className="flex-1 space-y-2">
+                        <span className="block h-5 w-2/3 rounded bg-white/[0.07] animate-pulse" />
+                        <span className="block h-4 w-1/3 rounded bg-white/[0.05] animate-pulse" />
+                    </span>
+                </div>
             </div>
         );
     }
 
-    if (!profile) {
+    if (notFound || !base) {
         return (
-            <div className="text-center py-20 animate-fade-in-up">
-                <h2 className="text-2xl font-bold text-foreground mb-4">Usuario no encontrado</h2>
-                <Button onClick={() => navigate('/')}>Volver al Inicio</Button>
+            <div className="max-w-md mx-auto px-6 py-20 text-center">
+                <p className="font-semibold text-foreground">Este perfil no existe o ya no está disponible</p>
+                <Link to="/discover" className="mt-5 inline-flex h-9 px-4 rounded-full bg-foreground text-background text-[14px] font-semibold items-center">Ir a Explorar</Link>
             </div>
         );
     }
+
+    const genres = artist?.genres?.length ? artist.genres : provider?.services || [];
+    const verified = !!artist?.isVerified;
 
     return (
-        <div className="max-w-4xl mx-auto p-4 md:p-6 space-y-6 animate-fade-in-up">
-            <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2 text-muted-foreground hover:text-foreground">
-                <ArrowLeft className="w-4 h-4" /> Volver
-            </Button>
+        <div className="max-w-2xl mx-auto px-4 pt-2 pb-10">
+            <button onClick={back} className="h-10 -ml-2 pr-3 flex items-center text-[15px] text-foreground active:opacity-60">
+                <ChevronLeft className="h-6 w-6" /> Atrás
+            </button>
 
-            {/* Profile Header */}
-            <div className="relative h-64 md:h-80 rounded-3xl overflow-hidden bg-card border border-border">
-                <div className="absolute inset-0 bg-gradient-to-b from-brand-petrol/20 to-black/80 z-10" />
-                <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1514320291840-2e0a9bf2a9ae?w=1000&q=80')] bg-cover bg-center opacity-40 grayscale" />
-
-                <div className="absolute bottom-0 left-0 right-0 p-6 z-20 flex flex-col md:flex-row items-end gap-6">
-                    <div className="h-32 w-32 rounded-full border-4 border-black shadow-2xl relative">
-                        <img
-                            src={profile.photoURL || "https://github.com/shadcn.png"}
-                            alt={profile.displayName}
-                            className="h-full w-full rounded-full object-cover bg-muted"
-                        />
-                        {/* Online Status Dot */}
-                        <div className="absolute bottom-1 right-2 w-5 h-5 bg-primary border-4 border-black rounded-full"></div>
-                    </div>
-
-                    <div className="flex-1 mb-2">
-                        <div className="flex items-center gap-3">
-                            <h1 className="text-3xl md:text-4xl font-heading font-bold text-white shadow-black drop-shadow-lg">{profile.displayName}</h1>
-                            {profile.verified && (
-                                <span className="bg-primary text-black text-[10px] font-bold px-2 py-0.5 rounded-full flex items-center gap-1">
-                                    <BadgeCheck className="h-3 w-3" />
-                                    PRO
-                                </span>
-                            )}
-                        </div>
-                        <p className="text-primary font-medium text-lg flex items-center gap-2 mt-1">
-                            {profile.role.toUpperCase()}
-                            <span className="text-white/30 text-sm">•</span>
-                            <span className="text-sm text-muted-foreground flex items-center gap-1">
-                                <MapPin className="h-3 w-3" /> {profile.location || "Ubicación desconocida"}
-                            </span>
+            {/* Cabecera */}
+            <div className="mt-1 flex items-center gap-4">
+                <span className="h-[84px] w-[84px] shrink-0 rounded-full overflow-hidden bg-white/10 flex items-center justify-center text-3xl font-bold text-foreground">
+                    {base.photo && !photoBroken
+                        ? <img src={base.photo} alt="" onError={() => setPhotoBroken(true)} className="h-full w-full object-cover" />
+                        : base.name.slice(0, 1).toUpperCase()}
+                </span>
+                <div className="min-w-0 flex-1">
+                    <h1 className="font-heading font-bold text-[24px] leading-tight text-foreground line-clamp-2 break-words">
+                        {base.name}
+                        {verified && <BadgeCheck className="inline h-5 w-5 ml-1 -mt-1 text-foreground" aria-label="Verificado" />}
+                    </h1>
+                    {base.role && <p className="text-[14px] text-muted-foreground">{ROLE_LABEL[base.role]}</p>}
+                    {base.location && (
+                        <p className="mt-0.5 text-[13px] text-muted-foreground flex items-center gap-1">
+                            <MapPin className="h-3.5 w-3.5" /> {base.location}
                         </p>
-                    </div>
-
-                    <div className="flex gap-3 mb-2">
-                        <Button className="bg-primary text-black hover:bg-primary/90 font-bold px-6" onClick={() => navigate(profile.uid ? `/messages?userId=${profile.uid}` : '/messages')}>
-                            <MessageSquare className="w-4 h-4 mr-2" />
-                            Contactar
-                        </Button>
-                    </div>
+                    )}
                 </div>
             </div>
 
-            {/* Stats Row */}
-            <div className="flex items-center justify-center gap-8 py-4 border-y border-border">
-                <div className="text-center">
-                    <span className="block text-2xl font-bold text-foreground">{userReels.length}</span>
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider">Videos</span>
+            {base.bio && <p className="mt-4 text-[15px] leading-relaxed text-foreground/90 whitespace-pre-line">{base.bio}</p>}
+            {genres.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                    {genres.slice(0, 6).map(g => (
+                        <span key={g} className="px-2.5 py-1 rounded-full bg-white/[0.07] text-[12px] text-foreground/80">{g}</span>
+                    ))}
                 </div>
-                {profile.stats && (
-                    <>
-                        <div className="text-center">
-                            <span className="block text-2xl font-bold text-foreground">{profile.stats.gigs}</span>
-                            <span className="text-xs text-muted-foreground uppercase tracking-wider">Bolos</span>
-                        </div>
-                        <div className="text-center">
-                            <span className="block text-2xl font-bold text-primary">{profile.stats.rating}</span>
-                            <span className="text-xs text-muted-foreground uppercase tracking-wider">Rating</span>
-                        </div>
-                    </>
-                )}
-                <div className="text-center">
-                    <span className="block text-2xl font-bold text-foreground">1.2K</span>
-                    <span className="text-xs text-muted-foreground uppercase tracking-wider">Seguidores</span>
-                </div>
+            )}
+            {artist?.priceFrom ? <p className="mt-3 text-[14px] text-foreground">Desde <b>{artist.priceFrom} €</b> por bolo</p> : null}
+
+            {/* Acciones: Contactar es la principal */}
+            <div className="mt-5 grid grid-cols-[1fr_auto] gap-2">
+                <button onClick={contact} className="h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] flex items-center justify-center gap-2 active:opacity-80">
+                    <MessageCircle className="h-5 w-5" /> Contactar
+                </button>
+                <button onClick={share} aria-label="Compartir perfil" className="h-[52px] w-[52px] rounded-[14px] bg-white/[0.09] text-foreground flex items-center justify-center active:opacity-70">
+                    <Share2 className="h-5 w-5" />
+                </button>
+            </div>
+            {artist?.slug && (
+                <Link to={`/artist/${artist.slug}`} className="mt-2 h-12 px-4 rounded-2xl bg-white/[0.05] flex items-center gap-3 active:opacity-70">
+                    <Music2 className="h-[18px] w-[18px] text-muted-foreground" />
+                    <span className="flex-1 text-[15px] text-foreground">Ficha de artista: precios, vídeos y fechas</span>
+                    <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                </Link>
+            )}
+
+            {/* Lo que ha publicado */}
+            <div className="mt-7 flex p-0.5 rounded-[10px] bg-white/[0.07]">
+                {([['posts', `Publicaciones · ${posts.length}`], ['anuncios', `Anuncios · ${listings.length}`], ['bolos', `Bolos · ${events.length}`]] as const).map(([key, label]) => (
+                    <button key={key} onClick={() => setTab(key)}
+                        className={cn('flex-1 h-8 rounded-[8px] text-[12px] font-semibold whitespace-nowrap px-1 transition-colors', tab === key ? 'bg-foreground text-background' : 'text-muted-foreground')}>
+                        {label}
+                    </button>
+                ))}
             </div>
 
-            {/* Content Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Left Column: About & Skills */}
-                <div className="space-y-6">
-                    <div className="bg-muted border border-border rounded-2xl p-6">
-                        <h3 className="font-heading font-bold text-foreground mb-4">Sobre mí</h3>
-                        <p className="text-muted-foreground text-sm leading-relaxed">
-                            {profile.bio || "Este usuario aún no ha escrito su biografía."}
-                        </p>
+            <div className="mt-3">
+                {tab === 'posts' && (posts.length === 0 ? <Empty icon={ImageIcon} text="Todavía no ha publicado fotos ni vídeos." /> : (
+                    <div className="grid grid-cols-3 gap-0.5 -mx-4">
+                        {posts.map(p => (
+                            <Link key={p.id} to={p.mediaType === 'video' ? `/feed?reel=${p.id}` : '/feed'} className="relative aspect-[4/5] bg-white/[0.05] active:opacity-80">
+                                {(p.mediaType === 'video' ? p.posterUrl : p.mediaUrl)
+                                    ? <img src={p.mediaType === 'video' ? p.posterUrl : p.mediaUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
+                                    : <Play className="h-6 w-6 text-muted-foreground absolute inset-0 m-auto" />}
+                                {p.mediaType === 'video' && <Play className="absolute top-1.5 right-1.5 h-4 w-4 text-white fill-white drop-shadow" />}
+                            </Link>
+                        ))}
                     </div>
+                ))}
 
-                    <div className="bg-muted border border-border rounded-2xl p-6">
-                        <h3 className="font-heading font-bold text-foreground mb-4">Habilidades</h3>
-                        <div className="flex flex-wrap gap-2">
-                            {profile.skills?.map(skill => (
-                                <span key={skill} className="bg-muted text-foreground text-xs px-3 py-1 rounded-full border border-border">
-                                    {skill}
+                {tab === 'anuncios' && (listings.length === 0 ? <Empty icon={ShoppingBag} text="No tiene anuncios en el Mercado." /> : (
+                    <div className="grid grid-cols-2 gap-2">
+                        {listings.map(l => (
+                            <Link key={l.id} to={`/market/${l.id}`} className="rounded-2xl overflow-hidden bg-white/[0.05] active:opacity-80">
+                                <div className="aspect-square bg-white/[0.05] relative">
+                                    {l.images?.[0]
+                                        ? <img src={l.images[0]} alt="" loading="lazy" className="h-full w-full object-cover" />
+                                        : <ImageIcon className="h-6 w-6 text-muted-foreground absolute inset-0 m-auto" />}
+                                </div>
+                                <div className="p-2.5">
+                                    <p className="text-[13px] font-semibold text-foreground line-clamp-1">{l.title}</p>
+                                    <p className="text-[13px] text-muted-foreground">{priceOf(l)}</p>
+                                </div>
+                            </Link>
+                        ))}
+                    </div>
+                ))}
+
+                {tab === 'bolos' && (events.length === 0 ? <Empty icon={CalendarDays} text="No tiene bolos publicados." /> : (
+                    <div className="space-y-2">
+                        {events.map(ev => (
+                            <Link key={ev.id} to={`/eventos/${ev.id}`} className="flex gap-3 p-2 rounded-2xl bg-white/[0.05] active:opacity-80">
+                                <span className="h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-white/[0.06]">
+                                    {ev.imageUrl && <img src={ev.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />}
                                 </span>
-                            )) || <span className="text-muted-foreground text-xs">Sin habilidades listadas</span>}
-                        </div>
+                                <span className="min-w-0 flex-1 py-0.5">
+                                    <span className="block text-[14px] font-semibold text-foreground line-clamp-1">{ev.title}</span>
+                                    <span className="block text-[13px] text-muted-foreground line-clamp-1">{[dateOf(ev.date), ev.location, ev.price ? `${ev.price} €` : ''].filter(Boolean).join(' · ')}</span>
+                                </span>
+                                <ChevronRight className="h-4 w-4 self-center text-muted-foreground" />
+                            </Link>
+                        ))}
                     </div>
-
-                    {profile.genres && profile.genres.length > 0 && (
-                        <div className="bg-muted border border-border rounded-2xl p-6">
-                            <h3 className="font-heading font-bold text-foreground mb-4">Géneros</h3>
-                            <div className="flex flex-wrap gap-2">
-                                {profile.genres.map(genre => (
-                                    <span key={genre} className="bg-primary/10 text-primary text-xs px-3 py-1 rounded-full border border-primary/30">
-                                        {genre}
-                                    </span>
-                                ))}
-                            </div>
-                        </div>
-                    )}
-                </div>
-
-                {/* Right Column: Videos / Portfolio */}
-                <div className="md:col-span-2 space-y-4">
-                    {/* Tabs */}
-                    <div className="flex items-center gap-1 border-b border-border">
-                        <button
-                            onClick={() => setActiveTab('videos')}
-                            className={`flex items-center gap-2 px-6 py-3 font-medium text-sm transition-colors relative
-                                ${activeTab === 'videos'
-                                    ? 'text-foreground'
-                                    : 'text-muted-foreground hover:text-foreground'
-                                }`}
-                        >
-                            <Film className="h-4 w-4" />
-                            Videos
-                            {activeTab === 'videos' && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-                            )}
-                        </button>
-                        <button
-                            onClick={() => setActiveTab('portfolio')}
-                            className={`flex items-center gap-2 px-6 py-3 font-medium text-sm transition-colors relative
-                                ${activeTab === 'portfolio'
-                                    ? 'text-foreground'
-                                    : 'text-muted-foreground hover:text-foreground'
-                                }`}
-                        >
-                            <Grid3X3 className="h-4 w-4" />
-                            Portfolio
-                            {activeTab === 'portfolio' && (
-                                <div className="absolute bottom-0 left-0 right-0 h-0.5 bg-primary" />
-                            )}
-                        </button>
-                    </div>
-
-                    {/* Videos Grid - Estilo Instagram/TikTok */}
-                    {activeTab === 'videos' && (
-                        <div className="grid grid-cols-3 gap-1">
-                            {userReels.map((reel) => (
-                                <button
-                                    key={reel.id}
-                                    onClick={() => handleOpenReel(reel)}
-                                    className="aspect-[9/16] bg-card rounded-lg overflow-hidden relative group"
-                                >
-                                    <img
-                                        src={reel.mediaType === 'video' ? reel.posterUrl : reel.mediaUrl}
-                                        alt={reel.caption}
-                                        className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
-                                    />
-
-                                    {/* Overlay */}
-                                    <div className="absolute inset-0 bg-black/30 group-hover:bg-black/10 transition-colors" />
-
-                                    {/* Play icon */}
-                                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
-                                        <div className="p-3 bg-white/20 backdrop-blur-sm rounded-full">
-                                            <Play className="h-6 w-6 text-white fill-white" />
-                                        </div>
-                                    </div>
-
-                                    {reel.mediaType === 'video' && (
-                                        <Play className="absolute top-2 right-2 h-4 w-4 text-white fill-white drop-shadow" />
-                                    )}
-                                </button>
-                            ))}
-
-                            {/* Empty state */}
-                            {userReels.length === 0 && (
-                                <div className="col-span-3 py-16 text-center">
-                                    <Film className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-                                    <p className="text-muted-foreground">Todavía no ha publicado nada</p>
-                                </div>
-                            )}
-                        </div>
-                    )}
-
-                    {/* Portfolio Grid */}
-                    {activeTab === 'portfolio' && (
-                        <div className="grid grid-cols-2 gap-4">
-                            {[1, 2, 3, 4].map(i => (
-                                <div key={i} className="aspect-video bg-card rounded-xl border border-border flex items-center justify-center relative group overflow-hidden">
-                                    <div className="absolute inset-0 bg-foreground/5 group-hover:bg-transparent transition-all" />
-                                    <Music className="h-8 w-8 text-muted-foreground/30 group-hover:text-muted-foreground transition-colors" />
-                                    <span className="absolute bottom-2 left-2 text-xs font-bold text-foreground opacity-0 group-hover:opacity-100 transition-opacity">Demo Track {i}</span>
-                                </div>
-                            ))}
-                        </div>
-                    )}
-                </div>
+                ))}
             </div>
+        </div>
+    );
+}
+
+function Empty({ icon: Icon, text }: { icon: React.ElementType; text: string }) {
+    return (
+        <div className="py-10 text-center">
+            <Icon className="h-8 w-8 mx-auto text-muted-foreground" strokeWidth={1.5} />
+            <p className="mt-2 text-[14px] text-muted-foreground px-6">{text}</p>
         </div>
     );
 }

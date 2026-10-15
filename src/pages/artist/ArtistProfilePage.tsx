@@ -200,14 +200,20 @@ export default function ArtistProfilePage() {
                             </div>
                             <div className="flex flex-wrap items-center gap-4 text-muted-foreground text-sm">
                                 <span className="flex items-center gap-1">
-                                    <MapPin size={16} /> {artist.city}, {artist.country}
+                                    <MapPin size={16} /> {[artist.city, artist.country].filter(Boolean).join(', ')}
                                 </span>
-                                <span className="flex items-center gap-1">
-                                    <Star size={16} className="text-primary" /> {artist.rating} ({artist.reviewCount} reseñas)
-                                </span>
-                                <span className="flex items-center gap-1">
-                                    <Music size={16} /> {artist.gigsCompleted} actuaciones
-                                </span>
+                                {artist.reviewCount > 0 ? (
+                                    <span className="flex items-center gap-1">
+                                        <Star size={16} className="text-primary" /> {artist.rating} ({artist.reviewCount} reseñas)
+                                    </span>
+                                ) : (
+                                    <span className="flex items-center gap-1">Nuevo en Musikeeo</span>
+                                )}
+                                {artist.gigsCompleted > 0 && (
+                                    <span className="flex items-center gap-1">
+                                        <Music size={16} /> {artist.gigsCompleted} actuaciones
+                                    </span>
+                                )}
                             </div>
                         </div>
 
