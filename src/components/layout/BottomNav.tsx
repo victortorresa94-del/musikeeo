@@ -61,7 +61,7 @@ export const BottomNav = () => {
 
         {user && (
           <Link
-            to="/panel"
+            to="/profile"
             aria-current={profileActive ? 'page' : undefined}
             aria-label="Tu perfil"
             className="flex flex-1 flex-col items-center justify-center gap-[3px] active:opacity-60 transition-opacity"

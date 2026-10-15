@@ -28,7 +28,7 @@ const NAV_ITEMS: NavItem[] = [
 ];
 // La home solo se enseña a quien no tiene cuenta; con cuenta, «Mi perfil»
 const GUEST_ITEMS: NavItem[] = [{ icon: Home, label: 'Inicio', path: '/home' }, ...NAV_ITEMS];
-const USER_ITEMS: NavItem[] = [...NAV_ITEMS, { icon: User, label: 'Mi perfil', path: '/panel' }];
+const USER_ITEMS: NavItem[] = [...NAV_ITEMS, { icon: User, label: 'Mi perfil', path: '/profile' }];
 
 export const Sidebar = () => {
   const { user, userProfile, logout } = useAuth();
@@ -108,7 +108,7 @@ export const Sidebar = () => {
       <div className="border-t border-border mx-2 mb-2 mt-auto">
         <div className="bg-background rounded-xl p-3 mt-2">
           {/* User info */}
-          <NavLink to="/panel" className="flex items-center gap-2.5 mb-3 group overflow-hidden">
+          <NavLink to="/profile" className="flex items-center gap-2.5 mb-3 group overflow-hidden">
             <div className="h-8 w-8 rounded-full bg-gradient-to-br from-primary/70 to-primary/40 flex items-center justify-center flex-shrink-0">
               {user?.photoURL ? (
                 <img

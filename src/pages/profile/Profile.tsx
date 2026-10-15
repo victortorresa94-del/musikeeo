@@ -1,535 +1,262 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { MapPin, Star, Play, Share2, ArrowLeft, Music, ShieldCheck, Camera, Plus, X, Edit3, Save } from 'lucide-react';
-import { Button } from '../../components/ui/button';
-import { Badge } from '../../components/ui/badge';
-import { Card, CardContent } from '../../components/ui/card';
-import { Input } from '../../components/ui/input';
-import { Textarea } from '../../components/ui/textarea';
+import { useEffect, useState } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { collection, getDocs, limit, query, where } from 'firebase/firestore';
+import {
+    MapPin, Share2, Pencil, MessageCircle, CalendarDays, Settings, LogOut, ChevronRight,
+    Image as ImageIcon, ShoppingBag, Plus, Eye, Sparkles,
+} from 'lucide-react';
+import { toast } from 'sonner';
+import { db } from '../../lib/firebase';
+import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
-import { getArtistByUserId, createArtist, updateArtist } from '../../services/artistService';
-import { type Artist } from '../../types';
+import { getArtistByUserId } from '../../services/artistService';
+import { getProviderByUserId } from '../../services/providerService';
+import { eventService } from '../../services/eventService';
+import type { Artist, Event, Listing, ProviderProfile, UserMode } from '../../types';
 
-import { useNavigate } from 'react-router-dom';
-import { type Reel } from '../../types/reels';
-import { getReelsByUser } from '../../services/reelsData';
+const ROLE_LABEL: Record<UserMode, string> = {
+    musician: 'Músico · Banda',
+    organizer: 'Sala · Promotor',
+    provider: 'Técnico · Empresa de sonido',
+};
+
+// Dónde se edita el perfil de cada rol (el panel)
+const EDIT_PATH: Record<UserMode, string> = {
+    musician: '/panel/perfil',
+    organizer: '/panel/perfil-organizador',
+    provider: '/panel/perfil-tecnico',
+};
+
+const priceOf = (l: Listing) =>
+    l.type === 'prestamo' ? 'Préstamo' : `${l.price} €${l.type === 'alquiler' && l.priceUnit ? `/${l.priceUnit}` : ''}`;
+
+const dateOf = (iso: string) => {
+    const d = new Date(iso);
+    return isNaN(d.getTime()) ? '' : d.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' });
+};
 
 export default function Profile() {
-    const { user, userProfile } = useAuth();
+    const { user, userProfile, logout } = useAuth();
     const navigate = useNavigate();
-
-    // State for interactive uploads & Edit Mode
-    const [isEditing, setIsEditing] = useState(false);
-    const [avatar, setAvatar] = useState<string>(user?.photoURL || "/avatar.png");
-    const [cover, setCover] = useState<string>("/cover.png");
-    const [isLoading, setIsLoading] = useState(false);
-    const [artistId, setArtistId] = useState<string | null>(null);
-
-
-    // Profile Data State
-    const [profile, setProfile] = useState({
-        name: user?.displayName || "Tu Nombre",
-        role: "Músico",
-        location: "Madrid, Spain",
-        about: "Cuéntanos sobre ti...",
-        stats: {
-            gigs: 0,
-            rating: 0,
-            reviews: 0
-        },
-        trustScore: 80,
-        skills: [] as string[],
-        genres: [] as string[],
-        isPublic: false
-    });
+    const [artist, setArtist] = useState<Artist | null>(null);
+    const [provider, setProvider] = useState<ProviderProfile | null>(null);
+    const [listings, setListings] = useState<Listing[]>([]);
+    const [events, setEvents] = useState<Event[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [tab, setTab] = useState<'anuncios' | 'bolos'>('anuncios');
+    const [photoBroken, setPhotoBroken] = useState(false);
 
     useEffect(() => {
-        const loadProfile = async () => {
-            if (user?.uid) {
-                setIsLoading(true);
-                try {
-                    const artistData = await getArtistByUserId(user.uid);
-
-                    if (artistData) {
-                        setArtistId(artistData.id);
-                        setProfile(prev => ({
-                            ...prev,
-                            name: artistData.artistName || user.displayName || prev.name,
-                            role: "Músico", // Fixed for now
-                            location: artistData.city || prev.location,
-                            about: artistData.bio || prev.about,
-                            skills: artistData.tags || prev.skills,
-                            genres: artistData.genres || prev.genres,
-                            stats: {
-                                gigs: artistData.gigsCompleted,
-                                rating: artistData.rating,
-                                reviews: artistData.reviewCount
-                            }
-                        }));
-                        if (artistData.profilePhoto) setAvatar(artistData.profilePhoto);
-                        if (artistData.coverPhoto) setCover(artistData.coverPhoto);
-                        setProfile(prev => ({ ...prev, isPublic: artistData.isPublic }));
-                    } else {
-                        // Initialize empty state if no profile yet
-                        if (userProfile) {
-                            setProfile(prev => ({
-                                ...prev,
-                                name: userProfile.displayName || prev.name
-                            }));
-                        }
-                    }
-                } catch (error) {
-                    console.error("Failed to load profile", error);
-                } finally {
-                    setIsLoading(false);
-                }
+        if (!user) return;
+        let cancelled = false;
+        (async () => {
+            const [a, p, l, e] = await Promise.allSettled([
+                getArtistByUserId(user.uid),
+                getProviderByUserId(user.uid),
+                getDocs(query(collection(db, 'listings'), where('userId', '==', user.uid), limit(30))),
+                eventService.getEventsByOrganizer(user.uid),
+            ]);
+            if (cancelled) return;
+            if (a.status === 'fulfilled') setArtist(a.value);
+            if (p.status === 'fulfilled') setProvider(p.value);
+            if (l.status === 'fulfilled') {
+                const list = l.value.docs.map(d => ({ id: d.id, ...d.data() }) as Listing);
+                list.sort((x, y) => String(y.createdAt || '').localeCompare(String(x.createdAt || '')));
+                setListings(list);
             }
-        };
-        loadProfile();
-    }, [user, userProfile]);
-
-    const [userReels, setUserReels] = useState<Reel[]>([]);
-
-    useEffect(() => {
-        // Cargar reels del usuario (usando 'user_1' como fallback para demo si el usuario es 'lucas@example.com' o similar)
-        // En un caso real usariamos user.uid
-        const userIdToLoad = user?.uid || 'user_1';
-        // Para la demo, forzamos cargar los reels de 'user_1' (Lucas) si somos nosotros, para ver el ejemplo
-        // O mejor: si el usuario tiene reels en mock data, cargarlos.
-        const reels = getReelsByUser(userIdToLoad);
-        if (reels.length > 0) {
-            setUserReels(reels);
-        } else {
-            // Fallback to Lucas Guitar reels for demo purposes if current user has none
-            setUserReels(getReelsByUser('user_1'));
-        }
+            if (e.status === 'fulfilled') {
+                const list = [...e.value].sort((x, y) => String(y.date || '').localeCompare(String(x.date || '')));
+                setEvents(list);
+                if (list.length > 0 && (l.status !== 'fulfilled' || l.value.empty)) setTab('bolos');
+            }
+            setLoading(false);
+        })();
+        return () => { cancelled = true; };
     }, [user]);
 
-    // Refs for file inputs
-    const avatarInputRef = useRef<HTMLInputElement>(null);
-    const coverInputRef = useRef<HTMLInputElement>(null);
-    const galleryInputRef = useRef<HTMLInputElement>(null);
+    if (!user || !userProfile) return null;
 
-    // Mock Data for Gigs (Read-only for now)
-    const gigs = [
-        { id: 1, title: "Jazz Night at Café Central", role: "Solo Guitarist", date: "Hace 2 semanas", rating: 5.0 },
-        { id: 2, title: "Wedding Ceremony", role: "Accompanist", date: "Hace 1 mes", rating: 5.0 },
-        { id: 3, title: "Corporate Event", role: "Background Music", date: "Hace 1.5 meses", rating: 4.8 }
-    ];
+    const mode: UserMode = userProfile.primaryMode || 'musician';
+    const name = artist?.artistName || provider?.businessName || userProfile.displayName || user.displayName || 'Tu perfil';
+    const photo = photoBroken ? '' : (artist?.profilePhoto || userProfile.photoURL || user.photoURL || '');
+    const location = artist?.city || userProfile.location || '';
+    const bio = artist?.bio || userProfile.bio || '';
+    const genres = artist?.genres?.length ? artist.genres : (userProfile.genres || []);
+    const publicPath = artist?.slug ? `/artist/${artist.slug}` : `/profile/${user.uid}`;
+    const needsArtist = mode === 'musician' && !artist;
+    const needsProvider = mode === 'provider' && !provider;
 
-    const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>, type: 'avatar' | 'cover' | 'gallery') => {
-        const file = event.target.files?.[0];
-        if (file) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                const result = e.target?.result as string;
-                if (type === 'avatar') setAvatar(result);
-                if (type === 'cover') setCover(result);
-                // Gallery upload disabled temporarily as we moved to Reels
-                // if (type === 'gallery') ...
-            };
-            reader.readAsDataURL(file);
-        }
+    const share = async () => {
+        const url = `${window.location.origin}${publicPath}`;
+        try {
+            if (navigator.share) await navigator.share({ title: `${name} en Musikeeo`, url });
+            else { await navigator.clipboard.writeText(url); toast.success('Enlace copiado'); }
+        } catch { /* el usuario canceló */ }
     };
 
-    const toggleEditMode = async () => {
-        if (isEditing && user?.uid) {
-            // Saving...
-            setIsLoading(true);
-            try {
-                const artistData: Partial<Artist> = {
-                    artistName: profile.name,
-                    city: profile.location,
-                    bio: profile.about,
-                    tags: profile.skills,
-                    genres: profile.genres,
-                    profilePhoto: avatar,
-                    coverPhoto: cover,
-                    isPublic: profile.isPublic
-                };
-
-                if (artistId) {
-                    await updateArtist(artistId, artistData);
-                } else {
-                    const newArtist = await createArtist(user.uid, artistData);
-                    setArtistId(newArtist.id);
-                }
-            } catch (error) {
-                console.error("Failed to save profile", error);
-            } finally {
-                setIsLoading(false);
-            }
-        }
-        setIsEditing(!isEditing);
+    const handleLogout = async () => {
+        await logout();
+        navigate('/home', { replace: true });
     };
-
-    const handleClipClick = (reelId: string) => {
-        navigate(`/reels/${reelId}`, {
-            state: {
-                source: 'profile',
-                userId: user?.uid || 'user_1', // Para que el viewer sepa qué lista cargar
-                from: '/profile'
-            }
-        });
-    };
-
-    // Video navigation functions removed as we use Reels viewer now
-
-    // Loading State
-    if (isLoading && !isEditing) { // Don't show full screen loader if just saving
-        return (
-            <div className="flex items-center justify-center min-h-screen bg-background/90">
-                <div className="animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-primary"></div>
-            </div>
-        );
-    }
 
     return (
-        <div className="min-h-screen bg-background text-foreground pb-32 font-sans overflow-x-hidden selection:bg-primary/30">
-            {/* Hidden File Inputs */}
-            <input type="file" ref={avatarInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'avatar')} />
-            <input type="file" ref={coverInputRef} className="hidden" accept="image/*" onChange={(e) => handleFileChange(e, 'cover')} />
-            <input type="file" ref={galleryInputRef} className="hidden" accept="image/*,video/*" onChange={(e) => handleFileChange(e, 'gallery')} />
-
-            {/* 1. Header / Cover Section */}
-            <header className="relative w-full h-[320px]">
-                {/* Background Image - REMOVED BLUR per request */}
-                <div
-                    className="absolute inset-0 bg-cover bg-center transition-all duration-500"
-                    style={{ backgroundImage: `url("${cover}")` }}
-                >
-                    <div className="absolute inset-0 bg-background/20 bg-gradient-to-t from-background via-transparent to-transparent"></div>
-                </div>
-
-                {/* Edit Cover Button (Visible in Edit Mode) */}
-                {isEditing && (
-                    <button
-                        onClick={() => coverInputRef.current?.click()}
-                        className="absolute top-20 right-4 z-30 bg-black/60 hover:bg-black/80 text-white p-3 rounded-full backdrop-blur-md transition-colors border border-white/20 shadow-lg"
-                    >
-                        <Camera className="w-5 h-5" />
-                    </button>
-                )}
-
-                {/* Top Nav Actions */}
-                <div className="absolute top-4 left-0 right-0 px-4 flex justify-between items-center z-20">
-                    <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted rounded-full bg-black/20 backdrop-blur-md">
-                        <ArrowLeft className="h-6 w-6" />
-                    </Button>
-                    <div className="flex gap-2">
-                        <Button variant="ghost" size="icon" className="text-foreground hover:bg-muted rounded-full bg-black/20 backdrop-blur-md">
-                            <Share2 className="h-6 w-6" />
-                        </Button>
-                    </div>
-                </div>
-
-                {/* Avatar Layer - Overlapping Bottom Left */}
-                <div className="absolute -bottom-16 left-6 z-20">
-                    <div className="relative group">
-                        <motion.img
-                            initial={{ scale: 0.9, opacity: 0 }}
-                            animate={{ scale: 1, opacity: 1 }}
-                            src={avatar}
-                            alt={profile.name}
-                            className={`w-36 h-36 rounded-full border-4 border-background shadow-2xl object-cover bg-card ${isEditing ? 'brightness-75' : ''}`}
-                        />
-                        {/* Edit Avatar Overlay */}
-                        {isEditing && (
-                            <div
-                                onClick={() => avatarInputRef.current?.click()}
-                                className="absolute inset-0 rounded-full flex items-center justify-center cursor-pointer bg-black/30 hover:bg-black/50 transition-colors border-4 border-transparent"
-                            >
-                                <Camera className="w-10 h-10 text-white drop-shadow-md" />
-                            </div>
-                        )}
-                    </div>
-                </div>
-            </header>
-
-            {/* Main Content Container */}
-            <main className="px-6 pt-20 max-w-5xl mx-auto space-y-8">
-
-                {/* Identity Section */}
-                <div className="flex flex-col items-start gap-2">
-                    <div className="flex flex-col w-full gap-1">
-                        {isEditing ? (
-                            <Input
-                                value={profile.name}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfile({ ...profile, name: e.target.value })}
-                                className="text-3xl font-bold bg-card border-border text-foreground h-12"
-                                placeholder="Nombre Artístico"
-                            />
-                        ) : (
-                            <div className="flex items-center gap-3">
-                                <h1 className="text-3xl font-bold tracking-tight text-foreground">{profile.name}</h1>
-                                <Badge className="bg-card text-primary border border-primary/30 px-2 py-0.5 text-[10px] h-5 gap-1">
-                                    <ShieldCheck className="w-3 h-3" /> TrustScore {profile.trustScore}
-                                </Badge>
-                            </div>
-                        )}
-                    </div>
-
-                    {isEditing ? (
-                        <Input
-                            value={profile.role}
-                            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfile({ ...profile, role: e.target.value })}
-                            className="bg-card border-border text-muted-foreground"
-                            placeholder="Rol Principal"
-                        />
-                    ) : (
-                        <h2 className="text-base text-muted-foreground font-medium">{profile.role}</h2>
-                    )}
-
-                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="w-4 h-4 text-primary" />
-                        {isEditing ? (
-                            <Input
-                                value={profile.location}
-                                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setProfile({ ...profile, location: e.target.value })}
-                                className="bg-card border-border text-muted-foreground h-8 text-sm"
-                                placeholder="Ubicación"
-                            />
-                        ) : (
-                            profile.location
-                        )}
-                    </div>
-
-                    {isEditing ? (
-                        <Textarea
-                            value={profile.about}
-                            onChange={(e: React.ChangeEvent<HTMLTextAreaElement>) => setProfile({ ...profile, about: e.target.value })}
-                            className="bg-card border-border text-foreground mt-4 min-h-[100px]"
-                            placeholder="Sobre mí..."
-                        />
-                    ) : (
-                        <p className="text-muted-foreground leading-relaxed text-sm mt-4 max-w-2xl">
-                            {profile.about}
+        <div className="max-w-2xl mx-auto px-4 pt-4 pb-10">
+            {/* Cabecera */}
+            <div className="flex items-center gap-4">
+                <span className="h-[84px] w-[84px] shrink-0 rounded-full overflow-hidden bg-white/10 flex items-center justify-center text-3xl font-bold text-foreground">
+                    {photo
+                        ? <img src={photo} alt="" onError={() => setPhotoBroken(true)} className="h-full w-full object-cover" />
+                        : name.slice(0, 1).toUpperCase()}
+                </span>
+                <div className="min-w-0 flex-1">
+                    <h1 className="font-heading font-bold text-[24px] leading-tight text-foreground line-clamp-2 break-words">{name}</h1>
+                    <p className="text-[14px] text-muted-foreground">{ROLE_LABEL[mode]}</p>
+                    {location && (
+                        <p className="mt-0.5 text-[13px] text-muted-foreground flex items-center gap-1">
+                            <MapPin className="h-3.5 w-3.5" /> {location}
                         </p>
                     )}
                 </div>
-
-                {/* 2. Stats Cards */}
-                <div className="grid grid-cols-2 gap-4">
-                    <Card className="bg-card border border-border shadow-md rounded-2xl overflow-hidden">
-                        <CardContent className="p-6 flex flex-col items-start justify-center h-32 relative">
-                            <Music className="absolute -right-4 -bottom-4 w-24 h-24 text-primary/10 rotate-12" />
-                            <div className="flex items-center gap-2 mb-2">
-                                <Music className="w-5 h-5 text-primary" />
-                                <span className="text-xs uppercase tracking-wider text-primary font-bold">Bolos</span>
-                            </div>
-                            <span className="text-4xl font-bold text-foreground">{profile.stats.gigs}</span>
-                            <span className="text-xs text-muted-foreground mt-1">Realizados</span>
-                        </CardContent>
-                    </Card>
-                    <Card className="bg-card border border-border shadow-md rounded-2xl overflow-hidden">
-                        <CardContent className="p-6 flex flex-col items-start justify-center h-32 relative">
-                            <Star className="absolute -right-4 -bottom-4 w-24 h-24 text-primary/10 rotate-12" />
-                            <div className="flex items-center gap-2 mb-2">
-                                <Star className="w-5 h-5 text-primary" />
-                                <span className="text-xs uppercase tracking-wider text-primary font-bold">Reseñas</span>
-                            </div>
-                            <div className="flex flex-col">
-                                <span className="text-4xl font-bold text-foreground">{profile.stats.rating} <span className="text-lg text-muted-foreground font-normal">/5</span></span>
-                                <span className="text-xs text-muted-foreground mt-0.5">{profile.stats.reviews} reviews</span>
-                            </div>
-                        </CardContent>
-                    </Card>
-                </div>
-
-                {/* 3. Skills (Habilidades) */}
-                <section>
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-bold text-foreground flex items-center gap-2">Habilidades</h3>
-                        {isEditing && <Button variant="ghost" size="sm" className="text-primary h-8"><Plus className="w-4 h-4 mr-1" /> Añadir</Button>}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        {profile.skills.map((skill, i) => (
-                            <Badge key={i} className="bg-card hover:bg-card/80 text-foreground border border-border px-4 py-1.5 rounded-full text-sm font-normal relative group">
-                                {skill}
-                                {isEditing && <X className="w-3 h-3 ml-2 cursor-pointer text-red-400 hover:text-red-300" />}
-                            </Badge>
-                        ))}
-                    </div>
-                </section>
-
-                {/* 4. Genres (Géneros) - SEPARATED */}
-                <section>
-                    <div className="flex items-center justify-between mb-3">
-                        <h3 className="text-lg font-bold text-foreground flex items-center gap-2">Géneros</h3>
-                        {isEditing && <Button variant="ghost" size="sm" className="text-primary h-8"><Plus className="w-4 h-4 mr-1" /> Añadir</Button>}
-                    </div>
-                    <div className="flex flex-wrap gap-2">
-                        {profile.genres.map((genre, i) => (
-                            <Badge key={i} className="bg-background hover:bg-background/80 text-muted-foreground border border-border px-4 py-1.5 rounded-full text-sm font-normal relative">
-                                {genre}
-                                {isEditing && <X className="w-3 h-3 ml-2 cursor-pointer text-red-400 hover:text-red-300" />}
-                            </Badge>
-                        ))}
-                    </div>
-                </section>
-
-                {/* 5. Media Gallery */}
-                <section>
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className="text-lg font-bold text-foreground">Clips destacados</h3>
-                        <div className="flex gap-2">
-                            <Button
-                                variant="ghost"
-                                size="sm"
-                                className="text-primary hover:bg-primary/10 px-2 h-8"
-                                onClick={() => galleryInputRef.current?.click()}
-                            >
-                                <Plus className="w-4 h-4 mr-1" /> Añadir
-                            </Button>
-                            <Button variant="link" className="text-primary text-sm h-auto p-0 hover:text-primary/80">Ver todo</Button>
-                        </div>
-                    </div>
-
-                    <div className="flex gap-4 overflow-x-auto pb-4 snap-x [&::-webkit-scrollbar]:hidden [-ms-overflow-style:none] [scrollbar-width:none]">
-                        {userReels.map((reel) => (
-                            <div
-                                key={reel.id}
-                                onClick={() => handleClipClick(reel.id)}
-                                className="relative aspect-[9/16] h-[280px] min-w-[160px] rounded-xl overflow-hidden group cursor-pointer snap-start border border-border bg-card"
-                            >
-                                <img
-                                    src={reel.thumbnailUrl}
-                                    alt={reel.description}
-                                    className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110 opacity-80 group-hover:opacity-100"
-                                />
-                                <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-transparent to-transparent opacity-60 group-hover:opacity-40 transition-opacity" />
-
-                                <div className="absolute inset-0 flex items-center justify-center">
-                                    <div className="w-10 h-10 bg-white/20 backdrop-blur-md rounded-full flex items-center justify-center border border-white/30 group-hover:scale-110 transition-transform">
-                                        <Play className="w-4 h-4 text-white fill-current ml-0.5" />
-                                    </div>
-                                </div>
-
-                                <div className="absolute bottom-3 left-3 right-3">
-                                    <p className="text-white text-xs font-medium line-clamp-2 drop-shadow-md">
-                                        {reel.description}
-                                    </p>
-                                    <div className="flex items-center gap-2 mt-1 text-[10px] text-white/80">
-                                        <span className="flex items-center gap-1"><Play className="w-2 h-2 fill-current" /> {reel.views}</span>
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                        {userReels.length === 0 && (
-                            <div className="flex items-center justify-center w-full h-32 bg-card/50 rounded-xl border border-border text-muted-foreground text-sm">
-                                No tienes clips aún
-                            </div>
-                        )}
-                    </div>
-                </section>
-
-                {/* 6. TrustScore */}
-                <section className="bg-card rounded-2xl p-6 relative overflow-hidden">
-                    <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full blur-3xl -mr-10 -mt-10"></div>
-                    <div className="flex items-center justify-between mb-2">
-                        <div className="flex items-center gap-2">
-                            <ShieldCheck className="w-5 h-5 text-primary" />
-                            <h3 className="font-bold text-foreground">TrustScore Pro</h3>
-                        </div>
-                        <span className="text-2xl font-bold text-primary">{profile.trustScore}<span className="text-sm text-muted-foreground font-normal">/100</span></span>
-                    </div>
-                    <div className="w-full bg-muted h-2 rounded-full mb-2 overflow-hidden">
-                        <motion.div
-                            initial={{ width: 0 }}
-                            whileInView={{ width: '98%' }}
-                            viewport={{ once: true }}
-                            className="bg-gradient-to-r from-primary to-primary/70 h-full rounded-full"
-                        />
-                    </div>
-                    <p className="text-xs text-muted-foreground">Basado en 24 bolos verificados, tiempo de respuesta y valoraciones de clientes.</p>
-                </section>
-
-                {/* 7. Gig History */}
-                <section className="space-y-4 pb-24">
-                    <div className="flex items-center justify-between">
-                        <h3 className="text-lg font-bold text-foreground">Historial reciente</h3>
-                        <Button variant="link" className="text-primary text-sm h-auto p-0 hover:text-primary/80">Ver completo</Button>
-                    </div>
-
-                    <div className="space-y-3">
-                        {gigs.map((gig) => (
-                            <div key={gig.id} className="bg-card p-3 rounded-xl flex items-center justify-between hover:bg-card/80 transition-colors cursor-default border border-border">
-                                <div className="flex items-center gap-3">
-                                    <img
-                                        src="/avatar.png"
-                                        alt="Gig"
-                                        className="w-12 h-12 rounded-lg object-cover bg-muted"
-                                    />
-                                    <div>
-                                        <h4 className="font-bold text-foreground text-sm">{gig.title}</h4>
-                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
-                                            <span>{gig.role}</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex flex-col items-end gap-1">
-                                    <span className="text-[10px] text-muted-foreground">{gig.date}</span>
-                                    <div className="flex items-center gap-1 text-primary text-xs font-bold">
-                                        <Star className="w-3 h-3 fill-current" /> {gig.rating}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </section>
-            </main>
-
-            {/* Video Player Modal is removed as we navigate to dedicated Reels page */}
-
-            {/* Fixed CTA (Hidden in Edit Mode) */}
-            {/* Fixed CTA for Owner */}
-            <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-full max-w-md px-4 z-40">
-                <Button
-                    onClick={async () => {
-                        if (!profile.isPublic) {
-                            // Publish First Time
-                            setIsLoading(true);
-                            try {
-                                if (artistId) {
-                                    await updateArtist(artistId, { isPublic: true });
-                                    setProfile(prev => ({ ...prev, isPublic: true }));
-                                    // Could show success toast here
-                                }
-                            } finally {
-                                setIsLoading(false);
-                            }
-                        } else {
-                            // Update (Toggle Edit Mode)
-                            toggleEditMode();
-                        }
-                    }}
-                    className={`w-full h-14 rounded-2xl font-bold text-lg flex items-center justify-center gap-2 transition-all ring-1 ring-border active:scale-[0.98]
-                        ${isEditing
-                            ? "bg-green-500 hover:bg-green-600 text-white shadow-[0_4px_20px_rgba(34,197,94,0.5)]"
-                            : !profile.isPublic
-                                ? "bg-primary hover:bg-primary/90 text-background shadow-[0_4px_20px_rgba(130,255,31,0.3)]"
-                                : "bg-card border border-border text-foreground hover:bg-muted"
-                        }
-                    `}
-                >
-                    {isEditing ? (
-                        <>
-                            <Save className="w-5 h-5" />
-                            Guardar Cambios
-                        </>
-                    ) : !profile.isPublic ? (
-                        <>
-                            <Play className="w-5 h-5 fill-current" />
-                            Publicar mi perfil
-                        </>
-                    ) : (
-                        <>
-                            <Edit3 className="w-5 h-5" />
-                            Actualizar mi perfil
-                        </>
-                    )}
-                </Button>
             </div>
+
+            {bio && <p className="mt-4 text-[15px] leading-relaxed text-foreground/90 whitespace-pre-line">{bio}</p>}
+            {genres.length > 0 && (
+                <div className="mt-3 flex flex-wrap gap-1.5">
+                    {genres.slice(0, 6).map(g => (
+                        <span key={g} className="px-2.5 py-1 rounded-full bg-white/[0.07] text-[12px] text-foreground/80">{g}</span>
+                    ))}
+                </div>
+            )}
+
+            {/* Acciones */}
+            <div className="mt-5 grid grid-cols-[1fr_1fr_auto] gap-2">
+                <Link to={EDIT_PATH[mode]} className="h-9 rounded-full bg-white/[0.09] text-foreground text-[14px] font-semibold flex items-center justify-center gap-1.5 active:opacity-70">
+                    <Pencil className="h-4 w-4" /> Editar perfil
+                </Link>
+                <Link to={publicPath} className="h-9 rounded-full bg-white/[0.09] text-foreground text-[14px] font-semibold flex items-center justify-center gap-1.5 active:opacity-70">
+                    <Eye className="h-4 w-4" /> Ver como público
+                </Link>
+                <button onClick={share} aria-label="Compartir perfil" className="h-9 w-9 rounded-full bg-white/[0.09] text-foreground flex items-center justify-center active:opacity-70">
+                    <Share2 className="h-4 w-4" />
+                </button>
+            </div>
+
+            {/* Perfil público pendiente: la acción principal de la pantalla */}
+            {(needsArtist || needsProvider) && (
+                <div className="mt-5 rounded-2xl bg-white/[0.05] border border-white/[0.08] p-4">
+                    <p className="font-semibold text-foreground flex items-center gap-2">
+                        <Sparkles className="h-4 w-4 text-primary" />
+                        {needsArtist ? 'Aún no apareces en Explorar' : 'Tu empresa aún no aparece en Técnicos'}
+                    </p>
+                    <p className="mt-1 text-[14px] text-muted-foreground">
+                        {needsArtist
+                            ? 'Crea tu perfil de artista con fotos, vídeos y precio para que te encuentren y te contraten.'
+                            : 'Crea tu ficha con servicios y zona para que te escriban salas y bandas.'}
+                    </p>
+                    <Link to={EDIT_PATH[mode]} className="mt-3 h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] flex items-center justify-center active:opacity-80">
+                        {needsArtist ? 'Crear mi perfil de artista' : 'Crear mi ficha'}
+                    </Link>
+                </div>
+            )}
+
+            {/* Lo que he publicado */}
+            <div className="mt-7 flex p-0.5 rounded-[10px] bg-white/[0.07]">
+                {([['anuncios', `Anuncios · ${listings.length}`], ['bolos', `Bolos · ${events.length}`]] as const).map(([key, label]) => (
+                    <button
+                        key={key}
+                        onClick={() => setTab(key)}
+                        className={cn('flex-1 h-8 rounded-[8px] text-[13px] font-semibold transition-colors',
+                            tab === key ? 'bg-foreground text-background' : 'text-muted-foreground')}
+                    >
+                        {label}
+                    </button>
+                ))}
+            </div>
+
+            <div className="mt-3">
+                {loading && (
+                    <div className="grid grid-cols-2 gap-2">
+                        {[0, 1].map(i => <div key={i} className="aspect-[4/5] rounded-2xl bg-white/[0.06] animate-pulse" />)}
+                    </div>
+                )}
+
+                {!loading && tab === 'anuncios' && (listings.length === 0 ? (
+                    <Empty icon={ShoppingBag} text="No tienes anuncios. Vende, alquila o presta tu equipo." cta="Publicar anuncio" to="/market/create" />
+                ) : (
+                    <div className="grid grid-cols-2 gap-2">
+                        {listings.map(l => (
+                            <Link key={l.id} to={`/market/${l.id}`} className="rounded-2xl overflow-hidden bg-white/[0.05] active:opacity-80">
+                                <div className="aspect-square bg-white/[0.05] relative">
+                                    {l.images?.[0]
+                                        ? <img src={l.images[0]} alt="" loading="lazy" className="h-full w-full object-cover" />
+                                        : <ImageIcon className="h-6 w-6 text-muted-foreground absolute inset-0 m-auto" />}
+                                    {!l.available && <span className="absolute top-2 left-2 px-2 py-0.5 rounded-full bg-black/70 text-[11px] font-semibold">No disponible</span>}
+                                </div>
+                                <div className="p-2.5">
+                                    <p className="text-[13px] font-semibold text-foreground line-clamp-1">{l.title}</p>
+                                    <p className="text-[13px] text-muted-foreground">{priceOf(l)}</p>
+                                </div>
+                            </Link>
+                        ))}
+                        <Link to="/market/create" className="rounded-2xl border border-dashed border-white/15 flex flex-col items-center justify-center gap-1 text-muted-foreground text-[13px] min-h-[180px] active:opacity-70">
+                            <Plus className="h-5 w-5" /> Nuevo anuncio
+                        </Link>
+                    </div>
+                ))}
+
+                {!loading && tab === 'bolos' && (events.length === 0 ? (
+                    <Empty icon={CalendarDays} text="No has publicado bolos. ¿Buscas banda, DJ o técnico para una fecha?" cta="Publicar bolo" to="/publicar" />
+                ) : (
+                    <div className="space-y-2">
+                        {events.map(ev => (
+                            <Link key={ev.id} to={`/eventos/${ev.id}`} className="flex gap-3 p-2 rounded-2xl bg-white/[0.05] active:opacity-80">
+                                <span className="h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-white/[0.06]">
+                                    {ev.imageUrl && <img src={ev.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />}
+                                </span>
+                                <span className="min-w-0 flex-1 py-0.5">
+                                    <span className="block text-[14px] font-semibold text-foreground line-clamp-1">{ev.title}</span>
+                                    <span className="block text-[13px] text-muted-foreground line-clamp-1">{[dateOf(ev.date), ev.location].filter(Boolean).join(' · ')}</span>
+                                </span>
+                                <ChevronRight className="h-4 w-4 self-center text-muted-foreground" />
+                            </Link>
+                        ))}
+                        <Link to="/publicar" className="h-11 rounded-2xl border border-dashed border-white/15 flex items-center justify-center gap-1 text-muted-foreground text-[13px] active:opacity-70">
+                            <Plus className="h-4 w-4" /> Nuevo bolo
+                        </Link>
+                    </div>
+                ))}
+            </div>
+
+            {/* Accesos */}
+            <div className="mt-8 rounded-2xl bg-white/[0.05] divide-y divide-white/[0.06] overflow-hidden">
+                <Row to="/messages" icon={MessageCircle} label="Mensajes" />
+                <Row to="/panel/calendario" icon={CalendarDays} label="Calendario y disponibilidad" />
+                {mode === 'musician' && <Row to="/panel/multimedia" icon={ImageIcon} label="Fotos y vídeos" />}
+                <Row to="/panel/ajustes" icon={Settings} label="Ajustes de la cuenta" />
+            </div>
+            <button onClick={handleLogout} className="mt-3 w-full h-12 rounded-2xl bg-white/[0.05] text-red-400 text-[15px] font-semibold flex items-center justify-center gap-2 active:opacity-70">
+                <LogOut className="h-4 w-4" /> Cerrar sesión
+            </button>
+        </div>
+    );
+}
+
+function Row({ to, icon: Icon, label }: { to: string; icon: React.ElementType; label: string }) {
+    return (
+        <Link to={to} className="flex items-center gap-3 px-4 h-12 active:bg-white/[0.06]">
+            <Icon className="h-[18px] w-[18px] text-muted-foreground" />
+            <span className="flex-1 text-[15px] text-foreground">{label}</span>
+            <ChevronRight className="h-4 w-4 text-muted-foreground" />
+        </Link>
+    );
+}
+
+function Empty({ icon: Icon, text, cta, to }: { icon: React.ElementType; text: string; cta: string; to: string }) {
+    return (
+        <div className="py-8 text-center">
+            <Icon className="h-8 w-8 mx-auto text-muted-foreground" strokeWidth={1.5} />
+            <p className="mt-2 text-[14px] text-muted-foreground px-6">{text}</p>
+            <Link to={to} className="mt-4 inline-flex h-9 px-4 rounded-full bg-foreground text-background text-[14px] font-semibold items-center">{cta}</Link>
         </div>
     );
 }
