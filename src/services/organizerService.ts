@@ -42,13 +42,14 @@ export async function createOrganizer(userId: string, data: Partial<EventCreator
         id: organizerId,
         userId,
         displayName: data.displayName || 'Nuevo Organizador',
-        companyName: data.companyName,
         isPublic: true,
         createdAt: new Date().toISOString(),
         ...data
     };
 
-    await setDoc(doc(db, ORGANIZERS_COLLECTION, organizerId), organizer);
+    // Firestore rechaza campos undefined (p. ej. companyName vacío)
+    const clean = Object.fromEntries(Object.entries(organizer).filter(([, v]) => v !== undefined));
+    await setDoc(doc(db, ORGANIZERS_COLLECTION, organizerId), clean);
     return organizer;
 }
 
@@ -58,9 +59,7 @@ export async function createOrganizer(userId: string, data: Partial<EventCreator
 export async function updateOrganizer(organizerId: string, data: Partial<EventCreatorProfile>): Promise<void> {
     try {
         const organizerRef = doc(db, ORGANIZERS_COLLECTION, organizerId);
-        await updateDoc(organizerRef, {
-            ...data
-        });
+        await updateDoc(organizerRef, Object.fromEntries(Object.entries(data).filter(([, v]) => v !== undefined)));
     } catch (error) {
         console.error('Error updating organizer:', error);
         throw error;

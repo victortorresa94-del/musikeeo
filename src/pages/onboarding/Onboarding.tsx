@@ -74,7 +74,7 @@ export const Onboarding = () => {
     const navigateBasedOnRole = (mode?: UserMode, roleId?: string | null) => {
         if (roleId === 'store') navigate('/market/create');
         else if (mode === 'musician') navigate('/panel/perfil');
-        else if (mode === 'organizer') navigate('/panel/eventos');
+        else if (mode === 'organizer') navigate('/panel/perfil-organizador');
         else if (mode === 'provider') navigate('/panel/servicios-tecnicos');
         else navigate('/home');
     };

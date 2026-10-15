@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { collection, getDocs, limit, query, where } from 'firebase/firestore';
 import {
     MapPin, Share2, Pencil, MessageCircle, CalendarDays, Settings, LogOut, ChevronRight,
@@ -45,7 +45,9 @@ export default function Profile() {
     const [events, setEvents] = useState<Event[]>([]);
     const [posts, setPosts] = useState<Post[]>([]);
     const [loading, setLoading] = useState(true);
-    const [tab, setTab] = useState<'posts' | 'anuncios' | 'bolos'>('posts');
+    const [params] = useSearchParams();
+    const askedTab = params.get('tab');
+    const [tab, setTab] = useState<'posts' | 'anuncios' | 'bolos'>(askedTab === 'bolos' || askedTab === 'anuncios' ? askedTab : 'posts');
     const [photoBroken, setPhotoBroken] = useState(false);
 
     useEffect(() => {
@@ -73,7 +75,7 @@ export default function Profile() {
             const myPosts = ps.status === 'fulfilled' ? ps.value : [];
             setPosts(myPosts);
             // Abre en la pestaña que tenga algo
-            if (myPosts.length === 0) {
+            if (!askedTab && myPosts.length === 0) {
                 if (l.status === 'fulfilled' && !l.value.empty) setTab('anuncios');
                 else if (e.status === 'fulfilled' && e.value.length > 0) setTab('bolos');
             }

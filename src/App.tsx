@@ -39,7 +39,6 @@ const Messages = lazy(() => import('./pages/messages/Messages'));
 const Market = lazy(() => import('./pages/market/Market'));
 const ProductDetail = lazy(() => import('./pages/market/ProductDetail'));
 const CreateListing = lazy(() => import('./pages/market/CreateListing'));
-const Projects = lazy(() => import('./pages/projects/Projects'));
 const Profile = lazy(() => import('./pages/profile/Profile'));
 const PublicProfile = lazy(() => import('./pages/profile/PublicProfile'));
 const Onboarding = lazy(() => import('./pages/onboarding/Onboarding'));
@@ -132,7 +131,7 @@ const PanelGateway = () => {
   // Redirect based on primary mode
   const mode = userProfile?.primaryMode || 'musician';
 
-  if (mode === 'organizer') return <Navigate to="/panel/eventos" replace />;
+  if (mode === 'organizer') return <Navigate to="/panel/perfil-organizador" replace />;
   if (mode === 'provider') return <Navigate to="/panel/servicios-tecnicos" replace />;
 
   // Default to musician
@@ -228,7 +227,6 @@ function App() {
                   <Route path="/messages" element={<Messages />} />
                   <Route path="/market/create" element={<CreateListing />} />
                   <Route path="/eventos/crear" element={<CreateEvent />} />
-                  <Route path="/projects" element={<Projects />} />
                   <Route path="/profile" element={<Profile />} />
                 </Route>
               </Route>
@@ -245,7 +243,8 @@ function App() {
                 <Route path="/panel/servicios" element={<PanelServicesPage />} />
 
                 {/* Organizer Routes */}
-                <Route path="/panel/eventos" element={<EventsV2 />} />
+                {/* «Mis bolos» vive en Mi perfil (antes enseñaba los de todo el mundo) */}
+                <Route path="/panel/eventos" element={<Navigate to="/profile?tab=bolos" replace />} />
                 <Route path="/panel/perfil-organizador" element={<PanelOrganizerProfilePage />} />
 
                 {/* Provider Routes */}
