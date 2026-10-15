@@ -7,7 +7,7 @@ export default function TermsOfService() {
                 Los presentes Términos y condiciones (en adelante, &laquo;los Términos&raquo;)
                 regulan el uso de la plataforma Musikeeo, accesible en
                 <strong> musikeeo.com</strong> (en adelante, &laquo;la Plataforma&raquo;) y
-                propiedad de [TITULAR]. Al registrarte o utilizar la Plataforma aceptas estos
+                propiedad de Víctor Torres Arana. Al registrarte o utilizar la Plataforma aceptas estos
                 Términos en su totalidad.
             </p>
 
@@ -81,7 +81,7 @@ export default function TermsOfService() {
             <h2>7. Propiedad intelectual</h2>
             <p>
                 El software, diseño, marcas y contenidos propios de Musikeeo son titularidad
-                de [TITULAR] y están protegidos por la legislación vigente. El usuario obtiene
+                de Víctor Torres Arana y están protegidos por la legislación vigente. El usuario obtiene
                 una licencia limitada, no exclusiva, intransferible y revocable para usar la
                 Plataforma conforme a estos Términos.
             </p>
@@ -101,7 +101,7 @@ export default function TermsOfService() {
 
             <h2>9. Limitación de responsabilidad</h2>
             <p>
-                En la medida máxima permitida por la ley, [TITULAR] no será responsable de
+                En la medida máxima permitida por la ley, Víctor Torres Arana no será responsable de
                 daños indirectos, consecuenciales, pérdida de oportunidades, datos o beneficios
                 derivados del uso o imposibilidad de uso de la Plataforma, ni de los acuerdos
                 alcanzados entre usuarios.
@@ -110,7 +110,7 @@ export default function TermsOfService() {
             <h2>10. Baja y eliminación de cuenta</h2>
             <p>
                 Puedes solicitar la eliminación de tu cuenta en cualquier momento desde la
-                configuración de tu perfil o escribiendo a [hola@musikeeo.com]. Conservaremos
+                configuración de tu perfil o escribiendo a hola@musikeeo.com. Conservaremos
                 únicamente los datos necesarios para cumplir obligaciones legales.
             </p>
 

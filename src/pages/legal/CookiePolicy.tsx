@@ -42,7 +42,7 @@ export default function CookiePolicy() {
                 configuradas:
             </p>
             <ul>
-                <li>[Vercel Analytics / Google Analytics 4 / Plausible — describe el servicio activo y enlaza a su política].</li>
+                <li><strong>Vercel Web Analytics</strong> — estadísticas agregadas de visitas, sin cookies de seguimiento entre sitios. Política: <a href="https://vercel.com/legal/privacy-policy" target="_blank" rel="noopener noreferrer">vercel.com/legal/privacy-policy</a>.</li>
             </ul>
 
             <h3>Cookies de terceros</h3>

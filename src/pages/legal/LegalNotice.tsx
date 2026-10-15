@@ -12,10 +12,10 @@ export default function LegalNotice() {
 
             <h2>1. Datos del titular</h2>
             <ul>
-                <li><strong>Titular:</strong> [TITULAR — nombre y apellidos o razón social]</li>
-                <li><strong>NIF/CIF:</strong> [NIF/CIF]</li>
-                <li><strong>Domicilio:</strong> [DIRECCIÓN POSTAL COMPLETA, Barcelona, España]</li>
-                <li><strong>Correo electrónico:</strong> [hola@musikeeo.com]</li>
+                <li><strong>Titular:</strong> Víctor Torres Arana</li>
+                <li><strong>NIF/CIF:</strong> 77124685G</li>
+                <li><strong>Domicilio:</strong> Rambla Balmes 27, bajos 4, 08100 Mollet del Vallès (Barcelona), España</li>
+                <li><strong>Correo electrónico:</strong> hola@musikeeo.com</li>
                 <li><strong>Actividad:</strong> Plataforma de intermediación entre músicos, técnicos de sonido, promotores/salas y tiendas de instrumentos.</li>
             </ul>
 
@@ -46,13 +46,13 @@ export default function LegalNotice() {
             <p>
                 Todos los contenidos del Sitio (textos, fotografías, gráficos, imágenes,
                 iconos, tecnología, software, así como su diseño gráfico y códigos fuente),
-                constituyen una obra cuya propiedad pertenece a [TITULAR], sin que puedan
+                constituyen una obra cuya propiedad pertenece a Víctor Torres Arana, sin que puedan
                 entenderse cedidos al usuario ninguno de los derechos de explotación sobre
                 los mismos más allá de lo estrictamente necesario para el correcto uso del Sitio.
             </p>
             <p>
                 Las marcas, nombres comerciales o signos distintivos son titularidad de
-                [TITULAR] o terceros, sin que pueda entenderse que el acceso al Sitio atribuya
+                Víctor Torres Arana o terceros, sin que pueda entenderse que el acceso al Sitio atribuya
                 derecho alguno sobre las citadas marcas, nombres comerciales o signos
                 distintivos.
             </p>
@@ -60,20 +60,20 @@ export default function LegalNotice() {
             <h2>5. Contenido publicado por usuarios</h2>
             <p>
                 El Sitio actúa como prestador de servicios de la sociedad de la información de
-                conformidad con la LSSI-CE. [TITULAR] no es responsable de los contenidos que los
+                conformidad con la LSSI-CE. Víctor Torres Arana no es responsable de los contenidos que los
                 usuarios publiquen (anuncios del marketplace, perfiles, mensajes, etc.). El
                 usuario es el único responsable de la veracidad, legalidad y respeto de
                 derechos de terceros de los contenidos que aporte.
             </p>
             <p>
                 Si un usuario detecta contenidos ilícitos o que infrinjan derechos, puede
-                comunicarlo al correo <strong>[abuso@musikeeo.com]</strong> y se procederá a su
+                comunicarlo al correo <strong>hola@musikeeo.com</strong> y se procederá a su
                 revisión y eventual retirada.
             </p>
 
             <h2>6. Exclusión de responsabilidad</h2>
             <p>
-                [TITULAR] no garantiza la disponibilidad y continuidad del funcionamiento del
+                Víctor Torres Arana no garantiza la disponibilidad y continuidad del funcionamiento del
                 Sitio. Cuando ello sea razonablemente posible se advertirá previamente de las
                 interrupciones. No se responsabiliza tampoco de los daños y perjuicios de
                 cualquier tipo derivados del uso del Sitio por parte del usuario.
@@ -94,7 +94,7 @@ export default function LegalNotice() {
 
             <h2>8. Modificaciones</h2>
             <p>
-                [TITULAR] se reserva el derecho a modificar el presente aviso legal en
+                Víctor Torres Arana se reserva el derecho a modificar el presente aviso legal en
                 cualquier momento. La versión vigente será la publicada en el Sitio.
             </p>
         </LegalPageLayout>

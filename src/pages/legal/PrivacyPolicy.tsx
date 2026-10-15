@@ -12,11 +12,10 @@ export default function PrivacyPolicy() {
 
             <h2>1. Responsable del tratamiento</h2>
             <ul>
-                <li><strong>Responsable:</strong> [TITULAR — nombre o razón social]</li>
-                <li><strong>NIF/CIF:</strong> [NIF/CIF]</li>
-                <li><strong>Domicilio:</strong> [DIRECCIÓN POSTAL]</li>
-                <li><strong>Email de contacto:</strong> [privacidad@musikeeo.com]</li>
-                <li><strong>Delegado de Protección de Datos (DPD):</strong> [si aplica, indicar contacto; si no, eliminar este punto]</li>
+                <li><strong>Responsable:</strong> Víctor Torres Arana</li>
+                <li><strong>NIF/CIF:</strong> 77124685G</li>
+                <li><strong>Domicilio:</strong> Rambla Balmes 27, bajos 4, 08100 Mollet del Vallès (Barcelona), España</li>
+                <li><strong>Email de contacto:</strong> hola@musikeeo.com</li>
             </ul>
 
             <h2>2. Qué datos tratamos</h2>
@@ -55,8 +54,7 @@ export default function PrivacyPolicy() {
                 <li><strong>Google LLC (Firebase / Google Cloud)</strong> — alojamiento, autenticación, base de datos, almacenamiento de archivos.</li>
                 <li><strong>Vercel Inc.</strong> — hosting de la aplicación y funciones serverless.</li>
                 <li><strong>Moonshot AI (Kimi)</strong> — proveedor de la inferencia del asistente IA &laquo;Rodrigo&raquo; cuando el usuario lo utiliza.</li>
-                <li><strong>[Proveedor de email transaccional, si aplica]</strong></li>
-                <li><strong>[Sentry u otro error-tracker, si aplica]</strong></li>
+                <li><strong>Functional Software, Inc. (Sentry)</strong> — registro de errores técnicos de la aplicación, cuando está activado.</li>
             </ul>
             <p>
                 Algunos de estos proveedores pueden tratar datos fuera del Espacio Económico
@@ -85,7 +83,7 @@ export default function PrivacyPolicy() {
                 <li>Retirar el consentimiento prestado en cualquier momento.</li>
             </ul>
             <p>
-                Para ejercerlos, escribe a <strong>[privacidad@musikeeo.com]</strong> adjuntando
+                Para ejercerlos, escribe a <strong>hola@musikeeo.com</strong> adjuntando
                 copia de un documento que acredite tu identidad. Atenderemos tu solicitud en el
                 plazo máximo de un mes.
             </p>
@@ -106,7 +104,7 @@ export default function PrivacyPolicy() {
                 Aplicamos medidas técnicas y organizativas apropiadas para proteger tus datos:
                 cifrado en tránsito (HTTPS), control de acceso a la base de datos (reglas de
                 Firestore y Storage), y revisiones periódicas. Aún así, ningún sistema es
-                infalible; si detectas algo extraño, escríbenos a [seguridad@musikeeo.com].
+                infalible; si detectas algo extraño, escríbenos a hola@musikeeo.com.
             </p>
 
             <h2>9. Cambios en esta política</h2>
