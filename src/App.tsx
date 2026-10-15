@@ -84,13 +84,8 @@ const RequireAuthCompleted = () => {
   if (loading || profileLoading) return <div className="h-full min-h-[60vh] w-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
 
-  if (!userProfile) {
-    console.warn("RequireAuthCompleted: User exists but no profile found. Redirecting to onboarding.");
-    return <Navigate to="/onboarding" replace />;
-  }
-
-  if (!userProfile.onboardingCompleted) {
-    return <Navigate to="/onboarding" replace />;
+  if (!userProfile || !userProfile.onboardingCompleted) {
+    return <Navigate to="/onboarding" replace state={{ from: location.pathname + location.search }} />;
   }
 
   return <Outlet />;
@@ -157,7 +152,7 @@ const RequireAnon = () => {
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from;
   if (!loading && !profileLoading && user) {
-    if (userProfile && !userProfile.onboardingCompleted) return <Navigate to="/onboarding" replace />;
+    if (userProfile && !userProfile.onboardingCompleted) return <Navigate to="/onboarding" replace state={{ from }} />;
     return <Navigate to={from || '/feed'} replace />;
   }
 

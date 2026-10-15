@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Mic, Speaker, Crown, Check, Loader2, Store } from 'lucide-react';
 // import { Button } from '../../components/ui/button';
@@ -48,6 +48,8 @@ const roleToMode = (id: string): UserMode => (id === 'store' ? 'provider' : id a
 
 export const Onboarding = () => {
     const navigate = useNavigate();
+    // Si llegó aquí desde una acción (contactar, publicar…), al acabar vuelve a ella
+    const from = (useLocation().state as { from?: string } | null)?.from;
 
 
     const { user, userProfile, refreshProfile } = useAuth();
@@ -72,6 +74,7 @@ export const Onboarding = () => {
     }, [step]);
 
     const navigateBasedOnRole = (mode?: UserMode, roleId?: string | null) => {
+        if (from && from !== '/onboarding') { navigate(from, { replace: true }); return; }
         if (roleId === 'store') navigate('/market/create');
         else if (mode === 'musician') navigate('/panel/perfil');
         else if (mode === 'organizer') navigate('/panel/perfil-organizador');
