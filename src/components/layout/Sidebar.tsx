@@ -113,7 +113,7 @@ export const Sidebar = () => {
               {user?.photoURL ? (
                 <img
                   src={user.photoURL}
-                  alt={user.displayName || 'User'}
+                  alt=""
                   className="h-full w-full rounded-full object-cover"
                 />
               ) : (
@@ -122,10 +122,10 @@ export const Sidebar = () => {
             </div>
             <div className="flex-1 overflow-hidden">
               <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
-                {user?.displayName || 'Usuario'}
+                {userProfile?.displayName || user?.displayName || 'Tu perfil'}
               </p>
               <p className="text-xs text-muted-foreground truncate capitalize">
-                {userProfile?.primaryMode || 'Músico'}
+                {({ musician: 'Músico · Banda', organizer: 'Sala · Promotor', provider: 'Técnico' } as Record<string, string>)[userProfile?.primaryMode || 'musician']}
               </p>
             </div>
           </NavLink>

@@ -20,7 +20,7 @@ export default function Step1Details({ data, update, onNext }: StepProps) {
 
             {/* Title */}
             <div className="space-y-3">
-                <Label className="text-base text-white">Título del anuncio</Label>
+                <Label className="text-base text-white">Título del bolo</Label>
                 <div className="relative">
                     <Type className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
                     <Input

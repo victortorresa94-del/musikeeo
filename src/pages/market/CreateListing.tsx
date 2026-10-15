@@ -190,7 +190,7 @@ export default function CreateListing() {
                                 key={t}
                                 type="button"
                                 onClick={() => setType(t)}
-                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${type === t ? 'bg-primary text-black' : 'text-gray-400 hover:text-foreground'}`}
+                                className={`flex-1 py-2 rounded-lg text-sm font-bold transition-colors ${type === t ? 'bg-foreground text-background' : 'text-muted-foreground hover:text-foreground'}`}
                             >
                                 {t === 'prestamo' ? 'Préstamo' : t.charAt(0).toUpperCase() + t.slice(1)}
                             </button>

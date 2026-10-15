@@ -111,7 +111,7 @@ export default function EventDetail() {
     if (loading) {
         return (
             <div className="h-[50vh] flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-brand-cyan" />
+                <Loader2 className="h-8 w-8 animate-spin text-foreground/70" />
             </div>
         );
     }
@@ -151,15 +151,15 @@ export default function EventDetail() {
                             </h1>
                             <div className="flex flex-wrap items-center gap-4 text-sm text-gray-300">
                                 <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full backdrop-blur-md">
-                                    <Calendar className="h-4 w-4 text-brand-cyan" />
-                                    {new Date(event.date).toLocaleDateString()}
+                                    <Calendar className="h-4 w-4 text-foreground/70" />
+                                    {new Date(event.date).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'long' })}
                                 </span>
                                 <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full backdrop-blur-md">
-                                    <Clock className="h-4 w-4 text-brand-cyan" />
-                                    {new Date(event.date).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                                    <Clock className="h-4 w-4 text-foreground/70" />
+                                    {new Date(event.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                                 </span>
                                 <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full backdrop-blur-md">
-                                    <MapPin className="h-4 w-4 text-brand-cyan" />
+                                    <MapPin className="h-4 w-4 text-foreground/70" />
                                     {event.location}
                                 </span>
                             </div>
@@ -174,7 +174,7 @@ export default function EventDetail() {
                             ) : null}
                             {!isOrganizer && (
                                 <Button
-                                    className={`h-12 px-6 font-bold ${isApplied ? 'bg-zinc-700 text-white' : 'bg-brand-cyan text-black hover:bg-brand-cyan/90'}`}
+                                    className={`h-12 px-6 rounded-[14px] font-semibold ${isApplied ? 'bg-white/10 text-white' : 'bg-primary text-primary-foreground hover:opacity-90'}`}
                                     onClick={handleApply}
                                     disabled={isApplied || applying}
                                 >
@@ -214,13 +214,13 @@ export default function EventDetail() {
                     {isOrganizer && (
                         <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
                             <h3 className="font-heading font-bold text-white mb-4 flex items-center gap-2">
-                                <Users className="h-5 w-5 text-brand-cyan" />
+                                <Users className="h-5 w-5 text-foreground/70" />
                                 Aplicantes {applications.length > 0 && <span className="text-muted-foreground text-sm">({applications.length})</span>}
                             </h3>
 
                             {loadingApps ? (
                                 <div className="flex items-center justify-center py-6">
-                                    <Loader2 className="h-6 w-6 animate-spin text-brand-cyan" />
+                                    <Loader2 className="h-6 w-6 animate-spin text-foreground/70" />
                                 </div>
                             ) : applications.length === 0 ? (
                                 <p className="text-muted-foreground text-sm">Aún no hay aplicantes a este evento.</p>
