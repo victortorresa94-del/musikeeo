@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '../../../components/ui/button';
 import { ChevronLeft } from 'lucide-react';
@@ -69,9 +69,28 @@ export default function PublishEventPage() {
     const [isPublishing, setIsPublishing] = useState(false);
 
 
+    // Si llega un borrador de Rodrigo («Editar»), el formulario se abre ya relleno
+    const rodrigoDraft = (useLocation().state as { eventDraft?: { title?: string; date?: string; time?: string; location?: string; description?: string; type?: string; genres?: string[]; budget?: string } } | null)?.eventDraft;
     const [formData, setFormData] = useState<PublishEventState>(() => {
-        const saved = localStorage.getItem('musikeeo_event_draft');
-        return saved ? JSON.parse(saved) : INITIAL_STATE;
+        if (rodrigoDraft) {
+            const d = rodrigoDraft;
+            const iso = d.date && /^\d{4}-\d{2}-\d{2}/.test(d.date) ? d.date.slice(0, 10) : '';
+            return {
+                ...INITIAL_STATE,
+                title: d.title || '',
+                type: d.type || '',
+                date: iso,
+                startTime: d.time && /^\d{1,2}:\d{2}/.test(d.time) ? d.time.padStart(5, '0').slice(0, 5) : '',
+                location: d.location || '',
+                description: d.description || '',
+                artistType: d.genres || [],
+                budget: Number(String(d.budget || '').replace(/[^\d]/g, '')) || 0,
+            };
+        }
+        try {
+            const saved = localStorage.getItem('musikeeo_event_draft');
+            return saved ? { ...INITIAL_STATE, ...JSON.parse(saved) } : INITIAL_STATE;
+        } catch { return INITIAL_STATE; }
     });
 
     useEffect(() => {

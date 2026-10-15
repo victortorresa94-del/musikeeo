@@ -118,7 +118,7 @@ export const RodrigoDraftCard = ({ draft, onPublished }: { draft: Draft; onPubli
                     </button>
                     {draft.kind === 'event' && (
                         <button
-                            onClick={() => navigate('/eventos/crear', { state: { eventDraft: draft.data } })}
+                            onClick={() => navigate('/publicar', { state: { eventDraft: draft.data } })}
                             aria-label="Editar en el formulario"
                             className="h-10 w-10 rounded-full bg-white/10 text-white flex items-center justify-center"
                         >

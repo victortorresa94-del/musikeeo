@@ -33,7 +33,6 @@ const Home = lazy(() => import('./pages/home/Home'));
 const Feed = lazy(() => import('./pages/feed/Feed'));
 const EventsV2 = lazy(() => import('./pages/events/EventsV2'));
 const EventDetail = lazy(() => import('./pages/events/EventDetail'));
-const CreateEvent = lazy(() => import('./pages/events/CreateEvent'));
 const PublishEventPage = lazy(() => import('./pages/events/publish/PublishEventPage'));
 const Messages = lazy(() => import('./pages/messages/Messages'));
 const Market = lazy(() => import('./pages/market/Market'));
@@ -221,7 +220,8 @@ function App() {
                 <Route element={<RequireAuthCompleted />}>
                   <Route path="/messages" element={<Messages />} />
                   <Route path="/market/create" element={<CreateListing />} />
-                  <Route path="/eventos/crear" element={<CreateEvent />} />
+                  {/* Un solo flujo para publicar bolos: /publicar (este tenía una «IA» de mentira) */}
+                  <Route path="/eventos/crear" element={<Navigate to="/publicar" replace />} />
                   <Route path="/profile" element={<Profile />} />
                 </Route>
               </Route>

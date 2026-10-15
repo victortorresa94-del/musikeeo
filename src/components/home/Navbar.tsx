@@ -80,7 +80,7 @@ export const Navbar = () => {
         } else if (mode === 'organizer') {
             return [
                 { icon: Calendar, label: 'Mis Eventos', href: '/eventos' },
-                { icon: Zap, label: 'Crear Evento', href: '/eventos/crear' },
+                { icon: Zap, label: 'Crear Evento', href: '/publicar' },
             ];
         } else {
             return [
