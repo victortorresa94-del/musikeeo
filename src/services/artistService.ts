@@ -214,7 +214,8 @@ export async function createArtist(userId: string, data: Partial<Artist>): Promi
     // Try to save to Firestore
     try {
         if (userId !== 'dev-user-id') {
-            await setDoc(doc(db, ARTISTS_COLLECTION, artistId), artist);
+            // Firestore rechaza los campos undefined (foto o región vacías) y el alta fallaba en silencio
+            await setDoc(doc(db, ARTISTS_COLLECTION, artistId), Object.fromEntries(Object.entries(artist).filter(([, v]) => v !== undefined)));
         }
     } catch (e) {
         console.warn("Could not save to Firestore (Offline?), saving locally.");

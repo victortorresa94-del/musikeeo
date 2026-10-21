@@ -163,7 +163,8 @@ const RequireAnon = () => {
   const location = useLocation();
   const from = (location.state as { from?: string } | null)?.from;
   if (!loading && !profileLoading && user) {
-    if (userProfile && !userProfile.onboardingCompleted) return <Navigate to="/onboarding" replace state={{ from }} />;
+    // Sin ficha todavía (alta a medias) o sin onboarding: primero el onboarding
+    if (!userProfile || !userProfile.onboardingCompleted) return <Navigate to="/onboarding" replace state={{ from }} />;
     return <Navigate to={from || '/feed'} replace />;
   }
 

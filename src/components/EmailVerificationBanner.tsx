@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { sendEmailVerification } from 'firebase/auth';
 import { Mail, X, CheckCircle2 } from 'lucide-react';
+import { useLocation } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 
 const DISMISS_KEY = 'musikeeo-email-banner-dismissed';
@@ -21,7 +22,10 @@ export default function EmailVerificationBanner() {
         return () => clearInterval(id);
     }, [user]);
 
-    if (loading || !user || user.emailVerified || dismissed) return null;
+    // En el onboarding, el login y los flujos a pantalla completa estorba
+    const { pathname } = useLocation();
+    const oculto = /^\/(onboarding|login|register|forgot-password|publicar|messages)/.test(pathname);
+    if (loading || !user || user.emailVerified || dismissed || oculto) return null;
     // verifiedRefresh sirve solo para forzar re-render tras user.reload()
     void verifiedRefresh;
 
@@ -46,7 +50,7 @@ export default function EmailVerificationBanner() {
 
     // Tarjeta discreta encima de la barra de pestañas: arriba tapaba la cabecera.
     return (
-        <div className="fixed inset-x-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:inset-x-auto md:right-4 md:top-[4.25rem] md:bottom-auto md:w-[380px] z-[55] rounded-2xl bg-neutral-900/95 border border-hairline backdrop-blur-xl">
+        <div className="fixed inset-x-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:inset-x-auto md:right-4 md:top-[4.25rem] md:bottom-auto md:w-[380px] z-[55] rounded-2xl bg-sheet shadow-e2 border border-hairline shadow-e2">
             <div className="pl-4 pr-2 py-2.5 flex items-center gap-3">
                 <Mail size={18} className="text-muted-foreground shrink-0" />
                 <p className="flex-1 text-[14px] leading-snug text-foreground">

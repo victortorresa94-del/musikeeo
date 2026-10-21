@@ -41,7 +41,7 @@ export default function Login() {
             if (userProfile.onboardingCompleted) {
                 navigate(from || '/feed', { replace: true });
             } else {
-                navigate('/onboarding');
+                navigate('/onboarding', { state: { from } });
             }
         }
     }, [userProfile, navigate, from]);
