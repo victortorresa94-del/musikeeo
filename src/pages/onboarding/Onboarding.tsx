@@ -130,7 +130,7 @@ export const Onboarding = () => {
                 <AnimatePresence mode="wait">
                     {paso === 1 ? (
                         <motion.div key="p1" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }} className="flex-1 flex flex-col">
-                            <h1 className="mt-4 font-heading text-[32px] font-bold leading-[1.1]">¿Quién eres en la música?</h1>
+                            <h1 className="mt-4 font-heading text-[28px] font-bold leading-[1.1]">¿Quién eres en la música?</h1>
                             <p className="mt-2 text-[15px] text-muted-foreground">Te enseñamos lo que te interesa desde el primer minuto.</p>
                             <div className="mt-5 space-y-2.5">
                                 {ROLES.map(x => (
@@ -157,7 +157,7 @@ export const Onboarding = () => {
                         </motion.div>
                     ) : r && (
                         <motion.div key="p2" initial={{ opacity: 0, x: 24 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0, x: -24 }} transition={{ duration: 0.22 }} className="flex-1 flex flex-col">
-                            <h1 className="mt-4 font-heading text-[32px] font-bold leading-[1.1] text-center">Tu perfil en 30 segundos</h1>
+                            <h1 className="mt-4 font-heading text-[28px] font-bold leading-[1.1] text-center">Tu perfil en 30 segundos</h1>
                             <p className="mt-2 text-[15px] text-muted-foreground text-center">
                                 {r.id === 'cliente' ? 'Para que los artistas sepan con quién hablan.' : 'Así te encuentran en Explorar.'}
                             </p>

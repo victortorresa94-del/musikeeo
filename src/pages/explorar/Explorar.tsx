@@ -85,7 +85,7 @@ export default function Explorar() {
             {/* Cabecera */}
             <div className="px-4 md:px-0">
                 <div className="flex items-center justify-between">
-                    <h1 className="font-heading text-[34px] font-bold leading-tight text-foreground">Explorar</h1>
+                    <h1 className="font-heading text-[28px] font-bold leading-tight text-foreground">Explorar</h1>
                     <div className="relative">
                         <button onClick={() => setMenuCiudad(v => !v)} className="pulsable h-9 pl-3 pr-2.5 rounded-full bg-fill flex items-center gap-1.5 text-[14px] font-semibold text-foreground">
                             <MapPin className="h-4 w-4" /> {ciudad || 'Toda España'} <ChevronDown className="h-4 w-4 text-muted-foreground" />

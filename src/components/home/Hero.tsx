@@ -38,7 +38,7 @@ export const Hero = () => {
                 </div>
 
                 {/* Heading */}
-                <h1 className="text-white text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.1] tracking-tight font-heading drop-shadow-2xl">
+                <h1 className="text-white text-4xl sm:text-5xl md:text-7xl font-bold leading-[1.1] tracking-tight font-display drop-shadow-2xl">
                     Todo lo que la música necesita<span className="text-primary">.</span>
                 </h1>
 

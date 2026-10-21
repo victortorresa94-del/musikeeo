@@ -308,7 +308,7 @@ export default function Messages() {
             {/* Lista */}
             <section className="w-full md:w-[340px] md:border-r md:border-hairline flex flex-col min-h-0">
                 <div className="px-4 pt-3 pb-2">
-                    <h1 className="font-heading font-bold text-[34px] leading-tight text-foreground">Mensajes</h1>
+                    <h1 className="font-heading font-bold text-[28px] leading-tight text-foreground">Mensajes</h1>
                     <label className="relative mt-3 block">
                         <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                         <input

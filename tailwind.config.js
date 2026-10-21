@@ -74,10 +74,17 @@ export default {
                     petrol:   "#002C45",
                 },
             },
+            // La letra del iPhone (SF Pro) donde la hay; Inter, su gemela, en Android y PC.
+            // Manrope queda solo para los titulares grandes de la portada (font-display).
             fontFamily: {
-                heading: ["Manrope", "-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "Roboto", "sans-serif"],
-                sans:    ["Manrope", "-apple-system", "BlinkMacSystemFont", "'Segoe UI'", "Roboto", "sans-serif"],
+                heading: ["-apple-system", "BlinkMacSystemFont", "Inter", "'Segoe UI'", "Roboto", "sans-serif"],
+                sans:    ["-apple-system", "BlinkMacSystemFont", "Inter", "'Segoe UI'", "Roboto", "sans-serif"],
+                display: ["Manrope", "-apple-system", "BlinkMacSystemFont", "Inter", "sans-serif"],
                 mono:    ["ui-monospace", "'SF Mono'", "Menlo", "monospace"],
+            },
+            // Letra con cuerpo: la negrita un poco más llena que 700
+            fontWeight: {
+                bold: "750",
             },
             letterSpacing: {
                 tight:    "-0.02em",

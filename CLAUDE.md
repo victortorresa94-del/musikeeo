@@ -19,8 +19,8 @@ Tagline: "Conecta. Crea. Suena."
 - Colores SOLO por tokens con su pareja claro/oscuro (src/index.css): `bg-fill`, `bg-fill-strong`, `border-hairline(-strong)`, `bg-sheet`, `bg-chrome`, `text-primary-ink` (amarillo como texto: oro oscuro en claro), sombras `shadow-e1/e2/e3`, pulsación `.pulsable`. Nada de `bg-white/…`, `text-white` (salvo sobre fotos), `text-gray-*`, `brand-*` ni hex a pelo (skills de Aura Storage: equipo-design-system, uiux-app-premium)
 - Diseño nuevo: primero se SUEÑA en Aura Studio (3-4 conceptos, se elige) y luego se maqueta
 - Background: #0A0A0A
-- Fonts: Manrope (variable 200–800) alojada en /public/fonts (latin y latin-ext), con preload en index.html y @font-face en src/index.css. Titulares 700 con tracking -0.02em, texto sin tracking (2026-10)
-- Style: Dark, limpio, estilo iOS. Amarillo SOLO para la acción principal de cada pantalla; chips, pestañas y controles segmentados en blanco/gris (seleccionado = blanco con texto negro). Barra inferior estilo iOS sin píldoras de color. Títulos grandes de página a 34px (iOS large title). Botones: h-9 rounded-full (compactos) o h-[52px] rounded-[14px] (principales). Nada de brillos ni sombras de color
+- Fonts (decidido 21-oct-2026 sobre el sueño de Explorar que le gustó): la letra del iPhone (SF Pro vía `-apple-system`) y su gemela Inter (variable 400–800, en /public/fonts) en Android y PC, para toda la app (`font-sans`/`font-heading`). Texto a 500, negrita a 750 (tailwind `fontWeight.bold`). Manrope SOLO en los titulares grandes de la portada (`font-display`); se descartó Manrope para todo porque «no para todo ni tan grande»
+- Style: Dark, limpio, estilo iOS. Amarillo SOLO para la acción principal de cada pantalla; chips, pestañas y controles segmentados en blanco/gris (seleccionado = blanco con texto negro). Barra inferior estilo iOS sin píldoras de color. Títulos grandes de página a 28px (no más: «ni tan grande»). Botones: h-9 rounded-full (compactos) o h-[52px] rounded-[14px] (principales). Nada de brillos ni sombras de color
 
 ## Business Model
 - Freemium base

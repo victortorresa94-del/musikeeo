@@ -191,7 +191,7 @@ export default function ArtistProfilePage() {
                         {/* Info */}
                         <div className="flex-1 pb-2">
                             <div className="flex flex-wrap items-center gap-3 mb-2">
-                                <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{artist.artistName}</h1>
+                                <h1 className="text-[26px] md:text-4xl font-bold tracking-tight leading-tight">{artist.artistName}</h1>
                                 {artist.isVerified && (
                                     <span className="flex items-center gap-1 bg-primary/10 text-primary-ink px-3 py-1 rounded-full text-xs font-bold">
                                         <CheckCircle size={14} /> Verificado

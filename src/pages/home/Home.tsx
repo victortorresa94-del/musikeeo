@@ -181,7 +181,7 @@ const SectionTitle = ({ kicker, title, action }: { kicker: string; title: string
     <div className="flex items-end justify-between gap-4 mb-8 md:mb-10">
         <div>
             <p className="text-primary text-sm font-semibold mb-3">{kicker}</p>
-            <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tighter leading-[1.05] text-foreground">{title}</h2>
+            <h2 className="font-display text-3xl md:text-5xl font-bold tracking-tighter leading-[1.05] text-foreground">{title}</h2>
         </div>
         {action}
     </div>
@@ -288,7 +288,7 @@ const Hero = () => {
                         <span className="text-[13px] font-medium text-foreground/80">Toda la música en directo, en una app</span>
                     </motion.div>
 
-                    <motion.h1 variants={fadeUp} className="font-heading font-bold tracking-tight leading-[0.95] text-[42px] sm:text-6xl md:text-7xl text-foreground">
+                    <motion.h1 variants={fadeUp} className="font-display font-bold tracking-tight leading-[0.95] text-[42px] sm:text-6xl md:text-7xl text-foreground">
                         Pide{' '}
                         <span className="inline-block">
                             <AnimatePresence mode="wait" initial={false}>
@@ -396,7 +396,7 @@ const Problem = () => (
                 {/* Después */}
                 <Reveal delay={0.1} className="relative rounded-3xl border border-white/[0.08] bg-card p-6 md:p-8 overflow-hidden">
                     <p className="text-sm font-semibold text-primary mb-6">Con Musikeeo</p>
-                    <h3 className="font-heading text-3xl md:text-4xl font-bold tracking-tighter leading-[1.05]">Un sitio. Toda la escena.</h3>
+                    <h3 className="font-display text-3xl md:text-4xl font-bold tracking-tighter leading-[1.05]">Un sitio. Toda la escena.</h3>
                     <ul className="mt-6 space-y-3">
                         {ORDER.map(item => (
                             <li key={item} className="flex items-start gap-3 text-foreground/90">
@@ -467,7 +467,7 @@ const Story2am = () => (
                         </motion.li>
                     ))}
                 </ol>
-                <h2 className="mt-10 font-heading text-4xl md:text-6xl font-bold tracking-tight leading-[0.95]">
+                <h2 className="mt-10 font-display text-4xl md:text-6xl font-bold tracking-tight leading-[0.95]">
                     Ni un bolo se cancela por un cable<span className="text-primary">.</span>
                 </h2>
                 <div className="mt-8 flex flex-col sm:flex-row gap-3">
@@ -492,7 +492,7 @@ const Origin = () => (
             </Reveal>
             <Reveal delay={0.1}>
                 <p className="text-primary text-sm font-semibold mb-4">Hecho por músicos</p>
-                <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tighter leading-[1.05]">
+                <h2 className="font-display text-3xl md:text-5xl font-bold tracking-tighter leading-[1.05]">
                     Nace en un escenario, no en una oficina.
                 </h2>
                 <p className="mt-5 text-muted-foreground text-lg leading-relaxed">
@@ -725,7 +725,7 @@ const RodrigoSection = () => (
                     <p className="inline-flex items-center gap-2 text-primary text-sm font-semibold mb-4">
                         <Sparkles className="h-4 w-4" /> Inteligencia artificial
                     </p>
-                    <h2 className="font-heading text-3xl md:text-5xl font-bold tracking-tighter leading-[1.05]">
+                    <h2 className="font-display text-3xl md:text-5xl font-bold tracking-tighter leading-[1.05]">
                         Conoce a Rodrigo, tu mánager de bolsillo.
                     </h2>
                     <p className="mt-5 text-muted-foreground text-lg leading-relaxed max-w-md">
@@ -804,7 +804,7 @@ const FinalCta = () => {
                 <div className="absolute right-8 bottom-6 md:right-16 md:bottom-12 opacity-20 scale-[4] origin-bottom-right">
                     <Equalizer className="[&>span]:bg-primary-foreground" />
                 </div>
-                <h2 className="relative font-heading text-4xl md:text-6xl font-bold tracking-tight leading-[0.95] text-primary-foreground max-w-2xl">
+                <h2 className="relative font-display text-4xl md:text-6xl font-bold tracking-tight leading-[0.95] text-primary-foreground max-w-2xl">
                     Tu próximo bolo empieza aquí.
                 </h2>
                 <p className="relative mt-5 text-primary-foreground/70 text-lg max-w-lg">

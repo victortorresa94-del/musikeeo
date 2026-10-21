@@ -152,7 +152,7 @@ export default function Market() {
             {/* Header */}
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-[34px] leading-tight font-bold tracking-tight text-foreground">Mercado</h1>
+                    <h1 className="text-[28px] leading-tight font-bold tracking-tight text-foreground">Mercado</h1>
                     <p className="text-[15px] text-muted-foreground mt-0.5">Compra, alquila o presta equipo</p>
                 </div>
                 <Button

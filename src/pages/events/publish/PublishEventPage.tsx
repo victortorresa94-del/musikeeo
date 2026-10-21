@@ -196,7 +196,7 @@ export default function PublishEventPage() {
                 {/* Main Form Area */}
                 <div className="flex-1 max-w-4xl mx-auto w-full space-y-8 animate-in fade-in slide-in-from-bottom-4 duration-500">
                     <div className="mb-6">
-                        <h1 className="text-3xl font-heading font-bold mb-2">
+                        <h1 className="text-[28px] font-heading font-bold mb-2">
                             {formData.step === 1 && "Detalles del Evento"}
                             {formData.step === 2 && "Talento y Presupuesto"}
                             {formData.step === 3 && "Revisión Final"}

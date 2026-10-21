@@ -58,7 +58,7 @@ export default function Projects() {
         <div className="max-w-6xl mx-auto p-4 md:p-6 space-y-6 animate-fade-in-up">
             <div className="flex items-center justify-between">
                 <div>
-                    <h1 className="text-3xl font-heading font-bold text-foreground">Proyectos</h1>
+                    <h1 className="text-[28px] font-heading font-bold text-foreground">Proyectos</h1>
                     <p className="text-muted-foreground">Gestiona tus lanzamientos y colaboraciones.</p>
                 </div>
                 <Button className="gap-2 bg-brand-lime text-black hover:bg-brand-lime/90 font-bold" onClick={handleCreateProject}>

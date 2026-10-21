@@ -255,7 +255,7 @@ export default function EventsV2() {
                 {/* ── Page header ── */}
                 <div className="flex items-start justify-between gap-4 mb-6">
                     <div>
-                        <h1 className="text-[34px] leading-tight font-heading font-bold text-foreground tracking-tight">
+                        <h1 className="text-[28px] leading-tight font-heading font-bold text-foreground tracking-tight">
                             Bolos
                         </h1>
                         <p className="text-muted-foreground text-[15px] mt-0.5">

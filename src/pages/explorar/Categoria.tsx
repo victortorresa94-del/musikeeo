@@ -94,7 +94,7 @@ export default function Categoria() {
                 <div className="mt-1 flex items-center gap-4">
                     <img src={iconoCategoria(cat)} alt="" className="h-[72px] w-[82px] rounded-[18px] object-cover shadow-e1" />
                     <div className="min-w-0">
-                        <h1 className="font-heading text-[30px] font-bold leading-tight text-foreground">{cat.nombre}</h1>
+                        <h1 className="font-heading text-[26px] font-bold leading-tight text-foreground">{cat.nombre}</h1>
                         <p className="text-[14px] text-muted-foreground">{cat.bajada}</p>
                     </div>
                 </div>
