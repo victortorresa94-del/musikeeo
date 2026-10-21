@@ -116,10 +116,10 @@ export default function PublicProfile() {
         return (
             <div className="max-w-2xl mx-auto px-4 pt-14">
                 <div className="flex items-center gap-4">
-                    <span className="h-[84px] w-[84px] rounded-full bg-white/[0.07] animate-pulse" />
+                    <span className="h-[84px] w-[84px] rounded-full bg-fill animate-pulse" />
                     <span className="flex-1 space-y-2">
-                        <span className="block h-5 w-2/3 rounded bg-white/[0.07] animate-pulse" />
-                        <span className="block h-4 w-1/3 rounded bg-white/[0.05] animate-pulse" />
+                        <span className="block h-5 w-2/3 rounded bg-fill animate-pulse" />
+                        <span className="block h-4 w-1/3 rounded bg-fill animate-pulse" />
                     </span>
                 </div>
             </div>
@@ -146,7 +146,7 @@ export default function PublicProfile() {
 
             {/* Cabecera */}
             <div className="mt-1 flex items-center gap-4">
-                <span className="h-[84px] w-[84px] shrink-0 rounded-full overflow-hidden bg-white/10 flex items-center justify-center text-3xl font-bold text-foreground">
+                <span className="h-[84px] w-[84px] shrink-0 rounded-full overflow-hidden bg-fill-strong flex items-center justify-center text-3xl font-bold text-foreground">
                     {base.photo && !photoBroken
                         ? <img src={base.photo} alt="" onError={() => setPhotoBroken(true)} className="h-full w-full object-cover" />
                         : base.name.slice(0, 1).toUpperCase()}
@@ -169,7 +169,7 @@ export default function PublicProfile() {
             {genres.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                     {genres.slice(0, 6).map(g => (
-                        <span key={g} className="px-2.5 py-1 rounded-full bg-white/[0.07] text-[12px] text-foreground/80">{g}</span>
+                        <span key={g} className="px-2.5 py-1 rounded-full bg-fill text-[12px] text-foreground/80">{g}</span>
                     ))}
                 </div>
             )}
@@ -180,12 +180,12 @@ export default function PublicProfile() {
                 <button onClick={contact} className="h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] flex items-center justify-center gap-2 active:opacity-80">
                     <MessageCircle className="h-5 w-5" /> Contactar
                 </button>
-                <button onClick={share} aria-label="Compartir perfil" className="h-[52px] w-[52px] rounded-[14px] bg-white/[0.09] text-foreground flex items-center justify-center active:opacity-70">
+                <button onClick={share} aria-label="Compartir perfil" className="h-[52px] w-[52px] rounded-[14px] bg-fill-strong text-foreground flex items-center justify-center active:opacity-70">
                     <Share2 className="h-5 w-5" />
                 </button>
             </div>
             {artist?.slug && (
-                <Link to={`/artist/${artist.slug}`} className="mt-2 h-12 px-4 rounded-2xl bg-white/[0.05] flex items-center gap-3 active:opacity-70">
+                <Link to={`/artist/${artist.slug}`} className="mt-2 h-12 px-4 rounded-2xl bg-fill flex items-center gap-3 active:opacity-70">
                     <Music2 className="h-[18px] w-[18px] text-muted-foreground" />
                     <span className="flex-1 text-[15px] text-foreground">Ficha de artista: precios, vídeos y fechas</span>
                     <ChevronRight className="h-4 w-4 text-muted-foreground" />
@@ -193,7 +193,7 @@ export default function PublicProfile() {
             )}
 
             {/* Lo que ha publicado */}
-            <div className="mt-7 flex p-0.5 rounded-[10px] bg-white/[0.07]">
+            <div className="mt-7 flex p-0.5 rounded-[10px] bg-fill">
                 {([['posts', `Publicaciones · ${posts.length}`], ['anuncios', `Anuncios · ${listings.length}`], ['bolos', `Bolos · ${events.length}`]] as const).map(([key, label]) => (
                     <button key={key} onClick={() => setTab(key)}
                         className={cn('flex-1 h-8 rounded-[8px] text-[12px] font-semibold whitespace-nowrap px-1 transition-colors', tab === key ? 'bg-foreground text-background' : 'text-muted-foreground')}>
@@ -206,7 +206,7 @@ export default function PublicProfile() {
                 {tab === 'posts' && (posts.length === 0 ? <Empty icon={ImageIcon} text="Todavía no ha publicado fotos ni vídeos." /> : (
                     <div className="grid grid-cols-3 gap-0.5 -mx-4">
                         {posts.map(p => (
-                            <Link key={p.id} to={p.mediaType === 'video' ? `/feed?reel=${p.id}` : '/feed'} className="relative aspect-[4/5] bg-white/[0.05] active:opacity-80">
+                            <Link key={p.id} to={p.mediaType === 'video' ? `/feed?reel=${p.id}` : '/feed'} className="relative aspect-[4/5] bg-fill active:opacity-80">
                                 {(p.mediaType === 'video' ? p.posterUrl : p.mediaUrl)
                                     ? <img src={p.mediaType === 'video' ? p.posterUrl : p.mediaUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
                                     : <Play className="h-6 w-6 text-muted-foreground absolute inset-0 m-auto" />}
@@ -219,8 +219,8 @@ export default function PublicProfile() {
                 {tab === 'anuncios' && (listings.length === 0 ? <Empty icon={ShoppingBag} text="No tiene anuncios en el Mercado." /> : (
                     <div className="grid grid-cols-2 gap-2">
                         {listings.map(l => (
-                            <Link key={l.id} to={`/market/${l.id}`} className="rounded-2xl overflow-hidden bg-white/[0.05] active:opacity-80">
-                                <div className="aspect-square bg-white/[0.05] relative">
+                            <Link key={l.id} to={`/market/${l.id}`} className="rounded-2xl overflow-hidden bg-fill active:opacity-80">
+                                <div className="aspect-square bg-fill relative">
                                     {l.images?.[0]
                                         ? <img src={l.images[0]} alt="" loading="lazy" className="h-full w-full object-cover" />
                                         : <ImageIcon className="h-6 w-6 text-muted-foreground absolute inset-0 m-auto" />}
@@ -237,8 +237,8 @@ export default function PublicProfile() {
                 {tab === 'bolos' && (events.length === 0 ? <Empty icon={CalendarDays} text="No tiene bolos publicados." /> : (
                     <div className="space-y-2">
                         {events.map(ev => (
-                            <Link key={ev.id} to={`/eventos/${ev.id}`} className="flex gap-3 p-2 rounded-2xl bg-white/[0.05] active:opacity-80">
-                                <span className="h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-white/[0.06]">
+                            <Link key={ev.id} to={`/eventos/${ev.id}`} className="flex gap-3 p-2 rounded-2xl bg-fill active:opacity-80">
+                                <span className="h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-fill">
                                     {ev.imageUrl && <img src={ev.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />}
                                 </span>
                                 <span className="min-w-0 flex-1 py-0.5">

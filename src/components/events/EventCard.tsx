@@ -48,34 +48,34 @@ export const EventCard = ({ event }: EventCardProps) => {
                     ))}
                 </div>
 
-                <div className="absolute bottom-3 right-3 z-20 bg-black/60 backdrop-blur-md border border-white/10 px-3 py-1.5 rounded-lg flex items-center gap-1">
-                    <span className="text-primary font-bold text-sm">
+                <div className="absolute bottom-3 right-3 z-20 bg-black/60 backdrop-blur-md border border-hairline px-3 py-1.5 rounded-lg flex items-center gap-1">
+                    <span className="text-primary-ink font-bold text-sm">
                         €{(event.price || 0).toLocaleString()}
                     </span>
-                    {/* {event.type.includes('Residencia') && <span className="text-[10px] text-gray-400">/noche</span>} */}
+                    {/* {event.type.includes('Residencia') && <span className="text-[10px] text-muted-foreground">/noche</span>} */}
                 </div>
             </div>
 
             {/* Content */}
             <div className="flex-1 p-5 flex flex-col gap-3">
                 {/* Category */}
-                <span className="text-[10px] font-bold text-primary uppercase tracking-widest opacity-80">
+                <span className="text-[10px] font-bold text-primary-ink uppercase tracking-widest opacity-80">
                     {event.type}
                 </span>
 
                 {/* Title */}
-                <h3 className="text-xl font-bold text-foreground leading-tight group-hover:text-primary transition-colors line-clamp-2">
+                <h3 className="text-xl font-bold text-foreground leading-tight group-hover:text-primary-ink transition-colors line-clamp-2">
                     {event.title}
                 </h3>
 
                 {/* Meta */}
                 <div className="flex flex-col gap-2 mt-1">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <Calendar className="h-4 w-4 text-primary" />
+                        <Calendar className="h-4 w-4 text-primary-ink" />
                         <span>{dateStr} • {timeStr} hrs</span>
                     </div>
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                        <MapPin className="h-4 w-4 text-primary" />
+                        <MapPin className="h-4 w-4 text-primary-ink" />
                         <span className="truncate">{event.location}</span>
                     </div>
                 </div>
@@ -86,7 +86,7 @@ export const EventCard = ({ event }: EventCardProps) => {
                         {/* Fake applicants avatars would go here */}
                     </div>
                     <button className="flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-foreground group-hover:translate-x-1 transition-transform">
-                        Ver más <ArrowRight className="h-4 w-4 text-primary" />
+                        Ver más <ArrowRight className="h-4 w-4 text-primary-ink" />
                     </button>
                 </div>
             </div>

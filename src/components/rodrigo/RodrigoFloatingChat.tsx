@@ -159,7 +159,7 @@ export const RodrigoFloatingChat = () => {
                         transition={{ type: 'spring', stiffness: 420, damping: 32 }}
                         onClick={() => setIsOpen(true)}
                         aria-label="Habla con Rodrigo, tu mánager IA"
-                        className={`fixed right-4 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:bottom-6 md:right-6 z-40 flex items-center gap-2 h-12 rounded-full bg-card/95 backdrop-blur-xl border border-white/10 pl-1 shadow-[0_8px_30px_rgba(0,0,0,0.5)] active:scale-95 ${compact ? 'pr-1' : 'pr-4'}`}
+                        className={`fixed right-4 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:bottom-6 md:right-6 z-40 flex items-center gap-2 h-12 rounded-full bg-card/95 backdrop-blur-xl border border-hairline pl-1 shadow-[0_8px_30px_rgba(0,0,0,0.5)] active:scale-95 ${compact ? 'pr-1' : 'pr-4'}`}
                     >
                         <span className="relative h-10 w-10 shrink-0">
                             <img src={RODRIGO_AVATAR} alt="" loading="lazy" className="h-10 w-10 rounded-full object-cover" />
@@ -181,45 +181,45 @@ export const RodrigoFloatingChat = () => {
                         initial={{ opacity: 0, y: 20, scale: 0.95 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                        className="fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom))] right-2 z-50 w-[min(400px,calc(100vw-16px))] h-[min(560px,calc(100dvh-200px))] bg-[#0A0A0A] border border-white/10 rounded-2xl shadow-2xl flex flex-col overflow-hidden md:bottom-24 md:right-6"
+                        className="fixed bottom-[calc(8.5rem+env(safe-area-inset-bottom))] right-2 z-50 w-[min(400px,calc(100vw-16px))] h-[min(560px,calc(100dvh-200px))] bg-background border border-hairline rounded-2xl shadow-2xl flex flex-col overflow-hidden md:bottom-24 md:right-6"
                     >
                         {/* Header */}
-                        <div className="flex items-center gap-3 p-4 border-b border-white/10 bg-[#0A0A0A]">
+                        <div className="flex items-center gap-3 p-4 border-b border-hairline bg-background">
                             <div className="relative">
                                 <div
-                                    className="size-10 rounded-full bg-cover bg-center border border-white/10"
+                                    className="size-10 rounded-full bg-cover bg-center border border-hairline"
                                     style={{ backgroundImage: `url(${RODRIGO_AVATAR})` }}
                                 />
                                 <div className={`absolute -bottom-0.5 -right-0.5 size-3 rounded-full border-2 border-[#0A0A0A] ${isDegraded ? 'bg-red-500' : 'bg-green-500'}`} />
                             </div>
                             <div className="flex-1">
-                                <h3 className="text-sm font-bold text-white">Rodrigo</h3>
+                                <h3 className="text-sm font-bold text-foreground">Rodrigo</h3>
                                 <p className={`text-xs font-medium ${isDegraded ? 'text-red-400' : 'text-[#FFD84D]'}`}>
                                     {isDegraded ? 'NO DISPONIBLE' : 'ONLINE'}
                                 </p>
                             </div>
                             <button
                                 onClick={() => setIsOpen(false)}
-                                className="p-2 text-gray-400 hover:text-white hover:bg-white/5 rounded-lg transition-colors"
+                                className="p-2 text-muted-foreground hover:text-foreground hover:bg-fill rounded-lg transition-colors"
                             >
                                 <X size={20} />
                             </button>
                         </div>
 
                         {/* Messages */}
-                        <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-[#0A0A0A]">
+                        <div className="flex-1 p-4 overflow-y-auto space-y-4 bg-background">
                             {messages.map((message) => (
                                 <div key={message.id} className={`flex gap-3 ${message.role === 'user' ? 'justify-end' : ''}`}>
                                     {message.role === 'assistant' && (
                                         <div
-                                            className="size-8 rounded-full bg-cover bg-center shrink-0 border border-white/10"
+                                            className="size-8 rounded-full bg-cover bg-center shrink-0 border border-hairline"
                                             style={{ backgroundImage: `url(${RODRIGO_AVATAR})` }}
                                         />
                                     )}
                                     <div className={`max-w-[85%] ${message.role === 'user' ? '' : ''}`}>
                                         <div className={`px-4 py-3 rounded-2xl text-sm ${message.role === 'user'
-                                            ? 'bg-[#262626] border border-white/5 rounded-br-sm text-white'
-                                            : 'bg-[#1A1A1A] border border-white/5 rounded-bl-sm text-gray-100'
+                                            ? 'bg-card border border-hairline rounded-br-sm text-foreground'
+                                            : 'bg-card border border-hairline rounded-bl-sm text-foreground/90'
                                             }`}>
                                             <p className="whitespace-pre-wrap">{message.content}</p>
                                         </div>
@@ -246,10 +246,10 @@ export const RodrigoFloatingChat = () => {
                             {isTyping && (
                                 <div className="flex gap-3">
                                     <div
-                                        className="size-8 rounded-full bg-cover bg-center shrink-0 border border-white/10"
+                                        className="size-8 rounded-full bg-cover bg-center shrink-0 border border-hairline"
                                         style={{ backgroundImage: `url(${RODRIGO_AVATAR})` }}
                                     />
-                                    <div className="flex items-center gap-1 px-4 py-3 bg-[#1A1A1A] border border-white/5 rounded-2xl rounded-bl-sm">
+                                    <div className="flex items-center gap-1 px-4 py-3 bg-card border border-hairline rounded-2xl rounded-bl-sm">
                                         <span className="text-sm text-[#FFD84D] animate-pulse">Rodrigo está escribiendo...</span>
                                     </div>
                                 </div>
@@ -259,12 +259,12 @@ export const RodrigoFloatingChat = () => {
                         </div>
 
                         {/* Quick Actions */}
-                        <div className="px-4 pb-2 flex flex-wrap gap-2 border-t border-white/5 pt-3 bg-[#0A0A0A]">
+                        <div className="px-4 pb-2 flex flex-wrap gap-2 border-t border-hairline pt-3 bg-background">
                             {QUICK_ACTIONS.map((action, i) => (
                                 <button
                                     key={i}
                                     onClick={() => handleQuickAction(action.prompt)}
-                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-[#1A1A1A] border border-white/10 text-xs text-gray-300 hover:border-[#FFD84D]/50 hover:text-white transition-colors"
+                                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-card border border-hairline text-xs text-muted-foreground hover:border-[#FFD84D]/50 hover:text-foreground transition-colors"
                                 >
                                     <action.icon size={12} className="text-[#FFD84D]" />
                                     {action.label}
@@ -273,31 +273,31 @@ export const RodrigoFloatingChat = () => {
                         </div>
 
                         {/* Input */}
-                        <div className="p-4 border-t border-white/10 bg-[#0A0A0A]">
+                        <div className="p-4 border-t border-hairline bg-background">
                             <div className="flex gap-2 items-end">
-                                <div className="flex-1 bg-[#1A1A1A] border border-white/10 rounded-xl flex items-center focus-within:border-[#FFD84D]/50 transition-colors">
+                                <div className="flex-1 bg-card border border-hairline rounded-xl flex items-center focus-within:border-[#FFD84D]/50 transition-colors">
                                     <input
                                         type="text"
                                         value={input}
                                         onChange={(e) => setInput(e.target.value)}
                                         onKeyDown={(e) => e.key === 'Enter' && sendMessage(input)}
                                         placeholder={isDegraded ? 'Rodrigo no está disponible' : 'Escríbele a Rodrigo...'}
-                                        className="flex-1 bg-transparent px-4 py-3 text-sm text-white placeholder-gray-500 focus:outline-none disabled:cursor-not-allowed"
+                                        className="flex-1 bg-transparent px-4 py-3 text-sm text-foreground placeholder-gray-500 focus:outline-none disabled:cursor-not-allowed"
                                         disabled={isTyping || isDegraded}
                                     />
-                                    <button className="p-3 text-gray-400 hover:text-white transition-colors">
+                                    <button className="p-3 text-muted-foreground hover:text-foreground transition-colors">
                                         <Mic size={18} />
                                     </button>
                                 </div>
                                 <button
                                     onClick={() => sendMessage(input)}
                                     disabled={isTyping || !input.trim() || isDegraded}
-                                    className="h-12 w-12 flex items-center justify-center bg-[#FFD84D] text-black rounded-xl hover:bg-[#ffe066] transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    className="h-12 w-12 flex items-center justify-center bg-primary text-black rounded-xl hover:bg-primary transition-colors shrink-0 disabled:opacity-50 disabled:cursor-not-allowed"
                                 >
                                     <ArrowUp size={20} />
                                 </button>
                             </div>
-                            <p className="text-[10px] text-gray-500 text-center mt-2">
+                            <p className="text-[10px] text-muted-foreground text-center mt-2">
                                 Rodrigo AI puede cometer errores. Verifica la información importante.
                             </p>
                         </div>

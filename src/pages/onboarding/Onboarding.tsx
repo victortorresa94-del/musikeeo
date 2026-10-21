@@ -14,16 +14,16 @@ const ROLES = [
         title: 'Músico',
         icon: Mic,
         description: 'Busco bolos, bandas o colaboraciones.',
-        color: 'text-brand-cyan',
-        bg: 'bg-brand-cyan/10'
+        color: 'text-primary-ink',
+        bg: 'bg-primary/10'
     },
     {
         id: 'organizer',
         title: 'Creador de Eventos',
         icon: Crown,
         description: 'Organizo bodas, fiestas o gestiono un local.',
-        color: 'text-brand-lime',
-        bg: 'bg-brand-lime/10'
+        color: 'text-primary-ink',
+        bg: 'bg-primary/10'
     },
     {
         id: 'provider',
@@ -39,7 +39,7 @@ const ROLES = [
         title: 'Tienda / Alquiler',
         icon: Store,
         description: 'Vendo o alquilo instrumentos y equipo.',
-        color: 'text-primary',
+        color: 'text-primary-ink',
         bg: 'bg-primary/10'
     }
 ];
@@ -159,7 +159,7 @@ export const Onboarding = () => {
                     </div>
                 )}
                 <img src="/logo-musikeeo.png" alt="M" className="h-16 w-auto mx-auto mb-4" />
-                <h1 className="text-4xl md:text-5xl font-heading font-bold text-white mb-4 tracking-tight">
+                <h1 className="text-4xl md:text-5xl font-heading font-bold text-foreground mb-4 tracking-tight">
                     ¿Para qué quieres usar Musikeeo?
                 </h1>
                 <p className="text-xl text-muted-foreground">
@@ -188,11 +188,11 @@ export const Onboarding = () => {
                                         <div className={`h-20 w-20 rounded-full flex items-center justify-center mb-6 bg-surface-highlight group-hover:bg-primary group-hover:text-black transition-colors`}>
                                             <role.icon className="h-10 w-10" />
                                         </div>
-                                        <h3 className="font-heading font-bold text-2xl text-white mb-3">{role.title}</h3>
+                                        <h3 className="font-heading font-bold text-2xl text-foreground mb-3">{role.title}</h3>
                                         <p className="text-muted-foreground leading-relaxed">{role.description}</p>
 
                                         {selectedRoleId === role.id && (
-                                            <div className="mt-6 text-primary">
+                                            <div className="mt-6 text-primary-ink">
                                                 <Check className="h-8 w-8 mx-auto" />
                                             </div>
                                         )}
@@ -209,8 +209,8 @@ export const Onboarding = () => {
                             animate={{ opacity: 1 }}
                             className="flex flex-col items-center"
                         >
-                            <Loader2 className="h-12 w-12 text-primary animate-spin mb-4" />
-                            <p className="text-xl text-white font-medium">Configurando tu perfil...</p>
+                            <Loader2 className="h-12 w-12 text-primary-ink animate-spin mb-4" />
+                            <p className="text-xl text-foreground font-medium">Configurando tu perfil...</p>
                         </motion.div>
                     )}
                 </AnimatePresence>

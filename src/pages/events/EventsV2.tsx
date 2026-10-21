@@ -143,7 +143,7 @@ const EventCardNew = ({ event, onClick }: { event: Event; onClick: () => void })
 
                 {/* Date badge */}
                 <div className="absolute top-3 left-3 bg-background/95 backdrop-blur-sm rounded-xl px-2.5 py-1.5 text-center min-w-[44px]">
-                    <p className="text-[10px] font-bold text-primary uppercase leading-none">{month}</p>
+                    <p className="text-[10px] font-bold text-primary-ink uppercase leading-none">{month}</p>
                     <p className="text-lg font-bold text-foreground leading-tight">{day}</p>
                 </div>
 
@@ -158,7 +158,7 @@ const EventCardNew = ({ event, onClick }: { event: Event; onClick: () => void })
 
                 {/* Price bottom right */}
                 <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl">
-                    <span className="text-primary font-bold text-sm">
+                    <span className="text-primary-ink font-bold text-sm">
                         {event.price ? `${event.price.toLocaleString()}€` : 'A negociar'}
                     </span>
                 </div>
@@ -166,19 +166,19 @@ const EventCardNew = ({ event, onClick }: { event: Event; onClick: () => void })
 
             {/* Content */}
             <div className="p-4">
-                <span className="text-[10px] font-bold text-primary uppercase tracking-widest mb-1 block">
+                <span className="text-[10px] font-bold text-primary-ink uppercase tracking-widest mb-1 block">
                     {event.type === 'gig' ? 'Bolo' : event.type === 'session' ? 'Sesión' : event.type}
                 </span>
-                <h3 className="font-bold text-foreground text-base leading-snug line-clamp-2 group-hover:text-primary transition-colors mb-3">
+                <h3 className="font-bold text-foreground text-base leading-snug line-clamp-2 group-hover:text-primary-ink transition-colors mb-3">
                     {event.title}
                 </h3>
                 <div className="flex flex-col gap-1.5 mb-4">
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <MapPin className="h-3.5 w-3.5 text-primary/70 flex-shrink-0" />
+                        <MapPin className="h-3.5 w-3.5 text-primary-ink/70 flex-shrink-0" />
                         <span className="truncate">{event.location}</span>
                     </div>
                     <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Calendar className="h-3.5 w-3.5 text-primary/70 flex-shrink-0" />
+                        <Calendar className="h-3.5 w-3.5 text-primary-ink/70 flex-shrink-0" />
                         <span>
                             {daysLeft <= 0 ? 'Hoy' : daysLeft === 1 ? 'Mañana' : `En ${daysLeft} días`}
                         </span>
@@ -186,7 +186,7 @@ const EventCardNew = ({ event, onClick }: { event: Event; onClick: () => void })
                 </div>
                 <div className="flex items-center justify-between pt-3 border-t border-border">
                     <span className="text-xs text-muted-foreground">{event.organizerName}</span>
-                    <button className="flex items-center gap-1 text-xs font-bold text-primary group-hover:gap-2 transition-all">
+                    <button className="flex items-center gap-1 text-xs font-bold text-primary-ink group-hover:gap-2 transition-all">
                         Ver más <ArrowRight className="h-3.5 w-3.5" />
                     </button>
                 </div>
@@ -278,7 +278,7 @@ export default function EventsV2() {
                         <Info className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
                         <div>
                             <p className="font-semibold text-foreground">Estos son eventos de ejemplo</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">Todavía no hay oportunidades reales publicadas. Sé el primero en <button onClick={() => navigate('/publicar')} className="underline font-semibold text-primary">publicar un anuncio</button>.</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">Todavía no hay oportunidades reales publicadas. Sé el primero en <button onClick={() => navigate('/publicar')} className="underline font-semibold text-primary-ink">publicar un anuncio</button>.</p>
                         </div>
                     </div>
                 )}
@@ -301,7 +301,7 @@ export default function EventsV2() {
                             className={cn(
                                 'flex items-center gap-2 h-10 px-4 rounded-xl border text-sm font-medium transition-all',
                                 showFilters
-                                    ? 'bg-primary/10 border-primary text-primary'
+                                    ? 'bg-primary/10 border-primary text-primary-ink'
                                     : 'bg-muted border-border text-muted-foreground hover:text-foreground'
                             )}
                         >
@@ -391,7 +391,7 @@ export default function EventsV2() {
                         <p className="text-muted-foreground text-sm mb-4">Intenta ajustar los filtros de búsqueda</p>
                         <button
                             onClick={() => { setSearchQuery(''); setActiveType('Todos'); setCityFilter(''); }}
-                            className="text-primary text-sm font-medium hover:underline"
+                            className="text-primary-ink text-sm font-medium hover:underline"
                         >
                             Limpiar filtros
                         </button>

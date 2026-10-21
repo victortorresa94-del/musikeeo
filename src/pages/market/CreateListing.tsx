@@ -20,6 +20,7 @@ const CATEGORIES: { value: ListingCategory; label: string }[] = [
     { value: 'pa_sonido', label: 'PA / Sonido' },
     { value: 'iluminacion', label: 'Iluminación' },
     { value: 'recording', label: 'Grabación' },
+    { value: 'cuerdas', label: 'Cuerdas (violín, chelo…)' },
     { value: 'partituras', label: 'Partituras' },
     { value: 'otros', label: 'Otros' },
 ];
@@ -131,7 +132,7 @@ export default function CreateListing() {
             <form onSubmit={handleSubmit} className="space-y-5">
                 {/* Photos */}
                 <div className="space-y-2">
-                    <label className="text-sm font-medium text-foreground">Fotos <span className="text-gray-500">(máx. 3)</span></label>
+                    <label className="text-sm font-medium text-foreground">Fotos <span className="text-muted-foreground">(máx. 3)</span></label>
                     <div className="flex gap-3 flex-wrap">
                         {images.map(({ preview }, idx) => (
                             <div key={idx} className="relative w-24 h-24 rounded-xl overflow-hidden border border-border">
@@ -146,7 +147,7 @@ export default function CreateListing() {
                             </div>
                         ))}
                         {images.length < 3 && (
-                            <label className="w-24 h-24 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-muted transition-all text-gray-500 hover:text-primary">
+                            <label className="w-24 h-24 rounded-xl border-2 border-dashed border-border flex flex-col items-center justify-center cursor-pointer hover:border-primary/50 hover:bg-muted transition-all text-muted-foreground hover:text-primary-ink">
                                 <Upload size={20} className="mb-1" />
                                 <span className="text-xs">Añadir</span>
                                 <input type="file" accept="image/*" multiple className="hidden" onChange={handleImageAdd} />
@@ -164,7 +165,7 @@ export default function CreateListing() {
                         placeholder="Ej: Fender Stratocaster 2021 con funda..."
                         className="bg-muted border-border text-foreground"
                     />
-                    <p className="text-xs text-gray-500 text-right">{title.length}/60</p>
+                    <p className="text-xs text-muted-foreground text-right">{title.length}/60</p>
                 </div>
 
                 {/* Category */}
@@ -176,7 +177,7 @@ export default function CreateListing() {
                         className="w-full h-10 rounded-md border border-border bg-muted px-3 text-sm text-foreground focus:outline-none focus:border-primary"
                     >
                         {CATEGORIES.map(c => (
-                            <option key={c.value} value={c.value} className="bg-[#1a1a1a]">{c.label}</option>
+                            <option key={c.value} value={c.value} className="bg-card">{c.label}</option>
                         ))}
                     </select>
                 </div>
@@ -202,7 +203,7 @@ export default function CreateListing() {
                 {type !== 'prestamo' && (
                     <div className="space-y-1">
                         <label className="text-sm font-medium text-foreground">
-                            Precio (€){type === 'alquiler' && <span className="text-gray-500 font-normal ml-1">por</span>}
+                            Precio (€){type === 'alquiler' && <span className="text-muted-foreground font-normal ml-1">por</span>}
                         </label>
                         <div className="flex gap-2">
                             <Input
@@ -219,8 +220,8 @@ export default function CreateListing() {
                                     onChange={e => setPriceUnit(e.target.value as 'dia' | 'semana')}
                                     className="h-10 rounded-md border border-border bg-muted px-3 text-sm text-foreground focus:outline-none focus:border-primary"
                                 >
-                                    <option value="dia" className="bg-[#1a1a1a]">día</option>
-                                    <option value="semana" className="bg-[#1a1a1a]">semana</option>
+                                    <option value="dia" className="bg-card">día</option>
+                                    <option value="semana" className="bg-card">semana</option>
                                 </select>
                             )}
                         </div>
@@ -236,7 +237,7 @@ export default function CreateListing() {
                                 key={c.value}
                                 type="button"
                                 onClick={() => setCondition(c.value)}
-                                className={`py-2 rounded-xl text-sm font-medium border transition-colors ${condition === c.value ? 'border-primary bg-primary/10 text-primary' : 'border-border bg-muted text-gray-400 hover:text-foreground'}`}
+                                className={`py-2 rounded-xl text-sm font-medium border transition-colors ${condition === c.value ? 'border-primary bg-primary/10 text-primary-ink' : 'border-border bg-muted text-muted-foreground hover:text-foreground'}`}
                             >
                                 {c.label}
                             </button>
@@ -253,7 +254,7 @@ export default function CreateListing() {
                         placeholder="Describe el estado, antigüedad, accesorios incluidos..."
                         className="bg-muted border-border text-foreground min-h-[100px] resize-none"
                     />
-                    <p className="text-xs text-gray-500 text-right">{description.length}/300</p>
+                    <p className="text-xs text-muted-foreground text-right">{description.length}/300</p>
                 </div>
 
                 {/* Location */}
@@ -273,10 +274,10 @@ export default function CreateListing() {
                     onClick={() => setUrgent(v => !v)}
                     className={`w-full flex items-center gap-3 p-4 rounded-xl border transition-colors ${urgent ? 'border-primary/50 bg-primary/10' : 'border-border bg-muted'}`}
                 >
-                    <Zap size={18} className={urgent ? 'text-primary' : 'text-gray-500'} />
+                    <Zap size={18} className={urgent ? 'text-primary-ink' : 'text-muted-foreground'} />
                     <div className="text-left">
-                        <p className={`text-sm font-bold ${urgent ? 'text-primary' : 'text-foreground'}`}>Marcar como urgente ⚡</p>
-                        <p className="text-xs text-gray-500">Necesito venderlo / alquilarlo rápido</p>
+                        <p className={`text-sm font-bold ${urgent ? 'text-primary-ink' : 'text-foreground'}`}>Marcar como urgente ⚡</p>
+                        <p className="text-xs text-muted-foreground">Necesito venderlo / alquilarlo rápido</p>
                     </div>
                     <div className={`ml-auto w-10 h-6 rounded-full transition-colors flex items-center px-1 ${urgent ? 'bg-primary' : 'bg-muted'}`}>
                         <div className={`w-4 h-4 rounded-full bg-white shadow transition-transform ${urgent ? 'translate-x-4' : 'translate-x-0'}`} />

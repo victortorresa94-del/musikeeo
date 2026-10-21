@@ -88,24 +88,24 @@ export default function RodrigoAdvisor({ step, data, update }: RodrigoAdvisorPro
     const advice = getAdvice();
 
     return (
-        <div className="bg-gradient-to-br from-zinc-900 to-black border border-brand-yellow/30 rounded-2xl p-6 relative overflow-hidden shadow-lg shadow-brand-yellow/5">
+        <div className="bg-gradient-to-br from-zinc-900 to-black border border-primary/30 rounded-2xl p-6 relative overflow-hidden shadow-lg shadow-primary/5">
             <div className="absolute top-0 right-0 p-4 opacity-10">
-                <Sparkles size={64} className="text-brand-yellow" />
+                <Sparkles size={64} className="text-primary-ink" />
             </div>
 
             <div className="relative z-10 flex flex-col gap-4">
                 <div className="flex items-center gap-3 mb-2">
-                    <div className="h-10 w-10 rounded-full border border-brand-yellow/30 overflow-hidden">
+                    <div className="h-10 w-10 rounded-full border border-primary/30 overflow-hidden">
                         <img src="/rodrigo-persona.png" alt="Rodrigo" className="w-full h-full object-cover" />
                     </div>
-                    <span className="font-bold text-brand-yellow uppercase tracking-wider text-xs">RODRIGO</span>
+                    <span className="font-bold text-primary-ink uppercase tracking-wider text-xs">RODRIGO</span>
                 </div>
 
                 <div>
-                    <h3 className="text-white font-bold mb-2 flex items-center gap-2">
+                    <h3 className="text-foreground font-bold mb-2 flex items-center gap-2">
                         {advice.title}
                     </h3>
-                    <p className="text-sm text-gray-400 leading-relaxed">
+                    <p className="text-sm text-muted-foreground leading-relaxed">
                         {advice.text}
                     </p>
                 </div>
@@ -113,7 +113,7 @@ export default function RodrigoAdvisor({ step, data, update }: RodrigoAdvisorPro
                 {advice.type === 'suggestion' && (
                     <Button
                         onClick={optimizeTitle}
-                        className="w-full bg-brand-yellow/20 hover:bg-brand-yellow/30 text-brand-yellow border border-brand-yellow/50 mt-2"
+                        className="w-full bg-primary/20 hover:bg-primary/30 text-primary-ink border border-primary/50 mt-2"
                     >
                         <Sparkles className="w-4 h-4 mr-2" />
                         {advice.action}

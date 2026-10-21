@@ -90,7 +90,7 @@ export default function PanelServicesPage() {
                     <p className="text-muted-foreground text-sm">Gestiona el catálogo de servicios que ofreces.</p>
                 </div>
                 <div className="bg-primary/10 p-2 rounded-lg">
-                    <Box className="text-primary" size={24} />
+                    <Box className="text-primary-ink" size={24} />
                 </div>
             </header>
 

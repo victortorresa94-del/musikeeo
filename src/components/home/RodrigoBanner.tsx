@@ -11,7 +11,7 @@ export const RodrigoBanner = () => {
 
                 <div className="flex-1 relative z-10">
                     <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-muted text-foreground text-xs font-bold tracking-wide uppercase mb-4 border border-border">
-                        <Sparkles size={14} className="text-primary" />
+                        <Sparkles size={14} className="text-primary-ink" />
                         Asistente Rodrigo
                     </div>
 

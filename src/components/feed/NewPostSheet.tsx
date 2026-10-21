@@ -90,9 +90,9 @@ export function NewPostSheet({ open, onClose, onPosted }: { open: boolean; onClo
                     <motion.div
                         role="dialog" aria-modal="true" aria-label="Nueva publicación"
                         initial={{ y: 40 }} animate={{ y: 0 }} exit={{ y: 40 }} transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-                        className="relative w-full md:max-w-md max-h-[92dvh] overflow-y-auto bg-[#141414] rounded-t-[22px] md:rounded-[22px] border border-white/[0.08] pb-[calc(1rem+env(safe-area-inset-bottom))]"
+                        className="relative w-full md:max-w-md max-h-[92dvh] overflow-y-auto bg-sheet rounded-t-[22px] md:rounded-[22px] border border-hairline pb-[calc(1rem+env(safe-area-inset-bottom))]"
                     >
-                        <div className="sticky top-0 z-10 bg-[#141414] px-4 pt-2 pb-3">
+                        <div className="sticky top-0 z-10 bg-sheet px-4 pt-2 pb-3">
                             <div className="mx-auto h-1 w-9 rounded-full bg-white/20 md:hidden" />
                             <div className="mt-2 flex items-center justify-between">
                                 <button onClick={() => !busy && onClose()} className="text-[15px] text-muted-foreground active:opacity-60" disabled={busy}>Cancelar</button>
@@ -103,8 +103,8 @@ export function NewPostSheet({ open, onClose, onPosted }: { open: boolean; onClo
 
                         <div className="px-4">
                             {!file ? (
-                                <button onClick={() => inputRef.current?.click()} className="w-full aspect-[4/5] rounded-2xl border border-dashed border-white/15 bg-white/[0.03] flex flex-col items-center justify-center gap-3 text-muted-foreground active:opacity-70">
-                                    <span className="h-14 w-14 rounded-full bg-white/[0.07] flex items-center justify-center"><ImagePlus className="h-6 w-6 text-foreground" /></span>
+                                <button onClick={() => inputRef.current?.click()} className="w-full aspect-[4/5] rounded-2xl border border-dashed border-hairline-strong bg-fill flex flex-col items-center justify-center gap-3 text-muted-foreground active:opacity-70">
+                                    <span className="h-14 w-14 rounded-full bg-fill flex items-center justify-center"><ImagePlus className="h-6 w-6 text-foreground" /></span>
                                     <span className="text-[15px] font-semibold text-foreground">Elige una foto o un vídeo</span>
                                     <span className="text-[13px] px-8 text-center">Vídeo de hasta {POST_LIMITS.videoSeconds} s y {POST_LIMITS.videoMB} MB. Foto de hasta {POST_LIMITS.imageMB} MB.</span>
                                 </button>
@@ -132,7 +132,7 @@ export function NewPostSheet({ open, onClose, onPosted }: { open: boolean; onClo
                                 placeholder={video ? 'Cuenta qué tocas, dónde y si buscas bolos…' : 'Escribe un pie de foto…'}
                                 rows={3}
                                 disabled={busy}
-                                className="mt-3 w-full resize-none rounded-2xl bg-white/[0.06] border border-white/[0.08] px-4 py-3 text-[16px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-white/20"
+                                className="mt-3 w-full resize-none rounded-2xl bg-fill border border-hairline px-4 py-3 text-[16px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-hairline-strong"
                             />
                             <p className="mt-1 text-right text-[12px] text-muted-foreground">{caption.length}/{POST_LIMITS.caption}</p>
 
@@ -140,7 +140,7 @@ export function NewPostSheet({ open, onClose, onPosted }: { open: boolean; onClo
 
                             {busy && (
                                 <div className="mt-3">
-                                    <div className="h-1.5 rounded-full bg-white/10 overflow-hidden">
+                                    <div className="h-1.5 rounded-full bg-fill-strong overflow-hidden">
                                         <div className="h-full bg-primary transition-[width] duration-200" style={{ width: `${Math.round((progress || 0) * 100)}%` }} />
                                     </div>
                                     <p className="mt-1.5 text-[13px] text-muted-foreground flex items-center gap-1.5">

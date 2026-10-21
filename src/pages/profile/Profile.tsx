@@ -113,7 +113,7 @@ export default function Profile() {
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-10">
             {/* Cabecera */}
             <div className="flex items-center gap-4">
-                <span className="h-[84px] w-[84px] shrink-0 rounded-full overflow-hidden bg-white/10 flex items-center justify-center text-3xl font-bold text-foreground">
+                <span className="h-[84px] w-[84px] shrink-0 rounded-full overflow-hidden bg-fill-strong flex items-center justify-center text-3xl font-bold text-foreground">
                     {photo
                         ? <img src={photo} alt="" onError={() => setPhotoBroken(true)} className="h-full w-full object-cover" />
                         : name.slice(0, 1).toUpperCase()}
@@ -133,29 +133,29 @@ export default function Profile() {
             {genres.length > 0 && (
                 <div className="mt-3 flex flex-wrap gap-1.5">
                     {genres.slice(0, 6).map(g => (
-                        <span key={g} className="px-2.5 py-1 rounded-full bg-white/[0.07] text-[12px] text-foreground/80">{g}</span>
+                        <span key={g} className="px-2.5 py-1 rounded-full bg-fill text-[12px] text-foreground/80">{g}</span>
                     ))}
                 </div>
             )}
 
             {/* Acciones */}
             <div className="mt-5 grid grid-cols-[1fr_1fr_auto] gap-2">
-                <Link to={EDIT_PATH[mode]} className="h-9 rounded-full bg-white/[0.09] text-foreground text-[14px] font-semibold flex items-center justify-center gap-1.5 active:opacity-70">
+                <Link to={EDIT_PATH[mode]} className="h-9 rounded-full bg-fill-strong text-foreground text-[14px] font-semibold flex items-center justify-center gap-1.5 active:opacity-70">
                     <Pencil className="h-4 w-4" /> Editar perfil
                 </Link>
-                <Link to={publicPath} className="h-9 rounded-full bg-white/[0.09] text-foreground text-[14px] font-semibold flex items-center justify-center gap-1.5 active:opacity-70">
+                <Link to={publicPath} className="h-9 rounded-full bg-fill-strong text-foreground text-[14px] font-semibold flex items-center justify-center gap-1.5 active:opacity-70">
                     <Eye className="h-4 w-4" /> Ver como público
                 </Link>
-                <button onClick={share} aria-label="Compartir perfil" className="h-9 w-9 rounded-full bg-white/[0.09] text-foreground flex items-center justify-center active:opacity-70">
+                <button onClick={share} aria-label="Compartir perfil" className="h-9 w-9 rounded-full bg-fill-strong text-foreground flex items-center justify-center active:opacity-70">
                     <Share2 className="h-4 w-4" />
                 </button>
             </div>
 
             {/* Perfil público pendiente: la acción principal de la pantalla */}
             {(needsArtist || needsProvider) && (
-                <div className="mt-5 rounded-2xl bg-white/[0.05] border border-white/[0.08] p-4">
+                <div className="mt-5 rounded-2xl bg-fill border border-hairline p-4">
                     <p className="font-semibold text-foreground flex items-center gap-2">
-                        <Sparkles className="h-4 w-4 text-primary" />
+                        <Sparkles className="h-4 w-4 text-primary-ink" />
                         {needsArtist ? 'Aún no apareces en Explorar' : 'Tu empresa aún no aparece en Técnicos'}
                     </p>
                     <p className="mt-1 text-[14px] text-muted-foreground">
@@ -170,7 +170,7 @@ export default function Profile() {
             )}
 
             {/* Lo que he publicado */}
-            <div className="mt-7 flex p-0.5 rounded-[10px] bg-white/[0.07]">
+            <div className="mt-7 flex p-0.5 rounded-[10px] bg-fill">
                 {([['posts', `Publicaciones · ${posts.length}`], ['anuncios', `Anuncios · ${listings.length}`], ['bolos', `Bolos · ${events.length}`]] as const).map(([key, label]) => (
                     <button
                         key={key}
@@ -186,7 +186,7 @@ export default function Profile() {
             <div className="mt-3">
                 {loading && (
                     <div className="grid grid-cols-2 gap-2">
-                        {[0, 1].map(i => <div key={i} className="aspect-[4/5] rounded-2xl bg-white/[0.06] animate-pulse" />)}
+                        {[0, 1].map(i => <div key={i} className="aspect-[4/5] rounded-2xl bg-fill animate-pulse" />)}
                     </div>
                 )}
 
@@ -195,7 +195,7 @@ export default function Profile() {
                 ) : (
                     <div className="grid grid-cols-3 gap-0.5 -mx-4">
                         {posts.map(p => (
-                            <Link key={p.id} to={p.mediaType === 'video' ? `/feed?reel=${p.id}` : '/feed'} className="relative aspect-[4/5] bg-white/[0.05] active:opacity-80">
+                            <Link key={p.id} to={p.mediaType === 'video' ? `/feed?reel=${p.id}` : '/feed'} className="relative aspect-[4/5] bg-fill active:opacity-80">
                                 {(p.mediaType === 'video' ? p.posterUrl : p.mediaUrl)
                                     ? <img src={p.mediaType === 'video' ? p.posterUrl : p.mediaUrl} alt="" loading="lazy" className="h-full w-full object-cover" />
                                     : <Play className="h-6 w-6 text-muted-foreground absolute inset-0 m-auto" />}
@@ -210,8 +210,8 @@ export default function Profile() {
                 ) : (
                     <div className="grid grid-cols-2 gap-2">
                         {listings.map(l => (
-                            <Link key={l.id} to={`/market/${l.id}`} className="rounded-2xl overflow-hidden bg-white/[0.05] active:opacity-80">
-                                <div className="aspect-square bg-white/[0.05] relative">
+                            <Link key={l.id} to={`/market/${l.id}`} className="rounded-2xl overflow-hidden bg-fill active:opacity-80">
+                                <div className="aspect-square bg-fill relative">
                                     {l.images?.[0]
                                         ? <img src={l.images[0]} alt="" loading="lazy" className="h-full w-full object-cover" />
                                         : <ImageIcon className="h-6 w-6 text-muted-foreground absolute inset-0 m-auto" />}
@@ -223,7 +223,7 @@ export default function Profile() {
                                 </div>
                             </Link>
                         ))}
-                        <Link to="/market/create" className="rounded-2xl border border-dashed border-white/15 flex flex-col items-center justify-center gap-1 text-muted-foreground text-[13px] min-h-[180px] active:opacity-70">
+                        <Link to="/market/create" className="rounded-2xl border border-dashed border-hairline-strong flex flex-col items-center justify-center gap-1 text-muted-foreground text-[13px] min-h-[180px] active:opacity-70">
                             <Plus className="h-5 w-5" /> Nuevo anuncio
                         </Link>
                     </div>
@@ -234,8 +234,8 @@ export default function Profile() {
                 ) : (
                     <div className="space-y-2">
                         {events.map(ev => (
-                            <Link key={ev.id} to={`/eventos/${ev.id}`} className="flex gap-3 p-2 rounded-2xl bg-white/[0.05] active:opacity-80">
-                                <span className="h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-white/[0.06]">
+                            <Link key={ev.id} to={`/eventos/${ev.id}`} className="flex gap-3 p-2 rounded-2xl bg-fill active:opacity-80">
+                                <span className="h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-fill">
                                     {ev.imageUrl && <img src={ev.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />}
                                 </span>
                                 <span className="min-w-0 flex-1 py-0.5">
@@ -245,7 +245,7 @@ export default function Profile() {
                                 <ChevronRight className="h-4 w-4 self-center text-muted-foreground" />
                             </Link>
                         ))}
-                        <Link to="/publicar" className="h-11 rounded-2xl border border-dashed border-white/15 flex items-center justify-center gap-1 text-muted-foreground text-[13px] active:opacity-70">
+                        <Link to="/publicar" className="h-11 rounded-2xl border border-dashed border-hairline-strong flex items-center justify-center gap-1 text-muted-foreground text-[13px] active:opacity-70">
                             <Plus className="h-4 w-4" /> Nuevo bolo
                         </Link>
                     </div>
@@ -253,13 +253,13 @@ export default function Profile() {
             </div>
 
             {/* Accesos */}
-            <div className="mt-8 rounded-2xl bg-white/[0.05] divide-y divide-white/[0.06] overflow-hidden">
+            <div className="mt-8 rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
                 <Row to="/messages" icon={MessageCircle} label="Mensajes" />
                 <Row to="/panel/calendario" icon={CalendarDays} label="Calendario y disponibilidad" />
                 {mode === 'musician' && <Row to="/panel/multimedia" icon={ImageIcon} label="Fotos y vídeos" />}
                 <Row to="/panel/ajustes" icon={Settings} label="Ajustes de la cuenta" />
             </div>
-            <button onClick={handleLogout} className="mt-3 w-full h-12 rounded-2xl bg-white/[0.05] text-red-400 text-[15px] font-semibold flex items-center justify-center gap-2 active:opacity-70">
+            <button onClick={handleLogout} className="mt-3 w-full h-12 rounded-2xl bg-fill text-red-400 text-[15px] font-semibold flex items-center justify-center gap-2 active:opacity-70">
                 <LogOut className="h-4 w-4" /> Cerrar sesión
             </button>
         </div>
@@ -268,7 +268,7 @@ export default function Profile() {
 
 function Row({ to, icon: Icon, label }: { to: string; icon: React.ElementType; label: string }) {
     return (
-        <Link to={to} className="flex items-center gap-3 px-4 h-12 active:bg-white/[0.06]">
+        <Link to={to} className="flex items-center gap-3 px-4 h-12 active:bg-fill">
             <Icon className="h-[18px] w-[18px] text-muted-foreground" />
             <span className="flex-1 text-[15px] text-foreground">{label}</span>
             <ChevronRight className="h-4 w-4 text-muted-foreground" />

@@ -15,7 +15,9 @@ Tagline: "Conecta. Crea. Suena."
 
 ## Branding
 - Primary: amarillo #FFD60A (token `primary` en src/index.css). Decidido 2026-10: el verde #82FF1F queda solo en theme-color/manifest
-- Tema: dark por defecto (modo claro solo si el usuario lo elige)
+- Tema: CLARO por defecto (fondo blanco); oscuro opcional (clave `musikeeo-theme-v3`, se aplica en `index.html` antes de pintar). La home (/home) sigue siempre oscura
+- Colores SOLO por tokens con su pareja claro/oscuro (src/index.css): `bg-fill`, `bg-fill-strong`, `border-hairline(-strong)`, `bg-sheet`, `bg-chrome`, `text-primary-ink` (amarillo como texto: oro oscuro en claro), sombras `shadow-e1/e2/e3`, pulsación `.pulsable`. Nada de `bg-white/…`, `text-white` (salvo sobre fotos), `text-gray-*`, `brand-*` ni hex a pelo (skills de Aura Storage: equipo-design-system, uiux-app-premium)
+- Diseño nuevo: primero se SUEÑA en Aura Studio (3-4 conceptos, se elige) y luego se maqueta
 - Background: #0A0A0A
 - Fonts: Manrope (variable 200–800) alojada en /public/fonts (latin y latin-ext), con preload en index.html y @font-face en src/index.css. Titulares 700 con tracking -0.02em, texto sin tracking (2026-10)
 - Style: Dark, limpio, estilo iOS. Amarillo SOLO para la acción principal de cada pantalla; chips, pestañas y controles segmentados en blanco/gris (seleccionado = blanco con texto negro). Barra inferior estilo iOS sin píldoras de color. Títulos grandes de página a 34px (iOS large title). Botones: h-9 rounded-full (compactos) o h-[52px] rounded-[14px] (principales). Nada de brillos ni sombras de color
@@ -78,7 +80,8 @@ git push origin main  # triggers Vercel auto-deploy
 - KIMI_BASE_URL ← opcional; si se fija se prueba primero. Ante 401 se prueban en orden api.moonshot.ai → api.moonshot.cn → api.kimi.com/coding (modelo kimi-for-coding) y se recuerda el que funcione
 
 ## Acceso
-- Navegar es público: /home, /feed, /discover, /artistas, /sonido, /eventos(/:id), /market(/:id), /profile/:id, /reels
+- Navegar es público: /home, /feed, /explorar(/:categoría), /eventos(/:id), /market/:id, /profile/:id, /artist/:slug, /reels
+- Explorar = el marketplace (Explorar + Mercado unidos): categorías en `src/config/categorias.ts` (una tabla para hub, vista, buscador), iconos 3D en `public/images/categorias/` recortados del sueño elegido (concepto A + cabecera «por momento» de C). /discover, /artistas, /sonido y /market redirigen. Barra: Feed · Explorar · Bolos · Perfil
 - Requieren cuenta (RequireAuthCompleted → /login con `state.from` y vuelta tras entrar): /messages, /market/create, /eventos/crear, /projects, /profile; /publicar requiere sesión (RequireAuthSimple)
 
 ## Cuenta y datos de prueba (producción, 2026-10)

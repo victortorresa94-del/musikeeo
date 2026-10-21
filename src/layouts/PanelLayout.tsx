@@ -65,7 +65,7 @@ export const PanelLayout = () => {
             {/* Main Content */}
             <main className="flex-1 flex flex-col h-screen overflow-y-auto relative pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0">
                 {/* Cabecera móvil: atrás · sección · menú */}
-                <div className="md:hidden sticky top-0 z-40 h-14 px-2 grid grid-cols-[44px_1fr_44px] items-center bg-background/85 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/[0.06]">
+                <div className="md:hidden sticky top-0 z-40 h-14 px-2 grid grid-cols-[44px_1fr_44px] items-center bg-background/85 backdrop-blur-2xl backdrop-saturate-150 border-b border-hairline">
                     <button onClick={goBack} aria-label="Volver" className="h-11 w-11 flex items-center justify-center text-foreground active:opacity-60">
                         <ChevronLeft className="h-7 w-7" />
                     </button>

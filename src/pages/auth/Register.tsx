@@ -144,9 +144,9 @@ export default function Register() {
                         />
                         <span>
                             He leído y acepto los{' '}
-                            <Link to="/terminos" target="_blank" className="text-primary underline">términos</Link>{' '}
+                            <Link to="/terminos" target="_blank" className="text-primary-ink underline">términos</Link>{' '}
                             y la{' '}
-                            <Link to="/privacidad" target="_blank" className="text-primary underline">política de privacidad</Link>.
+                            <Link to="/privacidad" target="_blank" className="text-primary-ink underline">política de privacidad</Link>.
                             Confirmo que tengo al menos 14 años.
                         </span>
                     </label>
@@ -161,7 +161,7 @@ export default function Register() {
 
             <div className="mt-6 text-center text-sm">
                 ¿Ya tienes cuenta?{' '}
-                <Link to="/login" className="font-medium text-primary hover:underline">
+                <Link to="/login" className="font-medium text-primary-ink hover:underline">
                     Inicia Sesión
                 </Link>
             </div>

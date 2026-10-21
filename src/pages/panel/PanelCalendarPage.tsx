@@ -231,7 +231,7 @@ export default function PanelCalendarPage() {
                                             className={`aspect-square p-2 rounded-xl bg-background border transition-all flex flex-col items-start justify-between ${!isCurrentMonth ? 'opacity-30 cursor-not-allowed border-transparent' : statusStyles[status?.status || 'none']
                                                 } ${today ? 'ring-2 ring-primary' : ''}`}
                                         >
-                                            <span className={`text-sm font-medium ${status?.status === 'available' ? 'text-primary font-bold' : 'text-foreground'
+                                            <span className={`text-sm font-medium ${status?.status === 'available' ? 'text-primary-ink font-bold' : 'text-foreground'
                                                 } ${today ? 'bg-primary text-black rounded-full size-6 flex items-center justify-center -mt-1 -ml-1' : ''}`}>
                                                 {date.getDate()}
                                             </span>
@@ -279,7 +279,7 @@ export default function PanelCalendarPage() {
                         <div className="bg-card border border-border rounded-2xl p-6 h-full shadow-xl">
                             <div className="flex items-center justify-between mb-6">
                                 <h3 className="text-xl font-bold text-foreground">Próximos Bolos</h3>
-                                <button className="text-xs text-primary font-medium hover:underline">Ver todo</button>
+                                <button className="text-xs text-primary-ink font-medium hover:underline">Ver todo</button>
                             </div>
 
                             {/* Events List */}
@@ -293,7 +293,7 @@ export default function PanelCalendarPage() {
                                             <div key={gig.date} className="group flex flex-col gap-3 p-4 rounded-xl bg-background border border-border hover:border-primary/50 transition-colors">
                                                 <div className="flex gap-3">
                                                     <div className="flex flex-col items-center justify-center w-12 h-14 bg-muted rounded-lg border border-border">
-                                                        <span className="text-xs font-bold text-primary uppercase">
+                                                        <span className="text-xs font-bold text-primary-ink uppercase">
                                                             {MONTHS[date.getMonth()].slice(0, 3)}
                                                         </span>
                                                         <span className="text-lg font-bold text-foreground">{date.getDate()}</span>

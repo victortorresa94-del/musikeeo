@@ -169,7 +169,7 @@ export default function Market() {
                     <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                     <Input
                         placeholder="Buscar guitarra, micro, correa..."
-                        className="pl-9 bg-white/[0.08] border-0 rounded-[12px] h-10 text-[16px] md:text-sm"
+                        className="pl-9 bg-fill-strong border-0 rounded-[12px] h-10 text-[16px] md:text-sm"
                         value={searchText}
                         onChange={e => setSearchText(e.target.value)}
                     />
@@ -178,7 +178,7 @@ export default function Market() {
                     variant="outline"
                     size="icon"
                     onClick={() => setShowFilters(v => !v)}
-                    className={`rounded-[12px] h-10 w-10 shrink-0 border-0 ${showFilters ? 'bg-white text-black' : 'bg-white/[0.08] text-foreground'}`}
+                    className={`rounded-[12px] h-10 w-10 shrink-0 border-0 ${showFilters ? 'bg-white text-black' : 'bg-fill-strong text-foreground'}`}
                 >
                     <SlidersHorizontal className="h-4 w-4" />
                 </Button>
@@ -246,7 +246,7 @@ export default function Market() {
                             <div className="flex items-end pb-1">
                                 <button
                                     onClick={() => setUrgentOnly(v => !v)}
-                                    className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg border transition-colors ${urgentOnly ? 'border-primary/50 bg-primary/10 text-primary' : 'border-border bg-muted text-muted-foreground'}`}
+                                    className={`flex items-center gap-2 text-sm font-medium px-3 py-2 rounded-lg border transition-colors ${urgentOnly ? 'border-primary/50 bg-primary/10 text-primary-ink' : 'border-border bg-muted text-muted-foreground'}`}
                                 >
                                     <Zap size={14} /> Solo urgentes
                                 </button>
@@ -262,7 +262,7 @@ export default function Market() {
                     <Info className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
                     <div>
                         <p className="font-semibold text-foreground">Estos son anuncios de ejemplo</p>
-                        <p className="text-xs text-muted-foreground mt-0.5">Todavía no hay anuncios reales en tu zona. Sé el primero en <button onClick={() => navigate('/market/create')} className="underline font-semibold text-primary">publicar uno</button>.</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">Todavía no hay anuncios reales en tu zona. Sé el primero en <button onClick={() => navigate('/market/create')} className="underline font-semibold text-primary-ink">publicar uno</button>.</p>
                     </div>
                 </div>
             )}
@@ -326,7 +326,7 @@ export default function Market() {
                                     {!usingMocks && (
                                         <button
                                             onClick={(e) => { e.stopPropagation(); setContactListing(listing); }}
-                                            className="w-full mt-1 h-9 rounded-[10px] bg-white/[0.08] text-foreground text-[14px] font-semibold active:opacity-60"
+                                            className="w-full mt-1 h-9 rounded-[10px] bg-fill-strong text-foreground text-[14px] font-semibold active:opacity-60"
                                         >
                                             Contactar
                                         </button>
@@ -385,7 +385,7 @@ export default function Market() {
                                     className="flex items-center gap-3 p-4 rounded-xl bg-muted border border-border hover:border-primary/30 transition-colors text-left w-full"
                                 >
                                     <div className="p-2 rounded-lg bg-primary/20">
-                                        <MessageSquare size={18} className="text-primary" />
+                                        <MessageSquare size={18} className="text-primary-ink" />
                                     </div>
                                     <div>
                                         <p className="text-foreground font-medium text-sm">Enviar mensaje</p>

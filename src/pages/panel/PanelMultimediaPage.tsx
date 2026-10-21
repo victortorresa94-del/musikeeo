@@ -244,11 +244,11 @@ export default function PanelMultimediaPage() {
                             {/* Preview */}
                             <div className="w-full lg:w-[380px] shrink-0">
                                 <p className="text-muted-foreground text-xs font-bold uppercase tracking-wider mb-3">Vista Previa</p>
-                                <div className="bg-[#121212] rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
+                                <div className="bg-card rounded-xl overflow-hidden shadow-2xl ring-1 ring-white/10">
                                     <div className="bg-gradient-to-b from-[#404040] to-[#121212] p-4">
                                         <div className="flex gap-4 items-end mb-4">
                                             <div className="w-20 h-20 shadow-lg rounded-md bg-gradient-to-br from-primary/30 to-primary/10 flex items-center justify-center">
-                                                <Music className="text-primary" size={32} />
+                                                <Music className="text-primary-ink" size={32} />
                                             </div>
                                             <div className="flex flex-col pb-1">
                                                 <span className="text-[10px] font-bold text-foreground uppercase tracking-wider">Artista</span>
@@ -299,7 +299,7 @@ export default function PanelMultimediaPage() {
                                     disabled={!newVideoUrl}
                                     className="h-12 px-6 bg-muted hover:bg-muted text-foreground rounded-xl font-bold text-sm shrink-0 flex items-center justify-center gap-2 transition-colors disabled:opacity-50"
                                 >
-                                    <Plus className="text-primary" size={18} />
+                                    <Plus className="text-primary-ink" size={18} />
                                     Añadir Enlace
                                 </button>
                             </div>

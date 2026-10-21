@@ -67,26 +67,26 @@ export const OnboardingGuide = () => {
                     initial={{ opacity: 0, y: 50, scale: 0.9 }}
                     animate={{ opacity: 1, y: 0, scale: 1 }}
                     exit={{ opacity: 0, y: 20, scale: 0.95 }}
-                    className="fixed bottom-24 right-6 z-50 w-80 bg-brand-charcoal border border-white/10 rounded-2xl shadow-2xl overflow-hidden"
+                    className="fixed bottom-24 right-6 z-50 w-80 bg-card border border-hairline rounded-2xl shadow-2xl overflow-hidden"
                 >
-                    <div className="bg-gradient-to-r from-brand-yellow to-brand-warm h-1.5 w-full" />
+                    <div className="bg-gradient-to-r from-primary to-primary h-1.5 w-full" />
 
                     <div className="p-5">
                         <div className="flex justify-between items-start mb-4">
                             <div className="flex items-center gap-2">
-                                <div className="p-2 bg-brand-yellow/10 rounded-full text-brand-yellow">
+                                <div className="p-2 bg-primary/10 rounded-full text-primary-ink">
                                     {step === 'profile' ? <Music className="w-5 h-5" /> : <Megaphone className="w-5 h-5" />}
                                 </div>
                                 <div>
-                                    <h4 className="font-bold text-white text-sm">Siguientes pasos</h4>
-                                    <span className="text-xs text-brand-yellow font-medium">
+                                    <h4 className="font-bold text-foreground text-sm">Siguientes pasos</h4>
+                                    <span className="text-xs text-primary-ink font-medium">
                                         {step === 'profile' ? '1 de 2: Tu Identidad' : '2 de 2: Tu Primer Anuncio'}
                                     </span>
                                 </div>
                             </div>
                             <button
                                 onClick={() => setIsVisible(false)}
-                                className="text-gray-500 hover:text-white transition-colors"
+                                className="text-muted-foreground hover:text-foreground transition-colors"
                             >
                                 <X className="w-4 h-4" />
                             </button>
@@ -95,12 +95,12 @@ export const OnboardingGuide = () => {
                         <div className="space-y-4">
                             {step === 'profile' && (
                                 <div>
-                                    <p className="text-gray-300 text-sm leading-relaxed mb-4">
+                                    <p className="text-muted-foreground text-sm leading-relaxed mb-4">
                                         Para que te contraten, primero debes publicar tu perfil de músico.
                                     </p>
                                     <Button
                                         onClick={() => navigate('/profile')}
-                                        className="w-full bg-brand-yellow text-brand-black font-bold hover:bg-brand-warm"
+                                        className="w-full bg-primary text-primary-foreground font-bold hover:bg-primary"
                                     >
                                         Ir a mi Perfil <ArrowRight className="w-4 h-4 ml-2" />
                                     </Button>

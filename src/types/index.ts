@@ -306,7 +306,7 @@ export interface ArtistSearchFilters {
 export type ListingCategory =
     | 'guitarras' | 'bajos' | 'teclados' | 'bateria' | 'viento'
     | 'accesorios' | 'pa_sonido' | 'iluminacion' | 'recording'
-    | 'partituras' | 'otros';
+    | 'partituras' | 'cuerdas' | 'otros';
 
 export type ListingType = 'venta' | 'alquiler' | 'prestamo';
 

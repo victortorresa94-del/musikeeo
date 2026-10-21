@@ -25,8 +25,19 @@ export default {
                 primary: {
                     DEFAULT:    "hsl(var(--primary))",
                     foreground: "hsl(var(--primary-foreground))",
-                    // hover y dark se heredan del sistema
+                    ink:        "var(--primary-ink)",   // amarillo como texto (legible en claro)
                 },
+                // Rellenos, filetes y hojas: con su pareja en claro y oscuro
+                fill: {
+                    DEFAULT: "var(--fill)",
+                    strong:  "var(--fill-strong)",
+                },
+                hairline: {
+                    DEFAULT: "var(--hairline)",
+                    strong:  "var(--hairline-strong)",
+                },
+                sheet:  "var(--sheet)",
+                chrome: "var(--chrome)",
                 secondary: {
                     DEFAULT:    "hsl(var(--secondary))",
                     foreground: "hsl(var(--secondary-foreground))",
@@ -75,6 +86,12 @@ export default {
             },
             padding: {
                 safe: "env(safe-area-inset-bottom)",
+            },
+            // Tres alturas, una sola luz (skill uiux-app-premium): reposo, flota, hoja
+            boxShadow: {
+                e1: "var(--rim), var(--e1)",
+                e2: "var(--rim), var(--e2)",
+                e3: "var(--e3)",
             },
             borderRadius: {
                 sm:    "0.25rem",

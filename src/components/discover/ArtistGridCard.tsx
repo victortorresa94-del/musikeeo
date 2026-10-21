@@ -89,10 +89,10 @@ export const ArtistGridCard = ({ artist, type }: ArtistGridCardProps) => {
             {/* Content */}
             <div className="flex flex-1 flex-col p-4">
                 <div className="flex justify-between items-start mb-2">
-                    <h3 className="text-lg font-bold text-foreground line-clamp-1 group-hover:text-primary transition-colors">
+                    <h3 className="text-lg font-bold text-foreground line-clamp-1 group-hover:text-primary-ink transition-colors">
                         {artist.name}
                     </h3>
-                    <div className="flex items-center gap-1 text-primary text-sm font-bold">
+                    <div className="flex items-center gap-1 text-primary-ink text-sm font-bold">
                         <Star size={14} className="fill-current" />
                         <span>{artist.rating}</span>
                     </div>
@@ -119,7 +119,7 @@ export const ArtistGridCard = ({ artist, type }: ArtistGridCardProps) => {
                     <p className="text-muted-foreground text-xs">
                         Desde <span className="text-sm font-bold text-foreground">{getPriceDisplay()}</span> <span className="text-[10px]">/hora</span>
                     </p>
-                    <div className="text-xs font-bold text-primary opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300">
+                    <div className="text-xs font-bold text-primary-ink opacity-0 group-hover:opacity-100 transform translate-x-2 group-hover:translate-x-0 transition-all duration-300">
                         VER PERFIL
                     </div>
                 </div>

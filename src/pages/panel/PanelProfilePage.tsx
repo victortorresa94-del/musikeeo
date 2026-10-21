@@ -301,7 +301,7 @@ export default function PanelProfilePage() {
                                     </span>
                                 )}
                                 <span className="px-3 py-1 rounded-full bg-card border border-border text-xs font-medium text-muted-foreground flex items-center gap-1">
-                                    <span className="text-primary">★</span> {artist?.rating || 0} Rating
+                                    <span className="text-primary-ink">★</span> {artist?.rating || 0} Rating
                                 </span>
                             </div>
                         </div>

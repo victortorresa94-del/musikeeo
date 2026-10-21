@@ -19,8 +19,8 @@ export const PanelSidebar = () => {
 
     const getModeColor = (mode: UserMode) => {
         switch (mode) {
-            case 'musician': return 'bg-gradient-to-tr from-brand-cyan to-blue-500';
-            case 'organizer': return 'bg-gradient-to-tr from-brand-lime to-green-500';
+            case 'musician': return 'bg-gradient-to-tr from-primary to-blue-500';
+            case 'organizer': return 'bg-gradient-to-tr from-primary to-green-500';
             case 'provider': return 'bg-gradient-to-tr from-purple-400 to-purple-600';
             default: return 'bg-gray-600';
         }
@@ -52,7 +52,7 @@ export const PanelSidebar = () => {
 
             {/* Salida del panel a la app */}
             <div className="px-4 pb-2">
-                <Link to="/home" className="flex items-center gap-2 h-10 px-3 rounded-xl text-sm font-semibold text-foreground bg-white/[0.06] active:opacity-60">
+                <Link to="/home" className="flex items-center gap-2 h-10 px-3 rounded-xl text-sm font-semibold text-foreground bg-fill active:opacity-60">
                     <ChevronLeft className="h-4 w-4" /> Volver a Musikeeo
                 </Link>
             </div>
@@ -75,7 +75,7 @@ export const PanelSidebar = () => {
                         >
                             <item.icon
                                 size={20}
-                                className={isActive || isSubActive ? 'text-brand-yellow' : 'text-muted-foreground'}
+                                className={isActive || isSubActive ? 'text-primary-ink' : 'text-muted-foreground'}
                             />
                             <p className="text-sm font-medium">
                                 {item.label}
@@ -112,7 +112,7 @@ export const PanelSidebar = () => {
                         }}
                     />
                     <div className="flex flex-col overflow-hidden flex-1">
-                        <p className="text-foreground text-sm font-medium truncate group-hover:text-primary transition-colors">
+                        <p className="text-foreground text-sm font-medium truncate group-hover:text-primary-ink transition-colors">
                             {user?.displayName || 'Usuario'}
                         </p>
                         <button

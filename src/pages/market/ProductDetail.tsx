@@ -51,7 +51,7 @@ export default function ProductDetail() {
     if (loading) {
         return (
             <div className="h-[50vh] flex items-center justify-center">
-                <Loader2 className="h-8 w-8 animate-spin text-primary" />
+                <Loader2 className="h-8 w-8 animate-spin text-primary-ink" />
             </div>
         );
     }
@@ -95,7 +95,7 @@ export default function ProductDetail() {
                             <span className="bg-muted text-muted-foreground text-xs px-3 py-1 rounded-full border border-border flex items-center gap-1">
                                 <Tag className="h-3 w-3" /> {item.category}
                             </span>
-                            <span className="bg-primary/10 text-primary text-[10px] font-bold px-3 py-1 rounded-full border border-primary/30">
+                            <span className="bg-primary/10 text-primary-ink text-[10px] font-bold px-3 py-1 rounded-full border border-primary/30">
                                 {TYPE_LABELS[item.type]}
                             </span>
                         </div>
@@ -127,7 +127,7 @@ export default function ProductDetail() {
                             <span>•</span>
                             <span>{CONDITION_LABELS[item.condition] ?? item.condition}</span>
                             {item.available ? (
-                                <span className="flex items-center gap-1 text-primary">
+                                <span className="flex items-center gap-1 text-primary-ink">
                                     <CheckCircle2 className="h-3 w-3" /> Disponible
                                 </span>
                             ) : (
@@ -136,7 +136,7 @@ export default function ProductDetail() {
                         </div>
                     </div>
 
-                    <div className="text-4xl font-bold tracking-tighter text-primary">
+                    <div className="text-4xl font-bold tracking-tighter text-primary-ink">
                         {formatPrice(item)}
                     </div>
 
@@ -156,7 +156,7 @@ export default function ProductDetail() {
                             <MessageSquare className="w-5 h-5 mr-2" />
                             Contactar
                         </Button>
-                        <Button variant="outline" className="h-12 rounded-xl border-primary/40 text-primary hover:bg-primary/10 font-semibold">
+                        <Button variant="outline" className="h-12 rounded-xl border-primary/40 text-primary-ink hover:bg-primary/10 font-semibold">
                             Guardar
                         </Button>
                     </div>
@@ -214,7 +214,7 @@ export default function ProductDetail() {
                                     className="flex items-center gap-3 p-4 rounded-xl bg-muted border border-border hover:border-primary/30 transition-colors text-left w-full"
                                 >
                                     <div className="p-2 rounded-lg bg-primary/20">
-                                        <MessageSquare size={18} className="text-primary" />
+                                        <MessageSquare size={18} className="text-primary-ink" />
                                     </div>
                                     <div>
                                         <p className="text-foreground font-medium text-sm">Enviar mensaje</p>

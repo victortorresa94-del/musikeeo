@@ -11,17 +11,17 @@ const buttonVariants = cva(
         primary:
           "bg-primary text-primary-foreground font-semibold rounded-xl hover:brightness-105 active:scale-95 hover:",
         ghost:
-          "border border-primary/40 text-primary bg-transparent hover:bg-primary/10 rounded-xl active:scale-95",
+          "border border-primary/40 text-primary-ink bg-transparent hover:bg-primary/10 rounded-xl active:scale-95",
         surface:
           "bg-muted text-foreground border border-border hover:border-border hover:bg-muted/80 rounded-xl active:scale-95",
         destructive:
           "bg-destructive/10 text-destructive border border-destructive/30 rounded-xl hover:bg-destructive/20 active:scale-95",
-        link: "text-primary underline-offset-4 hover:underline",
+        link: "text-primary-ink underline-offset-4 hover:underline",
         glass:
           "bg-card/60 backdrop-blur-md border border-border text-foreground rounded-xl hover:bg-card/80 active:scale-95",
         // Legacy aliases — kept for backward compatibility
         outline:
-          "border border-primary/40 text-primary bg-transparent hover:bg-primary/10 rounded-xl active:scale-95",
+          "border border-primary/40 text-primary-ink bg-transparent hover:bg-primary/10 rounded-xl active:scale-95",
         glow:
           "bg-primary text-primary-foreground font-semibold rounded-xl hover:brightness-105 active:scale-95 hover:",
         default:

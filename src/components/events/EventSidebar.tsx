@@ -35,7 +35,7 @@ export const EventSidebar = ({ className = '', onFilterChange }: EventSidebarPro
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-background to-card border border-primary/30 p-6 shadow-xl group">
                 <div className="absolute -right-10 -top-10 h-32 w-32 rounded-full bg-primary/10 blur-2xl group-hover:bg-primary/20 transition-all"></div>
                 <div className="relative z-10 text-center">
-                    <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary text-2xl border border-primary/20">
+                    <div className="mx-auto mb-3 flex h-16 w-16 items-center justify-center rounded-full bg-primary/10 text-primary-ink text-2xl border border-primary/20">
                         🤖
                     </div>
                     <h3 className="font-heading font-bold text-foreground text-lg leading-tight mb-2">
@@ -52,7 +52,7 @@ export const EventSidebar = ({ className = '', onFilterChange }: EventSidebarPro
 
             {/* Filters */}
             <div className="bg-card rounded-2xl border border-border p-5 space-y-6">
-                <div className="flex items-center gap-2 text-primary font-bold uppercase text-xs tracking-wider mb-2">
+                <div className="flex items-center gap-2 text-primary-ink font-bold uppercase text-xs tracking-wider mb-2">
                     <Filter className="h-4 w-4" />
                     Filtros
                 </div>
@@ -61,7 +61,7 @@ export const EventSidebar = ({ className = '', onFilterChange }: EventSidebarPro
                 <div className="space-y-3">
                     <label className="text-sm font-medium text-muted-foreground">Ubicación</label>
                     <div className="relative">
-                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                        <MapPin className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             placeholder="Ciudad"
                             className="pl-9 bg-muted border-border h-10 text-sm focus:border-primary/50"
@@ -103,7 +103,7 @@ export const EventSidebar = ({ className = '', onFilterChange }: EventSidebarPro
                 <div className="space-y-3">
                     <label className="text-sm font-medium text-muted-foreground">Fecha</label>
                     <div className="relative">
-                        <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-gray-500" />
+                        <Calendar className="absolute left-3 top-2.5 h-4 w-4 text-muted-foreground" />
                         <Input
                             type="date"
                             className="pl-9 bg-muted border-border h-10 text-sm focus:border-primary/50"

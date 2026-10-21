@@ -8,7 +8,7 @@ interface ArtistCardProps {
 
 export function ArtistCard({ artist }: ArtistCardProps) {
     return (
-        <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4 hover:border-[#FFD84D]/30 transition-colors">
+        <div className="bg-card border border-hairline rounded-xl p-4 hover:border-[#FFD84D]/30 transition-colors">
             <div className="flex items-start gap-3">
                 {/* Avatar placeholder */}
                 <div className="size-12 rounded-full bg-gradient-to-br from-[#FFD84D]/20 to-[#FFD84D]/5 flex items-center justify-center shrink-0">
@@ -18,9 +18,9 @@ export function ArtistCard({ artist }: ArtistCardProps) {
                 <div className="flex-1 min-w-0">
                     {/* Name & Format */}
                     <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="font-bold text-white truncate">{artist.nombre}</h4>
+                        <h4 className="font-bold text-foreground truncate">{artist.nombre}</h4>
                         {artist.formato && (
-                            <span className="text-xs px-2 py-0.5 rounded-full bg-[#FFD84D]/10 text-[#FFD84D] font-medium">
+                            <span className="text-xs px-2 py-0.5 rounded-full bg-primary/10 text-[#FFD84D] font-medium">
                                 {artist.formato}
                             </span>
                         )}
@@ -28,20 +28,20 @@ export function ArtistCard({ artist }: ArtistCardProps) {
 
                     {/* Style */}
                     {artist.estilo && (
-                        <p className="text-xs text-gray-400 mt-0.5">{artist.estilo}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">{artist.estilo}</p>
                     )}
 
                     {/* Why they match */}
                     {artist.porQueEncaja && (
-                        <p className="text-sm text-gray-300 mt-2 leading-relaxed">
+                        <p className="text-sm text-muted-foreground mt-2 leading-relaxed">
                             {artist.porQueEncaja}
                         </p>
                     )}
 
                     {/* Price & Link */}
-                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-white/5">
+                    <div className="flex items-center justify-between mt-3 pt-3 border-t border-hairline">
                         {artist.precio && (
-                            <div className="flex items-center gap-1.5 text-sm text-gray-400">
+                            <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                                 <Euro size={14} className="text-[#FFD84D]" />
                                 <span>{artist.precio}</span>
                             </div>
@@ -67,13 +67,13 @@ interface BoloCardProps {
 
 export function BoloCard({ bolo }: BoloCardProps) {
     return (
-        <div className="bg-[#1A1A1A] border border-white/10 rounded-xl p-4 hover:border-[#FFD84D]/30 transition-colors">
+        <div className="bg-card border border-hairline rounded-xl p-4 hover:border-[#FFD84D]/30 transition-colors">
             <div className="space-y-3">
                 {/* Title */}
-                <h4 className="font-bold text-white">{bolo.titulo}</h4>
+                <h4 className="font-bold text-foreground">{bolo.titulo}</h4>
 
                 {/* Details */}
-                <div className="flex flex-wrap gap-3 text-sm text-gray-400">
+                <div className="flex flex-wrap gap-3 text-sm text-muted-foreground">
                     {bolo.fecha && (
                         <div className="flex items-center gap-1.5">
                             <Calendar size={14} className="text-[#FFD84D]" />
@@ -90,15 +90,15 @@ export function BoloCard({ bolo }: BoloCardProps) {
                 </div>
 
                 {/* Format & Cache */}
-                <div className="flex items-center justify-between pt-3 border-t border-white/5">
+                <div className="flex items-center justify-between pt-3 border-t border-hairline">
                     {bolo.formatoBuscado && (
-                        <span className="text-xs px-2 py-0.5 rounded-full bg-white/5 text-gray-300">
+                        <span className="text-xs px-2 py-0.5 rounded-full bg-fill text-muted-foreground">
                             Buscan: {bolo.formatoBuscado}
                         </span>
                     )}
 
                     {bolo.cache && (
-                        <div className="flex items-center gap-1.5 text-sm text-gray-400">
+                        <div className="flex items-center gap-1.5 text-sm text-muted-foreground">
                             <Euro size={14} className="text-[#FFD84D]" />
                             <span>{bolo.cache}</span>
                         </div>
@@ -108,7 +108,7 @@ export function BoloCard({ bolo }: BoloCardProps) {
                 {/* Action */}
                 <Link
                     to={bolo.link || '/eventos'}
-                    className="block w-full text-center py-2 mt-2 rounded-lg bg-[#FFD84D]/10 text-[#FFD84D] hover:bg-[#FFD84D]/20 font-medium text-sm transition-colors"
+                    className="block w-full text-center py-2 mt-2 rounded-lg bg-primary/10 text-[#FFD84D] hover:bg-primary/20 font-medium text-sm transition-colors"
                 >
                     Ver detalles y postular
                 </Link>
@@ -126,7 +126,7 @@ export function ArtistRecommendations({ artists }: ArtistRecommendationsProps) {
 
     return (
         <div className="space-y-3 mt-3">
-            <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
                 Artistas recomendados
             </p>
             <div className="space-y-2">
@@ -147,7 +147,7 @@ export function BoloRecommendations({ bolos }: BoloRecommendationsProps) {
 
     return (
         <div className="space-y-3 mt-3">
-            <p className="text-xs text-gray-500 uppercase tracking-wider font-medium">
+            <p className="text-xs text-muted-foreground uppercase tracking-wider font-medium">
                 Oportunidades que encajan contigo
             </p>
             <div className="space-y-2">

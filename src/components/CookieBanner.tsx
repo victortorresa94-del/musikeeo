@@ -21,7 +21,7 @@ export default function CookieBanner() {
                 >
                     <div className="bg-card border border-border rounded-2xl shadow-2xl p-5 backdrop-blur-md">
                         <div className="flex items-start gap-3 mb-4">
-                            <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary flex items-center justify-center shrink-0">
+                            <div className="w-9 h-9 rounded-xl bg-primary/10 text-primary-ink flex items-center justify-center shrink-0">
                                 <Cookie size={18} />
                             </div>
                             <div className="flex-1">
@@ -30,7 +30,7 @@ export default function CookieBanner() {
                                     Usamos cookies técnicas necesarias para el funcionamiento del sitio. Con tu permiso,
                                     también usamos cookies de analítica para entender cómo se usa Musikeeo y mejorarlo.
                                     Puedes cambiar tu elección en cualquier momento.{' '}
-                                    <Link to="/cookies" className="text-primary hover:underline">Más info</Link>.
+                                    <Link to="/cookies" className="text-primary-ink hover:underline">Más info</Link>.
                                 </p>
                             </div>
                         </div>

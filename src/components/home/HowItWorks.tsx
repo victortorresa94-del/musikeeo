@@ -35,7 +35,7 @@ export const HowItWorks = () => {
                             key={index}
                             className="bg-muted p-8 rounded-2xl border border-border hover:border-primary/50 transition-all duration-300 group hover:-translate-y-2"
                         >
-                            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-background transition-colors text-primary">
+                            <div className="w-14 h-14 rounded-full bg-primary/10 flex items-center justify-center mb-6 group-hover:bg-primary group-hover:text-background transition-colors text-primary-ink">
                                 <step.icon size={28} />
                             </div>
                             <h3 className="text-xl font-bold text-foreground mb-3 font-heading">{step.title}</h3>

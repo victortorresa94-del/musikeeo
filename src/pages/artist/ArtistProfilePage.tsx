@@ -133,7 +133,7 @@ export default function ArtistProfilePage() {
                 <div className="flex flex-col items-center justify-center h-[70vh] gap-4">
                     <h1 className="text-3xl font-bold">Artista no encontrado</h1>
                     <p className="text-muted-foreground">El perfil que buscas no existe o no está disponible</p>
-                    <Link to="/artistas" className="text-primary hover:underline">
+                    <Link to="/artistas" className="text-primary-ink hover:underline">
                         Ver todos los artistas
                     </Link>
                 </div>
@@ -152,7 +152,7 @@ export default function ArtistProfilePage() {
                     </div>
                     <h1 className="text-3xl font-bold">Perfil Privado</h1>
                     <p className="text-muted-foreground">Este perfil es privado y solo visible por su dueño.</p>
-                    <Link to="/artistas" className="text-primary hover:underline">
+                    <Link to="/artistas" className="text-primary-ink hover:underline">
                         Volver a descubrir
                     </Link>
                 </div>
@@ -193,7 +193,7 @@ export default function ArtistProfilePage() {
                             <div className="flex flex-wrap items-center gap-3 mb-2">
                                 <h1 className="text-3xl md:text-4xl font-bold tracking-tight">{artist.artistName}</h1>
                                 {artist.isVerified && (
-                                    <span className="flex items-center gap-1 bg-primary/10 text-primary px-3 py-1 rounded-full text-xs font-bold">
+                                    <span className="flex items-center gap-1 bg-primary/10 text-primary-ink px-3 py-1 rounded-full text-xs font-bold">
                                         <CheckCircle size={14} /> Verificado
                                     </span>
                                 )}
@@ -204,7 +204,7 @@ export default function ArtistProfilePage() {
                                 </span>
                                 {artist.reviewCount > 0 ? (
                                     <span className="flex items-center gap-1">
-                                        <Star size={16} className="text-primary" /> {artist.rating} ({artist.reviewCount} reseñas)
+                                        <Star size={16} className="text-primary-ink" /> {artist.rating} ({artist.reviewCount} reseñas)
                                     </span>
                                 ) : (
                                     <span className="flex items-center gap-1">Nuevo en Musikeeo</span>
@@ -260,7 +260,7 @@ export default function ArtistProfilePage() {
                             artist.tags.length > 0 && (
                                 <div className="flex flex-wrap gap-2 mt-3">
                                     {artist.tags.map((tag) => (
-                                        <span key={tag} className="px-3 py-1 rounded-full border border-primary/30 text-xs text-primary font-medium">
+                                        <span key={tag} className="px-3 py-1 rounded-full border border-primary/30 text-xs text-primary-ink font-medium">
                                             {tag}
                                         </span>
                                     ))}
@@ -289,7 +289,7 @@ export default function ArtistProfilePage() {
                                                 <Clock size={12} /> {pkg.duration}h
                                             </p>
                                         </div>
-                                        <span className="text-primary text-2xl font-bold">{pkg.price}€</span>
+                                        <span className="text-primary-ink text-2xl font-bold">{pkg.price}€</span>
                                     </div>
                                     <p className="text-muted-foreground text-sm line-clamp-2">{pkg.description}</p>
 
@@ -331,7 +331,7 @@ export default function ArtistProfilePage() {
                                                 <div className="absolute inset-0 bg-black/40 group-hover:bg-black/20 transition-colors" />
                                                 <div className="absolute inset-0 flex items-center justify-center">
                                                     <div className="w-14 h-14 rounded-full bg-primary/20 backdrop-blur-sm flex items-center justify-center group-hover:scale-110 transition-transform">
-                                                        <Play size={24} className="text-primary ml-1" fill="currentColor" />
+                                                        <Play size={24} className="text-primary-ink ml-1" fill="currentColor" />
                                                     </div>
                                                 </div>
                                                 <div className="absolute bottom-0 left-0 right-0 p-4 bg-gradient-to-t from-black/80 to-transparent">
@@ -347,7 +347,7 @@ export default function ArtistProfilePage() {
 
                                 {/* Spotify */}
                                 {artist.multimedia.spotifyVisible && artist.multimedia.spotifyUri && (
-                                    <div className="bg-[#121212] rounded-xl p-4 border border-border">
+                                    <div className="bg-card rounded-xl p-4 border border-border">
                                         <div className="flex items-center gap-3 mb-3">
                                             <svg className="w-6 h-6 text-[#1DB954]" fill="currentColor" viewBox="0 0 24 24">
                                                 <path d="M12 0C5.4 0 0 5.4 0 12s5.4 12 12 12 12-5.4 12-12S18.66 0 12 0zm5.521 17.34c-.24.359-.66.48-1.021.24-2.82-1.74-6.36-2.101-10.561-1.141-.418.122-.779-.179-.899-.539-.12-.421.18-.78.54-.9 4.56-1.021 8.52-.6 11.64 1.32.42.18.479.659.301 1.02zm1.44-3.3c-.301.42-.841.6-1.262.3-3.239-1.98-8.159-2.58-11.939-1.38-.479.12-1.02-.12-1.14-.6-.12-.48.12-1.021.6-1.141C9.6 9.9 15 10.561 18.72 12.84c.361.181.54.78.241 1.2zm.12-3.36C15.24 8.4 8.82 8.16 5.16 9.301c-.6.179-1.2-.181-1.38-.721-.18-.601.18-1.2.72-1.381 4.26-1.26 11.28-1.02 15.721 1.621.539.3.719 1.02.419 1.56-.299.421-1.02.599-1.559.3z" />
@@ -448,7 +448,7 @@ export default function ArtistProfilePage() {
                                         <div
                                             key={idx}
                                             className={`aspect-square flex items-center justify-center rounded-md text-xs ${!inMonth ? 'text-muted-foreground/30' :
-                                                status?.status === 'available' ? 'bg-primary/20 text-primary font-bold' :
+                                                status?.status === 'available' ? 'bg-primary/20 text-primary-ink font-bold' :
                                                     status?.status === 'occupied' || status?.status === 'blocked' ? 'bg-red-500/10 text-red-400' :
                                                         'text-muted-foreground'
                                                 } ${today ? 'ring-1 ring-primary' : ''}`}

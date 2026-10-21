@@ -167,15 +167,15 @@ export default function PublishEventPage() {
     };
 
     return (
-        <div className="min-h-screen bg-brand-black text-white flex flex-col">
+        <div className="min-h-screen bg-background text-foreground flex flex-col">
             {/* Simple Top Bar */}
-            <div className="h-16 border-b border-white/10 flex items-center justify-between px-6 bg-brand-black/90 backdrop-blur-md sticky top-0 z-50">
+            <div className="h-16 border-b border-hairline flex items-center justify-between px-6 bg-background/90 backdrop-blur-md sticky top-0 z-50">
                 <div className="flex items-center gap-4">
-                    <Button variant="ghost" size="sm" onClick={prevStep} className="text-gray-400 hover:text-white">
+                    <Button variant="ghost" size="sm" onClick={prevStep} className="text-muted-foreground hover:text-foreground">
                         <ChevronLeft className="w-5 h-5" />
                         <span className="hidden sm:inline">Atrás</span>
                     </Button>
-                    <div className="h-6 w-px bg-white/10" />
+                    <div className="h-6 w-px bg-fill-strong" />
                     <span className="font-bold text-lg tracking-tight">Publicar Nuevo Bolo</span>
                 </div>
 
@@ -184,7 +184,7 @@ export default function PublishEventPage() {
                     {[1, 2, 3].map(s => (
                         <div
                             key={s}
-                            className={`h-2 w-12 rounded-full transition-all duration-300 ${s <= formData.step ? 'bg-brand-yellow' : 'bg-white/10'
+                            className={`h-2 w-12 rounded-full transition-all duration-300 ${s <= formData.step ? 'bg-primary' : 'bg-fill-strong'
                                 }`}
                         />
                     ))}
@@ -201,7 +201,7 @@ export default function PublishEventPage() {
                             {formData.step === 2 && "Talento y Presupuesto"}
                             {formData.step === 3 && "Revisión Final"}
                         </h1>
-                        <p className="text-gray-400">
+                        <p className="text-muted-foreground">
                             {formData.step === 1 && "Comencemos con la información básica de tu convocatoria."}
                             {formData.step === 2 && "Define qué tipo de artista buscas y cuál es tu oferta."}
                             {formData.step === 3 && "Revisa que todo esté correcto antes de lanzar tu anuncio."}

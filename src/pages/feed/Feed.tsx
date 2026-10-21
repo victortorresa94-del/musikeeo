@@ -28,7 +28,7 @@ const fmt = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1).replace('.0', ''
 const Avatar = ({ src, name, className }: { src?: string; name: string; className?: string }) => {
     const [broken, setBroken] = useState(!src);
     return broken ? (
-        <div className={cn('rounded-full bg-white/[0.1] flex items-center justify-center font-heading font-semibold text-foreground/90', className)}>
+        <div className={cn('rounded-full bg-fill-strong flex items-center justify-center font-heading font-semibold text-foreground/90', className)}>
             {name.slice(0, 1).toUpperCase()}
         </div>
     ) : (
@@ -39,7 +39,7 @@ const Avatar = ({ src, name, className }: { src?: string; name: string; classNam
 // Imagen con respaldo de marca si falla la red
 const SafeImg = ({ src, alt, className, fallback }: { src?: string; alt: string; className?: string; fallback?: React.ReactNode }) => {
     const [broken, setBroken] = useState(!src);
-    if (broken) return <div className={cn('flex items-center justify-center bg-gradient-to-br from-primary/20 via-muted to-muted', className)}>{fallback ?? <Music2 className="h-10 w-10 text-primary/60" />}</div>;
+    if (broken) return <div className={cn('flex items-center justify-center bg-gradient-to-br from-primary/20 via-muted to-muted', className)}>{fallback ?? <Music2 className="h-10 w-10 text-primary-ink/60" />}</div>;
     return <img src={src} alt={alt} loading="lazy" decoding="async" onError={() => setBroken(true)} className={className} />;
 };
 
@@ -80,7 +80,7 @@ const StoriesRow = ({ onOpen, onCreate, signedIn }: { onOpen: (id: string) => vo
     <section aria-label="Reels" className="-mx-4 px-4 md:mx-0 md:px-0">
         <div className="flex gap-3.5 overflow-x-auto hide-scrollbar pb-1">
             <button onClick={onCreate} className="flex flex-col items-center gap-1.5 shrink-0 w-[68px]">
-                <span className="h-[68px] w-[68px] rounded-full bg-white/[0.07] flex items-center justify-center text-foreground">
+                <span className="h-[68px] w-[68px] rounded-full bg-fill flex items-center justify-center text-foreground">
                     <Plus className="h-6 w-6" />
                 </span>
                 <span className="text-[11px] text-foreground/80 truncate w-full text-center">{signedIn ? 'Tu reel' : 'Súbete'}</span>
@@ -89,7 +89,7 @@ const StoriesRow = ({ onOpen, onCreate, signedIn }: { onOpen: (id: string) => vo
                 <button key={reel.id} onClick={() => onOpen(reel.id)} className="flex flex-col items-center gap-1.5 shrink-0 w-[68px]" aria-label={`Ver reel de ${reel.authorName}`}>
                     <span className="h-[68px] w-[68px] rounded-full p-[2px] bg-gradient-to-tr from-primary to-amber-200">
                         <span className="block h-full w-full rounded-full p-[2px] bg-background">
-                            <SafeImg src={reel.thumbnailUrl} alt="" className="h-full w-full rounded-full object-cover" fallback={<span className="font-heading font-bold text-primary">{reel.authorName[0]}</span>} />
+                            <SafeImg src={reel.thumbnailUrl} alt="" className="h-full w-full rounded-full object-cover" fallback={<span className="font-heading font-bold text-primary-ink">{reel.authorName[0]}</span>} />
                         </span>
                     </span>
                     <span className="text-[11px] text-muted-foreground truncate w-full text-center">{reel.authorName.split(' ')[0]}</span>
@@ -123,7 +123,7 @@ const Composer = ({ user, go, onCreate }: { user: any; go: (p: string) => void; 
                 { label: 'Bolo', Icon: Calendar, to: '/publicar' },
                 { label: 'Vender', Icon: ShoppingBag, to: '/market/create' },
             ].map(a => (
-                <button key={a.label} onClick={() => a.to ? go(a.to) : onCreate()} className="h-11 flex items-center justify-center gap-2 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted hover:text-primary transition-colors">
+                <button key={a.label} onClick={() => a.to ? go(a.to) : onCreate()} className="h-11 flex items-center justify-center gap-2 rounded-xl text-sm font-medium text-muted-foreground hover:bg-muted hover:text-primary-ink transition-colors">
                     <a.Icon className="h-[18px] w-[18px]" /> {a.label}
                 </button>
             ))}
@@ -167,7 +167,7 @@ const ReelCard = ({ reel, onOpen }: { reel: Reel; onOpen: () => void }) => {
                 <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm text-foreground flex items-center gap-1 truncate">
                         {reel.authorName}
-                        {reel.authorVerified && <BadgeCheck className="h-4 w-4 text-primary shrink-0" aria-label="Verificado" />}
+                        {reel.authorVerified && <BadgeCheck className="h-4 w-4 text-primary-ink shrink-0" aria-label="Verificado" />}
                     </p>
                     <p className="text-xs text-muted-foreground">{reel.songTitle ? `♪ ${reel.songTitle}` : 'Reel'}</p>
                 </div>
@@ -200,14 +200,14 @@ const ReelCard = ({ reel, onOpen }: { reel: Reel; onOpen: () => void }) => {
                             onAnimationComplete={() => setTimeout(() => setBurst(0), 250)}
                             className="absolute inset-0 flex items-center justify-center pointer-events-none"
                         >
-                            <Heart className="h-24 w-24 text-primary fill-primary drop-" />
+                            <Heart className="h-24 w-24 text-primary-ink fill-primary drop-" />
                         </motion.div>
                     )}
                 </AnimatePresence>
             </div>
 
             <div className="flex items-center px-2 pt-1">
-                <button onClick={() => like()} aria-pressed={liked} aria-label={liked ? 'Quitar me gusta' : 'Me gusta'} className={cn('h-11 px-2.5 flex items-center gap-1.5 rounded-xl text-sm font-semibold transition-colors', liked ? 'text-primary' : 'text-foreground/80 hover:text-foreground')}>
+                <button onClick={() => like()} aria-pressed={liked} aria-label={liked ? 'Quitar me gusta' : 'Me gusta'} className={cn('h-11 px-2.5 flex items-center gap-1.5 rounded-xl text-sm font-semibold transition-colors', liked ? 'text-primary-ink' : 'text-foreground/80 hover:text-foreground')}>
                     <motion.span animate={liked ? { scale: [1, 1.3, 1] } : { scale: 1 }} transition={{ duration: 0.3 }}>
                         <Heart className={cn('h-6 w-6', liked && 'fill-current')} />
                     </motion.span>
@@ -249,7 +249,7 @@ const PostCard = ({ post }: { post: FeedPost }) => {
                 <div className="flex-1 min-w-0">
                     <p className="font-bold text-sm text-foreground flex items-center gap-1 truncate">
                         {post.authorName}
-                        {post.authorVerified && <BadgeCheck className="h-4 w-4 text-primary shrink-0" aria-label="Verificado" />}
+                        {post.authorVerified && <BadgeCheck className="h-4 w-4 text-primary-ink shrink-0" aria-label="Verificado" />}
                     </p>
                     <p className="text-xs text-muted-foreground">{post.authorRole}</p>
                 </div>
@@ -262,13 +262,13 @@ const PostCard = ({ post }: { post: FeedPost }) => {
                         <motion.div key={burst} initial={{ scale: 0.3, opacity: 0 }} animate={{ scale: [0.3, 1.15, 1], opacity: [0, 1, 1] }} exit={{ scale: 1.4, opacity: 0 }}
                             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }} onAnimationComplete={() => setTimeout(() => setBurst(0), 250)}
                             className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <Heart className="h-24 w-24 text-primary fill-primary" />
+                            <Heart className="h-24 w-24 text-primary-ink fill-primary" />
                         </motion.div>
                     )}
                 </AnimatePresence>
             </div>
             <div className="flex items-center px-2 pt-1">
-                <button onClick={() => like()} aria-pressed={liked} aria-label={liked ? 'Quitar me gusta' : 'Me gusta'} className={cn('h-11 px-2.5 flex items-center gap-1.5 rounded-xl text-sm font-semibold', liked ? 'text-primary' : 'text-foreground/80')}>
+                <button onClick={() => like()} aria-pressed={liked} aria-label={liked ? 'Quitar me gusta' : 'Me gusta'} className={cn('h-11 px-2.5 flex items-center gap-1.5 rounded-xl text-sm font-semibold', liked ? 'text-primary-ink' : 'text-foreground/80')}>
                     <Heart className={cn('h-6 w-6', liked && 'fill-current')} /> {fmt(post.likes + (liked ? 1 : 0))}
                 </button>
                 <span className="h-11 px-2.5 flex items-center gap-1.5 text-sm font-semibold text-foreground/80"><MessageCircle className="h-6 w-6" /> {fmt(post.comments)}</span>
@@ -333,10 +333,10 @@ const RealPostCard = ({ post, liked, myId, onLike, onOpen, onDelete }: {
                         <MoreHorizontal className="h-5 w-5" />
                     </button>
                     {menu && (
-                        <div className="absolute right-0 top-10 z-20 w-44 rounded-xl bg-[#1c1c1e] border border-white/10 overflow-hidden shadow-xl">
+                        <div className="absolute right-0 top-10 z-20 w-44 rounded-xl bg-sheet border border-hairline overflow-hidden shadow-xl">
                             {mine
-                                ? <button onClick={() => { setMenu(false); onDelete(post); }} className="w-full h-11 px-3 flex items-center gap-2 text-[14px] text-red-400 active:bg-white/5"><Trash2 className="h-4 w-4" /> Eliminar</button>
-                                : <button onClick={report} className="w-full h-11 px-3 flex items-center gap-2 text-[14px] text-foreground active:bg-white/5"><Flag className="h-4 w-4" /> Denunciar</button>}
+                                ? <button onClick={() => { setMenu(false); onDelete(post); }} className="w-full h-11 px-3 flex items-center gap-2 text-[14px] text-red-400 active:bg-fill"><Trash2 className="h-4 w-4" /> Eliminar</button>
+                                : <button onClick={report} className="w-full h-11 px-3 flex items-center gap-2 text-[14px] text-foreground active:bg-fill"><Flag className="h-4 w-4" /> Denunciar</button>}
                         </div>
                     )}
                 </div>
@@ -350,13 +350,13 @@ const RealPostCard = ({ post, liked, myId, onLike, onOpen, onDelete }: {
                         <motion.div key={burst} initial={{ scale: 0.3, opacity: 0 }} animate={{ scale: [0.3, 1.15, 1], opacity: [0, 1, 1] }} exit={{ scale: 1.4, opacity: 0 }}
                             transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }} onAnimationComplete={() => setTimeout(() => setBurst(0), 250)}
                             className="absolute inset-0 flex items-center justify-center pointer-events-none">
-                            <Heart className="h-24 w-24 text-primary fill-primary" />
+                            <Heart className="h-24 w-24 text-primary-ink fill-primary" />
                         </motion.div>
                     )}
                 </AnimatePresence>
             </div>
             <div className="flex items-center px-2 pt-1">
-                <button onClick={() => like()} aria-pressed={liked} aria-label={liked ? 'Quitar me gusta' : 'Me gusta'} className={cn('h-11 px-2.5 flex items-center gap-1.5 rounded-xl text-sm font-semibold', liked ? 'text-primary' : 'text-foreground/80')}>
+                <button onClick={() => like()} aria-pressed={liked} aria-label={liked ? 'Quitar me gusta' : 'Me gusta'} className={cn('h-11 px-2.5 flex items-center gap-1.5 rounded-xl text-sm font-semibold', liked ? 'text-primary-ink' : 'text-foreground/80')}>
                     <Heart className={cn('h-6 w-6', liked && 'fill-current')} /> {post.likeCount > 0 ? fmt(post.likeCount) : ''}
                 </button>
                 <Link to={`/messages?userId=${post.authorId}`} aria-label="Escribir" className="h-11 px-2.5 flex items-center text-foreground/80">
@@ -379,17 +379,17 @@ const postToReel = (p: Post): Reel => ({
 
 // ─── Tarjetas reales ─────────────────────────────────────────────────────────
 const Kicker = ({ Icon, children }: { Icon: React.ElementType; children: React.ReactNode }) => (
-    <p className="flex items-center gap-1.5 text-xs font-semibold text-primary mb-2"><Icon className="h-3.5 w-3.5" />{children}</p>
+    <p className="flex items-center gap-1.5 text-xs font-semibold text-primary-ink mb-2"><Icon className="h-3.5 w-3.5" />{children}</p>
 );
 
 const ListingCard = ({ l }: { l: Listing }) => (
     <Link to={`/market/${l.id}`} className="flex gap-3 bg-card border border-border rounded-2xl p-3 hover:border-primary/40 active:scale-[0.99] transition-all">
-        <SafeImg src={l.images?.[0]} alt={l.title} className="h-24 w-24 rounded-xl object-cover shrink-0" fallback={<ShoppingBag className="h-8 w-8 text-primary/60" />} />
+        <SafeImg src={l.images?.[0]} alt={l.title} className="h-24 w-24 rounded-xl object-cover shrink-0" fallback={<ShoppingBag className="h-8 w-8 text-primary-ink/60" />} />
         <div className="min-w-0 flex flex-col">
             <Kicker Icon={ShoppingBag}>{l.type === 'alquiler' ? 'Se alquila' : l.type === 'prestamo' ? 'Se presta' : 'Se vende'}</Kicker>
             <p className="font-semibold text-sm leading-snug line-clamp-2">{l.title}</p>
             <div className="mt-auto flex items-center gap-2 text-xs text-muted-foreground">
-                <span className="font-heading text-base font-bold text-primary">{l.type === 'prestamo' ? 'Gratis' : `${l.price}€`}</span>
+                <span className="font-heading text-base font-bold text-primary-ink">{l.type === 'prestamo' ? 'Gratis' : `${l.price}€`}</span>
                 {l.userLocation && <span className="truncate flex items-center gap-0.5"><MapPin className="h-3 w-3" />{l.userLocation.split(',')[0]}</span>}
             </div>
         </div>
@@ -422,7 +422,7 @@ const NewArtistsCard = ({ artists }: { artists: Artist[] }) => (
     <section className="bg-card border border-border rounded-2xl p-4">
         <div className="flex items-center justify-between mb-3">
             <Kicker Icon={Music2}>Nuevos en Musikeeo</Kicker>
-            <Link to="/artistas" className="text-xs font-semibold text-primary -mt-2">Ver todos</Link>
+            <Link to="/artistas" className="text-xs font-semibold text-primary-ink -mt-2">Ver todos</Link>
         </div>
         <div className="flex gap-3 overflow-x-auto hide-scrollbar -mx-4 px-4">
             {artists.map(a => (
@@ -536,7 +536,7 @@ export default function Feed() {
 
             <nav aria-label="Atajos" className="flex gap-2 overflow-x-auto hide-scrollbar -mx-4 px-4 md:mx-0 md:px-0">
                 {SHORTCUTS.map(s => (
-                    <Link key={s.to} to={s.to} className="shrink-0 h-9 px-3.5 rounded-full bg-white/[0.07] flex items-center gap-2 text-[14px] font-medium text-foreground/90 active:opacity-60">
+                    <Link key={s.to} to={s.to} className="shrink-0 h-9 px-3.5 rounded-full bg-fill flex items-center gap-2 text-[14px] font-medium text-foreground/90 active:opacity-60">
                         <s.Icon className="h-4 w-4 text-foreground/70" /> {s.label}
                     </Link>
                 ))}

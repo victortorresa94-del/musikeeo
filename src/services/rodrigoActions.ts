@@ -9,7 +9,7 @@ import { createArtist, calculateProfileCompleteness } from './artistService';
 import type { Artist, Event, ListingCategory, ListingCondition, ListingType, RentalUnit, User } from '../types';
 import type { EventDraft, ListingDraft, ProfileDraft } from '../lib/rodrigoEngine';
 
-const CATEGORIES: ListingCategory[] = ['guitarras', 'bajos', 'teclados', 'bateria', 'viento', 'accesorios', 'pa_sonido', 'iluminacion', 'recording', 'partituras', 'otros'];
+const CATEGORIES: ListingCategory[] = ['guitarras', 'bajos', 'teclados', 'bateria', 'viento', 'accesorios', 'pa_sonido', 'iluminacion', 'recording', 'partituras', 'cuerdas', 'otros'];
 const CONDITIONS: ListingCondition[] = ['nuevo', 'como_nuevo', 'bueno', 'aceptable'];
 const TYPES: ListingType[] = ['venta', 'alquiler', 'prestamo'];
 

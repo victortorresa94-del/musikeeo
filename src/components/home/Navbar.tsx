@@ -109,13 +109,13 @@ export const Navbar = () => {
 
                 {/* Desktop Nav */}
                 <nav className="hidden md:flex items-center gap-8">
-                    <Link to="/artistas" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                    <Link to="/artistas" className="text-sm font-medium text-muted-foreground hover:text-primary-ink transition-colors">
                         Músicos
                     </Link>
-                    <Link to="/sonido" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                    <Link to="/sonido" className="text-sm font-medium text-muted-foreground hover:text-primary-ink transition-colors">
                         Proveedores
                     </Link>
-                    <Link to="/eventos" className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors">
+                    <Link to="/eventos" className="text-sm font-medium text-muted-foreground hover:text-primary-ink transition-colors">
                         Eventos
                     </Link>
                 </nav>
@@ -142,7 +142,7 @@ export const Navbar = () => {
                                         {user.displayName?.split(' ')[0] || 'Usuario'}
                                     </span>
                                     {userProfile && (
-                                        <span className="text-[10px] text-primary uppercase font-bold tracking-wide leading-none mt-1">
+                                        <span className="text-[10px] text-primary-ink uppercase font-bold tracking-wide leading-none mt-1">
                                             {getModeLabel(userProfile.primaryMode)}
                                         </span>
                                     )}
@@ -216,7 +216,7 @@ export const Navbar = () => {
                         </div>
                     ) : (
                         /* User is not logged in - show login button */
-                        <Link to="/login" className="text-sm font-bold text-foreground hover:text-primary transition-colors">
+                        <Link to="/login" className="text-sm font-bold text-foreground hover:text-primary-ink transition-colors">
                             Inicia sesión
                         </Link>
                     )}
@@ -264,7 +264,7 @@ export const Navbar = () => {
                                     <p className="text-foreground font-bold">{user.displayName}</p>
                                     <p className="text-xs text-muted-foreground">{user.email}</p>
                                     {userProfile && (
-                                        <p className="text-xs text-primary font-bold mt-1 uppercase">{getModeLabel(userProfile.primaryMode)}</p>
+                                        <p className="text-xs text-primary-ink font-bold mt-1 uppercase">{getModeLabel(userProfile.primaryMode)}</p>
                                     )}
                                 </div>
                             </div>

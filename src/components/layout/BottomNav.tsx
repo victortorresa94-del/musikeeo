@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, PlaySquare, Search, CalendarDays, ShoppingBag } from 'lucide-react';
+import { Home, PlaySquare, Search, CalendarDays } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
 
@@ -15,9 +15,8 @@ interface NavItem {
 const HOME: NavItem = { icon: Home, label: 'Inicio', path: '/home', exact: true };
 const CORE: NavItem[] = [
   { icon: PlaySquare,   label: 'Feed',     path: '/feed', match: /^\/(feed|reels)/ },
-  { icon: Search,       label: 'Explorar', path: '/discover', match: /^\/(discover|artistas|sonido|artist|profile\/)/ },
+  { icon: Search,       label: 'Explorar', path: '/explorar', match: /^\/(explorar|discover|artistas|sonido|artist|profile\/|market)/ },
   { icon: CalendarDays, label: 'Bolos',    path: '/eventos', match: /^\/(eventos|publicar)/ },
-  { icon: ShoppingBag,  label: 'Mercado',  path: '/market', match: /^\/market/ },
 ];
 
 // Barra de pestañas estilo iOS. Sin cuenta: Inicio + 4 (la home es el escaparate).
@@ -38,7 +37,7 @@ export const BottomNav = () => {
   return (
     <nav
       aria-label="Navegación principal"
-      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/85 backdrop-blur-2xl backdrop-saturate-150 border-t border-white/[0.06] pb-safe"
+      className="md:hidden fixed bottom-0 left-0 right-0 z-50 bg-background/85 backdrop-blur-2xl backdrop-saturate-150 border-t border-hairline pb-safe"
     >
       <div className="flex items-stretch justify-around h-[52px]">
         {items.map((item) => {

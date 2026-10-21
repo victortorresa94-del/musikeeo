@@ -12,9 +12,9 @@ interface Props {
 export default function LegalPageLayout({ title, updatedAt, children }: Props) {
     return (
         <div className="dark min-h-screen bg-background text-foreground">
-            <header className="border-b border-border bg-[#0a0a0a]">
+            <header className="border-b border-border bg-background">
                 <div className="max-w-3xl mx-auto px-4 md:px-6 py-4 flex items-center justify-between">
-                    <Link to="/" className="font-heading font-bold text-lg hover:text-primary transition-colors">Musikeeo</Link>
+                    <Link to="/" className="font-heading font-bold text-lg hover:text-primary-ink transition-colors">Musikeeo</Link>
                     <Link
                         to="/"
                         className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
@@ -34,10 +34,10 @@ export default function LegalPageLayout({ title, updatedAt, children }: Props) {
 
                 <footer className="mt-16 pt-6 border-t border-border text-xs text-muted-foreground">
                     <div className="flex flex-wrap gap-x-6 gap-y-2">
-                        <Link to="/aviso-legal" className="hover:text-primary transition-colors">Aviso legal</Link>
-                        <Link to="/privacidad" className="hover:text-primary transition-colors">Privacidad</Link>
-                        <Link to="/cookies" className="hover:text-primary transition-colors">Cookies</Link>
-                        <Link to="/terminos" className="hover:text-primary transition-colors">Términos</Link>
+                        <Link to="/aviso-legal" className="hover:text-primary-ink transition-colors">Aviso legal</Link>
+                        <Link to="/privacidad" className="hover:text-primary-ink transition-colors">Privacidad</Link>
+                        <Link to="/cookies" className="hover:text-primary-ink transition-colors">Cookies</Link>
+                        <Link to="/terminos" className="hover:text-primary-ink transition-colors">Términos</Link>
                     </div>
                 </footer>
             </main>

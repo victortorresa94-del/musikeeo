@@ -229,10 +229,10 @@ export default function Discover() {
 
             <div className="flex-1 min-w-0 pb-28 md:pb-10">
                 {/* ── Cabecera fija: búsqueda + filtros (siempre a mano con el pulgar) ── */}
-                <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 bg-background/85 backdrop-blur-2xl backdrop-saturate-150 border-b border-white/[0.06]">
+                <div className="sticky top-[calc(3.5rem+env(safe-area-inset-top))] z-20 bg-background/85 backdrop-blur-2xl backdrop-saturate-150 border-b border-hairline">
                     <div className="px-4 md:px-8 pt-3 pb-3 space-y-3">
                         {/* Artistas | Técnicos */}
-                        <div className="flex items-center gap-0.5 p-0.5 rounded-[11px] bg-white/[0.08] w-full sm:w-auto sm:inline-flex" role="tablist" aria-label="Qué buscas">
+                        <div className="flex items-center gap-0.5 p-0.5 rounded-[11px] bg-fill-strong w-full sm:w-auto sm:inline-flex" role="tablist" aria-label="Qué buscas">
                             {[
                                 { to: '/discover', label: 'Artistas', Icon: Music2, active: !isSoundServices },
                                 { to: '/sonido', label: 'Técnicos', Icon: Speaker, active: isSoundServices },
@@ -259,7 +259,7 @@ export default function Discover() {
                                 <input
                                     type="search"
                                     enterKeyHint="search"
-                                    className="w-full rounded-[12px] bg-white/[0.08] h-10 pl-9 pr-9 text-[16px] md:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:bg-white/[0.12]"
+                                    className="w-full rounded-[12px] bg-fill-strong h-10 pl-9 pr-9 text-[16px] md:text-sm text-foreground placeholder:text-muted-foreground outline-none focus:bg-fill-strong"
                                     placeholder={isSoundServices ? 'Sonido, luces, backline, ciudad…' : 'Nombre, estilo o ciudad…'}
                                     value={searchQuery}
                                     onChange={(e) => setSearchQuery(e.target.value)}
@@ -272,7 +272,7 @@ export default function Discover() {
                             </label>
                             <button
                                 onClick={() => setIsMobileFiltersOpen(true)}
-                                className="lg:hidden relative h-10 w-10 shrink-0 rounded-[12px] bg-white/[0.08] flex items-center justify-center text-foreground active:opacity-60"
+                                className="lg:hidden relative h-10 w-10 shrink-0 rounded-[12px] bg-fill-strong flex items-center justify-center text-foreground active:opacity-60"
                                 aria-label={`Filtros${activeCount ? ` (${activeCount} activos)` : ''}`}
                             >
                                 <SlidersHorizontal className="h-5 w-5" />
@@ -294,7 +294,7 @@ export default function Discover() {
                                             aria-pressed={on}
                                             className={cn(
                                                 'shrink-0 h-8 px-3.5 rounded-full text-[14px] font-medium border transition-colors',
-                                                on ? 'bg-white text-black border-white' : 'bg-white/[0.07] text-foreground/85 border-transparent'
+                                                on ? 'bg-white text-black border-white' : 'bg-fill text-foreground/85 border-transparent'
                                             )}
                                         >
                                             {g}
@@ -350,7 +350,7 @@ export default function Discover() {
                                     handleFilterChange('equipment', filters.equipment.filter(x => x !== s));
                                 }} />
                             ))}
-                            <button onClick={clearAll} className="text-sm font-semibold text-primary hover:underline px-1">Borrar todo</button>
+                            <button onClick={clearAll} className="text-sm font-semibold text-primary-ink hover:underline px-1">Borrar todo</button>
                         </div>
                     )}
 
@@ -381,7 +381,7 @@ export default function Discover() {
                             <div className="flex flex-col sm:flex-row gap-2 justify-center">
                                 <button onClick={clearAll} className="h-11 px-5 rounded-xl bg-primary text-primary-foreground font-bold">Borrar filtros</button>
                                 <Link to="/rodrigo" className="h-11 px-5 rounded-xl border border-border font-bold flex items-center justify-center gap-2 hover:border-primary/50">
-                                    <Sparkles className="h-4 w-4 text-primary" /> Pídeselo a Rodrigo
+                                    <Sparkles className="h-4 w-4 text-primary-ink" /> Pídeselo a Rodrigo
                                 </Link>
                             </div>
                         </div>
@@ -403,7 +403,7 @@ export default function Discover() {
 }
 
 const ActiveChip = ({ label, onRemove, icon }: { label: string; onRemove: () => void; icon?: React.ReactNode }) => (
-    <span className="inline-flex items-center gap-1.5 h-8 pl-3 pr-1 rounded-full bg-white/[0.08] text-foreground text-sm font-medium">
+    <span className="inline-flex items-center gap-1.5 h-8 pl-3 pr-1 rounded-full bg-fill-strong text-foreground text-sm font-medium">
         {icon}{label}
         <button onClick={onRemove} aria-label={`Quitar ${label}`} className="h-6 w-6 rounded-full flex items-center justify-center text-muted-foreground">
             <X className="h-3.5 w-3.5" />
@@ -413,8 +413,8 @@ const ActiveChip = ({ label, onRemove, icon }: { label: string; onRemove: () => 
 
 // Sin perfiles todavía (lanzamiento): convertir el vacío en invitación
 const EmptyLaunch = ({ isSoundServices }: { isSoundServices: boolean }) => (
-    <div className="relative overflow-hidden rounded-3xl border border-white/10 bg-gradient-to-br from-primary/15 via-card to-card p-7 md:p-10">
-        <p className="text-primary text-sm font-semibold mb-3">Estamos arrancando</p>
+    <div className="relative overflow-hidden rounded-3xl border border-hairline bg-gradient-to-br from-primary/15 via-card to-card p-7 md:p-10">
+        <p className="text-primary-ink text-sm font-semibold mb-3">Estamos arrancando</p>
         <h2 className="font-heading text-2xl md:text-3xl font-bold tracking-tight max-w-md">
             {isSoundServices ? 'Los primeros técnicos se llevan la portada.' : 'Los primeros artistas se llevan la portada.'}
         </h2>
@@ -427,8 +427,8 @@ const EmptyLaunch = ({ isSoundServices }: { isSoundServices: boolean }) => (
             <Link to="/register" className="h-12 px-6 rounded-2xl bg-primary text-primary-foreground font-bold flex items-center justify-center gap-2">
                 Crear mi perfil <ArrowRight className="h-5 w-5" />
             </Link>
-            <Link to="/rodrigo" className="h-12 px-6 rounded-2xl border border-white/15 font-bold flex items-center justify-center gap-2 hover:bg-white/5">
-                <Sparkles className="h-4 w-4 text-primary" /> Busco música para un evento
+            <Link to="/rodrigo" className="h-12 px-6 rounded-2xl border border-hairline-strong font-bold flex items-center justify-center gap-2 hover:bg-fill">
+                <Sparkles className="h-4 w-4 text-primary-ink" /> Busco música para un evento
             </Link>
         </div>
     </div>
@@ -457,8 +457,8 @@ function ArtistCard({ artist, dateFilter, index }: { artist: UnifiedArtist; date
                     ) : (
                         <div className="w-full h-full flex items-center justify-center bg-gradient-to-br from-primary/25 via-muted to-muted">
                             {artist.type === 'technician'
-                                ? <Speaker className="h-12 w-12 text-primary/70" />
-                                : <span className="font-heading text-6xl font-bold text-primary/70">{artist.name.slice(0, 1).toUpperCase()}</span>}
+                                ? <Speaker className="h-12 w-12 text-primary-ink/70" />
+                                : <span className="font-heading text-6xl font-bold text-primary-ink/70">{artist.name.slice(0, 1).toUpperCase()}</span>}
                         </div>
                     )}
                     <div className="absolute inset-x-0 bottom-0 h-1/2 bg-gradient-to-t from-black/70 to-transparent" />
@@ -484,7 +484,7 @@ function ArtistCard({ artist, dateFilter, index }: { artist: UnifiedArtist; date
                 <div className="p-3 flex flex-col gap-1 min-w-0">
                     <p className="font-heading font-bold text-sm md:text-base text-foreground leading-tight flex items-center gap-1 min-w-0">
                         <span className="truncate">{artist.name}</span>
-                        {artist.verified && <BadgeCheck className="h-4 w-4 text-primary shrink-0" aria-label="Verificado" />}
+                        {artist.verified && <BadgeCheck className="h-4 w-4 text-primary-ink shrink-0" aria-label="Verificado" />}
                     </p>
                     <p className="text-xs text-muted-foreground flex items-center gap-1 min-w-0">
                         <MapPin className="h-3 w-3 shrink-0" /> <span className="truncate">{artist.city || 'España'}</span>
@@ -493,7 +493,7 @@ function ArtistCard({ artist, dateFilter, index }: { artist: UnifiedArtist; date
                         <span className="text-[11px] text-foreground/70 truncate">{artist.genres.slice(0, 2).join(' · ') || artist.role}</span>
                         {hasReviews
                             ? <span className="text-[11px] font-bold text-foreground shrink-0">★ {artist.rating.toFixed(1)}</span>
-                            : <span className="text-[10px] font-bold uppercase tracking-wide text-primary shrink-0">Nuevo</span>}
+                            : <span className="text-[10px] font-bold uppercase tracking-wide text-primary-ink shrink-0">Nuevo</span>}
                     </div>
                 </div>
             </Link>

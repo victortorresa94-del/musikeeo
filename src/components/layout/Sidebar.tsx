@@ -4,7 +4,6 @@ import {
   Rss,
   Compass,
   Calendar,
-  ShoppingBag,
   Bot,
   LogOut,
   User,
@@ -21,9 +20,8 @@ interface NavItem {
 
 const NAV_ITEMS: NavItem[] = [
   { icon: Rss,         label: 'Feed',       path: '/feed'     },
-  { icon: Compass,     label: 'Explorar',   path: '/discover' },
+  { icon: Compass,     label: 'Explorar',   path: '/explorar' },
   { icon: Calendar,    label: 'Bolos',      path: '/eventos'  },
-  { icon: ShoppingBag, label: 'Mercado',    path: '/market'   },
   { icon: Bot,         label: 'Rodrigo AI', path: '/rodrigo'  },
 ];
 // La home solo se enseña a quien no tiene cuenta; con cuenta, «Mi perfil»
@@ -47,7 +45,7 @@ export const Sidebar = () => {
           className="h-8 w-8 rounded-lg object-contain flex-shrink-0"
         />
         <span className="font-heading font-bold text-base tracking-wide text-foreground">
-          MUSIK<span className="text-primary">EEO</span>
+          MUSIK<span className="text-primary-ink">EEO</span>
         </span>
       </div>
 
@@ -61,7 +59,7 @@ export const Sidebar = () => {
               cn(
                 'flex items-center gap-3 px-3 py-2.5 text-sm font-medium transition-all duration-150',
                 isActive
-                  ? 'bg-primary/10 text-primary border-l-2 border-primary rounded-r-xl pl-[10px]'
+                  ? 'bg-primary/10 text-primary-ink border-l-2 border-primary rounded-r-xl pl-[10px]'
                   : 'text-muted-foreground hover:bg-background hover:text-foreground rounded-xl'
               )
             }
@@ -71,7 +69,7 @@ export const Sidebar = () => {
                 <item.icon
                   className={cn(
                     'h-5 w-5 flex-shrink-0',
-                    isActive ? 'text-primary' : ''
+                    isActive ? 'text-primary-ink' : ''
                   )}
                 />
                 <span>{item.label}</span>
@@ -121,7 +119,7 @@ export const Sidebar = () => {
               )}
             </div>
             <div className="flex-1 overflow-hidden">
-              <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary transition-colors">
+              <p className="text-sm font-semibold text-foreground truncate group-hover:text-primary-ink transition-colors">
                 {userProfile?.displayName || user?.displayName || 'Tu perfil'}
               </p>
               <p className="text-xs text-muted-foreground truncate capitalize">

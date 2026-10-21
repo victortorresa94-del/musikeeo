@@ -112,7 +112,7 @@ export const CityAutocomplete = ({
             <MapPin className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" size={16} />
             <input
                 ref={inputRef}
-                className="w-full rounded-lg border border-border bg-muted py-2.5 pl-10 pr-3 text-sm text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-gray-500"
+                className="w-full rounded-lg border border-border bg-muted py-2.5 pl-10 pr-3 text-sm text-foreground focus:border-primary focus:ring-1 focus:ring-primary outline-none transition-all placeholder:text-muted-foreground"
                 type="text"
                 placeholder={placeholder}
                 value={inputValue}
@@ -133,13 +133,13 @@ export const CityAutocomplete = ({
                             className={cn(
                                 "w-full px-4 py-2.5 text-left text-sm transition-colors flex items-center gap-2",
                                 highlightedIndex === index
-                                    ? "bg-primary/20 text-primary"
+                                    ? "bg-primary/20 text-primary-ink"
                                     : "text-foreground hover:bg-muted"
                             )}
                             onClick={() => handleSelect(city)}
                             onMouseEnter={() => setHighlightedIndex(index)}
                         >
-                            <MapPin size={14} className="text-gray-500" />
+                            <MapPin size={14} className="text-muted-foreground" />
                             <span>{city}</span>
                         </button>
                     ))}
@@ -149,7 +149,7 @@ export const CityAutocomplete = ({
             {/* No results message */}
             {isOpen && inputValue.length >= 2 && filteredCities.length === 0 && (
                 <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-card border border-border rounded-lg shadow-xl p-3">
-                    <p className="text-sm text-gray-400 text-center">
+                    <p className="text-sm text-muted-foreground text-center">
                         No se encontró "{inputValue}"
                     </p>
                 </div>

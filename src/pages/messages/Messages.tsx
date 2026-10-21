@@ -37,7 +37,7 @@ const Avatar = ({ person, size = 'h-11 w-11' }: { person?: Person; size?: string
     const [broken, setBroken] = useState(false);
     const name = person?.displayName || FALLBACK_NAME;
     return (
-        <span className={cn(size, 'rounded-full overflow-hidden bg-white/10 shrink-0 flex items-center justify-center text-[13px] font-bold text-foreground')}>
+        <span className={cn(size, 'rounded-full overflow-hidden bg-fill-strong shrink-0 flex items-center justify-center text-[13px] font-bold text-foreground')}>
             {person?.photoURL && !broken
                 ? <img src={person.photoURL} alt="" onError={() => setBroken(true)} className="h-full w-full object-cover" />
                 : name.slice(0, 1).toUpperCase()}
@@ -67,7 +67,7 @@ const ChatPane = ({
 
     return (
         <div className="flex flex-col h-full min-h-0 bg-background">
-            <div className="h-14 shrink-0 px-2 md:px-4 flex items-center gap-2 border-b border-white/[0.06]">
+            <div className="h-14 shrink-0 px-2 md:px-4 flex items-center gap-2 border-b border-hairline">
                 {onBack && (
                     <button onClick={onBack} aria-label="Volver a mensajes" className="h-10 w-10 -ml-1 flex items-center justify-center text-foreground active:opacity-60">
                         <ChevronLeft className="h-7 w-7" strokeWidth={2} />
@@ -99,7 +99,7 @@ const ChatPane = ({
                             <div className={cn('flex', mine ? 'justify-end' : 'justify-start', lastOfGroup ? 'mb-2.5' : 'mb-0.5')}>
                                 <div className={cn(
                                     'max-w-[78%] px-3.5 py-2 text-[15px] leading-snug whitespace-pre-wrap break-words rounded-[20px]',
-                                    mine ? 'bg-foreground text-background' : 'bg-white/[0.09] text-foreground',
+                                    mine ? 'bg-foreground text-background' : 'bg-fill-strong text-foreground',
                                     lastOfGroup && (mine ? 'rounded-br-md' : 'rounded-bl-md'),
                                 )}>
                                     {msg.text}
@@ -118,7 +118,7 @@ const ChatPane = ({
             {error && <p className="px-4 pb-1 text-[12px] text-red-400">{error}</p>}
             <form
                 onSubmit={(e) => { e.preventDefault(); onSend(); }}
-                className="shrink-0 flex items-end gap-2 px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] md:pb-3 border-t border-white/[0.06]"
+                className="shrink-0 flex items-end gap-2 px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] md:pb-3 border-t border-hairline"
             >
                 <textarea
                     rows={1}
@@ -129,7 +129,7 @@ const ChatPane = ({
                     }}
                     placeholder="Mensaje"
                     aria-label="Escribe un mensaje"
-                    className="flex-1 resize-none max-h-32 min-h-[40px] rounded-[20px] bg-white/[0.07] border border-white/[0.08] px-4 py-2 text-[16px] leading-6 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-white/20"
+                    className="flex-1 resize-none max-h-32 min-h-[40px] rounded-[20px] bg-fill border border-hairline px-4 py-2 text-[16px] leading-6 text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-hairline-strong"
                 />
                 <button
                     type="submit"
@@ -304,9 +304,9 @@ export default function Messages() {
     );
 
     return (
-        <div className="flex md:h-[calc(100dvh-3.5rem-1.5rem)] md:border-b md:border-white/[0.06]">
+        <div className="flex md:h-[calc(100dvh-3.5rem-1.5rem)] md:border-b md:border-hairline">
             {/* Lista */}
-            <section className="w-full md:w-[340px] md:border-r md:border-white/[0.06] flex flex-col min-h-0">
+            <section className="w-full md:w-[340px] md:border-r md:border-hairline flex flex-col min-h-0">
                 <div className="px-4 pt-3 pb-2">
                     <h1 className="font-heading font-bold text-[34px] leading-tight text-foreground">Mensajes</h1>
                     <label className="relative mt-3 block">
@@ -316,7 +316,7 @@ export default function Messages() {
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder="Buscar"
                             aria-label="Buscar conversaciones"
-                            className="w-full h-9 rounded-[10px] bg-white/[0.07] pl-9 pr-9 text-[16px] md:text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none"
+                            className="w-full h-9 rounded-[10px] bg-fill pl-9 pr-9 text-[16px] md:text-[15px] text-foreground placeholder:text-muted-foreground focus:outline-none"
                         />
                         {query && (
                             <button onClick={() => setQuery('')} aria-label="Borrar búsqueda" className="absolute right-2 top-1/2 -translate-y-1/2 h-6 w-6 flex items-center justify-center text-muted-foreground">
@@ -329,10 +329,10 @@ export default function Messages() {
                 <div className="flex-1 md:overflow-y-auto">
                     {!loaded && [0, 1, 2].map(i => (
                         <div key={i} className="flex items-center gap-3 px-4 py-3">
-                            <span className="h-11 w-11 rounded-full bg-white/[0.07] animate-pulse" />
+                            <span className="h-11 w-11 rounded-full bg-fill animate-pulse" />
                             <span className="flex-1 space-y-2">
-                                <span className="block h-3 w-1/2 rounded bg-white/[0.07] animate-pulse" />
-                                <span className="block h-3 w-3/4 rounded bg-white/[0.05] animate-pulse" />
+                                <span className="block h-3 w-1/2 rounded bg-fill animate-pulse" />
+                                <span className="block h-3 w-3/4 rounded bg-fill animate-pulse" />
                             </span>
                         </div>
                     ))}
@@ -344,7 +344,7 @@ export default function Messages() {
                             <p className="mt-1 text-[14px] text-muted-foreground">Escribe a un artista, a un técnico o a quien vende algo en el Mercado.</p>
                             <div className="mt-5 flex justify-center gap-2">
                                 <Link to="/discover" className="h-9 px-4 rounded-full bg-foreground text-background text-[14px] font-semibold flex items-center">Explorar</Link>
-                                <Link to="/market" className="h-9 px-4 rounded-full bg-white/[0.08] text-foreground text-[14px] font-semibold flex items-center">Mercado</Link>
+                                <Link to="/market" className="h-9 px-4 rounded-full bg-fill-strong text-foreground text-[14px] font-semibold flex items-center">Mercado</Link>
                             </div>
                         </div>
                     )}
@@ -362,12 +362,12 @@ export default function Messages() {
                                 key={chat.id}
                                 onClick={() => openChat(chat.id)}
                                 className={cn(
-                                    'w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors active:bg-white/[0.06]',
-                                    chat.id === selectedId ? 'md:bg-white/[0.07]' : 'md:hover:bg-white/[0.04]',
+                                    'w-full flex items-center gap-3 px-4 py-2.5 text-left transition-colors active:bg-fill',
+                                    chat.id === selectedId ? 'md:bg-fill' : 'md:hover:bg-fill',
                                 )}
                             >
                                 <Avatar person={person} />
-                                <span className="flex-1 min-w-0 border-b border-white/[0.06] pb-2.5 pt-0.5">
+                                <span className="flex-1 min-w-0 border-b border-hairline pb-2.5 pt-0.5">
                                     <span className="flex items-baseline justify-between gap-2">
                                         <span className="font-semibold text-[15px] text-foreground truncate">{person?.displayName || ' '}</span>
                                         <span className="text-[12px] text-muted-foreground shrink-0">{shortWhen(chat.lastMessage?.timestamp || chat.updatedAt)}</span>

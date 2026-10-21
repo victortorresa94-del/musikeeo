@@ -36,12 +36,12 @@ export default function ForgotPassword() {
         <AuthLayout title="Recuperar contraseña" subtitle="Te enviamos un enlace para crear una nueva">
             {sent ? (
                 <div className="space-y-4 text-center">
-                    <CheckCircle2 className="h-10 w-10 text-primary mx-auto" />
+                    <CheckCircle2 className="h-10 w-10 text-primary-ink mx-auto" />
                     <p className="text-foreground font-semibold">Revisa tu correo</p>
                     <p className="text-sm text-muted-foreground">
                         Si hay una cuenta con <span className="text-foreground">{email}</span>, te llegará un enlace para cambiar la contraseña. Mira también en spam.
                     </p>
-                    <Link to="/login" className="inline-block text-sm text-primary font-medium hover:underline">Volver a entrar</Link>
+                    <Link to="/login" className="inline-block text-sm text-primary-ink font-medium hover:underline">Volver a entrar</Link>
                 </div>
             ) : (
                 <form onSubmit={onSubmit} className="space-y-4">

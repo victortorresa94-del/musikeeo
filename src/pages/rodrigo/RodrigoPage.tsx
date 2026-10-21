@@ -151,7 +151,7 @@ export default function RodrigoPage() {
                                     <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75" />
                                     <span className="relative inline-flex rounded-full h-2 w-2 bg-primary" />
                                 </span>
-                                <span className="text-xs font-medium text-primary uppercase tracking-wider">Rodrigo AI Online</span>
+                                <span className="text-xs font-medium text-primary-ink uppercase tracking-wider">Rodrigo AI Online</span>
                             </div>
 
                             {/* Title */}
@@ -175,10 +175,10 @@ export default function RodrigoPage() {
                                     <button
                                         key={i}
                                         onClick={() => setChatOpen(true)}
-                                        className="group flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-2 hover:border-primary/40 hover:text-primary transition-colors"
+                                        className="group flex items-center gap-2 rounded-full border border-border bg-muted px-4 py-2 hover:border-primary/40 hover:text-primary-ink transition-colors"
                                     >
-                                        <prompt.icon size={16} className="text-primary group-hover:scale-110 transition-transform" />
-                                        <span className="text-sm text-muted-foreground group-hover:text-primary transition-colors">{prompt.text}</span>
+                                        <prompt.icon size={16} className="text-primary-ink group-hover:scale-110 transition-transform" />
+                                        <span className="text-sm text-muted-foreground group-hover:text-primary-ink transition-colors">{prompt.text}</span>
                                     </button>
                                 ))}
                             </div>
@@ -211,12 +211,12 @@ export default function RodrigoPage() {
 
                                 {/* Status Card Overlay */}
                                 <div className="absolute bottom-6 left-6 right-6 z-20 bg-muted backdrop-blur-md border border-border rounded-xl p-4 flex items-center gap-4">
-                                    <div className="size-10 rounded-full bg-primary/10 border border-border flex items-center justify-center text-primary shrink-0">
+                                    <div className="size-10 rounded-full bg-primary/10 border border-border flex items-center justify-center text-primary-ink shrink-0">
                                         <Music size={20} />
                                     </div>
                                     <div>
                                         <p className="text-xs text-muted-foreground uppercase tracking-wider font-bold">Status</p>
-                                        <p className="text-sm font-medium text-white">Buscando bandas disponibles...</p>
+                                        <p className="text-sm font-medium text-foreground">Buscando bandas disponibles...</p>
                                     </div>
                                 </div>
                             </div>
@@ -233,7 +233,7 @@ export default function RodrigoPage() {
                             <h2 className="text-3xl font-bold tracking-tight mb-2">Cómo puedo ayudarte</h2>
                             <p className="text-muted-foreground">Tu asistente integral para eventos inolvidables.</p>
                         </div>
-                        <a href="/eventos" className="text-primary text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all">
+                        <a href="/eventos" className="text-primary-ink text-sm font-bold flex items-center gap-1 hover:gap-2 transition-all">
                             Ver todas las funciones <ArrowRight size={16} />
                         </a>
                     </div>
@@ -247,7 +247,7 @@ export default function RodrigoPage() {
                                 transition={{ duration: 0.4, delay: i * 0.1 }}
                                 className="group relative rounded-xl bg-muted border border-border p-6 hover:border-primary/40 transition-colors"
                             >
-                                <div className="mb-4 inline-flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary group-hover:scale-110 transition-transform">
+                                <div className="mb-4 inline-flex size-12 items-center justify-center rounded-lg bg-primary/10 text-primary-ink group-hover:scale-110 transition-transform">
                                     <feature.icon size={24} />
                                 </div>
                                 <h3 className="mb-2 text-lg font-bold">{feature.title}</h3>
@@ -265,7 +265,7 @@ export default function RodrigoPage() {
                     <p className="text-muted-foreground leading-relaxed mb-8">
                         Analizo tus búsquedas, tus anuncios y tu perfil musical para ofrecerte las mejores coincidencias.
                         <br />
-                        <span className="text-primary">Nunca comparto tus datos fuera de Musikeeo.</span>
+                        <span className="text-primary-ink">Nunca comparto tus datos fuera de Musikeeo.</span>
                     </p>
                     <Button
                         onClick={() => setChatOpen(true)}

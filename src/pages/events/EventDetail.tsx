@@ -119,7 +119,7 @@ export default function EventDetail() {
     if (!event) {
         return (
             <div className="text-center py-20 animate-fade-in-up">
-                <h2 className="text-2xl font-bold text-white mb-4">Evento no encontrado</h2>
+                <h2 className="text-2xl font-bold text-foreground mb-4">Evento no encontrado</h2>
                 <Button onClick={() => navigate('/eventos')}>Volver a Eventos</Button>
             </div>
         );
@@ -127,12 +127,12 @@ export default function EventDetail() {
 
     return (
         <div className="max-w-5xl mx-auto p-4 md:p-6 space-y-6 animate-fade-in-up">
-            <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2 text-muted-foreground hover:text-white">
+            <Button variant="ghost" onClick={() => navigate(-1)} className="gap-2 text-muted-foreground hover:text-foreground">
                 <ArrowLeft className="w-4 h-4" /> Volver
             </Button>
 
             {/* Hero Section */}
-            <div className="relative h-64 md:h-96 rounded-3xl overflow-hidden bg-zinc-900 border border-white/5">
+            <div className="relative h-64 md:h-96 rounded-3xl overflow-hidden bg-zinc-900 border border-hairline">
                 <div className="absolute inset-0 bg-gradient-to-t from-black via-black/40 to-transparent z-10" />
                 <img
                     src={event.imageUrl || "https://images.unsplash.com/photo-1501281668745-f7f57925c3b4?w=1000&q=80"}
@@ -143,22 +143,22 @@ export default function EventDetail() {
                 <div className="absolute bottom-0 left-0 right-0 p-6 z-20">
                     <div className="flex flex-col md:flex-row items-end justify-between gap-4">
                         <div>
-                            <span className="bg-brand-lime text-black text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">
+                            <span className="bg-primary text-black text-xs font-bold px-2 py-1 rounded-full uppercase tracking-wider mb-2 inline-block">
                                 {event.type}
                             </span>
                             <h1 className="text-3xl md:text-5xl font-heading font-bold text-white leading-tight mb-2">
                                 {event.title}
                             </h1>
-                            <div className="flex flex-wrap items-center gap-4 text-sm text-gray-300">
-                                <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full backdrop-blur-md">
+                            <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                                <span className="flex items-center gap-1.5 bg-fill-strong px-3 py-1 rounded-full backdrop-blur-md">
                                     <Calendar className="h-4 w-4 text-foreground/70" />
                                     {new Date(event.date).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'long' })}
                                 </span>
-                                <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full backdrop-blur-md">
+                                <span className="flex items-center gap-1.5 bg-fill-strong px-3 py-1 rounded-full backdrop-blur-md">
                                     <Clock className="h-4 w-4 text-foreground/70" />
                                     {new Date(event.date).toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' })}
                                 </span>
-                                <span className="flex items-center gap-1.5 bg-white/10 px-3 py-1 rounded-full backdrop-blur-md">
+                                <span className="flex items-center gap-1.5 bg-fill-strong px-3 py-1 rounded-full backdrop-blur-md">
                                     <MapPin className="h-4 w-4 text-foreground/70" />
                                     {event.location}
                                 </span>
@@ -174,7 +174,7 @@ export default function EventDetail() {
                             ) : null}
                             {!isOrganizer && (
                                 <Button
-                                    className={`h-12 px-6 rounded-[14px] font-semibold ${isApplied ? 'bg-white/10 text-white' : 'bg-primary text-primary-foreground hover:opacity-90'}`}
+                                    className={`h-12 px-6 rounded-[14px] font-semibold ${isApplied ? 'bg-white/20 backdrop-blur text-white' : 'bg-primary text-primary-foreground hover:opacity-90'}`}
                                     onClick={handleApply}
                                     disabled={isApplied || applying}
                                 >
@@ -190,20 +190,20 @@ export default function EventDetail() {
 
             <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
                 <div className="md:col-span-2 space-y-6">
-                    <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
-                        <h3 className="font-heading font-bold text-white mb-4">Detalles</h3>
-                        <p className="text-gray-300 leading-relaxed whitespace-pre-wrap">
+                    <div className="bg-fill border border-hairline rounded-2xl p-6">
+                        <h3 className="font-heading font-bold text-foreground mb-4">Detalles</h3>
+                        <p className="text-muted-foreground leading-relaxed whitespace-pre-wrap">
                             {event.description || "Sin descripción detallada. Contacta al organizador para más información."}
                         </p>
                     </div>
 
-                    <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
-                        <h3 className="font-heading font-bold text-white mb-4 flex items-center gap-2">
-                            <Music className="h-5 w-5 text-brand-lime" /> Requisitos
+                    <div className="bg-fill border border-hairline rounded-2xl p-6">
+                        <h3 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
+                            <Music className="h-5 w-5 text-primary-ink" /> Requisitos
                         </h3>
                         <div className="flex flex-wrap gap-2">
                             {event.tags?.map(tag => (
-                                <span key={tag} className="bg-white/10 text-white text-xs px-3 py-1 rounded-full border border-white/10">
+                                <span key={tag} className="bg-fill-strong text-foreground text-xs px-3 py-1 rounded-full border border-hairline">
                                     {tag}
                                 </span>
                             )) || <span className="text-muted-foreground">No especificado</span>}
@@ -212,8 +212,8 @@ export default function EventDetail() {
 
                     {/* Applicants section — only visible to organizer */}
                     {isOrganizer && (
-                        <div className="bg-white/5 border border-white/5 rounded-2xl p-6">
-                            <h3 className="font-heading font-bold text-white mb-4 flex items-center gap-2">
+                        <div className="bg-fill border border-hairline rounded-2xl p-6">
+                            <h3 className="font-heading font-bold text-foreground mb-4 flex items-center gap-2">
                                 <Users className="h-5 w-5 text-foreground/70" />
                                 Aplicantes {applications.length > 0 && <span className="text-muted-foreground text-sm">({applications.length})</span>}
                             </h3>
@@ -227,26 +227,26 @@ export default function EventDetail() {
                             ) : (
                                 <ul className="space-y-3">
                                     {applications.map(app => (
-                                        <li key={app.id} className="bg-black/30 border border-white/5 rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
+                                        <li key={app.id} className="bg-black/30 border border-hairline rounded-xl p-4 flex flex-col sm:flex-row sm:items-center gap-3">
                                             <div className="flex items-center gap-3 flex-1 min-w-0">
-                                                <div className="h-10 w-10 rounded-full bg-zinc-800 flex items-center justify-center border border-white/10 overflow-hidden shrink-0">
+                                                <div className="h-10 w-10 rounded-full bg-zinc-800 flex items-center justify-center border border-hairline overflow-hidden shrink-0">
                                                     {app.applicant?.photoURL ? (
                                                         <img src={app.applicant.photoURL} alt="" loading="lazy" className="w-full h-full object-cover" />
                                                     ) : (
-                                                        <span className="font-bold text-white text-sm uppercase">
+                                                        <span className="font-bold text-foreground text-sm uppercase">
                                                             {(app.applicant?.displayName || '?').substring(0, 2)}
                                                         </span>
                                                     )}
                                                 </div>
                                                 <div className="min-w-0">
-                                                    <p className="font-semibold text-white text-sm truncate">
+                                                    <p className="font-semibold text-foreground text-sm truncate">
                                                         {app.applicant?.displayName || 'Usuario desconocido'}
                                                     </p>
                                                     {app.applicant?.primaryMode && (
                                                         <p className="text-xs text-muted-foreground capitalize">{app.applicant.primaryMode}</p>
                                                     )}
                                                     {app.message && (
-                                                        <p className="text-xs text-gray-300 mt-1 line-clamp-2">{app.message}</p>
+                                                        <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{app.message}</p>
                                                     )}
                                                 </div>
                                             </div>
@@ -256,14 +256,14 @@ export default function EventDetail() {
                                                         <Button
                                                             size="sm"
                                                             variant="outline"
-                                                            className="h-8 border-white/10 hover:bg-white/5 text-xs gap-1"
+                                                            className="h-8 border-hairline hover:bg-fill text-xs gap-1"
                                                             onClick={() => app.applicantId && handleContactApplicant(app.applicantId)}
                                                         >
                                                             <MessageSquare size={12} /> Chat
                                                         </Button>
                                                         <Button
                                                             size="sm"
-                                                            className="h-8 bg-brand-lime text-black hover:bg-brand-lime/90 text-xs gap-1"
+                                                            className="h-8 bg-primary text-black hover:bg-primary/90 text-xs gap-1"
                                                             onClick={() => app.id && handleUpdateStatus(app.id, 'accepted')}
                                                         >
                                                             <Check size={12} /> Aceptar
@@ -280,7 +280,7 @@ export default function EventDetail() {
                                                 ) : (
                                                     <span className={`text-xs font-bold px-3 py-1 rounded-full ${
                                                         app.status === 'accepted'
-                                                            ? 'bg-brand-lime/20 text-brand-lime'
+                                                            ? 'bg-primary/20 text-primary-ink'
                                                             : 'bg-red-500/20 text-red-400'
                                                     }`}>
                                                         {app.status === 'accepted' ? 'Aceptado' : 'Rechazado'}
@@ -296,21 +296,21 @@ export default function EventDetail() {
                 </div>
 
                 <div className="space-y-6">
-                    <div className="bg-black/20 border border-white/5 rounded-2xl p-6">
-                        <h3 className="font-heading font-bold text-white mb-4">Organizador</h3>
+                    <div className="bg-black/20 border border-hairline rounded-2xl p-6">
+                        <h3 className="font-heading font-bold text-foreground mb-4">Organizador</h3>
                         <div className="flex items-center gap-3 mb-4">
-                            <div className="h-10 w-10 rounded-full bg-zinc-800 flex items-center justify-center border border-white/10">
-                                <span className="font-bold text-white">{event.organizerName.substring(0, 2)}</span>
+                            <div className="h-10 w-10 rounded-full bg-zinc-800 flex items-center justify-center border border-hairline">
+                                <span className="font-bold text-foreground">{event.organizerName.substring(0, 2)}</span>
                             </div>
                             <div>
-                                <p className="font-bold text-white text-sm">{event.organizerName}</p>
+                                <p className="font-bold text-foreground text-sm">{event.organizerName}</p>
                                 <p className="text-xs text-muted-foreground">Promotor Verificado</p>
                             </div>
                         </div>
                         {!isOrganizer && (
                             <Button
                                 variant="outline"
-                                className="w-full border-white/10 hover:bg-white/5 text-xs"
+                                className="w-full border-hairline hover:bg-fill text-xs"
                                 onClick={async () => {
                                     if (!user) {
                                         toast.error("Debes iniciar sesión");
@@ -335,7 +335,7 @@ export default function EventDetail() {
                             </Button>
                         )}
                         {!isOrganizer && (
-                            <div className="pt-3 mt-3 border-t border-white/5 flex justify-end">
+                            <div className="pt-3 mt-3 border-t border-hairline flex justify-end">
                                 <ReportButton targetType="event" targetId={event.id} variant="text" />
                             </div>
                         )}

@@ -43,11 +43,11 @@ export default function Step2Talent({ data, update, onNext, onPrev }: StepProps)
     };
 
     return (
-        <div className="space-y-8 bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
+        <div className="space-y-8 bg-fill border border-hairline rounded-2xl p-6 md:p-8">
 
             {/* Artist Type */}
             <div className="space-y-4">
-                <Label className="text-base text-white">¿Qué estás buscando?</Label>
+                <Label className="text-base text-foreground">¿Qué estás buscando?</Label>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                     {ARTIST_TYPES.map(type => {
                         const isSelected = data.artistType.includes(type);
@@ -56,11 +56,11 @@ export default function Step2Talent({ data, update, onNext, onPrev }: StepProps)
                                 key={type}
                                 onClick={() => toggleArtistType(type)}
                                 className={`cursor-pointer rounded-xl border p-4 text-center transition-all duration-200 ${isSelected
-                                    ? 'bg-brand-yellow/10 border-brand-yellow text-brand-yellow font-bold'
-                                    : 'bg-black/40 border-white/10 text-gray-400 hover:border-white/30'
+                                    ? 'bg-primary/10 border-primary text-primary-ink font-bold'
+                                    : 'bg-black/40 border-hairline text-muted-foreground hover:border-white/30'
                                     }`}
                             >
-                                <Music className={`mx-auto mb-2 w-5 h-5 ${isSelected ? 'text-brand-yellow' : 'text-gray-500'}`} />
+                                <Music className={`mx-auto mb-2 w-5 h-5 ${isSelected ? 'text-primary-ink' : 'text-muted-foreground'}`} />
                                 <span className="text-sm">{type}</span>
                             </div>
                         );
@@ -70,20 +70,20 @@ export default function Step2Talent({ data, update, onNext, onPrev }: StepProps)
 
             {/* Budget */}
             <div className="space-y-4">
-                <Label className="text-base text-white">Presupuesto</Label>
+                <Label className="text-base text-foreground">Presupuesto</Label>
                 <div className="flex gap-4 items-start">
                     <div className="relative flex-1">
-                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 h-4 w-4" />
+                        <DollarSign className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground h-4 w-4" />
                         <Input
                             type="number"
                             value={data.budget || ''}
                             onChange={(e) => update('budget', Number(e.target.value))}
                             placeholder="Presupuesto"
-                            className="pl-10 bg-black/40 border-white/10 text-white h-12" // Removed font-mono
+                            className="pl-10 bg-black/40 border-hairline text-foreground h-12" // Removed font-mono
                         />
                     </div>
-                    <div className="w-24 flex items-center justify-center bg-white/5 border border-white/10 rounded-md h-12">
-                        <span className="text-gray-400 font-medium">EUR (€)</span>
+                    <div className="w-24 flex items-center justify-center bg-fill border border-hairline rounded-md h-12">
+                        <span className="text-muted-foreground font-medium">EUR (€)</span>
                     </div>
                 </div>
 
@@ -91,43 +91,43 @@ export default function Step2Talent({ data, update, onNext, onPrev }: StepProps)
                     <Switch
                         checked={data.negotiable}
                         onCheckedChange={(checked) => update('negotiable', checked)}
-                        className="data-[state=checked]:bg-brand-yellow"
+                        className="data-[state=checked]:bg-primary"
                     />
-                    <span className="text-sm text-gray-300">Abierto a negociación</span>
+                    <span className="text-sm text-muted-foreground">Abierto a negociación</span>
                 </div>
             </div>
 
             {/* Description */}
             <div className="space-y-3">
-                <Label className="text-base text-white">Descripción del Bolo</Label>
+                <Label className="text-base text-foreground">Descripción del Bolo</Label>
                 <Textarea
                     value={data.description}
                     onChange={(e) => update('description', e.target.value)}
                     placeholder="Describe los detalles: duración, rider técnico disponible, ambiente deseado..."
-                    className="bg-black/40 border-white/10 text-white min-h-[120px]"
+                    className="bg-black/40 border-hairline text-foreground min-h-[120px]"
                 />
-                <p className="text-xs text-gray-500 text-right">{data.description.length}/40 caracteres mínimos</p>
+                <p className="text-xs text-muted-foreground text-right">{data.description.length}/40 caracteres mínimos</p>
             </div>
 
             {/* Image (Mock) */}
             <div className="space-y-3">
-                <Label className="text-base text-white">Imagen de Portada (Opcional)</Label>
+                <Label className="text-base text-foreground">Imagen de Portada (Opcional)</Label>
                 <div
                     onClick={() => fileInputRef.current?.click()}
-                    className="border border-dashed border-white/10 rounded-xl p-0 h-48 flex flex-col items-center justify-center bg-black/20 hover:bg-white/5 transition-colors cursor-pointer text-gray-500 hover:text-white overflow-hidden relative group"
+                    className="border border-dashed border-hairline rounded-xl p-0 h-48 flex flex-col items-center justify-center bg-black/20 hover:bg-fill transition-colors cursor-pointer text-muted-foreground hover:text-foreground overflow-hidden relative group"
                 >
                     {data.image ? (
                         <>
                             <img src={data.image} alt="Preview" className="w-full h-full object-cover" />
                             <div className="absolute inset-0 bg-black/60 opacity-0 group-hover:opacity-100 flex items-center justify-center transition-opacity">
-                                <span className="flex items-center gap-2 font-medium text-white"><ImageIcon className="w-5 h-5" /> Cambiar Imagen</span>
+                                <span className="flex items-center gap-2 font-medium text-foreground"><ImageIcon className="w-5 h-5" /> Cambiar Imagen</span>
                             </div>
                         </>
                     ) : (
                         <>
                             <ImageIcon className="w-8 h-8 mb-2 opacity-50" />
                             <span className="text-sm">Arrastra una imagen o haz clic para subir</span>
-                            <span className="text-xs text-gray-600 mt-1">PNG, JPG hasta 10MB</span>
+                            <span className="text-xs text-muted-foreground mt-1">PNG, JPG hasta 10MB</span>
                         </>
                     )}
                     <input
@@ -140,18 +140,18 @@ export default function Step2Talent({ data, update, onNext, onPrev }: StepProps)
                 </div>
             </div>
 
-            <div className="pt-6 border-t border-white/5 flex justify-between">
+            <div className="pt-6 border-t border-hairline flex justify-between">
                 <Button
                     variant="ghost"
                     onClick={onPrev}
-                    className="text-gray-400 hover:text-white"
+                    className="text-muted-foreground hover:text-foreground"
                 >
                     Atrás
                 </Button>
                 <Button
                     onClick={onNext}
                     disabled={!isValid}
-                    className="bg-brand-yellow text-brand-black font-bold h-12 px-8 hover:bg-brand-warm disabled:opacity-50"
+                    className="bg-primary text-primary-foreground font-bold h-12 px-8 hover:bg-primary disabled:opacity-50"
                 >
                     Siguiente Paso
                 </Button>

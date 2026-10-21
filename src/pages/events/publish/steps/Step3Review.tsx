@@ -41,14 +41,14 @@ export default function Step3Review({ data, onPublish, onPrev, isPublishing }: S
     return (
         <div className="space-y-8">
 
-            <div className="bg-white/5 border border-white/10 rounded-2xl p-6 md:p-8">
+            <div className="bg-fill border border-hairline rounded-2xl p-6 md:p-8">
                 <div className="flex flex-col md:flex-row gap-8">
 
                     {/* Preview Column */}
                     <div className="flex-1 space-y-4">
-                        <h3 className="text-white font-bold flex items-center gap-2">
+                        <h3 className="text-foreground font-bold flex items-center gap-2">
                             Vista Previa del Anuncio
-                            <span className="text-xs font-normal text-gray-500 bg-white/10 px-2 py-0.5 rounded-full">Así lo verán los artistas</span>
+                            <span className="text-xs font-normal text-muted-foreground bg-fill-strong px-2 py-0.5 rounded-full">Así lo verán los artistas</span>
                         </h3>
 
                         <div className="max-w-sm mx-auto md:mx-0 pointer-events-none opacity-90 scale-95 origin-top-left">
@@ -58,40 +58,40 @@ export default function Step3Review({ data, onPublish, onPrev, isPublishing }: S
 
                     {/* Summary Column */}
                     <div className="flex-1 space-y-6">
-                        <h3 className="text-white font-bold">Resumen de Datos</h3>
+                        <h3 className="text-foreground font-bold">Resumen de Datos</h3>
 
                         <dl className="space-y-4 text-sm">
-                            <div className="flex justify-between border-b border-white/5 pb-2">
-                                <dt className="text-gray-400">Título</dt>
-                                <dd className="text-white font-medium text-right">{data.title}</dd>
+                            <div className="flex justify-between border-b border-hairline pb-2">
+                                <dt className="text-muted-foreground">Título</dt>
+                                <dd className="text-foreground font-medium text-right">{data.title}</dd>
                             </div>
-                            <div className="flex justify-between border-b border-white/5 pb-2">
-                                <dt className="text-gray-400">Tipo</dt>
-                                <dd className="text-white font-medium text-right">{data.type}</dd>
+                            <div className="flex justify-between border-b border-hairline pb-2">
+                                <dt className="text-muted-foreground">Tipo</dt>
+                                <dd className="text-foreground font-medium text-right">{data.type}</dd>
                             </div>
-                            <div className="flex justify-between border-b border-white/5 pb-2">
-                                <dt className="text-gray-400">Talento</dt>
-                                <dd className="text-white font-medium text-right">{data.artistType.join(', ')}</dd>
+                            <div className="flex justify-between border-b border-hairline pb-2">
+                                <dt className="text-muted-foreground">Talento</dt>
+                                <dd className="text-foreground font-medium text-right">{data.artistType.join(', ')}</dd>
                             </div>
-                            <div className="flex justify-between border-b border-white/5 pb-2">
-                                <dt className="text-gray-400">Presupuesto</dt>
-                                <dd className="text-white font-medium text-right">
+                            <div className="flex justify-between border-b border-hairline pb-2">
+                                <dt className="text-muted-foreground">Presupuesto</dt>
+                                <dd className="text-foreground font-medium text-right">
                                     {data.budget.toLocaleString()} EUR
-                                    {data.negotiable && <span className="block text-xs text-brand-yellow font-normal">Negociable</span>}
+                                    {data.negotiable && <span className="block text-xs text-primary-ink font-normal">Negociable</span>}
                                 </dd>
                             </div>
-                            <div className="flex justify-between border-b border-white/5 pb-2">
-                                <dt className="text-gray-400">Fecha</dt>
-                                <dd className="text-white font-medium text-right">{data.date} • {data.startTime}</dd>
+                            <div className="flex justify-between border-b border-hairline pb-2">
+                                <dt className="text-muted-foreground">Fecha</dt>
+                                <dd className="text-foreground font-medium text-right">{data.date} • {data.startTime}</dd>
                             </div>
-                            <div className="flex justify-between border-b border-white/5 pb-2">
-                                <dt className="text-gray-400">Ubicación</dt>
-                                <dd className="text-white font-medium text-right">{data.location}</dd>
+                            <div className="flex justify-between border-b border-hairline pb-2">
+                                <dt className="text-muted-foreground">Ubicación</dt>
+                                <dd className="text-foreground font-medium text-right">{data.location}</dd>
                             </div>
                         </dl>
 
                         <div className="flex gap-3">
-                            <Button variant="outline" onClick={onPrev} className="flex-1 border-white/10 text-white hover:bg-white/5">
+                            <Button variant="outline" onClick={onPrev} className="flex-1 border-hairline text-foreground hover:bg-fill">
                                 <Edit2 className="w-4 h-4 mr-2" />
                                 Editar
                             </Button>
@@ -104,7 +104,7 @@ export default function Step3Review({ data, onPublish, onPrev, isPublishing }: S
                 <Button
                     onClick={onPublish}
                     disabled={isPublishing}
-                    className="w-full md:w-auto bg-brand-yellow text-brand-black font-bold h-14 px-10 text-lg hover:bg-brand-warm shadow-lg shadow-brand-yellow/20"
+                    className="w-full md:w-auto bg-primary text-primary-foreground font-bold h-14 px-10 text-lg hover:bg-primary shadow-lg shadow-primary/20"
                 >
                     {isPublishing ? (
                         <span className="animate-pulse">Publicando...</span>

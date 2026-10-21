@@ -46,7 +46,7 @@ export default function EmailVerificationBanner() {
 
     // Tarjeta discreta encima de la barra de pestañas: arriba tapaba la cabecera.
     return (
-        <div className="fixed inset-x-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:inset-x-auto md:right-4 md:top-[4.25rem] md:bottom-auto md:w-[380px] z-[55] rounded-2xl bg-neutral-900/95 border border-white/10 backdrop-blur-xl">
+        <div className="fixed inset-x-3 bottom-[calc(4.75rem+env(safe-area-inset-bottom))] md:inset-x-auto md:right-4 md:top-[4.25rem] md:bottom-auto md:w-[380px] z-[55] rounded-2xl bg-neutral-900/95 border border-hairline backdrop-blur-xl">
             <div className="pl-4 pr-2 py-2.5 flex items-center gap-3">
                 <Mail size={18} className="text-muted-foreground shrink-0" />
                 <p className="flex-1 text-[14px] leading-snug text-foreground">

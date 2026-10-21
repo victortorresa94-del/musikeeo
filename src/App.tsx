@@ -3,16 +3,15 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import { useEffect, Suspense, lazy } from 'react';
 import { MainLayout } from './layouts/MainLayout';
 import { useAutoUpdate } from './hooks/useAutoUpdate';
+import { THEME_KEY, applyTheme } from './hooks/useTheme';
 import { Loader2 } from 'lucide-react';
 
 // Apply saved theme before first render to prevent flash
 function ThemeInit() {
   useEffect(() => {
-    // v2: la versión anterior guardaba 'light' por defecto a todo el mundo
-    const saved = localStorage.getItem('musikeeo-theme-v2');
-    // Musikeeo es dark-first: solo modo claro si el usuario lo eligió explícitamente
-    if (saved === 'light') document.documentElement.classList.remove('dark');
-    else document.documentElement.classList.add('dark');
+    let saved: string | null = null;
+    try { saved = localStorage.getItem(THEME_KEY); } catch { /* sin almacenamiento */ }
+    applyTheme(saved === 'dark' ? 'dark' : 'light');
   }, []);
   return null;
 }
@@ -34,13 +33,13 @@ const EventsV2 = lazy(() => import('./pages/events/EventsV2'));
 const EventDetail = lazy(() => import('./pages/events/EventDetail'));
 const PublishEventPage = lazy(() => import('./pages/events/publish/PublishEventPage'));
 const Messages = lazy(() => import('./pages/messages/Messages'));
-const Market = lazy(() => import('./pages/market/Market'));
 const ProductDetail = lazy(() => import('./pages/market/ProductDetail'));
 const CreateListing = lazy(() => import('./pages/market/CreateListing'));
 const Profile = lazy(() => import('./pages/profile/Profile'));
 const PublicProfile = lazy(() => import('./pages/profile/PublicProfile'));
 const Onboarding = lazy(() => import('./pages/onboarding/Onboarding'));
-const Discover = lazy(() => import('./pages/discover/Discover'));
+const Explorar = lazy(() => import('./pages/explorar/Explorar'));
+const Categoria = lazy(() => import('./pages/explorar/Categoria'));
 const Reels = lazy(() => import('./pages/reels/Reels'));
 const RodrigoPage = lazy(() => import('./pages/rodrigo/RodrigoPage'));
 
@@ -79,7 +78,7 @@ const RequireAuthCompleted = () => {
   const { user, userProfile, loading, profileLoading } = useAuth();
   const location = useLocation();
 
-  if (loading || profileLoading) return <div className="h-full min-h-[60vh] w-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  if (loading || profileLoading) return <div className="h-full min-h-[60vh] w-full flex items-center justify-center"><Loader2 className="h-8 w-8 animate-spin text-primary-ink" /></div>;
   if (!user) return <Navigate to="/login" replace state={{ from: location.pathname + location.search }} />;
 
   if (!userProfile || !userProfile.onboardingCompleted) {
@@ -95,7 +94,7 @@ const RequirePanelAuth = () => {
 
   if (loading || profileLoading) {
     return (
-      <div className="h-screen w-full flex items-center justify-center bg-background text-primary">
+      <div className="h-screen w-full flex items-center justify-center bg-background text-primary-ink">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
@@ -131,10 +130,24 @@ const PanelGateway = () => {
   return <Navigate to="/panel/perfil" replace />;
 };
 
+// Enlaces antiguos: /discover?q=… y /market?category=… van a su sitio del marketplace
+const RedirigeExplorar = () => {
+  const { search } = useLocation();
+  return <Navigate to={`/explorar${search}`} replace />;
+};
+const MERCADO_A_CATEGORIA: Record<string, string> = {
+  guitarras: 'guitarras', bajos: 'guitarras', teclados: 'teclados', bateria: 'bateria', cuerdas: 'cuerdas',
+  pa_sonido: 'altavoces', iluminacion: 'altavoces', recording: 'altavoces',
+};
+const RedirigeMercado = () => {
+  const cat = new URLSearchParams(useLocation().search).get('category');
+  return <Navigate to={cat && MERCADO_A_CATEGORIA[cat] ? `/explorar/${MERCADO_A_CATEGORIA[cat]}` : '/explorar/segunda-mano'} replace />;
+};
+
 // La home es el escaparate para quien llega sin cuenta. Con cuenta, se entra al feed.
 const RootRoute = () => {
   const { user, loading } = useAuth();
-  if (loading) return <div className="h-screen w-full flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary" /></div>;
+  if (loading) return <div className="h-screen w-full flex items-center justify-center bg-background"><Loader2 className="h-8 w-8 animate-spin text-primary-ink" /></div>;
   return <Navigate to={user ? '/feed' : '/home'} replace />;
 };
 
@@ -169,7 +182,7 @@ function App() {
         <Router>
           <Suspense fallback={
             <div className="h-screen w-full flex items-center justify-center bg-background">
-              <Loader2 className="h-8 w-8 animate-spin text-primary" />
+              <Loader2 className="h-8 w-8 animate-spin text-primary-ink" />
             </div>
           }>
             <Routes>
@@ -202,12 +215,15 @@ function App() {
                 {/* Públicas: todo se puede VER sin cuenta */}
                 <Route path="/home" element={<HomeOrFeed />} />
                 <Route path="/feed" element={<Feed />} />
-                <Route path="/discover" element={<Discover />} />
-                <Route path="/artistas" element={<Discover />} />
-                <Route path="/sonido" element={<Discover />} />
+                {/* El marketplace: Explorar y el Mercado son lo mismo */}
+                <Route path="/explorar" element={<Explorar />} />
+                <Route path="/explorar/:slug" element={<Categoria />} />
+                <Route path="/discover" element={<RedirigeExplorar />} />
+                <Route path="/artistas" element={<Navigate to="/explorar/bandas" replace />} />
+                <Route path="/sonido" element={<Navigate to="/explorar/tecnicos" replace />} />
                 <Route path="/eventos" element={<EventsV2 />} />
                 <Route path="/eventos/:id" element={<EventDetail />} />
-                <Route path="/market" element={<Market />} />
+                <Route path="/market" element={<RedirigeMercado />} />
                 <Route path="/market/:id" element={<ProductDetail />} />
                 <Route path="/profile/:id" element={<PublicProfile />} />
                 <Route path="/reels" element={<Reels />} />

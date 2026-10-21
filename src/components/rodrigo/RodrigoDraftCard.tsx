@@ -15,8 +15,8 @@ const TYPE_LABEL: Record<string, string> = { venta: 'Venta', alquiler: 'Alquiler
 const Row = ({ label, value }: { label: string; value?: string }) =>
     value ? (
         <div className="flex gap-3 py-1.5 text-[13px]">
-            <span className="w-20 shrink-0 text-white/50">{label}</span>
-            <span className="text-white/90 min-w-0 break-words">{value}</span>
+            <span className="w-20 shrink-0 text-foreground/50">{label}</span>
+            <span className="text-foreground/90 min-w-0 break-words">{value}</span>
         </div>
     ) : null;
 
@@ -66,14 +66,14 @@ export const RodrigoDraftCard = ({ draft, onPublished }: { draft: Draft; onPubli
 
     const d = draft.data as any;
     return (
-        <div className="mt-2 rounded-2xl border border-white/10 bg-white/[0.04] p-4">
+        <div className="mt-2 rounded-2xl border border-hairline bg-fill p-4">
             <div className="flex items-center gap-2 mb-2">
-                <span className="h-8 w-8 rounded-full bg-white/10 flex items-center justify-center text-white"><meta.Icon className="h-4 w-4" /></span>
-                <p className="text-sm font-semibold text-white">{meta.title}</p>
-                <span className="ml-auto text-[11px] font-medium text-white/50">Borrador</span>
+                <span className="h-8 w-8 rounded-full bg-fill-strong flex items-center justify-center text-foreground"><meta.Icon className="h-4 w-4" /></span>
+                <p className="text-sm font-semibold text-foreground">{meta.title}</p>
+                <span className="ml-auto text-[11px] font-medium text-foreground/50">Borrador</span>
             </div>
 
-            <div className="divide-y divide-white/[0.06]">
+            <div className="divide-y divide-hairline">
                 {draft.kind === 'listing' && (<>
                     <Row label="Título" value={d.titulo} />
                     <Row label="Tipo" value={TYPE_LABEL[d.tipo] || d.tipo} />
@@ -103,8 +103,8 @@ export const RodrigoDraftCard = ({ draft, onPublished }: { draft: Draft; onPubli
             {state === 'done' ? (
                 <div className="mt-3 flex items-center gap-2">
                     <span className="h-6 w-6 rounded-full bg-white text-black flex items-center justify-center"><Check className="h-4 w-4" strokeWidth={3} /></span>
-                    <span className="text-sm text-white">Publicado</span>
-                    <Link to={link} className="ml-auto text-sm font-semibold text-primary">Ver</Link>
+                    <span className="text-sm text-foreground">Publicado</span>
+                    <Link to={link} className="ml-auto text-sm font-semibold text-primary-ink">Ver</Link>
                 </div>
             ) : (
                 <div className="mt-3 flex gap-2">
@@ -120,7 +120,7 @@ export const RodrigoDraftCard = ({ draft, onPublished }: { draft: Draft; onPubli
                         <button
                             onClick={() => navigate('/publicar', { state: { eventDraft: draft.data } })}
                             aria-label="Editar en el formulario"
-                            className="h-10 w-10 rounded-full bg-white/10 text-white flex items-center justify-center"
+                            className="h-10 w-10 rounded-full bg-fill-strong text-foreground flex items-center justify-center"
                         >
                             <Pencil className="h-4 w-4" />
                         </button>
@@ -129,7 +129,7 @@ export const RodrigoDraftCard = ({ draft, onPublished }: { draft: Draft; onPubli
             )}
             {state === 'error' && <p className="mt-2 text-xs text-red-400">No se ha podido publicar. Inténtalo de nuevo en un momento.</p>}
             {draft.kind === 'listing' && state === 'done' && (
-                <p className="mt-2 text-xs text-white/50">Añade fotos desde el anuncio para que se venda antes.</p>
+                <p className="mt-2 text-xs text-foreground/50">Añade fotos desde el anuncio para que se venda antes.</p>
             )}
         </div>
     );

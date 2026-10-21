@@ -50,7 +50,7 @@ export const DiscoverSidebar = ({ className, filters, onFilterChange }: Discover
                                 className={cn(
                                     "text-xs px-2 py-1 rounded-md border transition-colors",
                                     filters.city === city
-                                        ? "bg-primary/20 border-primary text-primary"
+                                        ? "bg-primary/20 border-primary text-primary-ink"
                                         : "border-border text-muted-foreground hover:bg-muted"
                                 )}
                             >
@@ -93,7 +93,7 @@ export const DiscoverSidebar = ({ className, filters, onFilterChange }: Discover
                                     onFilterChange('dateFrom', null);
                                     onFilterChange('dateTo', null);
                                 }}
-                                className="text-xs text-primary hover:text-primary-hover transition-colors"
+                                className="text-xs text-primary-ink hover:text-primary-hover transition-colors"
                             >
                                 Limpiar fechas
                             </button>
@@ -105,7 +105,7 @@ export const DiscoverSidebar = ({ className, filters, onFilterChange }: Discover
                 <div className="space-y-4">
                     <div className="flex items-center justify-between">
                         <h3 className="text-sm font-semibold uppercase tracking-wider text-muted-foreground">Presupuesto</h3>
-                        <span className="text-xs font-medium text-primary">EUR</span>
+                        <span className="text-xs font-medium text-primary-ink">EUR</span>
                     </div>
                     <div className="pt-2 pb-2">
                         {/* Replaced visually with a simple slider for now as a native range input */}
@@ -169,8 +169,8 @@ export const DiscoverSidebar = ({ className, filters, onFilterChange }: Discover
                                 className={cn(
                                     "rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
                                     filters.format === fmt
-                                        ? "border-primary bg-primary/10 text-primary"
-                                        : "border-border text-muted-foreground hover:border-primary hover:text-primary"
+                                        ? "border-primary bg-primary/10 text-primary-ink"
+                                        : "border-border text-muted-foreground hover:border-primary hover:text-primary-ink"
                                 )}
                             >
                                 {fmt}

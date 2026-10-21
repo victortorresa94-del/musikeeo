@@ -116,7 +116,7 @@ export default function ReportButton({ targetType, targetId, variant = 'icon', c
                                     className="w-full h-10 rounded-lg border border-border bg-muted px-3 text-sm text-foreground focus:outline-none focus:border-primary"
                                 >
                                     {REASONS.map(r => (
-                                        <option key={r.value} value={r.value} className="bg-[#1a1a1a]">{r.label}</option>
+                                        <option key={r.value} value={r.value} className="bg-card">{r.label}</option>
                                     ))}
                                 </select>
                             </div>

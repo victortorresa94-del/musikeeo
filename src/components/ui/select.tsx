@@ -85,8 +85,8 @@ const SelectItem = React.forwardRef<
         <div
             ref={ref}
             className={cn(
-                "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 hover:bg-white/10 cursor-pointer",
-                isSelected && "bg-brand-yellow/20 text-brand-yellow",
+                "relative flex w-full cursor-default select-none items-center rounded-sm py-1.5 pl-8 pr-2 text-sm outline-none focus:bg-accent focus:text-accent-foreground data-[disabled]:pointer-events-none data-[disabled]:opacity-50 hover:bg-fill-strong cursor-pointer",
+                isSelected && "bg-primary/20 text-primary-ink",
                 className
             )}
             onClick={(e) => {
@@ -98,7 +98,7 @@ const SelectItem = React.forwardRef<
         >
             {isSelected && (
                 <span className="absolute left-2 flex h-3.5 w-3.5 items-center justify-center">
-                    <span className="h-2 w-2 rounded-full bg-brand-yellow" />
+                    <span className="h-2 w-2 rounded-full bg-primary" />
                 </span>
             )}
             <span className="truncate">{children}</span>

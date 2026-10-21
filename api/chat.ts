@@ -98,7 +98,7 @@ Cuando generes un bloque, tu texto es una sola frase corta, por ejemplo: "Te lo 
 [CREAR_ANUNCIO]
 Título: {título claro, marca y modelo si los hay}
 Tipo: {venta | alquiler | prestamo}
-Categoría: {guitarras | bajos | teclados | bateria | viento | accesorios | pa_sonido | iluminacion | recording | partituras | otros}
+Categoría: {guitarras | bajos | teclados | bateria | viento | accesorios | pa_sonido | iluminacion | recording | partituras | cuerdas | otros}
 Estado: {nuevo | como_nuevo | bueno | aceptable}
 Precio: {número en euros, 0 si es préstamo}
 Unidad: {dia | semana | total — solo si es alquiler}

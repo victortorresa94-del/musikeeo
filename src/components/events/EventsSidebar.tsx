@@ -32,7 +32,7 @@ export const EventsSidebar = ({ className, filters, onFilterChange }: EventsSide
                 {/* Rodrigo AI Block */}
                 <div className="bg-gradient-to-br from-background to-card border border-primary/20 rounded-2xl p-6 relative overflow-hidden shadow-lg shadow-primary/5">
                     <div className="absolute top-0 right-0 p-4 opacity-10">
-                        <Sparkles size={64} className="text-primary" />
+                        <Sparkles size={64} className="text-primary-ink" />
                     </div>
 
                     <div className="relative z-10 flex flex-col items-start gap-4">
@@ -58,7 +58,7 @@ export const EventsSidebar = ({ className, filters, onFilterChange }: EventsSide
 
                 {/* Filters */}
                 <div className="space-y-6">
-                    <div className="flex items-center gap-2 text-primary font-bold uppercase tracking-wider text-xs">
+                    <div className="flex items-center gap-2 text-primary-ink font-bold uppercase tracking-wider text-xs">
                         <Filter size={14} /> Filtros
                     </div>
 
@@ -76,7 +76,7 @@ export const EventsSidebar = ({ className, filters, onFilterChange }: EventsSide
                     <div className="space-y-2">
                         <label className="text-sm font-bold text-muted-foreground">Fecha</label>
                         <div className="relative">
-                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500" />
+                            <Calendar className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                             <input
                                 type="date"
                                 className="w-full bg-muted border border-border rounded-lg py-2.5 pl-10 pr-3 text-sm text-foreground focus:border-primary/50 outline-none"
@@ -94,7 +94,7 @@ export const EventsSidebar = ({ className, filters, onFilterChange }: EventsSide
                                 <label key={type} className="flex items-center gap-3 cursor-pointer group">
                                     <input
                                         type="checkbox"
-                                        className="w-4 h-4 rounded border-border bg-muted text-primary focus:ring-primary focus:ring-offset-0"
+                                        className="w-4 h-4 rounded border-border bg-muted text-primary-ink focus:ring-primary focus:ring-offset-0"
                                         checked={filters.type.includes(type)}
                                         onChange={() => toggleType(type)}
                                     />

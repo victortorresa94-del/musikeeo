@@ -100,7 +100,7 @@ export default function Login() {
                 <div className="space-y-2">
                     <div className="flex items-center justify-between">
                         <Label htmlFor="password">Contraseña</Label>
-                        <Link to="/forgot-password" className="text-xs text-primary hover:underline">
+                        <Link to="/forgot-password" className="text-xs text-primary-ink hover:underline">
                             ¿Olvidaste tu contraseña?
                         </Link>
                     </div>
@@ -138,9 +138,9 @@ export default function Login() {
 
             <p className="text-[11px] text-muted-foreground text-center mt-3 leading-relaxed">
                 Al iniciar sesión aceptas los{' '}
-                <Link to="/terminos" className="text-primary hover:underline">términos</Link>{' '}
+                <Link to="/terminos" className="text-primary-ink hover:underline">términos</Link>{' '}
                 y la{' '}
-                <Link to="/privacidad" className="text-primary hover:underline">política de privacidad</Link>.
+                <Link to="/privacidad" className="text-primary-ink hover:underline">política de privacidad</Link>.
             </p>
 
             {import.meta.env.DEV && (
@@ -158,7 +158,7 @@ export default function Login() {
 
             <div className="mt-6 text-center text-sm">
                 ¿No tienes cuenta?{' '}
-                <Link to="/register" className="font-medium text-primary hover:underline">
+                <Link to="/register" className="font-medium text-primary-ink hover:underline">
                     Regístrate
                 </Link>
             </div>
