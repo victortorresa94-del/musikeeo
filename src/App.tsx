@@ -1,6 +1,6 @@
 import { BrowserRouter as Router, Routes, Route, Navigate, Outlet, useLocation } from 'react-router-dom';
 import { AuthProvider, useAuth } from './context/AuthContext';
-import { useState, useEffect, Suspense, lazy } from 'react';
+import { useEffect, Suspense, lazy } from 'react';
 import { MainLayout } from './layouts/MainLayout';
 import { useAutoUpdate } from './hooks/useAutoUpdate';
 import { Loader2 } from 'lucide-react';
@@ -17,7 +17,6 @@ function ThemeInit() {
   return null;
 }
 import { PanelLayout } from './layouts/PanelLayout';
-import SplashScreen from './components/layout/SplashScreen';
 const RodrigoFloatingChat = lazy(() =>
   import('./components/rodrigo/RodrigoFloatingChat').then(m => ({ default: m.RodrigoFloatingChat }))
 );
@@ -161,14 +160,12 @@ const RequireAnon = () => {
 
 
 function App() {
-  const [showSplash, setShowSplash] = useState(true);
   useAutoUpdate();
 
   return (
     <ErrorBoundary>
       <ThemeInit />
       <AuthProvider>
-        {showSplash && <SplashScreen onFinish={() => setShowSplash(false)} />}
         <Router>
           <Suspense fallback={
             <div className="h-screen w-full flex items-center justify-center bg-background">
