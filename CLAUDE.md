@@ -85,9 +85,9 @@ git push origin main  # triggers Vercel auto-deploy
 - Requieren cuenta (RequireAuthCompleted → /login con `state.from` y vuelta tras entrar): /messages, /market/create, /eventos/crear, /projects, /profile; /publicar requiere sesión (RequireAuthSimple)
 
 ## Cuenta y datos de prueba (producción, 2026-10)
-- Cuenta: victortorresa94+musikeeo-dev@gmail.com (uid YEj8ANe4aEeYDl6Zabg1chbD6oC3), displayName «Musikeeo Dev». La contraseña la tiene Víctor (no va en el repo)
-- Publicado con esa cuenta: artista «Banda de Pruebas Musikeeo» (/artist/banda-de-pruebas-musikeeo), técnico «Sonido de Pruebas BCN», 6 anuncios y 4 bolos. Todos los textos acaban en «Contenido de prueba de Musikeeo.» para poder localizarlos y borrarlos
-- Se creó por la API REST de Firebase (Auth + Firestore) con la sesión de esa cuenta, respetando las reglas
+- Cuenta de pruebas: victortorresa94+musikeeo-dev@gmail.com (uid YEj8ANe4aEeYDl6Zabg1chbD6oC3), «Musikeeo Dev». La contraseña la tiene Víctor (no va en el repo). Su banda, su técnico y sus 6 anuncios están OCULTOS (isPublic/available false) y sus 4 bolos borrados desde el 22-oct
+- Contenido de demostración para el inversor (22-oct): 14 cuentas `victortorresa94+mk-<slug>@gmail.com` (misma contraseña que la de pruebas): 8 artistas (rumba-sur, lucia-ferrer, marta-vidal, velvet-jam, toni-cortes, quartet-nocturn, sara-llop, los-tremendos), 3 técnicos/tienda (ruido-blanco, marc-soler, guitarras-gracia) y 3 salas (la-fragua, el-tranvia, bodas-mediterraneo); 8 bolos (`events/seed_<sala>_<n>`) y 6 anuncios (`listings/seed_<dueño>_<n>`). Llevan `seed: true` (salvo publicProfiles, que no lo admite) y las fotos están en `public/seed/`. Sin reseñas inventadas: todos salen como «Nuevo». Al inversor se le dice que es contenido de demostración
+- Se creó por la API REST de Firebase (Auth + Firestore) con la sesión de cada cuenta, respetando las reglas
 
 ## Current Status
 Project is in active development. Architecture is solid, marketplace sprint in progress.
