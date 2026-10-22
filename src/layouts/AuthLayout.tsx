@@ -23,7 +23,7 @@ export const AuthLayout: React.FC<AuthLayoutProps> = ({ children, title, subtitl
                 className="w-full max-w-md z-10"
             >
                 <div className="flex flex-col items-center mb-8">
-                    <img src="/logo-musikeeo.png?v=4" alt="Musikeeo" className="h-12 w-auto mb-4" />
+                    <img src="/logo-musikeeo.png?v=5" alt="Musikeeo" className="h-12 w-auto mb-4" />
                     <p className="text-muted-foreground text-center max-w-xs">El ecosistema para profesionales de la música.</p>
                 </div>
 

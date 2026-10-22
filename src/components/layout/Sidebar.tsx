@@ -40,7 +40,7 @@ export const Sidebar = () => {
       {/* Logo */}
       <div className="flex items-center gap-2.5 px-4 h-14 border-b border-border flex-shrink-0">
         <img
-          src="/logo-musikeeo.png?v=4"
+          src="/logo-musikeeo.png?v=5"
           alt="Musikeeo"
           className="h-8 w-8 rounded-lg object-contain flex-shrink-0"
         />

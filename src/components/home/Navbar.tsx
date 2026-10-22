@@ -100,7 +100,7 @@ export const Navbar = () => {
                 {/* Logo with text */}
                 <Link to="/" className="flex items-center gap-3 group">
                     <img
-                        src="/logo-musikeeo.png?v=4"
+                        src="/logo-musikeeo.png?v=5"
                         alt="Musikeeo Logo"
                         className="h-10 w-auto transition-transform group-hover:scale-110"
                     />
