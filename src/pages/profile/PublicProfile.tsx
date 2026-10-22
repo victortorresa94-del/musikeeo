@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { collection, getDocs, limit, query, where } from 'firebase/firestore';
 import {
-    ChevronLeft, MapPin, MessageCircle, Share2, BadgeCheck, Play, ChevronRight,
+    ChevronLeft, MapPin, MessageCircle, Share2, BadgeCheck, Play, ChevronRight, Eye,
     Image as ImageIcon, ShoppingBag, CalendarDays, Music2,
 } from 'lucide-react';
 import { toast } from 'sonner';
@@ -43,6 +43,10 @@ export default function PublicProfile() {
     const { id } = useParams();
     const navigate = useNavigate();
     const { user } = useAuth();
+    // «Ver como público» desde Mi perfil: sin esto, tu propio perfil te devuelve a /profile
+    const [params] = useSearchParams();
+    const esMio = !!id && user?.uid === id;
+    const vistaPublica = esMio && params.get('vista') === 'publica';
     const [base, setBase] = useState<Base | null>(null);
     const [artist, setArtist] = useState<Artist | null>(null);
     const [provider, setProvider] = useState<ProviderProfile | null>(null);
@@ -95,7 +99,7 @@ export default function PublicProfile() {
         return () => { cancelled = true; };
     }, [id]);
 
-    if (id && user?.uid === id) return <Navigate to="/profile" replace />;
+    if (esMio && !vistaPublica) return <Navigate to="/profile" replace />;
 
     const back = () => {
         const idx = (window.history.state as { idx?: number } | null)?.idx ?? 0;
@@ -110,7 +114,10 @@ export default function PublicProfile() {
         } catch { /* cancelado */ }
     };
 
-    const contact = () => navigate(`/messages?userId=${id}`);
+    const contact = () => {
+        if (esMio) { toast('Así verán el botón los demás: abre un chat contigo'); return; }
+        navigate(`/messages?userId=${id}`);
+    };
 
     if (loading) {
         return (
@@ -143,6 +150,14 @@ export default function PublicProfile() {
             <button onClick={back} className="h-10 -ml-2 pr-3 flex items-center text-[15px] text-foreground active:opacity-60">
                 <ChevronLeft className="h-6 w-6" /> Atrás
             </button>
+
+            {vistaPublica && (
+                <div className="mb-3 flex items-center gap-3 rounded-2xl bg-fill px-3.5 py-2.5">
+                    <Eye className="h-4 w-4 shrink-0 text-muted-foreground" />
+                    <p className="flex-1 text-[13px] text-foreground">Así ven tu perfil los demás</p>
+                    <Link to="/profile" className="h-8 px-3 rounded-full bg-foreground text-background text-[13px] font-semibold flex items-center active:opacity-70">Volver</Link>
+                </div>
+            )}
 
             {/* Cabecera */}
             <div className="mt-1 flex items-center gap-4">

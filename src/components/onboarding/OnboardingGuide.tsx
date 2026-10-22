@@ -16,7 +16,9 @@ export const OnboardingGuide = () => {
 
     useEffect(() => {
         const checkStatus = async () => {
-            if (!user) return;
+            // Por defecto, oculto: solo sale para un músico sin ficha pública, una vez cargado su perfil
+            setIsVisible(false);
+            if (!user || !userProfile) return;
 
             // Don't show on specific pages (e.g., initial onboarding)
             if (location.pathname === '/onboarding') {
@@ -27,7 +29,7 @@ export const OnboardingGuide = () => {
             try {
                 // Check Artist Profile Status
                 // Only for Musicians for now based on user request context
-                if (userProfile?.primaryMode === 'musician' || !userProfile?.primaryMode) {
+                if (userProfile.primaryMode === 'musician') {
                     const artist = await getArtistByUserId(user.uid);
 
                     if (!artist || !artist.isPublic) {

@@ -26,7 +26,7 @@ export type Objeto3D = keyof typeof OBJETO_3D;
 const REGLAS: { objeto: Objeto3D; palabras: string[] }[] = [
     { objeto: 'boda', palabras: ['boda', 'ceremonia', 'novios', 'social'] },
     { objeto: 'tocadiscos', palabras: ['dj', 'electronica', 'house', 'techno'] },
-    { objeto: 'mesa', palabras: ['tecnico', 'sonido', 'foh', 'backline', 'luces'] },
+    { objeto: 'mesa', palabras: ['tecnico', 'foh', 'backline', 'luces'] },  // no «sonido»: «Sonido incluido» no es un bolo de técnico
     { objeto: 'microfono', palabras: ['cantante', 'voz', 'acustico', 'residencia', 'bar', 'jam'] },
     { objeto: 'escenario', palabras: ['festival', 'sala', 'concierto'] },
 ];

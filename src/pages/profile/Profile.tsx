@@ -92,12 +92,14 @@ export default function Profile() {
     const location = artist?.city || userProfile.location || '';
     const bio = artist?.bio || userProfile.bio || '';
     const genres = artist?.genres?.length ? artist.genres : (userProfile.genres || []);
-    const publicPath = artist?.slug ? `/artist/${artist.slug}` : `/profile/${user.uid}`;
+    // La ficha de artista si es pública; si no, el perfil público en modo vista previa
+    const publicPath = artist?.slug && artist.isPublic ? `/artist/${artist.slug}` : `/profile/${user.uid}?vista=publica`;
+    const shareUrl = artist?.slug && artist.isPublic ? `/artist/${artist.slug}` : `/profile/${user.uid}`;
     const needsArtist = mode === 'musician' && !artist;
     const needsProvider = mode === 'provider' && !provider;
 
     const share = async () => {
-        const url = `${window.location.origin}${publicPath}`;
+        const url = `${window.location.origin}${shareUrl}`;
         try {
             if (navigator.share) await navigator.share({ title: `${name} en Musikeeo`, url });
             else { await navigator.clipboard.writeText(url); toast.success('Enlace copiado'); }
