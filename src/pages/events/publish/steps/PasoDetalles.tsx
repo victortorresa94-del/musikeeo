@@ -5,6 +5,7 @@ import type { PublishEventState, ActualizaCampo } from '../PublishEventPage';
 import { cn } from '../../../../lib/utils';
 import { Campo } from '../components/Campos';
 import VistaPreviaBolo from '../components/VistaPreviaBolo';
+import MasDetalles from '../components/MasDetalles';
 import { CAMPO, miles, tituloSugerido } from '../opciones';
 
 interface Props {
@@ -92,6 +93,8 @@ export default function PasoDetalles({ data, update, necesidad, etiquetas }: Pro
                     className="w-full min-h-[120px] rounded-[14px] bg-fill px-4 py-3.5 text-[16px] leading-relaxed text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-foreground/10"
                 />
             </Campo>
+
+            <MasDetalles detalles={data.detalles ?? {}} onChange={d => update('detalles', d)} fechaBolo={data.date} />
 
             <section className="pt-2">
                 <h2 className="text-[18px] font-bold">Así lo verán los músicos</h2>

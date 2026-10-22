@@ -2,7 +2,7 @@ import { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useParams, useNavigate } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
-import { ArrowLeft, Check, ChevronRight, Loader2, MapPin, MessageCircle, Share } from 'lucide-react';
+import { ArrowLeft, Calendar, Check, Clock, Loader2, MapPin, MessageCircle, Share, type LucideIcon } from 'lucide-react';
 import { toast } from 'sonner';
 import { eventService } from '../../services/eventService';
 import { chatService } from '../../services/chatService';
@@ -15,21 +15,10 @@ import { useAuth } from '../../context/AuthContext';
 import { applicationService, type ApplicationWithApplicant } from '../../services/applicationService';
 import ReportButton from '../../components/legal/ReportButton';
 import { Postulaciones } from '../../components/detalle-bolo/Postulaciones';
-
-const norm = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
-
-// 1500 → «1.500 €» (es-ES no agrupa los números de cuatro cifras)
-const euros = (n: number) => `${String(Math.round(n)).replace(/\B(?=(\d{3})+(?!\d))/g, '.')} €`;
-
-// El tipo solo se enseña cuando dice algo («Bolo» en la ficha de un bolo, no)
-const TIPO: Record<string, string> = {
-    jam: 'Jam session',
-    session: 'Sesión',
-    festival: 'Festival',
-    'boda / social': 'Boda o evento social',
-    'evento privado': 'Evento privado',
-    'residencia / bar': 'Residencia en bar',
-};
+import { TarjetasResumen, SeccionesBolo } from '../../components/detalle-bolo/FichaBolo';
+import { fichaDe } from '../../components/detalle-bolo/ficha';
+import { TarjetaBolo } from '../../components/bolos/TarjetaBolo';
+import { diaSemana, fechaDe, horaDe, mesCorto, precioBolo } from '../../components/bolos/tablon';
 
 const MODO: Record<UserMode, string> = {
     musician: 'Músico o banda',
@@ -37,12 +26,38 @@ const MODO: Record<UserMode, string> = {
     provider: 'Técnico de sonido',
 };
 
-// El sonido lo pone el organizador si lo dicen las etiquetas o la descripción
-const SONIDO = /sonido (esta |va |ya )?incluid|incluye (el )?(equipo de )?sonido|equipo de sonido incluid|tenemos (el |nuestro )?equipo|\b(pa|backline) incluid/;
-
 const SOMBRA_3D = 'object-contain drop-shadow-[0_8px_10px_rgba(0,0,0,0.16)]';
 
+/** «octubre de 2026» (y «oct 2026», para el móvil) a partir de `publicProfiles.createdAt`
+ *  (ISO; o un Timestamp de Firestore) */
+function mesDeAlta(v: unknown): { largo: string; corto: string } | null {
+    const toDate = (v as { toDate?: () => Date } | null)?.toDate;
+    const d = typeof v === 'string' || typeof v === 'number' ? new Date(v) : typeof toDate === 'function' ? toDate.call(v) : null;
+    if (!d || isNaN(d.getTime())) return null;
+    return {
+        largo: d.toLocaleDateString('es-ES', { month: 'long', year: 'numeric' }),
+        corto: `${mesCorto(d)} ${d.getFullYear()}`,
+    };
+}
+
+/** Pastilla gris bajo el título: fecha, sitio, plazo */
+function Pastilla({ icono: Icono, children, apagada }: { icono: LucideIcon; children: string; apagada?: boolean }) {
+    return (
+        <span className={cn('h-8 max-w-full px-3 rounded-full bg-fill text-[14px] font-medium inline-flex items-center gap-1.5', apagada ? 'text-muted-foreground' : 'text-foreground')}>
+            <Icono className="h-4 w-4 shrink-0 text-muted-foreground" />
+            <span className="truncate">{children}</span>
+        </span>
+    );
+}
+
+// Cada bolo, su página: al pasar de un bolo a otro («Más bolos de…») se empieza de cero y arriba
 export default function EventDetail() {
+    const { id } = useParams();
+    useEffect(() => { window.scrollTo({ top: 0 }); }, [id]);
+    return <DetalleBolo key={id} />;
+}
+
+function DetalleBolo() {
     const { id } = useParams();
     const navigate = useNavigate();
     const [event, setEvent] = useState<Event | null>(null);
@@ -96,12 +111,19 @@ export default function EventDetail() {
         return () => { cancelled = true; };
     }, [isOrganizer, event]);
 
-    // El perfil público del organizador (foto, ciudad y a qué se dedica). Si no hay, se tira del bolo
+    // Del organizador: su perfil público (foto, nombre, desde cuándo está), cuántos bolos ha publicado
+    // y sus otros bolos. Cada cosa por su lado: si una falla, solo esa no sale
     const organizerId = event?.organizerId;
+    const [bolosPublicados, setBolosPublicados] = useState<number | null>(null);
+    const [bolosOrganizador, setBolosOrganizador] = useState<Event[]>([]);
     useEffect(() => {
         if (!organizerId) return;
         let cancelled = false;
         userService.getPublicProfile(organizerId).then(p => { if (!cancelled) setOrganizer(p); });
+        eventService.contarBolosDe(organizerId)
+            .then(n => { if (!cancelled) setBolosPublicados(n); })
+            .catch(err => console.warn('No se pudieron contar los bolos del organizador:', err));
+        eventService.getEventsByOrganizer(organizerId).then(list => { if (!cancelled) setBolosOrganizador(list); });
         return () => { cancelled = true; };
     }, [organizerId]);
 
@@ -112,6 +134,10 @@ export default function EventDetail() {
             return;
         }
         if (!event) return;
+        if (fichaDe(event).plazo?.cerrado) {
+            toast.error("El plazo para postularse ya ha cerrado");
+            return;
+        }
         if (!event.organizerId) {
             toast.error("Este evento no tiene organizador asignado");
             return;
@@ -191,19 +217,20 @@ export default function EventDetail() {
 
     if (loading) {
         return (
-            <div className="max-w-5xl mx-auto md:px-6 md:pt-6" aria-busy="true" aria-label="Cargando el bolo">
-                <div className="aspect-[16/10] md:aspect-auto md:h-[400px] rounded-b-[28px] md:rounded-[28px] bg-fill animate-pulse" />
-                <div className="px-4 md:px-0 mt-5 space-y-3 md:max-w-[620px]">
+            <div className="max-w-5xl mx-auto px-4 md:px-6 pt-2 md:pt-6" aria-busy="true" aria-label="Cargando el bolo">
+                <div className="aspect-[16/10] md:aspect-auto md:h-[400px] rounded-[24px] md:rounded-[28px] bg-fill animate-pulse" />
+                <div className="mt-5 space-y-3 md:max-w-[620px]">
                     <div className="h-7 w-4/5 rounded-lg bg-fill animate-pulse" />
-                    <div className="h-[72px] rounded-[18px] bg-fill animate-pulse" />
-                    <div className="grid grid-cols-3 gap-2.5">
-                        {[0, 1, 2].map(i => <div key={i} className="h-[128px] rounded-[18px] bg-fill animate-pulse" />)}
+                    <div className="flex gap-2">
+                        {['w-[140px]', 'w-[110px]', 'w-[120px]'].map(w => <div key={w} className={cn('h-8 rounded-full bg-fill animate-pulse', w)} />)}
+                    </div>
+                    <div className="grid grid-cols-2 gap-2.5">
+                        {[0, 1, 2, 3].map(i => <div key={i} className="h-[104px] rounded-[18px] bg-fill animate-pulse" />)}
                     </div>
                 </div>
             </div>
         );
     }
-
     if (!event) {
         return (
             <div className="max-w-md mx-auto px-6 py-16 text-center">
@@ -223,39 +250,38 @@ export default function EventDetail() {
 
     // ── Lo que el bolo sabe, en frases cortas ──
     const objeto = objeto3dDeBolo(event);
+    const ficha = fichaDe(event, objeto);
     const photo = !photoBroken && event.imageUrl ? event.imageUrl : '';
     const budget = Number(event.price) || 0;
-    const priceText = budget > 0 ? euros(budget) : 'A convenir';
+    const priceText = precioBolo(budget);
+    const plazoCerrado = !!ficha.plazo?.cerrado;
 
-    const fecha = new Date(event.date);
-    const fechaValida = !isNaN(fecha.getTime());
-    const quitaPuntos = (s: string) => s.replace(/\./g, '');
-    const dia = fechaValida
-        ? quitaPuntos(`${fecha.toLocaleDateString('es-ES', { weekday: 'short' })} ${fecha.toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`)
-        : 'Por fijar';
-    const hora = fechaValida ? fecha.toLocaleTimeString('es-ES', { hour: '2-digit', minute: '2-digit' }) : 'Fecha';
-    const otroAno = fechaValida && fecha.getFullYear() !== new Date().getFullYear();
+    // «sáb 31 oct · 21:00» (con el año si no es este)
+    const f = fechaDe(event.date);
+    const hora = horaDe(f);
+    const dia = f
+        ? `${diaSemana(f.d)} ${f.d.getDate()} ${mesCorto(f.d)}${f.d.getFullYear() !== new Date().getFullYear() ? ` ${f.d.getFullYear()}` : ''}`
+        : '';
+    const cuando = dia ? [dia, hora].filter(Boolean).join(' · ') : 'Fecha por fijar';
 
-    const conSonido = SONIDO.test(norm([...(event.tags || []), event.description || ''].join(' ')));
-    const [lugar, ...zona] = (event.location || '').split(',').map(s => s.trim()).filter(Boolean);
-    const tipo = TIPO[norm(event.type || '')];
-
-    const tiles = [
-        { key: 'fecha', objeto: OBJETO_3D.calendario, arriba: dia, abajo: otroAno ? `${fecha.getFullYear()} · ${hora}` : hora },
-        { key: 'dinero', objeto: OBJETO_3D.moneda, arriba: priceText, abajo: 'Presupuesto' },
-        conSonido
-            ? { key: 'sonido', objeto: OBJETO_3D.altavoz, arriba: 'Sonido', abajo: 'Incluido' }
-            : { key: 'lugar', objeto: OBJETO_3D.escenario, arriba: lugar || 'Por confirmar', abajo: zona.join(', ') || 'Lugar' },
-    ];
-
-    // Bajo el título: el tipo si aporta, y el lugar cuando no está en las teselas
-    const showPlace = conSonido && !!event.location;
-
+    // El organizador, con lo que se sabe de verdad: cuántos bolos ha publicado y desde cuándo está
     const organizerName = event.organizerName || organizer?.displayName || 'Organizador';
-    const organizerLine = organizer
-        ? [MODO[organizer.primaryMode], organizer.location?.split(',')[0]?.trim()].filter(Boolean).join(' · ') || 'Organiza este bolo'
-        : 'Organiza este bolo';
+    const desde = mesDeAlta(organizer?.createdAt);
+    const publicados = bolosPublicados ? `Ha publicado ${bolosPublicados} ${bolosPublicados === 1 ? 'bolo' : 'bolos'}` : '';
+    // Sin esos dos datos, lo de antes: a qué se dedica y de dónde es
+    const organizerLine = (organizer ? [MODO[organizer.primaryMode], organizer.location?.split(',')[0]?.trim()].filter(Boolean).join(' · ') : '') || 'Organiza este bolo';
     const avatar = !avatarBroken && organizer?.photoURL ? organizer.photoURL : '';
+
+    // Sus otros bolos que aún no han pasado, el más cercano primero
+    const hoy = new Date();
+    hoy.setHours(0, 0, 0, 0);
+    const masBolos = bolosOrganizador
+        .filter(b => b.id !== event.id)
+        .map(b => ({ b, f: fechaDe(b.date) }))
+        .filter((x): x is { b: Event; f: NonNullable<typeof x.f> } => !!x.f && x.f.d >= hoy)
+        .sort((a, b) => a.f.d.getTime() - b.f.d.getTime())
+        .slice(0, 3)
+        .map(x => x.b);
 
     const actionButton = (className: string) => {
         const base = 'h-[52px] rounded-[14px] px-5 text-[17px] font-semibold flex items-center justify-center gap-2';
@@ -275,6 +301,13 @@ export default function EventDetail() {
             return (
                 <button type="button" disabled className={cn('bg-fill text-foreground', base, className)}>
                     <Check className="h-5 w-5" /> Solicitud enviada
+                </button>
+            );
+        }
+        if (plazoCerrado) {
+            return (
+                <button type="button" disabled className={cn('bg-fill text-muted-foreground', base, className)}>
+                    Plazo cerrado
                 </button>
             );
         }
@@ -300,17 +333,29 @@ export default function EventDetail() {
             </span>
             <span className="min-w-0 flex-1">
                 <span className="block text-[16px] font-semibold leading-tight text-foreground truncate">{organizerName}</span>
-                <span className="mt-0.5 block text-[13px] text-muted-foreground truncate">{organizerLine}</span>
+                {/* En el móvil, un dato por línea (y el mes corto) para que quepa al lado de «Escribir» */}
+                <span className="mt-1 block text-[13px] leading-snug text-muted-foreground">
+                    {publicados || desde ? (
+                        <>
+                            {publicados && <span className="block md:inline">{publicados}</span>}
+                            {publicados && desde && <span aria-hidden className="hidden md:inline"> · </span>}
+                            {desde && (
+                                <span className="block md:inline">
+                                    En Musikeeo desde <span className="md:hidden">{desde.corto}</span><span className="hidden md:inline">{desde.largo}</span>
+                                </span>
+                            )}
+                        </>
+                    ) : organizerLine}
+                </span>
             </span>
         </>
     );
-    const organizerCard = 'mt-4 flex items-center gap-3 rounded-[18px] bg-card border border-hairline shadow-e1 p-3';
 
     return (
-        <div className="max-w-5xl mx-auto md:px-6 md:pt-6 pb-16 md:pb-10">
+        <div className="max-w-5xl mx-auto px-4 md:px-6 pt-2 md:pt-6 pb-16 md:pb-10">
             {/* Foto del bolo; sin foto, su objeto 3D en grande */}
             <div className="relative">
-                <div className="relative aspect-[16/10] md:aspect-auto md:h-[400px] overflow-hidden rounded-b-[28px] md:rounded-[28px] bg-fill">
+                <div className="relative aspect-[16/10] md:aspect-auto md:h-[400px] overflow-hidden rounded-[24px] md:rounded-[28px] bg-fill">
                     {photo ? (
                         <img src={photo} alt={event.title} onError={() => setPhotoBroken(true)} className="h-full w-full object-cover" />
                     ) : (
@@ -324,7 +369,7 @@ export default function EventDetail() {
                     type="button"
                     onClick={handleBack}
                     aria-label="Volver"
-                    className="pulsable absolute top-3 left-4 h-10 w-10 rounded-full bg-sheet text-foreground shadow-e2 flex items-center justify-center"
+                    className="pulsable absolute top-3 left-3 h-10 w-10 rounded-full bg-sheet text-foreground shadow-e2 flex items-center justify-center"
                 >
                     <ArrowLeft className="h-5 w-5" strokeWidth={2.2} />
                 </button>
@@ -332,7 +377,7 @@ export default function EventDetail() {
                     type="button"
                     onClick={handleShare}
                     aria-label="Compartir el bolo"
-                    className="pulsable absolute top-3 right-4 h-10 w-10 rounded-full bg-sheet text-foreground shadow-e2 flex items-center justify-center"
+                    className="pulsable absolute top-3 right-3 h-10 w-10 rounded-full bg-sheet text-foreground shadow-e2 flex items-center justify-center"
                 >
                     <Share className="h-[18px] w-[18px]" strokeWidth={2.2} />
                 </button>
@@ -346,83 +391,70 @@ export default function EventDetail() {
                         initial={reduceMotion ? false : { opacity: 0, y: 10, scale: 0.9 }}
                         animate={{ opacity: 1, y: 0, scale: 1 }}
                         transition={{ type: 'spring', stiffness: 260, damping: 20, delay: 0.15 }}
-                        className={cn('pointer-events-none absolute -bottom-8 right-4 md:right-8 h-[92px] w-[92px] md:h-[120px] md:w-[120px] md:-bottom-10', SOMBRA_3D)}
+                        className={cn('pointer-events-none absolute -bottom-8 right-2 md:right-8 h-[92px] w-[92px] md:h-[120px] md:w-[120px] md:-bottom-10', SOMBRA_3D)}
                     />
                 )}
             </div>
 
-            <div className="px-4 md:px-0 md:grid md:grid-cols-[minmax(0,1fr)_320px] md:gap-10">
+            <div className="md:grid md:grid-cols-[minmax(0,1fr)_320px] md:gap-10">
                 <div className="min-w-0">
                     {/* Título (la primera línea deja sitio al objeto que asoma) */}
                     <div className="mt-4 md:mt-6 flow-root">
-                        {photo && <span aria-hidden className="md:hidden float-right w-[96px] h-5" />}
+                        {photo && <span aria-hidden className="md:hidden float-right w-[88px] h-5" />}
                         <h1 className="text-[25px] md:text-[28px] font-bold leading-[1.15] tracking-tight text-foreground break-words">
                             {event.title}
                         </h1>
-                        {(tipo || showPlace) && (
-                            <p className="mt-1.5 flex flex-wrap items-center gap-x-2 text-[15px] text-muted-foreground">
-                                {tipo && <span>{tipo}</span>}
-                                {tipo && showPlace && <span aria-hidden>·</span>}
-                                {showPlace && (
-                                    <span className="inline-flex items-center gap-1">
-                                        <MapPin className="h-4 w-4 shrink-0" /> {event.location}
-                                    </span>
-                                )}
-                            </p>
+                    </div>
+
+                    {/* Cuándo, dónde y hasta cuándo se puede uno postular */}
+                    <div className="mt-3 flex flex-wrap gap-2">
+                        <Pastilla icono={Calendar}>{cuando}</Pastilla>
+                        {event.location && <Pastilla icono={MapPin}>{event.location}</Pastilla>}
+                        {ficha.plazo && <Pastilla icono={Clock} apagada={ficha.plazo.cerrado}>{ficha.plazo.texto}</Pastilla>}
+                        {ficha.urgente && (
+                            <span className="h-8 px-3 rounded-full bg-destructive/10 text-destructive text-[14px] font-semibold inline-flex items-center">Urgente</span>
                         )}
                     </div>
+
+                    {/* Lo importante de un vistazo, un objeto por tarjeta */}
+                    <TarjetasResumen tarjetas={ficha.tarjetas} />
 
                     {/* Quién lo organiza */}
-                    {event.organizerId ? (
-                        <Link to={`/profile/${event.organizerId}`} className={cn('pulsable', organizerCard)}>
-                            {organizerContent}
-                            <span className="shrink-0 flex items-center text-[14px] text-muted-foreground">
-                                Ver perfil <ChevronRight className="h-4 w-4 -mr-0.5" />
-                            </span>
-                        </Link>
-                    ) : (
-                        <div className={organizerCard}>{organizerContent}</div>
-                    )}
-
-                    {/* Tres datos, un objeto cada uno */}
-                    <div className="mt-3 grid grid-cols-3 gap-2.5">
-                        {tiles.map((t, i) => (
-                            <div key={t.key} className="rounded-[18px] bg-card border border-hairline shadow-e1 px-2 pt-3.5 pb-3 text-center flex flex-col items-center">
-                                <motion.img
-                                    src={t.objeto}
-                                    alt=""
-                                    loading="lazy"
-                                    initial={reduceMotion ? false : { opacity: 0, y: 8, scale: 0.92 }}
-                                    animate={{ opacity: 1, y: 0, scale: 1 }}
-                                    transition={{ type: 'spring', stiffness: 300, damping: 22, delay: 0.05 + i * 0.06 }}
-                                    className={cn('h-[60px] w-[60px] md:h-[72px] md:w-[72px]', SOMBRA_3D)}
-                                />
-                                <p className="mt-2 w-full text-[15px] md:text-[16px] font-bold leading-tight text-foreground line-clamp-2 break-words">{t.arriba}</p>
-                                <p className="mt-0.5 w-full text-[13px] text-muted-foreground truncate">{t.abajo}</p>
-                            </div>
-                        ))}
+                    <div className="mt-3 flex items-center gap-2 rounded-[18px] bg-card border border-hairline shadow-e1 p-3">
+                        {event.organizerId ? (
+                            <Link to={`/profile/${event.organizerId}`} aria-label={`Ver el perfil de ${organizerName}`} className="pulsable min-w-0 flex-1 flex items-center gap-3 rounded-[12px]">
+                                {organizerContent}
+                            </Link>
+                        ) : (
+                            <div className="min-w-0 flex-1 flex items-center gap-3">{organizerContent}</div>
+                        )}
+                        {!isOrganizer && (
+                            <button
+                                type="button"
+                                onClick={handleContactOrganizer}
+                                className="pulsable shrink-0 h-9 px-4 rounded-full bg-fill text-foreground text-[14px] font-semibold"
+                            >
+                                Escribir
+                            </button>
+                        )}
                     </div>
 
-                    {/* Qué buscan */}
-                    <section className="mt-6">
-                        <h2 className="text-[19px] font-bold text-foreground">Qué buscan</h2>
-                        <p className="mt-1.5 text-[15px] leading-relaxed text-foreground/80 whitespace-pre-wrap break-words">
-                            {event.description || 'No han añadido más detalles. Escríbeles para saber qué necesitan.'}
-                        </p>
-                        {!!event.tags?.length && (
-                            <div className="mt-3 flex flex-wrap gap-2">
-                                {event.tags.map(tag => (
-                                    <span key={tag} className="h-8 px-3.5 rounded-full bg-fill text-[14px] font-medium text-foreground flex items-center">
-                                        {tag}
-                                    </span>
-                                ))}
-                            </div>
-                        )}
-                    </section>
+                    {/* Postulaciones — solo las ve quien publicó el bolo */}
+                    {isOrganizer && (
+                        <Postulaciones
+                            applications={applications}
+                            loading={loadingApps}
+                            onContact={handleContactApplicant}
+                            onUpdateStatus={handleUpdateStatus}
+                        />
+                    )}
+
+                    {/* Todo lo demás, por secciones */}
+                    <SeccionesBolo secciones={ficha.secciones} sitio={ficha.sitio} />
 
                     {/* Dudas: escribir al organizador o reportar el bolo */}
                     {!isOrganizer && (
-                        <div className="mt-6 pt-4 border-t border-hairline flex items-center justify-between gap-3">
+                        <div className="pt-4 border-t border-hairline flex items-center justify-between gap-3">
                             <button
                                 type="button"
                                 onClick={handleContactOrganizer}
@@ -434,16 +466,6 @@ export default function EventDetail() {
                             <ReportButton targetType="event" targetId={event.id} variant="text" />
                         </div>
                     )}
-
-                    {/* Postulaciones — solo las ve quien publicó el bolo */}
-                    {isOrganizer && (
-                        <Postulaciones
-                            applications={applications}
-                            loading={loadingApps}
-                            onContact={handleContactApplicant}
-                            onUpdateStatus={handleUpdateStatus}
-                        />
-                    )}
                 </div>
 
                 {/* PC: el presupuesto y la acción, a mano mientras se lee */}
@@ -451,11 +473,10 @@ export default function EventDetail() {
                     <div className="sticky top-20 rounded-[22px] bg-card border border-hairline shadow-e1 p-5">
                         <p className="text-[13px] text-muted-foreground">Presupuesto</p>
                         <p className="text-[28px] font-bold leading-tight text-foreground">{priceText}</p>
-                        <p className="mt-1 text-[14px] text-muted-foreground">
-                            {fechaValida ? `${dia}${otroAno ? ` ${fecha.getFullYear()}` : ''} · ${hora}` : 'Fecha por fijar'}
-                        </p>
+                        <p className="mt-1 text-[14px] text-muted-foreground">{cuando}</p>
+                        {ficha.plazo && !plazoCerrado && <p className="text-[14px] text-muted-foreground">{ficha.plazo.texto}</p>}
                         {actionButton('mt-4 w-full')}
-                        {!isOrganizer && !isApplied && (
+                        {!isOrganizer && !isApplied && !plazoCerrado && (
                             <p className="mt-3 text-[13px] leading-snug text-muted-foreground text-center">
                                 Al postularte, el organizador ve tu perfil y puede escribirte por Musikeeo.
                             </p>
@@ -463,6 +484,16 @@ export default function EventDetail() {
                     </div>
                 </aside>
             </div>
+
+            {/* Más bolos de quien organiza este */}
+            {masBolos.length > 0 && (
+                <section className="mt-8 md:mt-12">
+                    <h2 className="text-[19px] font-bold text-foreground">Más bolos de {organizerName}</h2>
+                    <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {masBolos.map(b => <TarjetaBolo key={b.id} e={b} />)}
+                    </div>
+                </section>
+            )}
 
             {/* Móvil: barra fija con el presupuesto y la acción, encima de la barra de navegación */}
             {createPortal(

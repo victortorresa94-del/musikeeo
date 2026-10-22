@@ -100,6 +100,23 @@ export interface ProviderProfile {
     createdAt: string;
 }
 
+export interface DetallesBolo {
+    formato?: string;      // 'Banda de 3 a 5 músicos'
+    duracion?: string;     // '2 pases de 45 min'
+    repertorio?: string;   // 'Versiones conocidas y algún tema propio'
+    llegada?: string;      // '19:30' (llegada / prueba de sonido)
+    sonido?: 'incluido' | 'sin_tecnico' | 'lo_trae_la_banda';
+    escenario?: string;    // 'Sí, 6 × 4 m'
+    parking?: string;      // 'Carga y descarga en la puerta'
+    comida?: string;       // 'Cena para la banda'
+    pago?: string;         // 'Transferencia, 7 días después'
+    desplazamiento?: 'incluido' | 'aparte' | 'no_aplica';
+    lugar?: string;        // 'Masía Can Ribes'
+    invitados?: number;    // invitados o aforo
+    espacio?: 'interior' | 'exterior';
+    cierra?: string;       // 'YYYY-MM-DD', último día para postularse
+}
+
 export interface Event {
     id: string;
     title: string;
@@ -113,6 +130,7 @@ export interface Event {
     tags?: string[];
     price?: number;
     createdAt?: string;
+    detalles?: DetallesBolo; // lo opcional del paso 3 de Publicar; solo las claves rellenas
 }
 
 export interface MarketItem {

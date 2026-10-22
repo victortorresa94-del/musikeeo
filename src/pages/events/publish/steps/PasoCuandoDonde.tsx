@@ -2,23 +2,12 @@ import { Calendar, Clock, MapPin } from 'lucide-react';
 import type { PublishEventState, ActualizaCampo } from '../PublishEventPage';
 import { cn } from '../../../../lib/utils';
 import { Campo, Pastilla } from '../components/Campos';
-import { CAMPO, CIUDADES, TIPOS_EVENTO, TIPOS_RODRIGO, fechaLocal } from '../opciones';
+import { CAMPO, CIUDADES, TIPOS_EVENTO, TIPOS_RODRIGO, abrirSelector, fechaLocal, hoyISO } from '../opciones';
 
 interface Props {
     data: PublishEventState;
     update: ActualizaCampo;
 }
-
-const hoyISO = () => {
-    const d = new Date();
-    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
-};
-
-// El selector nativo, invisible encima de la pastilla: en el móvil abre la rueda del sistema
-// y en el PC, showPicker() abre el calendario al primer clic
-const abrirSelector = (el: HTMLInputElement) => {
-    try { el.showPicker?.(); } catch { /* ya abierto o no soportado: el foco basta */ }
-};
 
 // Paso 2: qué tipo de evento es, cuándo y dónde
 export default function PasoCuandoDonde({ data, update }: Props) {

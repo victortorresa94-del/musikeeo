@@ -1,4 +1,6 @@
+import { collection, getCountFromServer, query, where } from 'firebase/firestore';
 import { type Event } from '../types';
+import { db } from '../lib/firebase';
 import { firestoreService } from './firestoreService';
 
 export const eventService = {
@@ -42,5 +44,12 @@ export const eventService = {
             console.error("Error fetching organizer events:", error);
             return [];
         }
+    },
+
+    /** Cuántos bolos ha publicado alguien: una consulta de recuento, sin traer los documentos.
+     *  Si falla, lanza: quien lo pinte no enseña el dato */
+    contarBolosDe: async (organizerId: string): Promise<number> => {
+        const snap = await getCountFromServer(query(collection(db, 'events'), where('organizerId', '==', organizerId)));
+        return snap.data().count;
     }
 };

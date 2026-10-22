@@ -1,6 +1,7 @@
 // Lo que se elige al publicar un bolo. La necesidad se guarda como etiqueta del evento
 // (`tags`, el mismo campo que antes llenaba «¿Qué estás buscando?») y el tipo en `type`.
 import { OBJETO_3D } from '../../../config/objetos3d';
+import type { DetallesBolo } from '../../../types';
 
 export const NECESIDADES = [
     { etiqueta: 'Banda', imagen: OBJETO_3D.banda },
@@ -83,3 +84,58 @@ export const fechaLocal = (iso: string) => new Date(`${iso}T12:00:00`);
 
 /** El campo de la casa: relleno suave, 52 de alto, esquinas de 14 */
 export const CAMPO = 'w-full h-[52px] rounded-[14px] bg-fill px-4 text-[16px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10';
+
+// ── «Más detalles (opcional)» del paso 3: se guarda en `detalles` ──
+// `pastilla` es lo que elige quien publica; `texto`, lo que lee el músico en la ficha del bolo
+export const SONIDO_BOLO: { valor: NonNullable<DetallesBolo['sonido']>; pastilla: string; texto: string }[] = [
+    { valor: 'incluido', pastilla: 'Equipo y técnico', texto: 'Equipo y técnico incluidos' },
+    { valor: 'sin_tecnico', pastilla: 'Equipo, sin técnico', texto: 'Hay equipo, pero sin técnico' },
+    { valor: 'lo_trae_la_banda', pastilla: 'Lo trae el artista', texto: 'Lo trae el artista' },
+];
+
+export const DESPLAZAMIENTO_BOLO: { valor: NonNullable<DetallesBolo['desplazamiento']>; pastilla: string; texto: string }[] = [
+    { valor: 'incluido', pastilla: 'Incluido', texto: 'Incluido en el precio' },
+    { valor: 'aparte', pastilla: 'Se paga aparte', texto: 'Se paga aparte' },
+    { valor: 'no_aplica', pastilla: 'No aplica', texto: 'No aplica' },
+];
+
+export const ESPACIO_BOLO: { valor: NonNullable<DetallesBolo['espacio']>; pastilla: string; texto: string }[] = [
+    { valor: 'interior', pastilla: 'Interior', texto: 'Interior' },
+    { valor: 'exterior', pastilla: 'Exterior', texto: 'Exterior' },
+];
+
+const TEXTOS_DETALLE = ['formato', 'duracion', 'repertorio', 'escenario', 'parking', 'comida', 'pago', 'lugar'] as const;
+
+/** `detalles` con solo lo que está relleno y bien formado (Firestore no admite undefined).
+ *  Sin nada, undefined: entonces el bolo se guarda sin `detalles` */
+export function limpiaDetalles(d?: DetallesBolo | null): DetallesBolo | undefined {
+    if (!d || typeof d !== 'object') return undefined;
+    const out: DetallesBolo = {};
+    for (const k of TEXTOS_DETALLE) {
+        const v = typeof d[k] === 'string' ? d[k]!.trim() : '';
+        if (v) out[k] = v;
+    }
+    if (typeof d.llegada === 'string' && /^\d{2}:\d{2}$/.test(d.llegada)) out.llegada = d.llegada;
+    if (typeof d.cierra === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(d.cierra)) out.cierra = d.cierra;
+    const invitados = Math.round(Number(d.invitados));
+    if (Number.isFinite(invitados) && invitados > 0) out.invitados = invitados;
+    const sonido = SONIDO_BOLO.find(o => o.valor === d.sonido);
+    if (sonido) out.sonido = sonido.valor;
+    const desplazamiento = DESPLAZAMIENTO_BOLO.find(o => o.valor === d.desplazamiento);
+    if (desplazamiento) out.desplazamiento = desplazamiento.valor;
+    const espacio = ESPACIO_BOLO.find(o => o.valor === d.espacio);
+    if (espacio) out.espacio = espacio.valor;
+    return Object.keys(out).length ? out : undefined;
+}
+
+/** Hoy en «2026-10-25», en la hora local */
+export const hoyISO = () => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+};
+
+// El selector nativo, invisible encima de la pastilla: en el móvil abre la rueda del sistema
+// y en el PC, showPicker() abre el calendario al primer clic
+export const abrirSelector = (el: HTMLInputElement) => {
+    try { el.showPicker?.(); } catch { /* ya abierto o no soportado: el foco basta */ }
+};

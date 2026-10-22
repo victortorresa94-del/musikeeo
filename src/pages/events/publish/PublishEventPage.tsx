@@ -9,9 +9,9 @@ import PasoDetalles from './steps/PasoDetalles';
 import { eventService } from '../../../services/eventService';
 import { storageService } from '../../../services/storageService';
 import { useAuth } from '../../../context/AuthContext';
-import type { Event } from '../../../types';
+import type { DetallesBolo, Event } from '../../../types';
 import { cn } from '../../../lib/utils';
-import { ETIQUETA_NEGOCIABLE, TODAS_NECESIDADES, necesidadDesdeBorrador, tipoDesdeBorrador } from './opciones';
+import { ETIQUETA_NEGOCIABLE, TODAS_NECESIDADES, limpiaDetalles, necesidadDesdeBorrador, tipoDesdeBorrador } from './opciones';
 
 // Helper to convert base64 to file
 const dataURLtoFile = (dataurl: string, filename: string) => {
@@ -45,6 +45,7 @@ export type PublishEventState = {
     negotiable: boolean;
     description: string;
     image?: string; // data: URL hasta que se publica
+    detalles: DetallesBolo; // «Más detalles (opcional)»: solo las claves que se rellenan
 
     // Metadata
     step: number;
@@ -63,6 +64,7 @@ const INITIAL_STATE: PublishEventState = {
     currency: 'EUR',
     negotiable: false,
     description: '',
+    detalles: {},
     step: 1
 };
 
@@ -192,7 +194,9 @@ export default function PublishEventPage() {
                 }
             }
 
-            // 2. Create Event Object. Sin foto no se guarda imageUrl: la lista pinta su objeto 3D
+            // 2. Create Event Object. Sin foto no se guarda imageUrl: la lista pinta su objeto 3D.
+            //    `detalles` solo con lo relleno (Firestore rechaza los undefined); vacío, no se guarda
+            const detalles = limpiaDetalles(formData.detalles);
             await eventService.createEvent({
                 title: formData.title.trim(),
                 description: formData.description.trim(),
@@ -204,6 +208,7 @@ export default function PublishEventPage() {
                 organizerId: user.uid,
                 organizerName: user.displayName || 'Organizador',
                 tags: etiquetas,
+                ...(detalles ? { detalles } : {}),
             });
 
             toast.success("Tu bolo ya está publicado");
