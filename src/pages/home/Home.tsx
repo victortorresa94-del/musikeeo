@@ -828,7 +828,7 @@ const HomeFooter = () => (
         <div className="max-w-6xl mx-auto grid grid-cols-2 md:grid-cols-4 gap-10">
             <div className="col-span-2 md:col-span-1">
                 <div className="flex items-center gap-2.5">
-                    <img src="/logo-musikeeo.png?v=5" alt="" className="h-8 w-8 rounded-lg object-contain" />
+                    <img src="/logo-musikeeo.png?v=6" alt="" className="h-8 w-8 rounded-lg object-contain" />
                     <span className="font-heading font-bold tracking-wide text-foreground">MUSIK<span className="text-primary">EEO</span></span>
                 </div>
                 <p className="mt-4 text-sm text-muted-foreground leading-relaxed max-w-xs">La red de la música en directo. Conecta. Crea. Suena.</p>
