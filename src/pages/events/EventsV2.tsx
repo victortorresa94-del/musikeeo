@@ -1,15 +1,18 @@
-import { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import {
-    Search, Plus, SlidersHorizontal, Calendar, MapPin,
-    ArrowRight, Music, X,
-    Info,
-} from 'lucide-react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { useState, useMemo, useEffect, useCallback } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
+import { Search, Plus, SlidersHorizontal, X, Info } from 'lucide-react';
+import { motion } from 'framer-motion';
 import { eventService } from '../../services/eventService';
 import type { Event } from '../../types';
 import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../lib/utils';
+import { OBJETO_3D } from '../../config/objetos3d';
+import { TarjetaBolo, TarjetaBoloEsqueleto } from '../../components/bolos/TarjetaBolo';
+import { FiltrosBolos } from '../../components/bolos/FiltrosBolos';
+import {
+    CHIPS_BOLO, TIPOS_ENCARGO, bolsaDe, casaChip, diaSemana, fechaDe, mesCorto, nombreTipo, norm,
+    type ChipBolo, type FechaBolo, type TipoEncargo,
+} from '../../components/bolos/tablon';
 
 // ─── Mock data for when Firestore is empty ────────────────────────────────────
 const MOCK_EVENTS: Event[] = [
@@ -99,101 +102,26 @@ const MOCK_EVENTS: Event[] = [
     },
 ];
 
-const EVENT_TYPES = ['Todos', 'Bolo', 'Sesión', 'Colaboración', 'Festival', 'Boda / Social'];
+interface Fila {
+    e: Event;
+    f: FechaBolo | null;
+    pasado: boolean;
+    bolsa: Set<string>;
+    texto: string;
+}
 
-const TYPE_MAP: Record<string, string> = {
-    'Bolo': 'gig',
-    'Sesión': 'session',
-    'Colaboración': 'collab',
-    'Festival': 'festival',
-    'Boda / Social': 'social',
-};
+// «Sala La Fragua, Barcelona» → «Barcelona»: lo último es la ciudad (o la provincia)
+const ciudadDe = (loc?: string) => (loc || '').split(',').pop()!.trim();
 
-// ─── Event card ────────────────────────────────────────────────────────────────
-const EventCardNew = ({ event, onClick }: { event: Event; onClick: () => void }) => {
-    const dateObj = new Date(event.date);
-    const day = dateObj.getDate();
-    const month = dateObj.toLocaleDateString('es-ES', { month: 'short', timeZone: 'UTC' });
-    const daysLeft = Math.ceil((dateObj.getTime() - Date.now()) / (1000 * 60 * 60 * 24));
-
-    const badgeColor: Record<string, string> = {
-        'Urgente': 'bg-red-500 text-white',
-        'Premium': 'bg-primary text-primary-foreground',
-        'Nuevo': 'bg-white text-black',
-    };
-
-    return (
-        <motion.article
-            initial={{ opacity: 0, y: 16 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={{ y: -2 }}
-            transition={{ duration: 0.25 }}
-            onClick={onClick}
-            className="group bg-card border border-border rounded-2xl overflow-hidden cursor-pointer hover:border-primary/30 hover:shadow-lg transition-all duration-300"
-        >
-            {/* Photo */}
-            <div className="relative h-44 overflow-hidden bg-muted">
-                <img
-                    src={event.imageUrl || '/images/market/concert_venue_1768143610025.png'}
-                    alt={event.title}
-                    loading="lazy"
-                    className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-transparent to-transparent" />
-
-                {/* Date badge */}
-                <div className="absolute top-3 left-3 bg-background/95 backdrop-blur-sm rounded-xl px-2.5 py-1.5 text-center min-w-[44px]">
-                    <p className="text-[10px] font-bold text-primary-ink uppercase leading-none">{month}</p>
-                    <p className="text-lg font-bold text-foreground leading-tight">{day}</p>
-                </div>
-
-                {/* Tags */}
-                <div className="absolute top-3 right-3 flex gap-1.5">
-                    {(event.tags || []).map(tag => (
-                        <span key={tag} className={cn('text-[10px] font-bold px-2 py-1 rounded-full', badgeColor[tag] || 'bg-muted text-muted-foreground')}>
-                            {tag === 'Urgente' ? '⚡ Urgente' : tag === 'Premium' ? '💎 Premium' : tag}
-                        </span>
-                    ))}
-                </div>
-
-                {/* Price bottom right */}
-                <div className="absolute bottom-3 right-3 bg-black/70 backdrop-blur-md px-3 py-1.5 rounded-xl">
-                    <span className="text-primary-ink font-bold text-sm">
-                        {event.price ? `${event.price.toLocaleString()}€` : 'A negociar'}
-                    </span>
-                </div>
-            </div>
-
-            {/* Content */}
-            <div className="p-4">
-                <span className="text-[10px] font-bold text-primary-ink uppercase tracking-widest mb-1 block">
-                    {event.type === 'gig' ? 'Bolo' : event.type === 'session' ? 'Sesión' : event.type}
-                </span>
-                <h3 className="font-bold text-foreground text-base leading-snug line-clamp-2 group-hover:text-primary-ink transition-colors mb-3">
-                    {event.title}
-                </h3>
-                <div className="flex flex-col gap-1.5 mb-4">
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <MapPin className="h-3.5 w-3.5 text-primary-ink/70 flex-shrink-0" />
-                        <span className="truncate">{event.location}</span>
-                    </div>
-                    <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-                        <Calendar className="h-3.5 w-3.5 text-primary-ink/70 flex-shrink-0" />
-                        <span>
-                            {daysLeft <= 0 ? 'Hoy' : daysLeft === 1 ? 'Mañana' : `En ${daysLeft} días`}
-                        </span>
-                    </div>
-                </div>
-                <div className="flex items-center justify-between pt-3 border-t border-border">
-                    <span className="text-xs text-muted-foreground">{event.organizerName}</span>
-                    <button className="flex items-center gap-1 text-xs font-bold text-primary-ink group-hover:gap-2 transition-all">
-                        Ver más <ArrowRight className="h-3.5 w-3.5" />
-                    </button>
-                </div>
-            </div>
-        </motion.article>
-    );
-};
+// Lo que encuentra el buscador: título, sitio, etiquetas, quién lo publica, el tipo y la fecha
+// escrita («sábado 25 octubre», «25/10»), para que «noviembre» o «sábado» también busquen
+function textoDe(e: Event, f: FechaBolo | null) {
+    const fecha = f ? [
+        f.d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }),
+        diaSemana(f.d), mesCorto(f.d), `${f.d.getDate()}/${f.d.getMonth() + 1}`,
+    ] : [];
+    return norm([e.title, e.location, ...(e.tags || []), e.organizerName, nombreTipo(e.type), ...fecha].filter(Boolean).join(' · '));
+}
 
 // ─── Main page ─────────────────────────────────────────────────────────────────
 export default function EventsV2() {
@@ -204,9 +132,11 @@ export default function EventsV2() {
     const [loading, setLoading] = useState(true);
     const [usingMocks, setUsingMocks] = useState(false);
     const [searchQuery, setSearchQuery] = useState('');
-    const [activeType, setActiveType] = useState('Todos');
+    const [chip, setChip] = useState<ChipBolo>('todos');
+    const [tipo, setTipo] = useState<TipoEncargo>('todos');
     const [cityFilter, setCityFilter] = useState('');
     const [showFilters, setShowFilters] = useState(false);
+    const [verPasados, setVerPasados] = useState(false);
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -229,175 +159,226 @@ export default function EventsV2() {
         fetchEvents();
     }, [user]);
 
-    const filteredEvents = useMemo(() => {
-        return events.filter(event => {
-            if (searchQuery) {
-                const q = searchQuery.toLowerCase();
-                if (!event.title.toLowerCase().includes(q) &&
-                    !event.location.toLowerCase().includes(q) &&
-                    !event.organizerName?.toLowerCase().includes(q)) return false;
-            }
-            if (activeType !== 'Todos') {
-                const mapped = TYPE_MAP[activeType];
-                if (mapped && event.type !== mapped) return false;
-            }
-            if (cityFilter) {
-                if (!event.location.toLowerCase().includes(cityFilter.toLowerCase())) return false;
-            }
-            return true;
-        }).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime());
-    }, [events, searchQuery, activeType, cityFilter]);
+    // Cada bolo con su fecha, si ya pasó (antes de hoy) y lo que se busca en él
+    const filas = useMemo<Fila[]>(() => {
+        const hoy = new Date(); hoy.setHours(0, 0, 0, 0);
+        return events.map(e => {
+            const f = fechaDe(e.date);
+            return { e, f, pasado: !!f && f.d < hoy, bolsa: bolsaDe(e), texto: textoDe(e, f) };
+        });
+    }, [events]);
+
+    const abiertosTotal = useMemo(() => filas.filter(x => !x.pasado).length, [filas]);
+
+    // Ciudades para la hoja de filtros: las de los bolos que hay
+    const ciudades = useMemo(() => {
+        const vistas = new Map<string, string>();
+        for (const x of filas) {
+            const c = ciudadDe(x.e.location);
+            if (c && !vistas.has(norm(c))) vistas.set(norm(c), c);
+        }
+        return [...vistas.values()].slice(0, 8);
+    }, [filas]);
+
+    // Buscador, chip y hoja de filtros a la vez (la hoja dice cuántos quedan)
+    const filtrados = useMemo(() => {
+        const palabrasQ = norm(searchQuery).split(/\s+/).filter(Boolean);
+        const tipos: readonly string[] = TIPOS_ENCARGO.find(t => t.id === tipo)?.tipos ?? [];
+        const c = norm(cityFilter.trim());
+        return filas.filter(x => {
+            if (palabrasQ.length && !palabrasQ.every(p => x.texto.includes(p))) return false;
+            if (tipos.length && !tipos.includes((x.e.type || '').toLowerCase())) return false;
+            if (c && !norm(x.e.location || '').includes(c)) return false;
+            return casaChip(x.bolsa, chip);
+        });
+    }, [filas, searchQuery, tipo, cityFilter, chip]);
+
+    // Los abiertos, del más cercano al más lejano (los sin fecha, al final);
+    // los que ya pasaron, del más reciente al más antiguo
+    const abiertos = useMemo(() => filtrados.filter(x => !x.pasado)
+        .sort((a, b) => (a.f?.d.getTime() ?? Infinity) - (b.f?.d.getTime() ?? Infinity)), [filtrados]);
+    const pasados = useMemo(() => filtrados.filter(x => x.pasado)
+        .sort((a, b) => b.f!.d.getTime() - a.f!.d.getTime()), [filtrados]);
+
+    const nFiltros = (tipo !== 'todos' ? 1 : 0) + (cityFilter.trim() ? 1 : 0);
+    const hayFiltros = !!searchQuery.trim() || chip !== 'todos' || nFiltros > 0;
+    const limpiar = () => { setSearchQuery(''); setChip('todos'); setTipo('todos'); setCityFilter(''); };
+    const cerrarFiltros = useCallback(() => setShowFilters(false), []);
+
+    const subtitulo = loading ? 'Cargando bolos…'
+        : usingMocks ? 'Bolos de ejemplo'
+        : abiertosTotal === 0 ? 'Ahora mismo no hay bolos abiertos'
+        : `${abiertosTotal} ${abiertosTotal === 1 ? 'bolo abierto' : 'bolos abiertos'}`;
+
+    const chipActivo = CHIPS_BOLO.find(c => c.id === chip)!;
+    const tituloVacio = searchQuery.trim()
+        ? `Nada con «${searchQuery.trim()}»${chip !== 'todos' ? ` en ${chipActivo.nombre.toLowerCase()}` : ''} por ahora`
+        : chip !== 'todos' ? (nFiltros > 0 ? `Ningún bolo ${chipActivo.vacio} con estos filtros` : `Ahora no hay bolos ${chipActivo.vacio}`)
+        : nFiltros > 0 ? 'Ningún bolo con estos filtros'
+        : 'No hay bolos abiertos ahora mismo';
 
     return (
         <div className="min-h-full bg-background">
-            <div className="max-w-6xl mx-auto px-4 py-6 md:px-6 md:py-8">
+            <div className="max-w-[1072px] mx-auto px-4 md:px-6 pt-3 md:pt-6 pb-16">
 
-                {/* ── Page header ── */}
-                <div className="flex items-start justify-between gap-4 mb-6">
-                    <div>
-                        <h1 className="text-[28px] leading-tight font-heading font-bold text-foreground tracking-tight">
-                            Bolos
-                        </h1>
-                        <p className="text-muted-foreground text-[15px] mt-0.5">
-                            {loading ? 'Cargando...' : (
-                                <><span className="font-bold text-foreground">{filteredEvents.length}</span> oportunidades abiertas</>
-                            )}
-                        </p>
+                {/* ── Cabecera ── */}
+                <div className="flex items-start justify-between gap-4">
+                    <div className="min-w-0">
+                        <h1 className="font-heading text-[28px] leading-tight font-bold text-foreground">Bolos</h1>
+                        <p className="mt-0.5 text-[15px] text-muted-foreground">{subtitulo}</p>
                     </div>
                     <button
                         onClick={() => navigate('/publicar')}
-                        className="mt-2 flex items-center gap-1.5 bg-primary text-primary-foreground text-[15px] font-semibold h-9 px-3.5 rounded-full active:opacity-80 flex-shrink-0"
+                        className="pulsable mt-0.5 shrink-0 h-9 pl-3 pr-4 rounded-full bg-primary text-primary-foreground text-[15px] font-bold flex items-center gap-1.5"
                     >
-                        <Plus className="h-4 w-4" /> <span className="hidden sm:inline">Publicar anuncio</span><span className="sm:hidden">Publicar</span>
+                        <Plus className="h-[18px] w-[18px]" strokeWidth={2.5} />
+                        <span>Publicar<span className="hidden md:inline"> un bolo</span></span>
                     </button>
                 </div>
 
-                {/* ── Demo banner ── */}
-                {usingMocks && (
-                    <div className="mb-6 bg-card border border-border rounded-xl px-4 py-3 text-sm flex items-start gap-3">
-                        <Info className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
-                        <div>
-                            <p className="font-semibold text-foreground">Estos son eventos de ejemplo</p>
-                            <p className="text-xs text-muted-foreground mt-0.5">Todavía no hay oportunidades reales publicadas. Sé el primero en <button onClick={() => navigate('/publicar')} className="underline font-semibold text-primary-ink">publicar un anuncio</button>.</p>
-                        </div>
-                    </div>
-                )}
-
-                {/* ── Search + filters ── */}
-                <div className="mb-6 space-y-3">
-                    <div className="flex gap-2">
-                        <div className="relative flex-1">
-                            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
-                            <input
-                                type="text"
-                                placeholder="Buscar eventos, ciudades, organizadores..."
-                                value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
-                                className="w-full bg-muted border border-border rounded-xl h-10 pl-9 pr-4 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 focus:ring-1 focus:ring-primary/20 transition-colors"
-                            />
-                        </div>
+                {/* ── Buscador (con los filtros de siempre a la derecha) ── */}
+                <div className="relative mt-4">
+                    <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground pointer-events-none" />
+                    <input
+                        type="search"
+                        value={searchQuery}
+                        onChange={(e) => setSearchQuery(e.target.value)}
+                        placeholder="Busca por ciudad, estilo o fecha"
+                        aria-label="Buscar bolos"
+                        className={cn(
+                            'w-full h-12 rounded-2xl bg-fill pl-12 text-[16px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10 [&::-webkit-search-cancel-button]:hidden',
+                            searchQuery ? 'pr-[88px]' : 'pr-14',
+                        )}
+                    />
+                    <div className="absolute right-1.5 top-1/2 -translate-y-1/2 flex items-center gap-1">
+                        {searchQuery && (
+                            <button onClick={() => setSearchQuery('')} aria-label="Borrar búsqueda" className="h-8 w-8 rounded-full flex items-center justify-center text-muted-foreground">
+                                <X className="h-4 w-4" />
+                            </button>
+                        )}
                         <button
-                            onClick={() => setShowFilters(v => !v)}
+                            onClick={() => setShowFilters(true)}
+                            aria-label={nFiltros ? `Filtros (${nFiltros} activos)` : 'Filtros'}
                             className={cn(
-                                'flex items-center gap-2 h-10 px-4 rounded-xl border text-sm font-medium transition-all',
-                                showFilters
-                                    ? 'bg-primary/10 border-primary text-primary-ink'
-                                    : 'bg-muted border-border text-muted-foreground hover:text-foreground'
+                                'pulsable relative h-9 w-9 rounded-full flex items-center justify-center',
+                                nFiltros ? 'bg-foreground text-background' : 'text-foreground',
                             )}
                         >
-                            <SlidersHorizontal className="h-4 w-4" />
-                            <span className="hidden sm:inline">Filtros</span>
+                            <SlidersHorizontal className="h-[18px] w-[18px]" />
+                            {nFiltros > 0 && (
+                                <span className="absolute -top-0.5 -right-0.5 h-4 min-w-4 px-1 rounded-full bg-background text-foreground border border-hairline-strong text-[10px] font-bold leading-[14px] text-center">
+                                    {nFiltros}
+                                </span>
+                            )}
                         </button>
-                    </div>
-
-                    {/* City filter (expandable) */}
-                    <AnimatePresence>
-                        {showFilters && (
-                            <motion.div
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: 'auto', opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                className="overflow-hidden"
-                            >
-                                <div className="flex gap-2 items-center pt-1">
-                                    <MapPin className="h-4 w-4 text-muted-foreground flex-shrink-0" />
-                                    <input
-                                        type="text"
-                                        placeholder="Filtrar por ciudad (Madrid, Barcelona…)"
-                                        value={cityFilter}
-                                        onChange={(e) => setCityFilter(e.target.value)}
-                                        className="flex-1 bg-muted border border-border rounded-xl h-9 px-3 text-sm text-foreground placeholder:text-muted-foreground focus:outline-none focus:border-primary/40 transition-colors"
-                                    />
-                                    {cityFilter && (
-                                        <button
-                                            onClick={() => setCityFilter('')}
-                                            className="p-1.5 rounded-lg hover:bg-muted text-muted-foreground"
-                                        >
-                                            <X className="h-4 w-4" />
-                                        </button>
-                                    )}
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-
-                    {/* Type chips */}
-                    <div className="flex gap-2 overflow-x-auto pb-1 hide-scrollbar">
-                        {EVENT_TYPES.map(type => (
-                            <button
-                                key={type}
-                                onClick={() => setActiveType(type)}
-                                className={cn(
-                                    'flex-shrink-0 h-8 px-3.5 rounded-full text-[14px] font-medium transition-colors',
-                                    activeType === type
-                                        ? 'bg-foreground text-background'
-                                        : 'bg-foreground/[0.07] text-foreground/85'
-                                )}
-                            >
-                                {type}
-                            </button>
-                        ))}
                     </div>
                 </div>
 
-                {/* ── Events grid ── */}
-                {loading ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                        {[...Array(6)].map((_, i) => (
-                            <div key={i} className="bg-card border border-border rounded-2xl overflow-hidden animate-pulse">
-                                <div className="h-44 bg-muted" />
-                                <div className="p-4 space-y-2">
-                                    <div className="h-3 bg-muted rounded w-16" />
-                                    <div className="h-5 bg-muted rounded w-3/4" />
-                                    <div className="h-4 bg-muted rounded w-1/2" />
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                ) : filteredEvents.length > 0 ? (
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-                        {filteredEvents.map(event => (
-                            <EventCardNew
-                                key={event.id}
-                                event={event}
-                                onClick={() => navigate(`/eventos/${event.id}`)}
-                            />
-                        ))}
-                    </div>
-                ) : (
-                    <div className="text-center py-20 border border-border border-dashed rounded-2xl bg-card">
-                        <Music className="mx-auto h-12 w-12 text-muted-foreground mb-4" />
-                        <h3 className="text-lg font-bold text-foreground mb-1">Sin resultados</h3>
-                        <p className="text-muted-foreground text-sm mb-4">Intenta ajustar los filtros de búsqueda</p>
+                {/* ── Chips por momento ── */}
+                <div className="mt-3 -mx-4 px-4 md:mx-0 md:px-0 flex gap-2 overflow-x-auto hide-scrollbar">
+                    {CHIPS_BOLO.map(c => (
                         <button
-                            onClick={() => { setSearchQuery(''); setActiveType('Todos'); setCityFilter(''); }}
-                            className="text-primary-ink text-sm font-medium hover:underline"
+                            key={c.id}
+                            onClick={() => setChip(c.id)}
+                            aria-pressed={chip === c.id}
+                            className={cn(
+                                'pulsable shrink-0 h-9 px-4 rounded-full text-[14px] font-semibold',
+                                chip === c.id ? 'bg-foreground text-background' : 'bg-fill text-foreground',
+                            )}
                         >
-                            Limpiar filtros
+                            {c.nombre}
                         </button>
+                    ))}
+                </div>
+
+                {/* ── Aviso de ejemplo ── */}
+                {usingMocks && !loading && (
+                    <div className="mt-4 rounded-2xl bg-fill px-4 py-3 flex items-start gap-3">
+                        <Info className="h-4 w-4 mt-0.5 shrink-0 text-muted-foreground" />
+                        <div className="text-[14px]">
+                            <p className="font-semibold text-foreground">Estos bolos son de ejemplo</p>
+                            <p className="mt-0.5 text-muted-foreground">
+                                Todavía no hay bolos reales publicados. Sé el primero en{' '}
+                                <Link to="/publicar" className="underline font-semibold text-foreground">publicar uno</Link>.
+                            </p>
+                        </div>
                     </div>
                 )}
+
+                {/* ── El tablón ── */}
+                <div className="mt-4">
+                    {loading ? (
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                            {[0, 1, 2, 3].map(i => <TarjetaBoloEsqueleto key={i} />)}
+                        </div>
+                    ) : abiertos.length > 0 ? (
+                        <Rejilla filas={abiertos} />
+                    ) : (
+                        <div className="px-6 py-12 text-center">
+                            <img src={OBJETO_3D.calendario} alt="" loading="lazy" className="mx-auto h-24 w-24 object-contain drop-shadow-[0_8px_10px_rgba(0,0,0,0.16)]" />
+                            <p className="mt-3 text-[17px] font-bold text-foreground">{tituloVacio}</p>
+                            <p className="mt-1 text-[14px] text-muted-foreground">¿Organizas uno? Publícalo y te escribirán los músicos.</p>
+                            <div className="mt-5 flex justify-center gap-2">
+                                <Link to="/publicar" className="pulsable h-9 px-4 rounded-full bg-foreground text-background text-[14px] font-semibold flex items-center gap-1.5">
+                                    <Plus className="h-4 w-4" strokeWidth={2.5} /> Publicar un bolo
+                                </Link>
+                                {hayFiltros && (
+                                    <button onClick={limpiar} className="pulsable h-9 px-4 rounded-full bg-fill text-foreground text-[14px] font-semibold">
+                                        Ver todos
+                                    </button>
+                                )}
+                            </div>
+                        </div>
+                    )}
+
+                    {/* Los que ya pasaron: no son «abiertos», pero no se pierden */}
+                    {!loading && pasados.length > 0 && (
+                        <div className="mt-8">
+                            {verPasados && (
+                                <>
+                                    <h2 className="font-heading text-[20px] font-bold text-foreground">Ya pasaron</h2>
+                                    <div className="mt-3"><Rejilla filas={pasados} pasado /></div>
+                                </>
+                            )}
+                            <div className={cn('flex justify-center', verPasados && 'mt-4')}>
+                                <button onClick={() => setVerPasados(v => !v)} className="pulsable h-9 px-4 rounded-full bg-fill text-foreground text-[14px] font-semibold">
+                                    {verPasados ? 'Ocultar los que ya pasaron'
+                                        : pasados.length === 1 ? 'Ver el que ya pasó' : `Ver los ${pasados.length} que ya pasaron`}
+                                </button>
+                            </div>
+                        </div>
+                    )}
+                </div>
             </div>
+
+            <FiltrosBolos
+                open={showFilters}
+                onClose={cerrarFiltros}
+                tipo={tipo}
+                onTipo={setTipo}
+                ciudad={cityFilter}
+                onCiudad={setCityFilter}
+                ciudades={ciudades}
+                resultados={abiertos.length}
+            />
+        </div>
+    );
+}
+
+function Rejilla({ filas, pasado }: { filas: Fila[]; pasado?: boolean }) {
+    return (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+            {filas.map((x, i) => (
+                <motion.div
+                    key={x.e.id}
+                    className="h-full"
+                    initial={{ opacity: 0, y: 12 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.25, delay: Math.min(i, 8) * 0.03 }}
+                >
+                    <TarjetaBolo e={x.e} pasado={pasado} />
+                </motion.div>
+            ))}
         </div>
     );
 }
