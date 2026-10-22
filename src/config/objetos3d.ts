@@ -29,11 +29,14 @@ const REGLAS: { objeto: Objeto3D; palabras: string[] }[] = [
     { objeto: 'mesa', palabras: ['tecnico', 'foh', 'backline', 'luces'] },  // no «sonido»: «Sonido incluido» no es un bolo de técnico
     { objeto: 'microfono', palabras: ['cantante', 'voz', 'acustico', 'residencia', 'bar', 'jam'] },
     { objeto: 'escenario', palabras: ['festival', 'sala', 'concierto'] },
+    { objeto: 'violinista', palabras: ['violin', 'ceremonia', 'cuerdas', 'clasica'] },
+    { objeto: 'banda', palabras: ['banda', 'orquesta', 'grupo', 'versiones'] },
 ];
 
 /** El objeto 3D que representa un bolo; la guitarra si no se sabe */
 export function objeto3dDeBolo(e: Pick<Event, 'type' | 'tags' | 'title'>): string {
-    const bolsa = norm([e.type, ...(e.tags || []), e.title].filter(Boolean).join(' '));
-    const r = REGLAS.find(x => x.palabras.some(p => bolsa.includes(p)));
+    // Por palabras (que empiecen igual), no por trozos: «bar» no debe casar con «Barcelona»
+    const palabras = norm([e.type, ...(e.tags || []), e.title].filter(Boolean).join(' ')).split(/[^a-z0-9ñ]+/);
+    const r = REGLAS.find(x => x.palabras.some(p => palabras.some(w => w.startsWith(p))));
     return OBJETO_3D[r?.objeto ?? 'guitarra'];
 }

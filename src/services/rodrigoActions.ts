@@ -60,7 +60,8 @@ export async function publishEventDraft(user: FirebaseUser, profile: User | null
         date,
         location: d.location,
         type: (['gig', 'jam', 'session', 'festival'].includes(d.type) ? d.type : 'gig') as Event['type'],
-        price: toNumber(d.budget) || undefined,
+        // Firestore rechaza undefined: sin presupuesto, el campo no va
+        ...(toNumber(d.budget) ? { price: toNumber(d.budget) } : {}),
         organizerId: user.uid,
         organizerName: profile?.displayName || user.displayName || 'Organizador',
         tags: d.genres,
