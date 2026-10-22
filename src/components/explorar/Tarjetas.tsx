@@ -65,7 +65,9 @@ export function TarjetaSala({ s }: { s: Sala }) {
     );
 }
 
-const precio = (l: Listing) => l.type === 'prestamo' ? 'Préstamo' : `${l.price} €${l.type === 'alquiler' && l.priceUnit ? `/${l.priceUnit}` : ''}`;
+const UNIDAD: Record<string, string> = { dia: '/día', semana: '/semana', total: '' };
+const precio = (l: Listing) => l.type === 'prestamo' ? 'Préstamo'
+    : `${l.price.toLocaleString('es-ES')} €${l.type === 'alquiler' && l.priceUnit ? (UNIDAD[l.priceUnit] ?? `/${l.priceUnit}`) : ''}`;
 const TIPO: Record<string, string> = { venta: 'Venta', alquiler: 'Alquiler', prestamo: 'Préstamo' };
 
 export function TarjetaAnuncio({ l, ancho }: { l: Listing; ancho?: boolean }) {

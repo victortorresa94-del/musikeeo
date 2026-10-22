@@ -29,7 +29,7 @@ const EDIT_PATH: Record<UserMode, string> = {
 };
 
 const priceOf = (l: Listing) =>
-    l.type === 'prestamo' ? 'Préstamo' : `${l.price} €${l.type === 'alquiler' && l.priceUnit ? `/${l.priceUnit}` : ''}`;
+    l.type === 'prestamo' ? 'Préstamo' : `${l.price.toLocaleString('es-ES')} €${l.type === 'alquiler' && l.priceUnit ? ({ dia: '/día', semana: '/semana', total: '' } as Record<string, string>)[l.priceUnit] ?? '' : ''}`;
 
 const dateOf = (iso: string) => {
     const d = new Date(iso);
