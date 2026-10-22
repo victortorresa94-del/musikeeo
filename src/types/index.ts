@@ -257,6 +257,16 @@ export interface Artist {
     bio: string;
     genres: string[];
     tags: string[]; // e.g., "Equipo propio", "Viaja", "Idiomas: EN/ES"
+    ficha?: {
+        formacion?: string;     // 'Dos guitarras, cajón y voz'
+        musicos?: number;       // 4
+        duracion?: string;      // '2 h de show'
+        repertorio?: string;    // 'Rumba catalana, pop, versiones'
+        equipo?: string;        // 'Llevan sonido para 150 personas'
+        viaja?: string;         // 'Cataluña y alrededores'
+        idiomas?: string;       // 'Castellano, catalán'
+        idealPara?: string[];   // ['Bodas','Fiestas','Salas','Terrazas']
+    };
 
     // Stats
     rating: number;
