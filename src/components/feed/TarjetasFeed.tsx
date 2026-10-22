@@ -105,7 +105,7 @@ function ClipArtista({ src, poster, onFallo }: { src: string; poster?: string; o
 
 const sinMovimiento = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function TarjetaArtistaGrande({ a }: { a: Artist }) {
+export function TarjetaArtistaGrande({ a, onAbrirClip }: { a: Artist; onAbrirClip?: () => void }) {
     // «House y disco», como en el concepto
     const generos = (a.genres || []).slice(0, 2).map((g, i) => i ? g.toLowerCase() : g).join(' y ');
     const linea = [ciudad(a.city), generos].filter(Boolean).join(' · ');
@@ -113,28 +113,56 @@ export function TarjetaArtistaGrande({ a }: { a: Artist }) {
     const [clipRoto, setClipRoto] = useState(false);
     const [quieto] = useState(sinMovimiento);
     const clip = a.clipUrl && !quieto && !clipRoto ? a.clipUrl : '';
+    const caja = cn('relative block rounded-[22px] overflow-hidden bg-fill shadow-e1', clip ? 'aspect-[4/5]' : 'aspect-[16/10]');
+    const medio = clip
+        ? <ClipArtista src={clip} poster={a.clipPoster || a.coverPhoto || a.profilePhoto} onFallo={() => setClipRoto(true)} />
+        : <Foto src={a.coverPhoto || a.clipPoster || a.profilePhoto} className="absolute inset-0 h-full w-full" icon={Music2} />;
+    const sinSonido = clip && (
+        <span className="pointer-events-none absolute top-3 right-3 h-8 w-8 rounded-full bg-black/45 backdrop-blur flex items-center justify-center text-white" role="img" aria-label="Vídeo sin sonido">
+            <VolumeX className="h-4 w-4" />
+        </span>
+    );
+    const degradado = <span className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-black/75 via-black/30 to-transparent" />;
+    const quien = (
+        <>
+            <Avatar src={a.profilePhoto || a.coverPhoto} name={a.artistName} className="h-11 w-11 shrink-0 ring-2 ring-white text-[17px]" />
+            <span className="min-w-0 flex-1">
+                <span className="flex items-center gap-1 text-[18px] font-bold leading-tight text-white">
+                    <span className="truncate">{a.artistName}</span>
+                    {a.isVerified && <BadgeCheck className="h-4 w-4 shrink-0 text-white" aria-label="Verificado" />}
+                </span>
+                {linea && <span className="mt-0.5 block truncate text-[14px] text-white/85">{linea}</span>}
+            </span>
+        </>
+    );
+    const verPerfil = 'shrink-0 h-9 px-3.5 rounded-full bg-white text-black text-[14px] font-semibold flex items-center';
+
+    // Con clip, tocar el vídeo lo abre en el visor (recorre todos los vídeos); «Ver perfil» va a la ficha
+    if (clip && onAbrirClip) {
+        return (
+            <div className={caja}>
+                <button type="button" onClick={onAbrirClip} aria-label={`Ver el vídeo de ${a.artistName}`}
+                    className="pulsable absolute inset-0 block w-full cursor-pointer">
+                    {medio}
+                </button>
+                {sinSonido}
+                {degradado}
+                <span className="absolute inset-x-0 bottom-0 flex items-center gap-2.5 p-4">
+                    <Link to={`/artist/${a.slug}`} className="min-w-0 flex-1 flex items-center gap-2.5 active:opacity-70">{quien}</Link>
+                    <Link to={`/artist/${a.slug}`} aria-label={`Ver el perfil de ${a.artistName}`} className={cn('pulsable', verPerfil)}>Ver perfil</Link>
+                </span>
+            </div>
+        );
+    }
+
     return (
-        <Link to={`/artist/${a.slug}`} aria-label={`Ver el perfil de ${a.artistName}`}
-            className={cn('pulsable relative block rounded-[22px] overflow-hidden bg-fill shadow-e1', clip ? 'aspect-[4/5]' : 'aspect-[16/10]')}>
-            {clip
-                ? <ClipArtista src={clip} poster={a.clipPoster || a.coverPhoto || a.profilePhoto} onFallo={() => setClipRoto(true)} />
-                : <Foto src={a.coverPhoto || a.clipPoster || a.profilePhoto} className="absolute inset-0 h-full w-full" icon={Music2} />}
-            {clip && (
-                <span className="absolute top-3 right-3 h-8 w-8 rounded-full bg-black/45 backdrop-blur flex items-center justify-center text-white" role="img" aria-label="Vídeo sin sonido">
-                    <VolumeX className="h-4 w-4" />
-                </span>
-            )}
-            <span className="absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+        <Link to={`/artist/${a.slug}`} aria-label={`Ver el perfil de ${a.artistName}`} className={cn('pulsable', caja)}>
+            {medio}
+            {sinSonido}
+            {degradado}
             <span className="absolute inset-x-0 bottom-0 flex items-center gap-2.5 p-4">
-                <Avatar src={a.profilePhoto || a.coverPhoto} name={a.artistName} className="h-11 w-11 shrink-0 ring-2 ring-white text-[17px]" />
-                <span className="min-w-0 flex-1">
-                    <span className="flex items-center gap-1 text-[18px] font-bold leading-tight text-white">
-                        <span className="truncate">{a.artistName}</span>
-                        {a.isVerified && <BadgeCheck className="h-4 w-4 shrink-0 text-white" aria-label="Verificado" />}
-                    </span>
-                    {linea && <span className="mt-0.5 block truncate text-[14px] text-white/85">{linea}</span>}
-                </span>
-                <span className="shrink-0 h-9 px-3.5 rounded-full bg-white text-black text-[14px] font-semibold flex items-center">Ver perfil</span>
+                {quien}
+                <span className={verPerfil}>Ver perfil</span>
             </span>
         </Link>
     );

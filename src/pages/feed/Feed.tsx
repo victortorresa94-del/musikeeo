@@ -12,6 +12,7 @@ import { postService } from '../../services/postService';
 import { OBJETO_3D } from '../../config/objetos3d';
 import type { Artist, Event, Listing, Post } from '../../types';
 import type { Reel } from '../../types/reels';
+import { idReelArtista, reelsDe } from '../../services/reelsReales';
 import { NewPostSheet } from '../../components/feed/NewPostSheet';
 import {
     Compositor, EsqueletoFeed, FilaArtistas, FilaMercado, TarjetaArtistaGrande, TarjetaBolo, TarjetaPost,
@@ -21,12 +22,6 @@ import {
 // un bolo abierto, una fila del Mercado, y vuelta a empezar.
 
 const POR_FILA = 8;
-
-const postToReel = (p: Post): Reel => ({
-    id: p.id, videoUrl: p.mediaUrl, thumbnailUrl: p.posterUrl || '', description: p.caption,
-    authorId: p.authorId, authorName: p.authorName, authorPhoto: p.authorPhoto || '', authorRole: p.authorRole || 'musician',
-    likes: p.likeCount, comments: 0, shares: 0, views: 0, timestamp: new Date(p.createdAt).getTime(), duration: 0,
-});
 
 type Grande = { kind: 'post'; id: string; p: Post } | { kind: 'artista'; id: string; a: Artist };
 type Item = Grande | { kind: 'bolo'; id: string; e: Event } | { kind: 'mercado'; id: string; ls: Listing[] };
@@ -96,7 +91,7 @@ export default function Feed() {
         catch { toast.error('No se pudo eliminar'); }
     };
 
-    // Visor de vídeos (?reel=id): recorre los vídeos reales del feed
+    // Visor de vídeos (?reel=id): recorre los vídeos reales (publicaciones y clips de artista)
     const [searchParams, setSearchParams] = useSearchParams();
     const openReelId = searchParams.get('reel');
     const openReel = (id: string) => setSearchParams({ reel: id });
@@ -105,7 +100,11 @@ export default function Feed() {
         if (location.key !== 'default') navigate(-1);
         else setSearchParams({}, { replace: true });
     };
-    const viewerReels = useMemo(() => posts.filter(p => p.mediaType === 'video').map(postToReel), [posts]);
+    const viewerReels = useMemo(() => reelsDe(posts, artistas), [posts, artistas]);
+    const likeDesdeVisor = (r: Reel, liked: boolean) => {
+        const p = posts.find(x => x.id === r.id);
+        if (p) toggleLike(p, liked);
+    };
     const viewerIndex = openReelId ? viewerReels.findIndex(r => r.id === openReelId) : -1;
 
     // El ritmo del concepto: grande · bolo · mercado, y vuelta a empezar
@@ -162,7 +161,7 @@ export default function Feed() {
                     <div className="space-y-5">
                         {items.map(it => {
                             if (it.kind === 'post') return <TarjetaPost key={it.id} post={it.p} liked={likedIds.has(it.p.id)} myId={user?.uid} onLike={toggleLike} onOpen={() => openReel(it.p.id)} onDelete={deletePost} />;
-                            if (it.kind === 'artista') return <TarjetaArtistaGrande key={it.id} a={it.a} />;
+                            if (it.kind === 'artista') return <TarjetaArtistaGrande key={it.id} a={it.a} onAbrirClip={() => openReel(idReelArtista(it.a))} />;
                             if (it.kind === 'bolo') return <TarjetaBolo key={it.id} e={it.e} />;
                             return <FilaMercado key={it.id} anuncios={it.ls} />;
                         })}
@@ -194,7 +193,8 @@ export default function Feed() {
             {createPortal(
                 <AnimatePresence>
                     {openReelId && viewerIndex >= 0 && (
-                        <ReelsViewer key="viewer" reels={viewerReels} initialIndex={viewerIndex} onClose={closeReel} />
+                        <ReelsViewer key="viewer" reels={viewerReels} initialIndex={viewerIndex} onClose={closeReel}
+                            likedIds={likedIds} onLike={likeDesdeVisor} />
                     )}
                 </AnimatePresence>,
                 document.body

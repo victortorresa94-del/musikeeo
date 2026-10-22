@@ -2,6 +2,12 @@ import { type UserMode } from './index';
 
 export interface Reel {
     id: string;
+    /** De dónde sale: una publicación de vídeo («posts») o el clip de un artista */
+    origen?: 'post' | 'artista';
+    /** Destino de «Ver perfil» (/artist/{slug} o /profile/{uid}) */
+    perfilUrl?: string;
+    /** Enlace que se comparte */
+    shareUrl?: string;
     videoUrl: string;
     thumbnailUrl: string;
     description: string;
