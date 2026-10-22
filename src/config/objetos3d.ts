@@ -24,12 +24,13 @@ export type Objeto3D = keyof typeof OBJETO_3D;
 
 // Por orden: la primera regla que case decide. Se mira el tipo, las etiquetas y el título
 const REGLAS: { objeto: Objeto3D; palabras: string[] }[] = [
-    { objeto: 'boda', palabras: ['boda', 'ceremonia', 'novios', 'social'] },
+    // Primero el instrumento: un «DJ para una boda» es un bolo de DJ
+    { objeto: 'violinista', palabras: ['violin', 'cuerdas', 'clasica'] },
     { objeto: 'tocadiscos', palabras: ['dj', 'electronica', 'house', 'techno'] },
+    { objeto: 'boda', palabras: ['boda', 'ceremonia', 'novios', 'social'] },
     { objeto: 'mesa', palabras: ['tecnico', 'foh', 'backline', 'luces'] },  // no «sonido»: «Sonido incluido» no es un bolo de técnico
     { objeto: 'microfono', palabras: ['cantante', 'voz', 'acustico', 'residencia', 'bar', 'jam'] },
     { objeto: 'escenario', palabras: ['festival', 'sala', 'concierto'] },
-    { objeto: 'violinista', palabras: ['violin', 'ceremonia', 'cuerdas', 'clasica'] },
     { objeto: 'banda', palabras: ['banda', 'orquesta', 'grupo', 'versiones'] },
 ];
 
