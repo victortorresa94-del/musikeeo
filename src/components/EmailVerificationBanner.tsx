@@ -8,8 +8,9 @@ const DISMISS_KEY = 'musikeeo-email-banner-dismissed';
 
 export default function EmailVerificationBanner() {
     const { user, loading } = useAuth();
+    // Cerrado, no vuelve en una semana (antes volvía en cada visita y tapaba las pantallas)
     const [dismissed, setDismissed] = useState(() => {
-        try { return sessionStorage.getItem(DISMISS_KEY) === '1'; } catch { return false; }
+        try { return Date.now() - Number(localStorage.getItem(DISMISS_KEY) || 0) < 7 * 864e5; } catch { return false; }
     });
     const [resending, setResending] = useState(false);
     const [sent, setSent] = useState(false);
@@ -22,9 +23,9 @@ export default function EmailVerificationBanner() {
         return () => clearInterval(id);
     }, [user]);
 
-    // En el onboarding, el login y los flujos a pantalla completa estorba
+    // Solo en Mi perfil, que es donde se gestiona la cuenta: en el resto tapaba el contenido
     const { pathname } = useLocation();
-    const oculto = /^\/(onboarding|login|register|forgot-password|publicar|messages)/.test(pathname);
+    const oculto = pathname !== '/profile';
     if (loading || !user || user.emailVerified || dismissed || oculto) return null;
     // verifiedRefresh sirve solo para forzar re-render tras user.reload()
     void verifiedRefresh;
@@ -44,7 +45,7 @@ export default function EmailVerificationBanner() {
     };
 
     const handleDismiss = () => {
-        try { sessionStorage.setItem(DISMISS_KEY, '1'); } catch { /* ignore */ }
+        try { localStorage.setItem(DISMISS_KEY, String(Date.now())); } catch { /* ignore */ }
         setDismissed(true);
     };
 
