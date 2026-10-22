@@ -225,6 +225,8 @@ export interface Artist {
     artistName: string;
     profilePhoto?: string;
     coverPhoto?: string;
+    clipUrl?: string;
+    clipPoster?: string;
     isVerified: boolean;
 
     // Location

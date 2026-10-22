@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
     BadgeCheck, Calendar, ChevronRight, Flag, Heart, ImagePlus, MessageCircle, MoreHorizontal,
-    Music2, Play, Share2, ShoppingBag, Trash2,
+    Music2, Play, Share2, ShoppingBag, Trash2, VolumeX,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { cn } from '../../lib/utils';
@@ -84,14 +84,46 @@ function Estallido({ n, onFin }: { n: number; onFin: () => void }) {
 }
 
 // ─── Tarjeta grande: artista ─────────────────────────────────────────────────
+// Clip del artista (mp4 vertical, sin audio): se reproduce solo con la tarjeta a la vista y se pausa fuera
+function ClipArtista({ src, poster, onFallo }: { src: string; poster?: string; onFallo: () => void }) {
+    const ref = useRef<HTMLVideoElement>(null);
+    useEffect(() => {
+        const v = ref.current;
+        if (!v) return;
+        const io = new IntersectionObserver(([e]) => {
+            if (e.intersectionRatio >= 0.5) v.play().catch(() => {});
+            else v.pause();
+        }, { threshold: [0, 0.5] });
+        io.observe(v);
+        return () => io.disconnect();
+    }, []);
+    return (
+        <video ref={ref} src={src} poster={poster} muted loop playsInline preload="metadata"
+            onError={onFallo} aria-hidden className="absolute inset-0 h-full w-full object-cover" />
+    );
+}
+
+const sinMovimiento = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
 export function TarjetaArtistaGrande({ a }: { a: Artist }) {
     // «House y disco», como en el concepto
     const generos = (a.genres || []).slice(0, 2).map((g, i) => i ? g.toLowerCase() : g).join(' y ');
     const linea = [ciudad(a.city), generos].filter(Boolean).join(' · ');
+    // Con clip (y sin «reducir movimiento») va el vídeo, más alto porque es vertical; si falla, la foto
+    const [clipRoto, setClipRoto] = useState(false);
+    const [quieto] = useState(sinMovimiento);
+    const clip = a.clipUrl && !quieto && !clipRoto ? a.clipUrl : '';
     return (
         <Link to={`/artist/${a.slug}`} aria-label={`Ver el perfil de ${a.artistName}`}
-            className="pulsable relative block aspect-[16/10] rounded-[22px] overflow-hidden bg-fill shadow-e1">
-            <Foto src={a.coverPhoto || a.profilePhoto} className="absolute inset-0 h-full w-full" icon={Music2} />
+            className={cn('pulsable relative block rounded-[22px] overflow-hidden bg-fill shadow-e1', clip ? 'aspect-[4/5]' : 'aspect-[16/10]')}>
+            {clip
+                ? <ClipArtista src={clip} poster={a.clipPoster || a.coverPhoto || a.profilePhoto} onFallo={() => setClipRoto(true)} />
+                : <Foto src={a.coverPhoto || a.clipPoster || a.profilePhoto} className="absolute inset-0 h-full w-full" icon={Music2} />}
+            {clip && (
+                <span className="absolute top-3 right-3 h-8 w-8 rounded-full bg-black/45 backdrop-blur flex items-center justify-center text-white" role="img" aria-label="Vídeo sin sonido">
+                    <VolumeX className="h-4 w-4" />
+                </span>
+            )}
             <span className="absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
             <span className="absolute inset-x-0 bottom-0 flex items-center gap-2.5 p-4">
                 <Avatar src={a.profilePhoto || a.coverPhoto} name={a.artistName} className="h-11 w-11 shrink-0 ring-2 ring-white text-[17px]" />

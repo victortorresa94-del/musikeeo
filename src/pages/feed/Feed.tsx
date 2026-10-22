@@ -62,7 +62,9 @@ export default function Feed() {
         ]).then(([p, a, e, l]) => {
             if (!vivo) return;
             setPosts(p);
-            setArtistas(a.filter(x => x.coverPhoto || x.profilePhoto));
+            // Con foto o clip; los que tienen clip, primero (sort es estable: el resto conserva su orden)
+            setArtistas(a.filter(x => x.coverPhoto || x.profilePhoto || x.clipUrl)
+                .sort((x, y) => Number(!!y.clipUrl) - Number(!!x.clipUrl)));
             setBolos(bolosAbiertos(e));
             setAnuncios([...l].sort((x, y) => (y.createdAt || '').localeCompare(x.createdAt || '')));
             setCargando(false);
