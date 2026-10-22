@@ -56,15 +56,15 @@ export interface Momento {
     slug: string;
     titulo: string;
     bajada: string;
-    imagen: string;
+    imagen: string;     // objeto 3D sin fondo: se sale de la tarjeta (lo que le gustó del sueño C)
     fondo: string;      // clase del fondo de la tarjeta (color sacado del sueño)
     destino: string;
 }
 
 export const MOMENTOS: Momento[] = [
-    { slug: 'boda', titulo: 'Tengo una boda', bajada: 'Bandas, violinistas y DJ', imagen: '/images/categorias/momento-boda.webp', fondo: 'bg-[#FDEEB9]', destino: '/explorar/bandas' },
-    { slug: 'tecnico-hoy', titulo: 'Bolo esta noche y me falta un técnico', bajada: 'Sonido con técnico, cerca', imagen: '/images/categorias/momento-tecnico-hoy.webp', fondo: 'bg-[#CEE8FD]', destino: '/explorar/tecnicos' },
-    { slug: 'cable', titulo: 'Se me ha olvidado el cable', bajada: 'Alquila o compra cerca', imagen: '/images/categorias/momento-cable.webp', fondo: 'bg-[#D8F1DD]', destino: '/explorar/alquiler' },
-    { slug: 'banda-sala', titulo: 'Busco banda para mi sala', bajada: 'Publica la fecha y te escriben', imagen: '/images/categorias/momento-banda-sala.webp', fondo: 'bg-[#E0D7FD]', destino: '/publicar' },
-    { slug: 'vender', titulo: 'Vendo mi equipo', bajada: 'Publica en un minuto', imagen: '/images/categorias/momento-vender.webp', fondo: 'bg-[#FDD6C8]', destino: '/market/create' },
+    { slug: 'boda', titulo: 'Tengo una boda', bajada: 'Bandas, violinistas y DJ', imagen: '/images/categorias/momento-boda-3d.webp', fondo: 'bg-[#FDEEB9]', destino: '/explorar/bandas' },
+    { slug: 'tecnico-hoy', titulo: 'Bolo esta noche y me falta un técnico', bajada: 'Sonido con técnico, cerca', imagen: '/images/categorias/momento-tecnico-hoy-3d.webp', fondo: 'bg-[#CEE8FD]', destino: '/explorar/tecnicos' },
+    { slug: 'cable', titulo: 'Se me ha olvidado el cable', bajada: 'Alquila o compra cerca', imagen: '/images/categorias/momento-cable-3d.webp', fondo: 'bg-[#D8F1DD]', destino: '/explorar/alquiler' },
+    { slug: 'banda-sala', titulo: 'Busco banda para mi sala', bajada: 'Publica la fecha y te escriben', imagen: '/images/categorias/momento-banda-sala-3d.webp', fondo: 'bg-[#E0D7FD]', destino: '/publicar' },
+    { slug: 'vender', titulo: 'Vendo mi equipo', bajada: 'Publica en un minuto', imagen: '/images/categorias/momento-vender-3d.webp', fondo: 'bg-[#FDD6C8]', destino: '/market/create' },
 ];

@@ -124,15 +124,18 @@ export default function Explorar() {
             ) : (
                 <>
                     {/* Por momento */}
-                    <div className="mt-5 flex gap-3 overflow-x-auto hide-scrollbar px-4 md:px-0 snap-x scroll-pl-4 md:scroll-pl-0">
+                    {/* El objeto 3D no cabe en su tarjeta a propósito: los altos asoman por arriba.
+                        El pt-7 deja sitio a lo que asoma, que el carrusel recortaría */}
+                    <div className="mt-0 pt-7 pb-2 flex gap-4 overflow-x-auto hide-scrollbar px-4 md:px-0 snap-x scroll-pl-4 md:scroll-pl-0">
                         {MOMENTOS.map(m => (
                             <Link key={m.slug} to={m.destino}
-                                className={cn('pulsable snap-start', m.fondo, 'shrink-0 w-[300px] h-[128px] rounded-[22px] overflow-hidden relative flex shadow-e1')}>
+                                className={cn('pulsable snap-start', m.fondo, 'shrink-0 w-[300px] h-[128px] rounded-[22px] relative flex shadow-e1')}>
                                 <span className="relative z-10 flex flex-col justify-center pl-4 pr-1 w-[54%]">
                                     <span className="font-heading text-[18px] font-bold leading-[1.15] text-[#141414]">{m.titulo}</span>
                                     <span className="mt-1 text-[12.5px] leading-snug text-[#141414]/70">{m.bajada}</span>
                                 </span>
-                                <img src={m.imagen} alt="" className="funde-izq absolute right-0 top-0 h-full w-[52%] object-cover object-center" />
+                                <img src={m.imagen} alt="" loading="lazy" decoding="async"
+                                    className="pointer-events-none absolute bottom-2 right-1 h-[150px] w-[52%] object-contain object-bottom drop-shadow-[0_10px_12px_rgba(0,0,0,0.18)]" />
                             </Link>
                         ))}
                     </div>
