@@ -5,7 +5,6 @@ import {
     Clock, Music, ChevronLeft, ChevronRight, MessageCircle, Share2, Heart
 } from 'lucide-react';
 import { toast } from 'sonner';
-import { Navbar } from '../../components/home/Navbar';
 import { Footer } from '../../components/layout/Footer';
 import { useAuth } from '../../context/AuthContext';
 import { getArtistBySlug } from '../../services/artistService';
@@ -120,7 +119,6 @@ export default function ArtistProfilePage() {
     if (loading) {
         return (
             <div className="min-h-screen bg-background">
-                <Navbar />
                 <ProfileHeaderSkeleton />
             </div>
         );
@@ -129,7 +127,6 @@ export default function ArtistProfilePage() {
     if (!artist) {
         return (
             <div className="min-h-screen bg-background text-foreground">
-                <Navbar />
                 <div className="flex flex-col items-center justify-center h-[70vh] gap-4">
                     <h1 className="text-3xl font-bold">Artista no encontrado</h1>
                     <p className="text-muted-foreground">El perfil que buscas no existe o no está disponible</p>
@@ -145,7 +142,6 @@ export default function ArtistProfilePage() {
     if (!artist.isPublic && !isOwner) {
         return (
             <div className="min-h-screen bg-background text-foreground">
-                <Navbar />
                 <div className="flex flex-col items-center justify-center h-[70vh] gap-4">
                     <div className="bg-muted p-4 rounded-full">
                         <Share2 size={40} className="text-muted-foreground" />
@@ -162,10 +158,9 @@ export default function ArtistProfilePage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            <Navbar />
 
             {/* Cover Section */}
-            <section className="relative pt-20">
+            <section className="relative">
                 {/* Cover Image */}
                 <div className="h-64 md:h-80 lg:h-96 w-full relative">
                     <div

@@ -189,7 +189,6 @@ function App() {
             <Routes>
               {/* Root: authenticated → /home, else → landing */}
               <Route path="/" element={<RootRoute />} />
-              <Route path="/rodrigo" element={<RodrigoPage />} />
 
               {/* Legal — públicas, sin layout */}
               <Route path="/aviso-legal" element={<LegalNotice />} />
@@ -197,8 +196,6 @@ function App() {
               <Route path="/terminos" element={<TermsOfService />} />
               <Route path="/cookies" element={<CookiePolicy />} />
 
-              {/* Public Artist Profile */}
-              <Route path="/artist/:slug" element={<ArtistProfilePage />} />
 
               <Route element={<RequireAnon />}>
                 <Route path="/login" element={<Login />} />
@@ -213,6 +210,9 @@ function App() {
               </Route>
 
               <Route element={<MainLayout />}>
+                {/* Con la barra de la app (antes tenían la de la web: se cortaba bajo la barra de estado del iPhone) */}
+                <Route path="/artist/:slug" element={<ArtistProfilePage />} />
+                <Route path="/rodrigo" element={<RodrigoPage />} />
                 {/* Públicas: todo se puede VER sin cuenta */}
                 <Route path="/home" element={<HomeOrFeed />} />
                 <Route path="/feed" element={<Feed />} />

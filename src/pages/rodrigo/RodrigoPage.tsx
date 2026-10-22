@@ -2,7 +2,6 @@ import { useState, useRef, useEffect } from 'react';
 import { Zap, Search, Calendar, Users, BarChart3, Sparkles, ArrowRight, ArrowUp, Music, Mic, X } from 'lucide-react';
 import { Button } from '../../components/ui/button';
 import { motion, AnimatePresence } from 'framer-motion';
-import { Navbar } from '../../components/home/Navbar';
 import { Footer } from '../../components/layout/Footer';
 import {
     generateResponse,
@@ -129,11 +128,9 @@ export default function RodrigoPage() {
 
     return (
         <div className="min-h-screen bg-background text-foreground">
-            {/* Main Navbar */}
-            <Navbar />
 
             {/* Hero Section */}
-            <section className="relative overflow-hidden pt-32 pb-20 lg:pt-40 lg:pb-32">
+            <section className="relative overflow-hidden pt-8 pb-20 lg:pt-16 lg:pb-32">
                 <div className="absolute inset-0 bg-[radial-gradient(circle_at_50%_50%,rgba(250,208,56,0.08)_0%,transparent_50%)]" />
 
                 <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
