@@ -1,5 +1,6 @@
 // Vercel Serverless Function — Rodrigo AI via Kimi (Moonshot AI, API directa)
 // POST /api/chat  { message: string, history: {role, content}[] }
+// POST /api/chat  { mode: 'filtros', message, categoria, opciones, hoy } → { filtros, explicacion } (Explorar)
 
 const RODRIGO_SYSTEM_PROMPT = `
 IDENTIDAD PROFUNDA, FILOSOFÍA Y ESTÁNDARES DE RODRIGO
@@ -267,6 +268,191 @@ Los marcados (PRUEBA) son de ejemplo: si los recomiendas, avisa de que son de pr
   }
 }
 
+// Llama a Kimi probando endpoints (ante 401) y modelos (ante 404). Lo usan el chat y los filtros.
+async function callKimiWithFallbacks(apiKey: string, messages: { role: string; content: string }[], maxTokens: number, extra: Record<string, unknown> = {}) {
+  const callKimi = (baseUrl: string, model: string) =>
+    fetch(`${baseUrl}/chat/completions`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ model, messages, max_tokens: maxTokens, ...extra }),
+    });
+
+  const order = [workingEndpoint, ...KIMI_ENDPOINTS.keys()].filter((v, i, a) => a.indexOf(v) === i);
+  const tried: string[] = [];
+  const triedModels: string[] = [];
+  let upstream: Response | null = null;
+  let endpoint = KIMI_ENDPOINTS[0];
+  let model = endpoint.model;
+
+  // 1) Endpoint: el primero que no rechace la key (401)
+  for (const idx of order) {
+    endpoint = KIMI_ENDPOINTS[idx];
+    model = workingModel ?? endpoint.model;
+    tried.push(endpoint.baseUrl);
+    upstream = await callKimi(endpoint.baseUrl, model);
+    if (upstream.status !== 401) {
+      workingEndpoint = idx;
+      break;
+    }
+    console.error('Kimi 401 en', endpoint.baseUrl);
+  }
+
+  // 2) Modelo: si da 404 (sin acceso al modelo), probar los de respaldo
+  if (upstream?.status === 404) {
+    triedModels.push(model);
+    for (const candidate of [endpoint.model, ...FALLBACK_MODELS]) {
+      if (triedModels.includes(candidate)) continue;
+      console.error('Kimi 404 con modelo', model, '-> probando', candidate);
+      model = candidate;
+      triedModels.push(model);
+      upstream = await callKimi(endpoint.baseUrl, model);
+      if (upstream.status !== 404) break;
+    }
+  }
+  if (upstream?.ok) workingModel = model;
+  return { upstream, endpoint, model, tried, triedModels };
+}
+
+// ─── Modo «filtros»: una frase de Explorar → filtros en JSON ────────────────
+// POST /api/chat { mode: 'filtros', message, categoria: {slug, nombre, tipo}, opciones, hoy }
+// → { filtros: {...}, explicacion }. Solo JSON, validado y limpio aquí.
+type TipoCat = 'artistas' | 'tecnicos' | 'salas' | 'equipo';
+const TIPOS_CAT: TipoCat[] = ['artistas', 'tecnicos', 'salas', 'equipo'];
+const CLAVES_FILTRO: Record<TipoCat, string[]> = {
+  artistas: ['ciudad', 'fecha', 'precioMin', 'precioMax', 'estilos', 'musicos', 'extras', 'idealPara', 'texto'],
+  tecnicos: ['ciudad', 'servicios', 'equipo', 'precioMin', 'precioMax', 'texto'],
+  salas: ['ciudad', 'texto'],
+  equipo: ['ciudad', 'tipo', 'estado', 'precioMin', 'precioMax', 'urgente', 'texto'],
+};
+
+const limpio = (v: unknown, max = 40) =>
+  typeof v === 'string' ? [...v].map(c => (c.charCodeAt(0) < 32 || c.charCodeAt(0) === 127 || '<>`'.includes(c) ? ' ' : c)).join('').replace(/\s+/g, ' ').trim().slice(0, max) : '';
+const limpios = (v: unknown, max = 6) =>
+  Array.isArray(v) ? [...new Set(v.map(x => limpio(x)).filter(Boolean))].slice(0, max) : [];
+const sinTildes = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '');
+const aEuros = (v: unknown) => {
+  const n = typeof v === 'string' ? Number(v.replace(/[^\d.,]/g, '').replace(/\./g, '').replace(',', '.')) : v;
+  return typeof n === 'number' && Number.isFinite(n) && n > 0 && n <= 100000 ? Math.round(n) : null;
+};
+/** El valor tal cual está en las opciones, si casa sin mayúsculas ni tildes */
+const comoOpcion = (v: string, opciones: string[]) => opciones.find(o => sinTildes(o) === sinTildes(v)) ?? v;
+
+function opcionesDe(raw: any): Record<string, string[]> {
+  const o: Record<string, string[]> = {};
+  for (const k of ['ciudades', 'estilos', 'idealPara', 'servicios', 'equipo']) {
+    o[k] = Array.isArray(raw?.[k]) ? raw[k].map((x: unknown) => limpio(x)).filter(Boolean).slice(0, 30) : [];
+  }
+  return o;
+}
+
+/** Deja solo las claves de la categoría, con tipos y valores válidos */
+export function limpiarFiltros(raw: any, tipo: TipoCat, opciones: Record<string, string[]>) {
+  const permitidas = new Set(CLAVES_FILTRO[tipo]);
+  const base = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  // Por si el modelo los anida en «filtros»
+  const src = base.filtros && typeof base.filtros === 'object' && !Array.isArray(base.filtros) ? { ...base, ...base.filtros } : base;
+  const f: Record<string, unknown> = {};
+  const poner = (k: string, v: unknown) => {
+    if (permitidas.has(k) && v !== null && v !== undefined && v !== '' && !(Array.isArray(v) && !v.length)) f[k] = v;
+  };
+
+  const ciudad = limpio(src.ciudad);
+  if (ciudad) poner('ciudad', comoOpcion(ciudad, opciones.ciudades || []));
+  const fecha = sinTildes(limpio(src.fecha, 12));
+  if (fecha === 'sabado' || fecha === 'finde') poner('fecha', fecha);
+  else if (/^\d{4}-\d{2}-\d{2}$/.test(fecha) && !Number.isNaN(Date.parse(fecha))) poner('fecha', fecha);
+  let min = aEuros(src.precioMin), max = aEuros(src.precioMax);
+  if (min !== null && max !== null && min > max) [min, max] = [max, min];
+  poner('precioMin', min);
+  poner('precioMax', max);
+  poner('estilos', limpios(src.estilos).map(e => comoOpcion(e, opciones.estilos || [])));
+  const musicos = sinTildes(limpio(src.musicos, 8));
+  if (['solista', 'duo', '3-5', '6+'].includes(musicos)) poner('musicos', musicos);
+  poner('extras', limpios(src.extras).map(sinTildes).filter(e => ['sonido', 'viajan', 'video'].includes(e)));
+  poner('idealPara', limpios(src.idealPara).map(e => comoOpcion(e, opciones.idealPara || [])));
+  poner('servicios', limpios(src.servicios).map(e => comoOpcion(e, opciones.servicios || [])));
+  poner('equipo', limpios(src.equipo).map(e => comoOpcion(e, opciones.equipo || [])));
+  const t = sinTildes(limpio(src.tipo, 10));
+  if (['venta', 'alquiler', 'prestamo'].includes(t)) poner('tipo', t);
+  poner('estado', limpios(src.estado).map(e => sinTildes(e).replace(/\s+/g, '_')).filter(e => ['nuevo', 'como_nuevo', 'bueno', 'aceptable'].includes(e)));
+  if (src.urgente === true) poner('urgente', true);
+  poner('texto', limpio(src.texto));
+
+  return { filtros: f, explicacion: limpio(src.explicacion, 160) };
+}
+
+/** El primer objeto JSON de la respuesta (por si el modelo lo envuelve en ``` o en una frase) */
+export function extraerJson(content: string): any | null {
+  const sinBloques = content.replace(/```(?:json)?/gi, '');
+  const a = sinBloques.indexOf('{'), b = sinBloques.lastIndexOf('}');
+  if (a < 0 || b <= a) return null;
+  try { return JSON.parse(sinBloques.slice(a, b + 1)); } catch { return null; }
+}
+
+function promptFiltros(cat: { nombre: string; tipo: TipoCat }, opciones: Record<string, string[]>, hoy: string) {
+  const lista = (xs: string[] | undefined) => (xs && xs.length ? xs.join(', ') : '(ninguna)');
+  const d = new Date(`${hoy}T12:00:00`);
+  const hoyBonito = Number.isNaN(d.getTime()) ? hoy : d.toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' });
+  const claves: Record<string, string> = {
+    ciudad: `string. Usa una de estas si encaja: ${lista(opciones.ciudades)}. Si el lugar es un pueblo o un barrio cerca de una de ellas (p. ej. Sitges → Barcelona), pon esa ciudad y dilo en la explicación.`,
+    fecha: '"sabado" (este sábado), "finde" (este fin de semana) o una fecha "YYYY-MM-DD".',
+    precioMin: 'número en euros (lo mínimo).',
+    precioMax: 'número en euros (el presupuesto máximo: «menos de 1.500 €» → 1500).',
+    estilos: `array de estilos musicales. Usa estos nombres si encajan: ${lista(opciones.estilos)}.`,
+    musicos: '"solista" | "duo" | "3-5" | "6+".',
+    extras: 'array con "sonido" (llevan sonido propio), "viajan" (se desplazan) o "video" (tienen vídeo).',
+    idealPara: `array, solo de: ${lista(opciones.idealPara)} (p. ej. «para una boda» → "Bodas").`,
+    servicios: `array, solo de: ${lista(opciones.servicios)}.`,
+    equipo: `array, solo de: ${lista(opciones.equipo)}.`,
+    tipo: '"venta" | "alquiler" | "prestamo".',
+    estado: 'array de "nuevo" | "como_nuevo" | "bueno" | "aceptable".',
+    urgente: 'true si lo necesita ya (hoy, urgente).',
+    texto: 'palabras para buscar por nombre, solo si piden algo concreto que no cabe en otro filtro (una marca, un nombre).',
+  };
+  return `Eres Rodrigo, de Musikeeo. Conviertes la petición del usuario en filtros de búsqueda para la categoría «${cat.nombre}» de Explorar.
+Hoy es ${hoyBonito} (${hoy}).
+
+Responde SOLO con un objeto JSON válido, sin texto antes ni después y sin \`\`\`.
+Claves posibles (pon solo las que salgan de la petición; nunca inventes datos que no ha dicho):
+${CLAVES_FILTRO[cat.tipo].map(k => `- ${k}: ${claves[k]}`).join('\n')}
+- explicacion: una frase corta (máximo 140 caracteres) en castellano de España, tuteando y sin emojis, que diga lo que has entendido. Ejemplo: "Busco bandas de rumba en Barcelona, cerca de Sitges, libres el sábado y por menos de 1.500 €."
+
+Si la petición no tiene nada que ver con buscar en esta categoría, devuelve solo {"explicacion": "…"} diciendo en una frase qué puede pedir.`;
+}
+
+async function handleFiltros(req: any, res: any, apiKey: string) {
+  const { message, categoria, opciones: rawOpciones, hoy: rawHoy } = req.body ?? {};
+  if (!message || typeof message !== 'string') return res.status(400).json({ error: 'message (string) is required' });
+  if (message.length > 300) return res.status(413).json({ error: 'message too long (max 300 chars)' });
+  const tipo: TipoCat = TIPOS_CAT.includes(categoria?.tipo) ? categoria.tipo : 'artistas';
+  const nombre = limpio(categoria?.nombre) || 'Explorar';
+  const opciones = opcionesDe(rawOpciones);
+  const hoy = typeof rawHoy === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(rawHoy) ? rawHoy : new Date().toISOString().slice(0, 10);
+
+  const messages = [
+    { role: 'system', content: promptFiltros({ nombre, tipo }, opciones, hoy) },
+    { role: 'user', content: message.trim() },
+  ];
+  try {
+    const { upstream, endpoint, model } = await callKimiWithFallbacks(apiKey, messages, 300, { temperature: 0.2 });
+    if (!upstream || !upstream.ok) {
+      const status = upstream?.status ?? 500;
+      console.error('Kimi error (filtros):', status, endpoint.baseUrl, model, upstream ? await upstream.text() : 'no response');
+      return res.status(status).json({ error: 'upstream', status });
+    }
+    const data = await upstream.json();
+    const json = extraerJson(data.choices?.[0]?.message?.content ?? '');
+    if (!json) return res.status(502).json({ error: 'bad_json' });
+    return res.status(200).json(limpiarFiltros(json, tipo, opciones));
+  } catch (err: any) {
+    console.error('Filtros handler exception:', err);
+    return res.status(500).json({ error: err.message ?? 'Internal server error' });
+  }
+}
+
 export default async function handler(req: any, res: any) {
   if (req.method !== 'POST') {
     return res.status(405).json({ error: 'Method not allowed' });
@@ -289,6 +475,8 @@ export default async function handler(req: any, res: any) {
     console.error('KIMI_API_KEY is not set');
     return res.status(500).json({ error: 'API key not configured' });
   }
+
+  if (req.body?.mode === 'filtros') return handleFiltros(req, res, apiKey);
 
   const { message, history = [] } = req.body ?? {};
   if (!message || typeof message !== 'string') {
@@ -316,48 +504,7 @@ export default async function handler(req: any, res: any) {
   ];
 
   try {
-    const callKimi = (baseUrl: string, model: string) =>
-      fetch(`${baseUrl}/chat/completions`, {
-        method: 'POST',
-        headers: {
-          Authorization: `Bearer ${apiKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ model, messages, max_tokens: MAX_TOKENS }),
-      });
-
-    const order = [workingEndpoint, ...KIMI_ENDPOINTS.keys()].filter((v, i, a) => a.indexOf(v) === i);
-    const tried: string[] = [];
-    const triedModels: string[] = [];
-    let upstream: Response | null = null;
-    let endpoint = KIMI_ENDPOINTS[0];
-    let model = endpoint.model;
-
-    // 1) Endpoint: el primero que no rechace la key (401)
-    for (const idx of order) {
-      endpoint = KIMI_ENDPOINTS[idx];
-      model = workingModel ?? endpoint.model;
-      tried.push(endpoint.baseUrl);
-      upstream = await callKimi(endpoint.baseUrl, model);
-      if (upstream.status !== 401) {
-        workingEndpoint = idx;
-        break;
-      }
-      console.error('Kimi 401 en', endpoint.baseUrl);
-    }
-
-    // 2) Modelo: si da 404 (sin acceso al modelo), probar los de respaldo
-    if (upstream?.status === 404) {
-      triedModels.push(model);
-      for (const candidate of [endpoint.model, ...FALLBACK_MODELS]) {
-        if (triedModels.includes(candidate)) continue;
-        console.error('Kimi 404 con modelo', model, '-> probando', candidate);
-        model = candidate;
-        triedModels.push(model);
-        upstream = await callKimi(endpoint.baseUrl, model);
-        if (upstream.status !== 404) break;
-      }
-    }
+    const { upstream, endpoint, model, tried, triedModels } = await callKimiWithFallbacks(apiKey, messages, MAX_TOKENS);
 
     if (!upstream || !upstream.ok) {
       const status = upstream?.status ?? 500;
@@ -366,7 +513,6 @@ export default async function handler(req: any, res: any) {
       // 401 = clave (en todos los endpoints), 429 = sin saldo/limite, 404 = sin acceso a ningun modelo
       return res.status(status).json({ error: errorText, status, model, tried, triedModels });
     }
-    workingModel = model;
 
     const data = await upstream.json();
     const content: string = data.choices?.[0]?.message?.content ?? '';
