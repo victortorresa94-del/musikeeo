@@ -50,7 +50,7 @@ export const TopBar = ({ onMenuClick: _onMenuClick }: TopBarProps) => {
       {/* MOBILE — barra mínima con logo y acceso */}
       <header className="md:hidden sticky top-[env(safe-area-inset-top)] z-30 h-14 px-4 flex items-center justify-between bg-background/85 backdrop-blur-2xl backdrop-saturate-150 border-b border-hairline">
         <Link to={user ? '/feed' : '/home'} className="flex items-center gap-2">
-          <img src="/logo-musikeeo.png" alt="" className="h-7 w-7 rounded-lg object-contain" />
+          <img src="/logo-musikeeo.png?v=4" alt="" className="h-7 w-7 rounded-lg object-contain" />
           <span className="font-heading font-semibold text-[17px] tracking-tight text-foreground">Musikeeo</span>
         </Link>
         <div className="flex items-center gap-1">
