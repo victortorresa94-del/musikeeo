@@ -4,7 +4,6 @@ import { useParams, Link, useNavigate } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
 import { ArrowLeft, CheckCircle, Heart, MessageCircle, Music, Play, Share, Star } from 'lucide-react';
 import { toast } from 'sonner';
-import { Footer } from '../../components/layout/Footer';
 import { useAuth } from '../../context/AuthContext';
 import { getArtistBySlug } from '../../services/artistService';
 import { chatService } from '../../services/chatService';
@@ -416,7 +415,6 @@ export default function ArtistProfilePage() {
             </div>
 
             <div className="mt-10">
-                <Footer />
             </div>
 
             {/* Móvil: barra fija con el precio y la acción, encima de la barra de navegación */}
