@@ -5,10 +5,12 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
 import { ClipboardPaste, FileUp } from 'lucide-react';
 import { Switch } from '../ui/switch';
+import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { leerCancion, lineasDeLetra, separarCanciones } from '../../lib/acordes';
 import { leerSetlist, type CancionImportada } from '../../lib/setlist';
 import { norm } from './utilidades';
+import type { Cancion } from '../../types/cancionero';
 
 const AYUDA = `Pega el setlist del bolo, una línea por tema:
 
@@ -19,12 +21,23 @@ Cada tema sale como una ficha con su tono (y luego le pegas los acordes).
 
 O canciones enteras con sus acordes, separadas por una línea con ---`;
 
+const letra = (texto: string) => lineasDeLetra(leerCancion(texto));
+
+// Con qué canción del cancionero se junta lo que llega: si ya está, se reutiliza; una ficha
+// del setlist (sin artista) o una chuleta de acordes sin letra se rellena con la canción entera
+function emparejar(canciones: Cancion[], t: CancionImportada): { ya?: Cancion; rellena?: Cancion } {
+    const c = canciones.find(c => norm(c.titulo) === norm(t.titulo) && (t.ficha || !c.artista || !t.artista || norm(c.artista) === norm(t.artista)));
+    if (!c) return {};
+    if (!t.ficha && c.texto.trim() !== t.texto.trim() && (!c.artista || (letra(t.texto) >= 8 && letra(c.texto) < 8))) return { rellena: c };
+    return { ya: c };
+}
+
 // Un repertorio entero de golpe: el setlist (una ficha por tema) o canciones enteras, pegado o
 // en archivos (.txt, ChordPro). Lo que ya está en el cancionero no se duplica: una ficha se
 // une a la canción del mismo título (que ya trae sus acordes).
 export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onCerrar: () => void }) {
     const navigate = useNavigate();
-    const { canciones, repertorios, crear, guardar, crearRepertorio } = useCancionero();
+    const { canciones, repertorios, nuevaCancion, guardarVarias, crearRepertorio } = useCancionero();
     const [texto, setTexto] = useState('');
     const [conRepertorio, setConRepertorio] = useState(true);
     const [nombre, setNombre] = useState('');
@@ -32,17 +45,7 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
 
     const encontradas: CancionImportada[] = useMemo(() => leerSetlist(texto) ?? separarCanciones(texto), [texto]);
     const esSetlist = encontradas.some(t => t.ficha);
-    const misma = (t: CancionImportada) =>
-        canciones.find(c => norm(c.titulo) === norm(t.titulo) && (t.ficha || !c.artista || !t.artista || norm(c.artista) === norm(t.artista)));
-    const letra = (texto: string) => lineasDeLetra(leerCancion(texto));
-    // Una ficha del setlist (sin artista) o una chuleta de acordes sin letra que ya está en el
-    // cancionero se rellena con lo que llega (la canción entera)
-    const fichaQueRellenar = (t: CancionImportada) => {
-        const c = misma(t);
-        if (t.ficha || !c || c.texto.trim() === t.texto.trim()) return undefined;
-        return !c.artista || (letra(t.texto) >= 8 && letra(c.texto) < 8) ? c : undefined;
-    };
-    const yaEsta = (t: CancionImportada) => (fichaQueRellenar(t) ? undefined : misma(t));
+    const parejas = useMemo(() => encontradas.map(t => emparejar(canciones, t)), [encontradas, canciones]);
 
     const pegar = async () => {
         try {
@@ -63,18 +66,28 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
     const importar = () => {
         const corta = (t: CancionImportada) => t.ficha || t.texto.split('\n').length <= 25;
         let nuevas = 0, rellenas = 0;
-        const ids = encontradas.map(t => {
-            const ya = yaEsta(t);
-            if (ya) return ya.id;
-            const ficha = fichaQueRellenar(t);
-            if (ficha) {
-                rellenas++;
-                return guardar({ ...ficha, artista: t.artista || ficha.artista, texto: t.texto, ajustes: { ...ficha.ajustes, ajustar: corta(t) } }).id;
-            }
-            nuevas++;
-            // Lo corto (fichas y chuletas de acordes) se ve entero y grande: «que quepa»
-            return crear(t, corta(t) ? { ajustar: true } : {}).id;
-        });
+        const aGuardar: Cancion[] = [];
+        let ids: string[];
+        try {
+            ids = encontradas.map((t, i) => {
+                const { ya, rellena } = parejas[i];
+                if (ya) return ya.id;
+                if (rellena) {
+                    rellenas++;
+                    aGuardar.push({ ...rellena, artista: t.artista || rellena.artista, texto: t.texto, ajustes: { ...rellena.ajustes, ajustar: corta(t) } });
+                    return rellena.id;
+                }
+                nuevas++;
+                // Lo corto (fichas y chuletas de acordes) se ve entero y grande: «que quepa»
+                const nueva = nuevaCancion(t, corta(t) ? { ajustar: true } : {});
+                aGuardar.push(nueva);
+                return nueva.id;
+            });
+            guardarVarias(aGuardar);
+        } catch (e) {
+            toast.error(`No se pudo importar: ${e instanceof Error ? e.message : 'error desconocido'}`);
+            return;
+        }
         setTexto('');
         onCerrar();
         const aviso = [nuevas && `${nuevas} nuevas`, rellenas && `${rellenas} fichas completadas`].filter(Boolean).join(' y ') || 'Ya las tenías';
@@ -98,13 +111,14 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
                     <button aria-label="Cerrar" className="absolute inset-0 bg-black/50" onClick={onCerrar} />
                     <motion.div role="dialog" aria-modal="true" aria-label="Importar canciones"
                         initial={{ y: 40 }} animate={{ y: 0 }} exit={{ y: 40 }} transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-                        className="relative w-full md:max-w-lg max-h-[92dvh] overflow-y-auto bg-sheet rounded-t-[22px] md:rounded-[22px] border border-hairline shadow-e3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+                        className="relative w-full md:max-w-lg max-h-[92dvh] overflow-y-auto overscroll-contain bg-sheet rounded-t-[22px] md:rounded-[22px] border border-hairline shadow-e3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                         <div className="sticky top-0 z-10 bg-sheet px-4 pt-2 pb-2">
                             <div className="mx-auto h-1 w-9 rounded-full bg-fill-strong md:hidden" />
                             <div className="mt-2 flex items-center justify-between">
                                 <button onClick={onCerrar} className="w-[70px] text-left text-[15px] text-muted-foreground active:opacity-60">Cancelar</button>
                                 <p className="font-semibold text-[16px] text-foreground">Importar canciones</p>
-                                <span className="w-[70px]" />
+                                <button onClick={importar} disabled={!encontradas.length}
+                                    className="w-[70px] text-right text-[15px] font-semibold text-foreground disabled:opacity-30 active:opacity-60">Importar</button>
                             </div>
                         </div>
                         <div className="px-4">
@@ -119,7 +133,7 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
                             <input ref={archivoRef} type="file" multiple className="hidden" accept=".txt,.cho,.chopro,.chordpro,.crd,.pro,text/plain"
                                 onChange={e => { void abrir(e.target.files); e.target.value = ''; }} />
                             <textarea value={texto} onChange={e => setTexto(e.target.value)} placeholder={AYUDA} wrap="off" spellCheck={false} aria-label="Canciones"
-                                className="mt-3 w-full h-[34dvh] rounded-2xl bg-fill p-4 font-mono text-[13px] leading-[1.45] text-foreground placeholder:text-muted-foreground resize-y focus:outline-none" />
+                                className={cn('mt-3 w-full rounded-2xl bg-fill p-4 font-mono text-[13px] leading-[1.45] text-foreground placeholder:text-muted-foreground resize-y focus:outline-none', encontradas.length ? 'h-[16dvh]' : 'h-[34dvh]')} />
 
                             {encontradas.length > 0 && (
                                 <>
@@ -133,8 +147,8 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
                                                 <span className="flex-1 min-w-0 truncate text-[15px] text-foreground">
                                                     {t.titulo}{t.artista && <span className="text-muted-foreground"> · {t.artista}</span>}
                                                 </span>
-                                                {yaEsta(t) ? <span className="text-[12px] text-muted-foreground">ya la tienes</span>
-                                                    : fichaQueRellenar(t) && <span className="text-[12px] text-muted-foreground">rellena la ficha</span>}
+                                                {parejas[i]?.ya ? <span className="text-[12px] text-muted-foreground">ya la tienes</span>
+                                                    : parejas[i]?.rellena && <span className="text-[12px] text-muted-foreground">rellena la ficha</span>}
                                             </li>
                                         ))}
                                     </ol>

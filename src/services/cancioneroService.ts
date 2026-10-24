@@ -125,6 +125,34 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
         return actual;
     }
 
+    // Muchas de golpe (al importar): una sola escritura en el móvil, un solo aviso y una sola
+    // subida. Guardarlas una a una reescribía el cancionero entero por cada canción y el
+    // iPhone se quedaba colgado
+    function guardarVarias(xs: T[]): T[] {
+        if (!xs.length) return [];
+        const duenio = estado.duenio || INVITADO;
+        const ahora = new Date().toISOString();
+        const nuevos = xs.map(x => ({ ...x, actualizadaEn: ahora }));
+        const ids = new Set(nuevos.map(x => x.id));
+        const lista = ordenar([...nuevos, ...estado.items.filter(y => !ids.has(y.id))]);
+        escribirLocal(duenio, lista);
+        avisar({ items: lista });
+        if (esUid(duenio)) void subirVarias(duenio, nuevos);
+        return nuevos;
+    }
+
+    async function subirVarias(uid: string, xs: T[]) {
+        if (estado.nube === 'sin-permiso') return;
+        try {
+            await Promise.all(xs.map(x => setDoc(doc(coleccion(uid), x.id), paraNube(x))));
+            if (estado.duenio !== uid) return;
+            const subidas = new Map(xs.map(x => [x.id, x.actualizadaEn]));
+            const lista = estado.items.map(y => (subidas.get(y.id) === y.actualizadaEn ? { ...y, sincronizada: true } : y));
+            escribirLocal(uid, lista);
+            avisar({ items: lista, nube: 'nube' });
+        } catch (e) { fallo(e); }
+    }
+
     async function borrar(id: string) {
         const duenio = estado.duenio || INVITADO;
         clearTimeout(esperando.get(id));
@@ -137,7 +165,7 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
     }
 
     const suscribir = (f: () => void) => { oyentes.add(f); return () => { oyentes.delete(f); }; };
-    return { suscribir, estado: () => estado, cargar, guardar, borrar };
+    return { suscribir, estado: () => estado, cargar, guardar, guardarVarias, borrar };
 }
 
 export const almacenCanciones = crearAlmacen<Cancion>('musikeeo-cancionero-v1', 'canciones', c => ({
@@ -162,10 +190,11 @@ export const AJUSTES_INICIALES: AjustesCancion = {
 
 const nuevoId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
-function crear(datos: { titulo: string; artista: string; texto: string }, ajustes: Partial<AjustesCancion> = {}): Cancion {
+// Una canción nueva lista para guardar (sin guardarla todavía)
+function nuevaCancion(datos: { titulo: string; artista: string; texto: string }, ajustes: Partial<AjustesCancion> = {}): Cancion {
     const ahora = new Date().toISOString();
     const leida = leerCancion(datos.texto);
-    return almacenCanciones.guardar({
+    return {
         id: nuevoId(),
         titulo: (datos.titulo.trim() || leida.meta.titulo || 'Sin título').slice(0, 120),
         artista: (datos.artista.trim() || leida.meta.artista || '').slice(0, 120),
@@ -173,7 +202,11 @@ function crear(datos: { titulo: string; artista: string; texto: string }, ajuste
         ajustes: { ...AJUSTES_INICIALES, cejilla: leida.meta.cejilla ?? datosDelPegado(datos.texto).cejilla ?? 0, ...ajustes },
         creadaEn: ahora,
         actualizadaEn: ahora,
-    });
+    };
+}
+
+function crear(datos: { titulo: string; artista: string; texto: string }, ajustes: Partial<AjustesCancion> = {}): Cancion {
+    return almacenCanciones.guardar(nuevaCancion(datos, ajustes));
 }
 
 function crearRepertorio(nombre: string, canciones: string[] = []): Repertorio {
@@ -204,7 +237,9 @@ function cargar(uid: string | null) {
 export const cancioneroService = {
     cargar,
     crear,
+    nuevaCancion,
     guardar: almacenCanciones.guardar,
+    guardarVarias: almacenCanciones.guardarVarias,
     borrar: borrarCancion,
     crearRepertorio,
     guardarRepertorio: almacenRepertorios.guardar,
