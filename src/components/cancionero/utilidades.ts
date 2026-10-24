@@ -11,7 +11,10 @@ export function tonoDe(c: Cancion) {
     const suena = (leida.meta.cejilla ?? 0) + c.ajustes.semitonos;
     const latino = c.ajustes.notacion === 'latina'
         || (c.ajustes.notacion === 'original' && leida.acordes.filter(a => a.latina).length > leida.acordes.length / 2);
-    return nombreTono(tono, suena, latino ? 'latina' : 'americana', usaBemoles(tono, suena, c.ajustes.alteraciones));
+    const bemoles = c.ajustes.alteraciones === 'auto' && suena === 0
+        ? leida.acordes.find(a => a.raiz === tono.raiz)?.bemol ?? false
+        : usaBemoles(tono, suena, c.ajustes.alteraciones);
+    return nombreTono(tono, suena, latino ? 'latina' : 'americana', bemoles);
 }
 
 // Pantalla completa de verdad, si el navegador deja (hay que pedirla al pulsar un botón)

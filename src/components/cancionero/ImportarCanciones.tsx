@@ -3,23 +3,25 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { FileUp } from 'lucide-react';
+import { ClipboardPaste, FileUp } from 'lucide-react';
 import { Switch } from '../ui/switch';
 import { useCancionero } from '../../hooks/useCancionero';
 import { separarCanciones } from '../../lib/acordes';
+import { leerSetlist, type CancionImportada } from '../../lib/setlist';
 import { norm } from './utilidades';
 
-const AYUDA = `Pega varias canciones seguidas, separadas por una línea con ---
+const AYUDA = `Pega el setlist del bolo, una línea por tema:
 
-Primera canción - Artista
-Am          F
-Letra con sus acordes…
----
-Segunda canción - Artista
-…`;
+Hace calor — G
+Bamboléo — Em (capo 3)
 
-// Un repertorio entero de golpe: pegado o en archivos (.txt, ChordPro). Si una canción ya
-// está en el cancionero (mismo título y artista) no se duplica.
+Cada tema sale como una ficha con su tono (y luego le pegas los acordes).
+
+O canciones enteras con sus acordes, separadas por una línea con ---`;
+
+// Un repertorio entero de golpe: el setlist (una ficha por tema) o canciones enteras, pegado o
+// en archivos (.txt, ChordPro). Lo que ya está en el cancionero no se duplica: una ficha se
+// une a la canción del mismo título (que ya trae sus acordes).
 export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onCerrar: () => void }) {
     const navigate = useNavigate();
     const { canciones, crear, crearRepertorio } = useCancionero();
@@ -28,9 +30,19 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
     const [nombre, setNombre] = useState('');
     const archivoRef = useRef<HTMLInputElement>(null);
 
-    const encontradas = useMemo(() => separarCanciones(texto), [texto]);
-    const yaEsta = (t: { titulo: string; artista: string }) =>
-        canciones.find(c => norm(c.titulo) === norm(t.titulo) && norm(c.artista) === norm(t.artista));
+    const encontradas: CancionImportada[] = useMemo(() => leerSetlist(texto) ?? separarCanciones(texto), [texto]);
+    const esSetlist = encontradas.some(t => t.ficha);
+    const yaEsta = (t: CancionImportada) =>
+        canciones.find(c => norm(c.titulo) === norm(t.titulo) && (t.ficha || norm(c.artista) === norm(t.artista)));
+
+    const pegar = async () => {
+        try {
+            const t = await navigator.clipboard.readText();
+            if (t.trim()) setTexto(t); else toast('No hay nada copiado.');
+        } catch {
+            toast('Mantén pulsado el recuadro y elige «Pegar».');
+        }
+    };
 
     const abrir = async (archivos: FileList | null) => {
         if (!archivos?.length) return;
@@ -40,7 +52,8 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
     };
 
     const importar = () => {
-        const ids = encontradas.map(t => (yaEsta(t) ?? crear(t)).id);
+        // Las fichas se ven enteras y grandes («que quepa»): son cuatro líneas
+        const ids = encontradas.map(t => (yaEsta(t) ?? crear(t, t.ficha ? { ajustar: true } : {})).id);
         const nuevas = encontradas.filter(t => !yaEsta(t)).length;
         setTexto('');
         onCerrar();
@@ -70,9 +83,14 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
                             </div>
                         </div>
                         <div className="px-4">
-                            <button onClick={() => archivoRef.current?.click()} className="pulsable h-9 px-3.5 rounded-full bg-fill text-[14px] font-semibold text-foreground flex items-center gap-1.5">
-                                <FileUp className="h-4 w-4" /> Abrir archivos
-                            </button>
+                            <div className="flex gap-2">
+                                <button onClick={pegar} className="pulsable h-9 px-3.5 rounded-full bg-fill text-[14px] font-semibold text-foreground flex items-center gap-1.5">
+                                    <ClipboardPaste className="h-4 w-4" /> Pegar lo copiado
+                                </button>
+                                <button onClick={() => archivoRef.current?.click()} className="pulsable h-9 px-3.5 rounded-full bg-fill text-[14px] font-semibold text-foreground flex items-center gap-1.5">
+                                    <FileUp className="h-4 w-4" /> Abrir archivos
+                                </button>
+                            </div>
                             <input ref={archivoRef} type="file" multiple className="hidden" accept=".txt,.cho,.chopro,.chordpro,.crd,.pro,text/plain"
                                 onChange={e => { void abrir(e.target.files); e.target.value = ''; }} />
                             <textarea value={texto} onChange={e => setTexto(e.target.value)} placeholder={AYUDA} wrap="off" spellCheck={false} aria-label="Canciones"
@@ -81,7 +99,7 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
                             {encontradas.length > 0 && (
                                 <>
                                     <p className="mt-3 text-[13px] font-semibold text-muted-foreground">
-                                        {encontradas.length === 1 ? '1 canción' : `${encontradas.length} canciones`}
+                                        {encontradas.length === 1 ? '1 canción' : `${encontradas.length} ${esSetlist ? 'fichas del setlist' : 'canciones'}`}
                                     </p>
                                     <ol className="mt-1 rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
                                         {encontradas.map((t, i) => (

@@ -162,7 +162,7 @@ export const AJUSTES_INICIALES: AjustesCancion = {
 
 const nuevoId = () => Date.now().toString(36) + Math.random().toString(36).slice(2, 8);
 
-function crear(datos: { titulo: string; artista: string; texto: string }): Cancion {
+function crear(datos: { titulo: string; artista: string; texto: string }, ajustes: Partial<AjustesCancion> = {}): Cancion {
     const ahora = new Date().toISOString();
     const leida = leerCancion(datos.texto);
     return almacenCanciones.guardar({
@@ -170,7 +170,7 @@ function crear(datos: { titulo: string; artista: string; texto: string }): Canci
         titulo: (datos.titulo.trim() || leida.meta.titulo || 'Sin título').slice(0, 120),
         artista: (datos.artista.trim() || leida.meta.artista || '').slice(0, 120),
         texto: datos.texto.slice(0, LIMITE_TEXTO),
-        ajustes: { ...AJUSTES_INICIALES, cejilla: leida.meta.cejilla ?? datosDelPegado(datos.texto).cejilla ?? 0 },
+        ajustes: { ...AJUSTES_INICIALES, cejilla: leida.meta.cejilla ?? datosDelPegado(datos.texto).cejilla ?? 0, ...ajustes },
         creadaEn: ahora,
         actualizadaEn: ahora,
     });

@@ -271,8 +271,9 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
         <div onTouchStart={alEmpezar} onTouchMove={alMover} onTouchEnd={alSoltar} onTouchCancel={alSoltar}
             className="min-h-full px-5 md:px-10 pt-[calc(env(safe-area-inset-top)+60px)] pb-[calc(env(safe-area-inset-bottom)+80px)]">
             <p className="text-[13px] font-semibold text-muted-foreground truncate">
-                {n}/{total} · {cancion.titulo}{tonoSuena && <> · {tonoSuena}</>}{a.cejilla > 0 && <> · Cejilla {a.cejilla}</>}
+                {n} de {total}{tonoSuena && <> · {tonoSuena}</>}{a.cejilla > 0 && <> · Cejilla {a.cejilla}</>}
             </p>
+            <h2 className="text-[22px] font-bold leading-tight text-foreground">{cancion.titulo}</h2>
             <div ref={zonaRef} className="mt-2">
                 <HojaCancion lineas={leida.lineas} opciones={opciones} vista={a.vista} tamano={tamano} columnas={columnas} />
             </div>

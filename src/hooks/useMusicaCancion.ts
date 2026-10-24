@@ -20,9 +20,12 @@ export function useMusicaCancion(texto: string, ajustes: AjustesCancion) {
         () => ({ semitonos: desplazamiento, notacion: ajustes.notacion, bemoles }),
         [desplazamiento, ajustes.notacion, bemoles],
     );
-    const tonoSuena = tono ? nombreTono(tono, suena, notacionTono, usaBemoles(tono, suena, ajustes.alteraciones)) : null;
+    // Sin transportar, el tono se nombra como está escrita su tónica (Abm, no G#m)
+    const tonicaEnBemol = tono ? leida.acordes.find(a => a.raiz === tono.raiz)?.bemol ?? false : false;
+    const bemolesTono = (s: number) => (ajustes.alteraciones === 'auto' && s === 0 ? tonicaEnBemol : usaBemoles(tono, s, ajustes.alteraciones));
+    const tonoSuena = tono ? nombreTono(tono, suena, notacionTono, bemolesTono(suena)) : null;
     const posturas = tono && ajustes.cejilla > 0
-        ? nombreTono(tono, desplazamiento, notacionTono, usaBemoles(tono, desplazamiento, ajustes.alteraciones))
+        ? nombreTono(tono, desplazamiento, notacionTono, bemolesTono(desplazamiento))
         : null;
     const recomendada = useMemo(() => cejillaRecomendada(leida.acordes, suena), [leida, suena]);
     const dificilesAhora = useMemo(() => cuantosDificiles(leida.acordes, desplazamiento), [leida, desplazamiento]);
