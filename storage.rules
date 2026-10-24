@@ -2,7 +2,8 @@ rules_version = '2';
 service firebase.storage {
   match /b/{bucket}/o {
 
-    // Helpers: max 20 MB and image-only uploads
+    // Helpers: image-only uploads (5 MB). Lectura pública de cada fichero (get);
+    // la app no lista carpetas.
     function isOwner(userId) {
       return request.auth != null && request.auth.uid == userId;
     }
@@ -13,19 +14,19 @@ service firebase.storage {
 
     // Artist profile photos and multimedia
     match /artists/{userId}/{allPaths=**} {
-      allow read: if true;
+      allow get: if true;
       allow write: if isOwner(userId) && (request.resource == null || isAllowedImage());
     }
 
     // Marketplace listing images
     match /listings/{userId}/{allPaths=**} {
-      allow read: if true;
+      allow get: if true;
       allow write: if isOwner(userId) && (request.resource == null || isAllowedImage());
     }
 
     // Fotos y vídeos del Feed: foto hasta 10 MB, vídeo hasta 100 MB
     match /posts/{userId}/{allPaths=**} {
-      allow read: if true;
+      allow get: if true;
       allow write: if isOwner(userId) && (request.resource == null
         || (request.resource.size < 10 * 1024 * 1024 && request.resource.contentType.matches('image/(jpeg|png|webp|gif)'))
         || (request.resource.size < 100 * 1024 * 1024 && request.resource.contentType.matches('video/(mp4|quicktime|webm)')));
@@ -33,13 +34,13 @@ service firebase.storage {
 
     // Portada de los bolos
     match /events/{userId}/{allPaths=**} {
-      allow read: if true;
+      allow get: if true;
       allow write: if isOwner(userId) && (request.resource == null || isAllowedImage());
     }
 
     // User profile photos
     match /users/{userId}/{allPaths=**} {
-      allow read: if true;
+      allow get: if true;
       allow write: if isOwner(userId) && (request.resource == null || isAllowedImage());
     }
   }
