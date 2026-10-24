@@ -24,7 +24,7 @@ O canciones enteras con sus acordes, separadas por una línea con ---`;
 // une a la canción del mismo título (que ya trae sus acordes).
 export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onCerrar: () => void }) {
     const navigate = useNavigate();
-    const { canciones, crear, crearRepertorio } = useCancionero();
+    const { canciones, repertorios, crear, guardar, crearRepertorio } = useCancionero();
     const [texto, setTexto] = useState('');
     const [conRepertorio, setConRepertorio] = useState(true);
     const [nombre, setNombre] = useState('');
@@ -32,8 +32,14 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
 
     const encontradas: CancionImportada[] = useMemo(() => leerSetlist(texto) ?? separarCanciones(texto), [texto]);
     const esSetlist = encontradas.some(t => t.ficha);
-    const yaEsta = (t: CancionImportada) =>
-        canciones.find(c => norm(c.titulo) === norm(t.titulo) && (t.ficha || norm(c.artista) === norm(t.artista)));
+    const misma = (t: CancionImportada) =>
+        canciones.find(c => norm(c.titulo) === norm(t.titulo) && (t.ficha || !c.artista || norm(c.artista) === norm(t.artista)));
+    // Una ficha del setlist (sin artista) que ya está en el cancionero se rellena con lo que llega
+    const fichaQueRellenar = (t: CancionImportada) => {
+        const c = misma(t);
+        return !t.ficha && c && !c.artista && c.texto.trim() !== t.texto.trim() ? c : undefined;
+    };
+    const yaEsta = (t: CancionImportada) => (fichaQueRellenar(t) ? undefined : misma(t));
 
     const pegar = async () => {
         try {
@@ -52,17 +58,31 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
     };
 
     const importar = () => {
-        // Las fichas se ven enteras y grandes («que quepa»): son cuatro líneas
-        const ids = encontradas.map(t => (yaEsta(t) ?? crear(t, t.ficha ? { ajustar: true } : {})).id);
-        const nuevas = encontradas.filter(t => !yaEsta(t)).length;
+        const corta = (t: CancionImportada) => t.ficha || t.texto.split('\n').length <= 25;
+        let nuevas = 0, rellenas = 0;
+        const ids = encontradas.map(t => {
+            const ya = yaEsta(t);
+            if (ya) return ya.id;
+            const ficha = fichaQueRellenar(t);
+            if (ficha) {
+                rellenas++;
+                return guardar({ ...ficha, artista: t.artista, texto: t.texto, ajustes: { ...ficha.ajustes, ajustar: corta(t) } }).id;
+            }
+            nuevas++;
+            // Lo corto (fichas y chuletas de acordes) se ve entero y grande: «que quepa»
+            return crear(t, corta(t) ? { ajustar: true } : {}).id;
+        });
         setTexto('');
         onCerrar();
+        const aviso = [nuevas && `${nuevas} nuevas`, rellenas && `${rellenas} fichas con sus acordes`].filter(Boolean).join(' y ') || 'Ya las tenías';
+        // Si ya hay un repertorio con estas mismas canciones (se rellenaron sus fichas), se abre ese
+        const mismo = repertorios.find(r => r.canciones.length === ids.length && r.canciones.every((c, i) => c === ids[i]));
         if (conRepertorio && ids.length > 1) {
-            const r = crearRepertorio(nombre.trim() || `Bolo ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`, ids);
-            toast.success(`${ids.length} canciones en el repertorio`);
+            const r = mismo ?? crearRepertorio(nombre.trim() || `Bolo ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`, ids);
+            toast.success(aviso);
             navigate(`/cancionero/repertorio/${r.id}`);
         } else {
-            toast.success(nuevas === 1 ? 'Canción añadida' : `${nuevas} canciones añadidas`);
+            toast.success(aviso);
         }
     };
 
@@ -108,7 +128,8 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
                                                 <span className="flex-1 min-w-0 truncate text-[15px] text-foreground">
                                                     {t.titulo}{t.artista && <span className="text-muted-foreground"> · {t.artista}</span>}
                                                 </span>
-                                                {yaEsta(t) && <span className="text-[12px] text-muted-foreground">ya la tienes</span>}
+                                                {yaEsta(t) ? <span className="text-[12px] text-muted-foreground">ya la tienes</span>
+                                                    : fichaQueRellenar(t) && <span className="text-[12px] text-muted-foreground">rellena la ficha</span>}
                                             </li>
                                         ))}
                                     </ol>
