@@ -138,6 +138,11 @@ function parseProfileDraft(content: string): ProfileDraft | undefined {
     };
 }
 
+/** Solo rutas de la app: un enlace que escriba el modelo nunca saca de Musikeeo */
+function enlaceInterno(link: string, porDefecto: string): string {
+    return /^\/(?![/\\])[^\s\\]*$/.test(link) ? link : porDefecto;
+}
+
 function parseArtists(content: string): ArtistRecommendation[] {
     const artists: ArtistRecommendation[] = [];
     const artistRegex = /\[ARTISTA\]([\s\S]*?)\[\/ARTISTA\]/g;
@@ -151,7 +156,7 @@ function parseArtists(content: string): ArtistRecommendation[] {
             estilo: extractField(block, 'Estilo') || '',
             porQueEncaja: extractField(block, 'Por qué encaja') || '',
             precio: extractField(block, 'Precio orientativo') || '',
-            link: extractField(block, 'Link') || '/discover',
+            link: enlaceInterno(extractField(block, 'Link'), '/discover'),
         };
         artists.push(artist);
     }
@@ -172,7 +177,7 @@ function parseBolos(content: string): BoloOpportunity[] {
             ubicacion: extractField(block, 'Ubicación') || '',
             formatoBuscado: extractField(block, 'Formato buscado') || '',
             cache: extractField(block, 'Caché') || '',
-            link: extractField(block, 'Link') || '/eventos',
+            link: enlaceInterno(extractField(block, 'Link'), '/eventos'),
         };
         bolos.push(bolo);
     }

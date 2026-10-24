@@ -238,19 +238,39 @@ async function runQuery(collectionId: string, extra: Record<string, unknown> = {
   });
 }
 
+// Lo que escriben los usuarios (nombres, títulos, ciudades) entra en el prompt de Rodrigo:
+// como texto de una línea, sin marcas de bloque, con tope de largo y del tipo esperado.
+const enCatalogo = (v: unknown, max: number) => limpio(v, max).replace(/[[\]]/g, '');
+const listaCatalogo = (v: unknown, n: number, max: number) =>
+  Array.isArray(v) ? v.map(x => enCatalogo(x, max)).filter(Boolean).slice(0, n).join(', ') : '';
+const ID_CATALOGO = /^[A-Za-z0-9_-]{1,80}$/;
+// Solo se piden a Firestore los campos que se usan
+const soloCampos = (campos: string[]) => ({ select: { fields: campos.map(fieldPath => ({ fieldPath })) } });
+
 async function getCatalog(): Promise<string> {
   if (catalogCache && Date.now() - catalogCache.at < CATALOG_TTL_MS) return catalogCache.text;
   try {
     const [artists, events] = await Promise.all([
-      runQuery('artists', { where: { fieldFilter: { field: { fieldPath: 'isPublic' }, op: 'EQUAL', value: { booleanValue: true } } } }),
-      runQuery('events'),
+      runQuery('artists', {
+        ...soloCampos(['artistName', 'slug', 'city', 'genres', 'priceFrom', 'bio']),
+        where: { fieldFilter: { field: { fieldPath: 'isPublic' }, op: 'EQUAL', value: { booleanValue: true } } },
+      }),
+      runQuery('events', soloCampos(['title', 'date', 'location', 'price', 'description'])),
     ]);
     const now = Date.now() - 86400000;
     const test = (x: any) => /Contenido de prueba de Musikeeo/.test(`${x.bio || ''} ${x.description || ''}`) ? ' (PRUEBA)' : '';
-    const a = artists.filter(x => x.artistName && x.slug).slice(0, 30).map(x =>
-      `- ${x.artistName}${test(x)} · ${[x.city, (x.genres || []).slice(0, 4).join(', ')].filter(Boolean).join(' · ')}${x.priceFrom ? ` · desde ${x.priceFrom} €` : ''} · slug: ${x.slug}`);
-    const e = events.filter(x => x.title && (!x.date || new Date(x.date).getTime() >= now)).slice(0, 20).map(x =>
-      `- ${x.title}${test(x)} · ${x.date ? new Date(x.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 'fecha a concretar'} · ${x.location || 'ubicación a concretar'}${x.price ? ` · ${x.price} €` : ''} · id: ${x.id}`);
+    const a = artists
+      .filter(x => enCatalogo(x.artistName, 100) && typeof x.slug === 'string' && ID_CATALOGO.test(x.slug))
+      .slice(0, 30).map(x => {
+        const precio = aEuros(x.priceFrom);
+        return `- ${enCatalogo(x.artistName, 100)}${test(x)} · ${[enCatalogo(x.city, 40), listaCatalogo(x.genres, 4, 30)].filter(Boolean).join(' · ')}${precio ? ` · desde ${precio} €` : ''} · slug: ${x.slug}`;
+      });
+    const e = events
+      .filter(x => enCatalogo(x.title, 120) && ID_CATALOGO.test(x.id) && (!x.date || new Date(x.date).getTime() >= now))
+      .slice(0, 20).map(x => {
+        const precio = aEuros(x.price);
+        return `- ${enCatalogo(x.title, 120)}${test(x)} · ${x.date ? new Date(x.date).toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' }) : 'fecha a concretar'} · ${enCatalogo(x.location, 60) || 'ubicación a concretar'}${precio ? ` · ${precio} €` : ''} · id: ${x.id}`;
+      });
     const text = `CATÁLOGO REAL DE MUSIKEEO (actualizado ${new Date().toLocaleString('es-ES')})
 
 ARTISTAS CON PERFIL PÚBLICO:
@@ -269,7 +289,8 @@ Los marcados (PRUEBA) son de ejemplo: si los recomiendas, avisa de que son de pr
 }
 
 // Llama a Kimi probando endpoints (ante 401) y modelos (ante 404). Lo usan el chat y los filtros.
-async function callKimiWithFallbacks(apiKey: string, messages: { role: string; content: string }[], maxTokens: number, extra: Record<string, unknown> = {}) {
+// Cada llamada tiene un tiempo máximo: una respuesta colgada no retiene la función.
+async function callKimiWithFallbacks(apiKey: string, messages: { role: string; content: string }[], maxTokens: number, extra: Record<string, unknown> = {}, timeoutMs = 60_000) {
   const callKimi = (baseUrl: string, model: string) =>
     fetch(`${baseUrl}/chat/completions`, {
       method: 'POST',
@@ -278,6 +299,7 @@ async function callKimiWithFallbacks(apiKey: string, messages: { role: string; c
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({ model, messages, max_tokens: maxTokens, ...extra }),
+      signal: AbortSignal.timeout(timeoutMs),
     });
 
   const order = [workingEndpoint, ...KIMI_ENDPOINTS.keys()].filter((v, i, a) => a.indexOf(v) === i);
@@ -437,7 +459,8 @@ async function handleFiltros(req: any, res: any, apiKey: string) {
     { role: 'user', content: message.trim() },
   ];
   try {
-    const { upstream, endpoint, model } = await callKimiWithFallbacks(apiKey, messages, 300, { temperature: 0.2 });
+    // La app deja de esperar a los 9 s (rodrigoFiltros.ts): más allá no lo lee nadie
+    const { upstream, endpoint, model } = await callKimiWithFallbacks(apiKey, messages, 300, { temperature: 0.2 }, 9_000);
     if (!upstream || !upstream.ok) {
       const status = upstream?.status ?? 500;
       console.error('Kimi error (filtros):', status, endpoint.baseUrl, model, upstream ? await upstream.text() : 'no response');
@@ -447,9 +470,9 @@ async function handleFiltros(req: any, res: any, apiKey: string) {
     const json = extraerJson(data.choices?.[0]?.message?.content ?? '');
     if (!json) return res.status(502).json({ error: 'bad_json' });
     return res.status(200).json(limpiarFiltros(json, tipo, opciones));
-  } catch (err: any) {
+  } catch (err) {
     console.error('Filtros handler exception:', err);
-    return res.status(500).json({ error: err.message ?? 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }
 
@@ -509,16 +532,17 @@ export default async function handler(req: any, res: any) {
     if (!upstream || !upstream.ok) {
       const status = upstream?.status ?? 500;
       const errorText = upstream ? await upstream.text() : 'no response';
-      console.error('Kimi error:', status, endpoint.baseUrl, model, errorText);
-      // 401 = clave (en todos los endpoints), 429 = sin saldo/limite, 404 = sin acceso a ningun modelo
-      return res.status(status).json({ error: errorText, status, model, tried, triedModels });
+      // 401 = clave (en todos los endpoints), 429 = sin saldo/limite, 404 = sin acceso a ningun modelo.
+      // El detalle (endpoints, modelos, texto del proveedor) va solo al log de Vercel: la respuesta es pública.
+      console.error('Kimi error:', status, endpoint.baseUrl, model, { tried, triedModels }, errorText);
+      return res.status(status).json({ error: 'upstream', status });
     }
 
     const data = await upstream.json();
     const content: string = data.choices?.[0]?.message?.content ?? '';
     return res.status(200).json({ content });
-  } catch (err: any) {
+  } catch (err) {
     console.error('Chat handler exception:', err);
-    return res.status(500).json({ error: err.message ?? 'Internal server error' });
+    return res.status(500).json({ error: 'Internal server error' });
   }
 }
