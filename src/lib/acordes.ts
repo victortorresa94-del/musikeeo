@@ -454,3 +454,48 @@ export function separarCanciones(texto: string): { titulo: string; artista: stri
     }
     return canciones;
 }
+
+// ---- Añadir la letra a una ficha o chuleta: lo copiado de una web, en el tono del setlist ----
+
+// Cuántos semitonos hay que mover una canción (escrita como esté) para que caiga en el tono de
+// destino: el que mejor encaja, pesando más el principio (hay temas que modulan al final). Las
+// rumbas «en Mi» (arrancan en Mi y llevan Fa y Sol: la cadencia andaluza) llevan ese Mi al destino.
+export function semitonosHacia(acordes: Acorde[], destino: Acorde): number {
+    if (!acordes.length) return 0;
+    const menor = esMenor(destino);
+    const abre = acordes[0];
+    const mod = (n: number) => ((n % 12) + 12) % 12;
+    const hay = (raiz: number, s: number) => acordes.some(a => mod(a.raiz + s) === mod(raiz) && !esMenor(a));
+    const sAbre = ((mod(destino.raiz - abre.raiz) + 5) % 12) - 5;
+    if (!menor && !esMenor(abre) && hay(destino.raiz + 1, sAbre) && hay(destino.raiz + 3, sAbre)) return sAbre;
+    const grados = menor ? GRADOS_MENOR : GRADOS_MAYOR;
+    let mejor = -Infinity, elegido = 0;
+    for (let s = -5; s <= 6; s++) {
+        let p = 0;
+        acordes.forEach((a, i) => {
+            const g = mod(a.raiz + s - destino.raiz), c = clase(a);
+            const peso = i < acordes.length * 0.6 ? 1.5 : 1;
+            if (grados.some(([x, k]) => x === g && k === c)) p += (g === 0 && c === (menor ? 'm' : 'M') ? 2 : 1) * peso;
+            else p -= 0.5 * peso;
+            if (i === 0 && g === 0) p += 2;
+        });
+        p -= Math.abs(s) * 0.01;
+        if (p > mejor) { mejor = p; elegido = s; }
+    }
+    return elegido;
+}
+
+// Al copiar con «Seleccionar todo» viene la página entera: se queda de la primera línea de
+// acordes a la última (más la letra que cuelga de ella), y fuera la cejilla de la web
+export function recortarCancion(texto: string): string {
+    const lineas = limpiarTexto(texto).split('\n').filter(l => !RE_CEJILLA.test(l.trim()) && !/^\s*(tono|key)\s*:/i.test(l));
+    const conAcordes = lineas.map((l, i) => (leerLineaAcordes(l) ? i : -1)).filter(i => i >= 0);
+    if (!conAcordes.length) return lineas.join('\n').trim();
+    let desde = conAcordes[0], hasta = conAcordes[conAcordes.length - 1];
+    // La sección que lo anuncia («Intro», «[Verso]») se queda
+    if (desde > 0 && esSeccion(lineas[desde - 1])) desde--;
+    let extra = 0;
+    const finDeLaWeb = /^\s*(comentarios?|publicidad|anuncio|versi[oó]n para imprimir|imprimir|compartir|valora|votos?|enviad[ao]|tutorial|v[ií]deo|©|https?:)/i;
+    while (hasta + 1 < lineas.length && lineas[hasta + 1].trim() && !finDeLaWeb.test(lineas[hasta + 1]) && extra < 6) { hasta++; extra++; }
+    return lineas.slice(desde, hasta + 1).join('\n').trim();
+}

@@ -9,6 +9,7 @@ import { useMusicaCancion } from '../../hooks/useMusicaCancion';
 import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
 import { HojaCancion } from '../../components/cancionero/HojaCancion';
 import { PanelAjustes } from '../../components/cancionero/PanelAjustes';
+import { AnadirLetra } from '../../components/cancionero/AnadirLetra';
 import { BotonBarra, Paso } from '../../components/cancionero/Controles';
 import { buscarEncaje, columnasPosibles, type Encaje } from '../../components/cancionero/medir';
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
@@ -205,6 +206,17 @@ function Lector({ cancion }: { cancion: Cancion }) {
         return () => { cancelAnimationFrame(t); window.removeEventListener('afterprint', fin); };
     }, [imprimiendo]);
 
+    const ponerLetra = (texto: string, cambio: Partial<AjustesCancion>) => {
+        const antes = { ...cancion, ajustes };
+        const nuevos = { ...ajustes, ...cambio };
+        setAjustes(nuevos);
+        guardar({ ...cancion, texto, ajustes: nuevos });
+        window.scrollTo({ top: 0 });
+        toast.success('Canción añadida en tu tono', {
+            action: { label: 'Deshacer', onClick: () => { setAjustes(antes.ajustes); guardar(antes); } },
+        });
+    };
+
     const borrarCancion = () => {
         setPanel(false);
         void borrar(cancion.id);
@@ -273,6 +285,10 @@ function Lector({ cancion }: { cancion: Cancion }) {
 
             {/* La hoja */}
             <div className="max-w-5xl mx-auto px-4 md:px-0 mt-4">
+                {/* Ficha o chuleta sin letra: buscarla, copiarla y pegarla, y entra en el tono del setlist */}
+                {!leida.lineas.some(l => l.tipo === 'mixta') && (
+                    <AnadirLetra cancion={cancion} ajustes={ajustes} onPegar={ponerLetra} />
+                )}
                 {sinAcordes && leida.lineas.length > 0 && (
                     <p className="mb-4 rounded-2xl bg-fill px-4 py-3 text-[14px] text-muted-foreground">
                         No hemos encontrado acordes. Tienen que ir en su propia línea, encima de la letra, o entre corchetes como [Am].{' '}
