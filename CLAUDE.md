@@ -83,6 +83,17 @@ git push origin main  # triggers Vercel auto-deploy
 - Navegar es público: /home, /feed, /explorar(/:categoría), /eventos(/:id), /market/:id, /profile/:id, /artist/:slug, /reels
 - Explorar = el marketplace (Explorar + Mercado unidos): categorías en `src/config/categorias.ts` (una tabla para hub, vista, buscador), iconos 3D en `public/images/categorias/` recortados del sueño elegido (concepto A + cabecera «por momento» de C). /discover, /artistas, /sonido y /market redirigen. Barra: Feed · Explorar · Bolos · Perfil
 - Requieren cuenta (RequireAuthCompleted → /login con `state.from` y vuelta tras entrar): /messages, /market/create, /eventos/crear, /projects, /profile; /publicar requiere sesión (RequireAuthSimple)
+- /cancionero es público y funciona sin cuenta (ver «Cancionero»)
+
+## Cancionero (2026-10-24)
+- Letras y acordes que la persona PEGA de cualquier web (nunca los ponemos nosotros: derechos), limpios y sin anuncios. Privados: solo los ve su dueño
+- Rutas: /cancionero (Canciones · Repertorios, `?ver=repertorios`), /cancionero/nueva (`?repertorio=<id>` la mete en ese repertorio), /cancionero/:id (leer), /cancionero/:id/editar, /cancionero/repertorio/:id (ordenar arrastrando), /cancionero/repertorio/:id/tocar (FUERA de MainLayout: el bolo a pantalla completa)
+- Motor en `src/lib/acordes.ts` (sin React): acordes encima de la letra, ChordPro `[Am]` y `{title:}`, formato Ultimate Guitar, cifrado americano y latino (Do Re Mi), tono, cejilla recomendada, varias canciones separadas por `---` o `{new_song}`
+- Lector: tono ±, cejilla (posturas), tamaño, «que quepa» (mide con una copia invisible, `components/cancionero/medir.ts`), columnas, solo letra / solo acordes, desplazamiento automático, modo escenario, imprimir en una A4, pantalla siempre encendida, pedal Bluetooth (AvPág/flechas)
+- Tocar: deslizar de lado = siguiente canción; el pedal baja y, al final, pasa a la siguiente; zoom con dos dedos (cambia el tamaño de la letra y se guarda en la canción)
+- Datos: primero en el dispositivo (localStorage `musikeeo-cancionero-v1:<uid|invitado>` y `musikeeo-repertorios-v1:…`), con cuenta se copian a `users/{uid}/canciones` y `users/{uid}/repertorios`. Lo guardado sin cuenta pasa a la cuenta al entrar. Si las reglas no están desplegadas, sigue en el dispositivo sin avisar de errores
+- PWA sin cobertura: `public/service-worker.js` guarda TODO el código al instalarse; `vite.config.ts` (plugin `musikeeo-precache-sw`) le escribe la lista de /assets y la versión en cada build
+
 
 ## Cuenta y datos de prueba (producción, 2026-10)
 - Cuenta de pruebas: victortorresa94+musikeeo-dev@gmail.com (uid YEj8ANe4aEeYDl6Zabg1chbD6oC3), «Musikeeo Dev». La contraseña la tiene Víctor (no va en el repo). Su banda, su técnico y sus 6 anuncios están OCULTOS (isPublic/available false) y sus 4 bolos borrados desde el 22-oct
@@ -103,6 +114,15 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 ---
 
 ## SESSION LOG
+
+### 2026-10-24 (Cancionero + repertorios para el bolo)
+
+**✅ Hecho:** Cancionero completo (pegar, limpiar, tono, cejilla, que quepa, escenario, imprimir), repertorios con «Tocar» (deslizar, pedal, zoom), importar varias canciones de golpe, «Buscar acordes en» Google/LaCuerda/Ultimate Guitar, service worker que deja la app entera disponible sin red. Entrada en la barra lateral y en Mi perfil.
+
+**❌ Pendiente:**
+- **Víctor: desplegar las reglas** — `firebase deploy --only firestore:rules` (canciones y repertorios en la cuenta). Sin esto, todo funciona pero solo en el dispositivo
+- No se soñó en Aura Studio (había prisa para un bolo): sueño de la pantalla de lectura y de «Tocar» cuando haya tiempo
+- Diagramas de acordes, notas por canción en el repertorio, compartir repertorio con la banda
 
 ### 2026-04-06 (Sesión 1 — Cuenta 1)
 

@@ -5,6 +5,7 @@ import {
   Compass,
   Calendar,
   Bot,
+  ListMusic,
   LogOut,
   User,
 } from 'lucide-react';
@@ -22,6 +23,7 @@ const NAV_ITEMS: NavItem[] = [
   { icon: Rss,         label: 'Feed',       path: '/feed'     },
   { icon: Compass,     label: 'Explorar',   path: '/explorar' },
   { icon: Calendar,    label: 'Bolos',      path: '/eventos'  },
+  { icon: ListMusic,   label: 'Cancionero', path: '/cancionero' },
   { icon: Bot,         label: 'Rodrigo AI', path: '/rodrigo'  },
 ];
 // La home solo se enseña a quien no tiene cuenta; con cuenta, «Mi perfil»

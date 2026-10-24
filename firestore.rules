@@ -25,6 +25,26 @@ service cloud.firestore {
       allow read: if isOwner(userId);
       allow create, update: if isOwner(userId) && !touchesTrustFields();
       allow delete: if isOwner(userId);
+
+      // Cancionero: letras y acordes que pega cada persona. Privadas, solo su dueño.
+      match /canciones/{cancionId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && request.resource.data.keys().hasOnly(['titulo', 'artista', 'texto', 'ajustes', 'creadaEn', 'actualizadaEn'])
+          && request.resource.data.titulo is string && request.resource.data.titulo.size() <= 120
+          && request.resource.data.artista is string && request.resource.data.artista.size() <= 120
+          && request.resource.data.texto is string && request.resource.data.texto.size() <= 50000
+          && request.resource.data.ajustes is map;
+      }
+
+      // Repertorios del cancionero (el orden de las canciones de un bolo). Privados.
+      match /repertorios/{repertorioId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && request.resource.data.keys().hasOnly(['nombre', 'fecha', 'canciones', 'creadaEn', 'actualizadaEn'])
+          && request.resource.data.nombre is string && request.resource.data.nombre.size() <= 120
+          && request.resource.data.canciones is list && request.resource.data.canciones.size() <= 300;
+      }
     }
 
     // Perfil público (sin email). Lectura abierta; el dueño solo escribe campos permitidos.

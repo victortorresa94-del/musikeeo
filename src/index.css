@@ -340,3 +340,14 @@
             mask-image: linear-gradient(to right, transparent 0%, #000 30%);
   }
 }
+
+/* Imprimir una canción del Cancionero: solo la hoja, en negro sobre blanco (el papel es
+   siempre blanco, también con el tema oscuro) y en una A4 si cabe (LeerCancion la mide). */
+@media print {
+  @page { size: A4; margin: 12mm; }
+  body.imprimiendo-cancion { padding: 0 !important; background: #fff !important; }
+  body.imprimiendo-cancion::before { display: none; }
+  body.imprimiendo-cancion > *:not(.hoja-impresion) { display: none !important; }
+  .hoja-impresion { position: static !important; visibility: visible !important; left: auto !important; }
+  .hoja-impresion, .hoja-impresion * { color: #000 !important; }
+}

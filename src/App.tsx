@@ -42,6 +42,11 @@ const Explorar = lazy(() => import('./pages/explorar/Explorar'));
 const Categoria = lazy(() => import('./pages/explorar/Categoria'));
 const Reels = lazy(() => import('./pages/reels/Reels'));
 const RodrigoPage = lazy(() => import('./pages/rodrigo/RodrigoPage'));
+const Cancionero = lazy(() => import('./pages/cancionero/Cancionero'));
+const EditarCancion = lazy(() => import('./pages/cancionero/EditarCancion'));
+const LeerCancion = lazy(() => import('./pages/cancionero/LeerCancion'));
+const Repertorio = lazy(() => import('./pages/cancionero/Repertorio'));
+const TocarRepertorio = lazy(() => import('./pages/cancionero/TocarRepertorio'));
 
 // Legal pages (public, no layout)
 const LegalNotice = lazy(() => import('./pages/legal/LegalNotice'));
@@ -203,6 +208,9 @@ function App() {
                 <Route path="/forgot-password" element={<ForgotPassword />} />
               </Route>
 
+              {/* El bolo: el repertorio a pantalla completa, sin barras de la app */}
+              <Route path="/cancionero/repertorio/:id/tocar" element={<TocarRepertorio />} />
+
               {/* Onboarding - Protected but no layout */}
               <Route element={<RequireAuthSimple />}>
                 <Route path="/onboarding" element={<Onboarding />} />
@@ -229,6 +237,13 @@ function App() {
                 <Route path="/profile/:id" element={<PublicProfile />} />
                 <Route path="/reels" element={<Reels />} />
                 <Route path="/reels/:id" element={<Reels />} />
+                {/* Cancionero: letras y acordes pegados de cualquier web, limpios. Sin cuenta se guarda en
+                    el dispositivo; con cuenta, también en users/{uid}/canciones */}
+                <Route path="/cancionero" element={<Cancionero />} />
+                <Route path="/cancionero/nueva" element={<EditarCancion />} />
+                <Route path="/cancionero/:id" element={<LeerCancion />} />
+                <Route path="/cancionero/:id/editar" element={<EditarCancion />} />
+                <Route path="/cancionero/repertorio/:id" element={<Repertorio />} />
 
                 {/* Acciones: publicar, escribir y gestionar requieren cuenta */}
                 <Route element={<RequireAuthCompleted />}>
