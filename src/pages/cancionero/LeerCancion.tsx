@@ -1,10 +1,10 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ChevronLeft, Loader2, Maximize, Pause, Play, Shrink, SlidersHorizontal, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { lineasDeLetra } from '../../lib/acordes';
+import { juntarAcordesYLetra, lineasDeLetra } from '../../lib/acordes';
 import { useCancionero } from '../../hooks/useCancionero';
 import { useMusicaCancion } from '../../hooks/useMusicaCancion';
 import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
@@ -71,6 +71,8 @@ function Lector({ cancion }: { cancion: Cancion }) {
 
     // ---- La música: tono, cejilla y nombres de los acordes ----
     const { leida, opciones, tonoSuena, posturas, recomendada, dificilesAhora, formasRecomendadas, sinAcordes } = useMusicaCancion(cancion.texto, ajustes);
+    // Acordes por un lado y letra por otro: se pueden poner los acordes encima, como en LaCuerda
+    const juntada = useMemo(() => juntarAcordesYLetra(cancion.texto), [cancion.texto]);
 
     const cambiarTono = (d: number) => {
         const s = ajustes.semitonos + d;
@@ -218,6 +220,15 @@ function Lector({ cancion }: { cancion: Cancion }) {
         });
     };
 
+    const juntar = () => {
+        if (!juntada) return;
+        const antes = { ...cancion, ajustes };
+        guardar({ ...cancion, texto: juntada, ajustes });
+        toast.success('Acordes encima de la letra', {
+            action: { label: 'Deshacer', onClick: () => guardar(antes) },
+        });
+    };
+
     const borrarCancion = () => {
         setPanel(false);
         void borrar(cancion.id);
@@ -289,6 +300,14 @@ function Lector({ cancion }: { cancion: Cancion }) {
                 {/* Ficha o chuleta sin letra: buscarla, copiarla y pegarla, y entra en el tono del setlist */}
                 {!leida.lineas.some(l => l.tipo === 'mixta') && lineasDeLetra(leida) < 8 && (
                     <AnadirLetra cancion={cancion} ajustes={ajustes} onPegar={ponerLetra} />
+                )}
+                {juntada && (
+                    <div className="mb-4 rounded-2xl bg-fill px-4 py-3 flex items-center gap-3">
+                        <p className="flex-1 text-[14px] text-muted-foreground">Los acordes y la letra están separados.</p>
+                        <button onClick={juntar} className="pulsable h-9 px-3.5 rounded-full bg-foreground text-background text-[14px] font-semibold shrink-0">
+                            Ponerlos encima
+                        </button>
+                    </div>
                 )}
                 {sinAcordes && leida.lineas.length > 0 && (
                     <p className="mb-4 rounded-2xl bg-fill px-4 py-3 text-[14px] text-muted-foreground">

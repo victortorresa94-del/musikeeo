@@ -288,6 +288,18 @@ export function leerCancion(texto: string): CancionLeida {
     };
     const esDirectiva = (l: string) => RE_DIRECTIVA.test(l.trim());
     const llevaChordPro = (l: string) => /\[[^\]]+\]/.test(l) && leerChordPro(l) !== null;
+    const esLetra = (l: string | undefined): l is string => l !== undefined && l.trim() !== ''
+        && !esTab(l) && !esSeccion(l) && !esDirectiva(l) && !leerLineaAcordes(l) && !llevaChordPro(l);
+    // Pegado de Word o Docs, con una línea en blanco entre cada línea: si los acordes van casi
+    // siempre separados de su letra por un blanco, se juntan igual
+    let pegadas = 0, separadas = 0;
+    crudas.forEach((l, i) => {
+        const a = l.trim() ? leerLineaAcordes(l) : null;
+        if (!a || a.etiqueta) return;
+        if (esLetra(crudas[i + 1])) pegadas++;
+        else if (crudas[i + 1]?.trim() === '' && esLetra(crudas[i + 2])) separadas++;
+    });
+    const dobleEspacio = separadas >= 3 && separadas > pegadas * 2;
 
     for (let i = 0; i < crudas.length; i++) {
         const l = crudas[i];
@@ -324,12 +336,11 @@ export function leerCancion(texto: string): CancionLeida {
 
         const enLinea = leerLineaAcordes(l);
         if (enLinea) {
-            const sig = crudas[i + 1];
-            const letraDebajo = !enLinea.etiqueta && sig !== undefined && sig.trim() !== ''
-                && !esTab(sig) && !esSeccion(sig) && !esDirectiva(sig) && !leerLineaAcordes(sig) && !llevaChordPro(sig);
-            if (letraDebajo) {
-                meter({ tipo: 'mixta', trozos: combinar(enLinea.marcas, sig) });
-                i++;
+            const salto = esLetra(crudas[i + 1]) ? 1
+                : dobleEspacio && crudas[i + 1]?.trim() === '' && esLetra(crudas[i + 2]) ? 2 : 0;
+            if (!enLinea.etiqueta && salto) {
+                meter({ tipo: 'mixta', trozos: combinar(enLinea.marcas, crudas[i + salto]) });
+                i += salto;
             } else {
                 meter({ tipo: 'acordes', etiqueta: enLinea.etiqueta, marcas: enLinea.marcas.map(m => m.marca) });
             }
@@ -346,6 +357,64 @@ export function leerCancion(texto: string): CancionLeida {
 // ficha del setlist apenas tienen; una canción entera, muchas
 export function lineasDeLetra(leida: CancionLeida): number {
     return leida.lineas.filter(l => l.tipo === 'mixta' || l.tipo === 'letra').length;
+}
+
+// Acordes por un lado y letra por otro (la chuleta de acordes y, debajo, la letra pegada
+// aparte): cada fila de acordes se pone encima de su línea de letra, repartida por las
+// palabras, como en LaCuerda. Devuelve null si no tiene esa forma o ya están juntos
+const RE_SIN_LETRA = /^(intro|solo|interludio|instrumental|riff|final|outro|coda|puente instrumental)\b/i;
+
+function repartir(fila: string, letra: string): string {
+    const acordes = fila.trim().split(/\s+/);
+    const palabras = [...letra.matchAll(/\S+/g)].map(m => m.index ?? 0);
+    let linea = '';
+    acordes.forEach((a, k) => {
+        const objetivo = palabras.length ? palabras[Math.min(palabras.length - 1, Math.floor((k * palabras.length) / acordes.length))] : 0;
+        linea = linea.padEnd(linea ? Math.max(objetivo, linea.length + 1) : objetivo) + a;
+    });
+    return linea;
+}
+
+export function juntarAcordesYLetra(texto: string): string | null {
+    const crudas = limpiarTexto(texto).split('\n');
+    const esFila = (l: string | undefined) => { const a = l?.trim() ? leerLineaAcordes(l) : null; return !!a && !a.etiqueta; };
+    const esLetra = (l: string | undefined) => !!l?.trim() && !leerLineaAcordes(l) && !esSeccion(l) && !esTab(l) && !RE_DIRECTIVA.test(l.trim());
+    // Ya juntos: filas con su letra justo debajo
+    if (crudas.filter((l, i) => esFila(l) && esLetra(crudas[i + 1])).length > 2) return null;
+
+    // Las filas que van con letra (las de intro y solos se quedan como están)
+    const filas: number[] = [];
+    let seccion = '';
+    // Una fila por línea de letra va en bloques (dos o más seguidas) y sin guiones; una sola
+    // fila bajo cada sección o «G – C – D» es el resumen de la progresión, no se reparte
+    const deLinea = (i: number) => esFila(crudas[i]) && !/\s[-–—]\s/.test(crudas[i]);
+    crudas.forEach((l, i) => {
+        const s = esSeccion(l);
+        if (s || !l.trim()) { seccion = s ?? ''; return; }   // el intro o el solo acaban en el primer blanco
+        if (deLinea(i) && (deLinea(i - 1) || deLinea(i + 1)) && !RE_SIN_LETRA.test(seccion)) filas.push(i);
+    });
+    if (filas.length < 4) return null;
+    const ultima = filas[filas.length - 1];
+    const letras = crudas.map((l, i) => (i > ultima && esLetra(l) ? i : -1)).filter(i => i >= 0);
+    if (letras.length < 4) return null;
+
+    const primera = filas[0];
+    const enFilas = new Set(filas);
+    const salida = crudas.slice(0, primera);
+    // Lo que había entre las filas y no es fila (solos, intros a mitad) se queda, sin blancos repetidos
+    const entre = crudas.slice(primera, ultima + 1).filter((l, k) => !enFilas.has(primera + k) && l.trim() && !/^letra$/i.test(esSeccion(l) ?? ''));
+    const resto = entre.filter((l, k) => !esSeccion(l) || (entre[k + 1] !== undefined && !esSeccion(entre[k + 1])));
+    let n = 0;
+    for (const l of crudas.slice(ultima + 1)) {
+        if (/^letra$/i.test(esSeccion(l) ?? '')) continue;
+        if (esLetra(l) && n < filas.length) salida.push(repartir(crudas[filas[n++]], l));
+        salida.push(l);
+    }
+    // Si sobran acordes, al final; nada se pierde
+    const sobran = filas.slice(n).map(i => crudas[i]);
+    if (sobran.length) salida.push('', ...sobran);
+    if (resto.length) salida.push('', ...resto);
+    return salida.join('\n').replace(/\n{3,}/g, '\n\n').trim();
 }
 
 // Para que una línea larga pueda partirse en el móvil: se agrupa por palabras y un
