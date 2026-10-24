@@ -4,6 +4,7 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ChevronLeft, Loader2, Maximize, Pause, Play, Shrink, SlidersHorizontal, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { lineasDeLetra } from '../../lib/acordes';
 import { useCancionero } from '../../hooks/useCancionero';
 import { useMusicaCancion } from '../../hooks/useMusicaCancion';
 import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
@@ -286,7 +287,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
             {/* La hoja */}
             <div className="max-w-5xl mx-auto px-4 md:px-0 mt-4">
                 {/* Ficha o chuleta sin letra: buscarla, copiarla y pegarla, y entra en el tono del setlist */}
-                {!leida.lineas.some(l => l.tipo === 'mixta') && (
+                {!leida.lineas.some(l => l.tipo === 'mixta') && lineasDeLetra(leida) < 8 && (
                     <AnadirLetra cancion={cancion} ajustes={ajustes} onPegar={ponerLetra} />
                 )}
                 {sinAcordes && leida.lineas.length > 0 && (

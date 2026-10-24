@@ -113,7 +113,7 @@ export function usaBemoles(tono: Tono | null, semitonos: number, preferencia: Al
 
 // ---------- Leer líneas ----------
 
-const ADORNO = /^(\|+|\|:|:\||-+|\/+|\.+|…|%|\*+|[xX×]\s?\d+|\d+[xX]|\([xX×]?\d+[xX]?\)|N\.?C\.?|n\.c\.|\(|\)|\[|\]|→|>|~|bis|\(bis\)|:|=|\+)$/;
+const ADORNO = /^(\|+|\|:|:\||[-–—]+|->|=>|\/+|\.+|…|%|\*+|[xX×]\s?\d+|\d+[xX]|\([xX×]?\d+[xX]?\)|N\.?C\.?|n\.c\.|\(|\)|\[|\]|→|>|~|bis|\(bis\)|:|=|\+)$/;
 
 const SECCIONES = 'intro(?:ducci[oó]n)?|verso|estrofa|estribillo|coro|pre-?coro|pre-?estribillo|puente|solo|interludio|instrumental|final|outro|coda|riff|verse|chorus|pre-?chorus|bridge|hook|refr[aã]o|fin';
 const RE_SECCION = new RegExp(`^(?:${SECCIONES})(?:\\s+(?:\\d+|[IVX]+))?(?:\\s+de\\s+\\p{L}+)?\\s*(?:\\(?[xX×]\\s?\\d\\)?)?\\s*:?$`, 'iu');
@@ -340,6 +340,12 @@ export function leerCancion(texto: string): CancionLeida {
     }
     while (lineas.length && lineas[lineas.length - 1].tipo === 'vacia') lineas.pop();
     return { lineas, acordes, meta };
+}
+
+// Cuántas líneas de letra tiene (con o sin acordes encima): una chuleta de acordes o una
+// ficha del setlist apenas tienen; una canción entera, muchas
+export function lineasDeLetra(leida: CancionLeida): number {
+    return leida.lineas.filter(l => l.tipo === 'mixta' || l.tipo === 'letra').length;
 }
 
 // Para que una línea larga pueda partirse en el móvil: se agrupa por palabras y un

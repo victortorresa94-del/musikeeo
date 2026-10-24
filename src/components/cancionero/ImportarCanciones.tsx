@@ -6,7 +6,7 @@ import { toast } from 'sonner';
 import { ClipboardPaste, FileUp } from 'lucide-react';
 import { Switch } from '../ui/switch';
 import { useCancionero } from '../../hooks/useCancionero';
-import { separarCanciones } from '../../lib/acordes';
+import { leerCancion, lineasDeLetra, separarCanciones } from '../../lib/acordes';
 import { leerSetlist, type CancionImportada } from '../../lib/setlist';
 import { norm } from './utilidades';
 
@@ -33,11 +33,14 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
     const encontradas: CancionImportada[] = useMemo(() => leerSetlist(texto) ?? separarCanciones(texto), [texto]);
     const esSetlist = encontradas.some(t => t.ficha);
     const misma = (t: CancionImportada) =>
-        canciones.find(c => norm(c.titulo) === norm(t.titulo) && (t.ficha || !c.artista || norm(c.artista) === norm(t.artista)));
-    // Una ficha del setlist (sin artista) que ya está en el cancionero se rellena con lo que llega
+        canciones.find(c => norm(c.titulo) === norm(t.titulo) && (t.ficha || !c.artista || !t.artista || norm(c.artista) === norm(t.artista)));
+    const letra = (texto: string) => lineasDeLetra(leerCancion(texto));
+    // Una ficha del setlist (sin artista) o una chuleta de acordes sin letra que ya está en el
+    // cancionero se rellena con lo que llega (la canción entera)
     const fichaQueRellenar = (t: CancionImportada) => {
         const c = misma(t);
-        return !t.ficha && c && !c.artista && c.texto.trim() !== t.texto.trim() ? c : undefined;
+        if (t.ficha || !c || c.texto.trim() === t.texto.trim()) return undefined;
+        return !c.artista || (letra(t.texto) >= 8 && letra(c.texto) < 8) ? c : undefined;
     };
     const yaEsta = (t: CancionImportada) => (fichaQueRellenar(t) ? undefined : misma(t));
 
@@ -66,7 +69,7 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
             const ficha = fichaQueRellenar(t);
             if (ficha) {
                 rellenas++;
-                return guardar({ ...ficha, artista: t.artista, texto: t.texto, ajustes: { ...ficha.ajustes, ajustar: corta(t) } }).id;
+                return guardar({ ...ficha, artista: t.artista || ficha.artista, texto: t.texto, ajustes: { ...ficha.ajustes, ajustar: corta(t) } }).id;
             }
             nuevas++;
             // Lo corto (fichas y chuletas de acordes) se ve entero y grande: «que quepa»
@@ -74,11 +77,13 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
         });
         setTexto('');
         onCerrar();
-        const aviso = [nuevas && `${nuevas} nuevas`, rellenas && `${rellenas} fichas con sus acordes`].filter(Boolean).join(' y ') || 'Ya las tenías';
+        const aviso = [nuevas && `${nuevas} nuevas`, rellenas && `${rellenas} fichas completadas`].filter(Boolean).join(' y ') || 'Ya las tenías';
         // Si ya hay un repertorio con estas mismas canciones (se rellenaron sus fichas), se abre ese
         const mismo = repertorios.find(r => r.canciones.length === ids.length && r.canciones.every((c, i) => c === ids[i]));
+        // Si solo se completaron fichas, no hace falta otro repertorio: se abre el que ya las tiene
+        const contiene = nuevas ? undefined : repertorios.find(r => ids.every(id => r.canciones.includes(id)));
         if (conRepertorio && ids.length > 1) {
-            const r = mismo ?? crearRepertorio(nombre.trim() || `Bolo ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`, ids);
+            const r = mismo ?? contiene ?? crearRepertorio(nombre.trim() || `Bolo ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`, ids);
             toast.success(aviso);
             navigate(`/cancionero/repertorio/${r.id}`);
         } else {
