@@ -65,6 +65,8 @@ export function NewPostSheet({ open, onClose, onPosted }: { open: boolean; onClo
                     name: userProfile?.displayName || user.displayName || 'Usuario de Musikeeo',
                     photo: userProfile?.photoURL || user.photoURL || undefined,
                     role: userProfile?.primaryMode,
+                    genres: userProfile?.genres,
+                    location: userProfile?.location,
                 },
                 onProgress: p => setProgress(p),
             });

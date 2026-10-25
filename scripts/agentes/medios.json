@@ -1,0 +1,343 @@
+[
+  {
+    "persona": "rumbero-bcn",
+    "para": "avatar",
+    "tipo": "image",
+    "estilos": [
+      "rumba",
+      "flamenco",
+      "guitarra"
+    ],
+    "asset": "ast_mvnm9mdv_cfos",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnma9j2_5f8a.png?alt=media&token=65302b7f-ca3b-4a4d-9c0b-74fe519d0ab9"
+  },
+  {
+    "persona": "dj-bodas-girona",
+    "para": "avatar",
+    "tipo": "image",
+    "estilos": [
+      "dj",
+      "bodas",
+      "electronica"
+    ],
+    "asset": "ast_mvno0r6x_2tzr",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvno1bvv_6jqc.png?alt=media&token=262d9d09-f214-48b6-8b7e-292104823133"
+  },
+  {
+    "persona": "tecnico-bcn",
+    "para": "avatar",
+    "tipo": "image",
+    "estilos": [
+      "sonido"
+    ],
+    "asset": "ast_mvnoe9lv_aq1c",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnoeuef_3slk.png?alt=media&token=5f92ea21-2b15-4889-b1f4-00705817127f"
+  },
+  {
+    "persona": "sala-rock-bcn",
+    "para": "avatar",
+    "tipo": "image",
+    "estilos": [
+      "rock",
+      "indie"
+    ],
+    "asset": "ast_mvnoogtv_jf0k",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnop1iv_7519.png?alt=media&token=2dd277c1-f519-433f-bb87-b36686384745"
+  },
+  {
+    "persona": "wedding-planner",
+    "para": "avatar",
+    "tipo": "image",
+    "estilos": [
+      "bodas",
+      "violin",
+      "acustico"
+    ],
+    "asset": "ast_mvnopn58_79ae",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnoqa94_31zj.png?alt=media&token=4d5182a2-8e32-4185-afd1-718752210934"
+  },
+  {
+    "persona": "jazz-madrid",
+    "para": "avatar",
+    "tipo": "image",
+    "estilos": [
+      "jazz",
+      "guitarra"
+    ],
+    "asset": "ast_mvnougbe_dp8r",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnov3d3_5av5.png?alt=media&token=6dea2409-420f-4264-b4ef-f45c361d0cc6"
+  },
+  {
+    "persona": "tienda-bcn",
+    "para": "avatar",
+    "tipo": "image",
+    "estilos": [
+      "guitarra",
+      "flamenco"
+    ],
+    "asset": "ast_mvnsof2f_kh10",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnsp2a2_56iq.png?alt=media&token=0d2e4fde-fb68-48cf-8e4e-437d1463724d"
+  },
+  {
+    "persona": "cantante-pop-valencia",
+    "para": "avatar",
+    "tipo": "image",
+    "estilos": [
+      "pop",
+      "acustico",
+      "voz"
+    ],
+    "asset": "ast_mvnsrsuh_hwjf",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnssbr3_aghs.png?alt=media&token=a2ea8ef4-bbbe-4ffd-a8c5-3ab828b3e95e"
+  },
+  {
+    "persona": "rumbero-bcn",
+    "para": "post",
+    "tipo": "image",
+    "estilos": [
+      "rumba",
+      "flamenco",
+      "guitarra",
+      "percusion"
+    ],
+    "asset": "ast_mvny42gx_b64u",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvny4pqk_g9bi.png?alt=media&token=d2a8f35e-9d8b-40e8-8a87-3332fdf1e0ef"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "rumba",
+      "pop",
+      "bodas"
+    ],
+    "asset": "ast_mvl4zyt8_gwqh",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4zwda_gymd.mp4?alt=media&token=133f9f4b-7e1f-4941-bff4-e3310554bf3d",
+    "texto": "Así se puso la boda del sábado. Rumba hasta las tantas #rumba #boda"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "flamenco",
+      "guitarra"
+    ],
+    "asset": "ast_mvl4zuzv_emkd",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4zqpq_ev71.mp4?alt=media&token=a4d1c8b1-9714-4120-8b64-e473225320bb",
+    "texto": "Estudiando falsetas para el bolo del viernes #flamenco"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "dj",
+      "electronica"
+    ],
+    "asset": "ast_mvl4zper_1fc4",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4zl0r_g0tk.mp4?alt=media&token=5e90e279-3265-461b-a151-eb009eaafa7a",
+    "texto": "Sunset en la azotea. Set de house hasta que se fue el sol #dj"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "rumba",
+      "bodas"
+    ],
+    "asset": "ast_mvl4tiyy_iib5",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4tgim_h3yz.mp4?alt=media&token=ce71fed6-f48d-4d7f-8c29-ca301cff6a24",
+    "texto": "Desde la pista: cuando suena la rumba no se sienta nadie #bodas"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "dj",
+      "electronica",
+      "disco"
+    ],
+    "asset": "ast_mvl4tf30_9fwn",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4tcnp_eh58.mp4?alt=media&token=081ab971-15e7-4361-a318-349c33b7c488",
+    "texto": "Atardecer y vinilos. ¿Quién se apunta al próximo? #dj"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "versiones",
+      "pop",
+      "rock"
+    ],
+    "asset": "ast_mvl4t9je_dvna",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4t57u_3alb.mp4?alt=media&token=1302780b-1f96-4dd8-ada6-3bd37746225d",
+    "texto": "Noche de versiones en el club. Gracias por cantar con nosotros #versiones"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "violin",
+      "clasica",
+      "bodas"
+    ],
+    "asset": "ast_mvl4t3wv_b06p",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4t1jc_8qfd.mp4?alt=media&token=0939b1bf-e189-43c4-a802-d8753746693c",
+    "texto": "Ceremonia con violín en el jardín. Libres algunas fechas en primavera #bodas #violín"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "rock",
+      "iluminacion"
+    ],
+    "asset": "ast_mvl4mx9d_ct5n",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4msyu_7ev.mp4?alt=media&token=2187df4a-a601-4da2-96eb-250e263cd510",
+    "texto": "Humo, focos y volumen. Así sonó la sala anoche #rock"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "rumba",
+      "bodas"
+    ],
+    "asset": "ast_mvl4mrwt_hqjv",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4mnog_2e00.mp4?alt=media&token=38b261f1-b466-457d-8d0b-b9995bdb6dfd",
+    "texto": "Otra boda, otra rumba. Repertorio para bailar de principio a fin #rumba"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "flamenco",
+      "guitarra"
+    ],
+    "asset": "ast_mvl4mmmd_cedr",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4mkch_fhup.mp4?alt=media&token=e58a3511-2737-4a6b-b4ee-0b3b6ef40d57",
+    "texto": "Un poquito de soleá antes de salir #flamenco #guitarra"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "guitarra",
+      "acustico"
+    ],
+    "asset": "ast_mvl4mdso_8iin",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4m9io_h2r9.mp4?alt=media&token=00f6d99c-f631-46b8-bf49-488737a3531b",
+    "texto": "Probando la guitarra nueva antes del bolo #guitarra"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "dj",
+      "electronica"
+    ],
+    "asset": "ast_mvl4m7ih_cfzh",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4m39h_iwea.mp4?alt=media&token=9f170e82-5c32-4816-8c86-0907d5fdc849",
+    "texto": "Azotea, 30 grados y buena gente #dj #electronica"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "bodas",
+      "versiones"
+    ],
+    "asset": "ast_mvl4xl8m_k5vn",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4xgur_l3xm.mp4?alt=media&token=924e46f5-c296-46e5-b1b7-9b290996beb7",
+    "texto": "Bolo cerrado por la app. Siguiente parada: la terraza #bolos",
+    "poster": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4zdb5_3w41.png?alt=media&token=be008b15-c5cd-4262-9501-bd82579d4e7a"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "pop",
+      "versiones"
+    ],
+    "asset": "ast_mvl4xfjk_in9l",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4xd1z_hvoo.mp4?alt=media&token=9b1257f1-a844-4e6a-ad42-ede68073e680",
+    "texto": "Ensayo general con la banda #pop",
+    "poster": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4zbs3_1k34.png?alt=media&token=6ce68893-b52a-47b9-a031-e32cea9b801d"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "sonido"
+    ],
+    "asset": "ast_mvl4xbiq_g6aa",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4x584_3o5o.mp4?alt=media&token=aa2bdda1-8fc4-4c9e-a34d-411e25a4123d",
+    "texto": "Línea de mesa lista para el directo. Si necesitas técnico, escríbeme #sonido",
+    "poster": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4za5w_2ohg.png?alt=media&token=4d9989af-f15f-49df-8d80-34af62a27b4b"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "guitarra",
+      "rock"
+    ],
+    "asset": "ast_mvl4x3rg_h3t1",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4x1c4_f0or.mp4?alt=media&token=395d9974-702a-4fc8-a446-c8a61510dc0b",
+    "texto": "Cambio de cuerdas y a sonar #guitarra",
+    "poster": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4z88y_iwsd.png?alt=media&token=d93dc05d-d537-4cb9-92d2-7e0d0f9fac76"
+  },
+  {
+    "para": "post",
+    "tipo": "video",
+    "estilos": [
+      "rock",
+      "indie"
+    ],
+    "asset": "ast_mvl4wzvd_2sj8",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4wxe0_myn.mp4?alt=media&token=e5dfbec7-6f54-4f5e-a6fe-e667a7dfa387",
+    "texto": "Sala llena un jueves. Gracias a todos #indie #rock",
+    "poster": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4z66w_epf1.png?alt=media&token=fceb29cb-18a1-4ad7-ba99-449a1f1ee14f"
+  },
+  {
+    "para": "post",
+    "tipo": "image",
+    "estilos": [
+      "rumba",
+      "flamenco"
+    ],
+    "asset": "ast_mvl4tlo2_kp1y",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4tlko_i2sg.png?alt=media&token=5f97d71a-9c0d-4e59-8da0-3fb7b8d90fbe",
+    "texto": "Tarde de rumba en la plaza #rumba"
+  },
+  {
+    "para": "post",
+    "tipo": "image",
+    "estilos": [
+      "versiones",
+      "pop"
+    ],
+    "asset": "ast_mvl4tkcm_4qj7",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4tk9i_dkad.png?alt=media&token=3232c3f1-6ccd-40b0-8585-c58bcf2e6283",
+    "texto": "Calentando antes del bolo #directo"
+  },
+  {
+    "para": "post",
+    "tipo": "image",
+    "estilos": [
+      "rumba",
+      "pop"
+    ],
+    "asset": "ast_mvl50dy2_cu0x",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl50dri_m4l.png?alt=media&token=d28f74a9-7468-41d1-b9e6-af61582cf498",
+    "texto": "Desde detrás del escenario, la mejor vista #rumba"
+  },
+  {
+    "para": "anuncio",
+    "tipo": "image",
+    "estilos": [
+      "sonido"
+    ],
+    "asset": "ast_mvl4t09h_1tss",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvl4t06e_cvfr.png?alt=media&token=a2d19ad5-5ad8-483b-94af-171de9d57ccb"
+  }
+]
