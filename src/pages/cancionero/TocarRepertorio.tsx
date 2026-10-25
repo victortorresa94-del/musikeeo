@@ -225,7 +225,7 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
     const [encaje, setEncaje] = useState<Encaje | null>(null);
     const [medida, setMedida] = useState(0);
     const [pellizco, setPellizco] = useState<number | null>(null);
-    const gesto = useRef<{ d0: number; base: number } | null>(null);
+    const gesto = useRef<{ d0: number; base: number; ultimo: number | null; fotograma: number } | null>(null);
 
     useEffect(() => {
         const f = () => setMedida(m => m + 1);
@@ -250,20 +250,26 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
     const tamano = pellizco ?? tamanoBase;
     const columnas = ajustada ? encaje!.columnas : a.columnas;
 
-    // Zoom con dos dedos: cambia el tamaño de la letra (no la página), y se guarda
+    // Zoom con dos dedos: cambia el tamaño de la letra (no la página), y se guarda.
+    // Como mucho un tamaño nuevo por fotograma: cada uno vuelve a colocar toda la letra
     const distancia = (t: React.TouchList) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
     const alEmpezar = (e: React.TouchEvent) => {
-        if (e.touches.length === 2) gesto.current = { d0: distancia(e.touches), base: tamanoBase };
+        if (e.touches.length === 2) gesto.current = { d0: distancia(e.touches), base: tamanoBase, ultimo: null, fotograma: 0 };
     };
     const alMover = (e: React.TouchEvent) => {
-        if (!gesto.current || e.touches.length !== 2) return;
-        const t = gesto.current.base * (distancia(e.touches) / gesto.current.d0);
-        setPellizco(Math.min(TAMANO_MAX, Math.max(TAMANO_MIN, Math.round(t * 2) / 2)));
+        const g = gesto.current;
+        if (!g || e.touches.length !== 2) return;
+        const t = g.base * (distancia(e.touches) / g.d0);
+        g.ultimo = Math.min(TAMANO_MAX, Math.max(TAMANO_MIN, Math.round(t * 2) / 2));
+        if (!g.fotograma) g.fotograma = requestAnimationFrame(() => { g.fotograma = 0; setPellizco(g.ultimo); });
     };
     const alSoltar = () => {
-        if (!gesto.current) return;
+        const g = gesto.current;
+        if (!g) return;
         gesto.current = null;
-        if (pellizco !== null && Math.abs(pellizco - tamanoBase) >= 0.5) cambiar({ tamano: Math.round(pellizco), ajustar: false, columnas: Math.min(3, columnas) as 1 | 2 | 3 });
+        cancelAnimationFrame(g.fotograma);
+        const final = g.ultimo ?? pellizco;
+        if (final !== null && Math.abs(final - tamanoBase) >= 0.5) cambiar({ tamano: Math.round(final), ajustar: false, columnas: Math.min(3, columnas) as 1 | 2 | 3 });
         setPellizco(null);
     };
 
@@ -277,9 +283,12 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
             <div ref={zonaRef} className="mt-2">
                 <HojaCancion lineas={leida.lineas} opciones={opciones} vista={a.vista} tamano={tamano} columnas={columnas} />
             </div>
-            <div className="fixed left-0 top-0 h-0 w-0 overflow-hidden invisible" aria-hidden>
-                <HojaCancion ref={medidorRef} lineas={leida.lineas} opciones={opciones} vista={a.vista} tamano={tamano} columnas={columnas} />
-            </div>
+            {/* Copia invisible para medir, solo con «que quepa»: el tamaño y las columnas los pone buscarEncaje */}
+            {a.ajustar && (
+                <div className="fixed left-0 top-0 h-0 w-0 overflow-hidden invisible" aria-hidden>
+                    <HojaCancion ref={medidorRef} lineas={leida.lineas} opciones={opciones} vista={a.vista} tamano={TAMANO_MAX} columnas={1} />
+                </div>
+            )}
             {siguiente && (
                 <button onClick={e => { e.stopPropagation(); onSiguiente(); }}
                     className="pulsable mt-6 w-full h-14 rounded-2xl bg-fill px-4 flex items-center gap-3 text-left">

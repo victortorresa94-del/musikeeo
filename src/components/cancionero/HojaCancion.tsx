@@ -36,13 +36,16 @@ interface Props {
 // no cabe y se parte (en el móvil, lo que en las webs de acordes se descoloca).
 export const HojaCancion = forwardRef<HTMLDivElement, Props>(({ lineas, opciones, vista, tamano, columnas, className }, ref) => {
     const estrofas = useMemo(() => enEstrofas(segunVista(lineas, vista)), [lineas, vista]);
+    // Lo de dentro solo cambia con la letra, la vista o el nombre de los acordes: el zoom con dos
+    // dedos, el tamaño y «que quepa» solo tocan el estilo de fuera (una canción larga son miles de nodos)
+    const contenido = useMemo(() => estrofas.map((estrofa, i) => (
+        <div key={i} className="break-inside-avoid pb-[0.9em]">
+            {estrofa.map((l, j) => <LineaCancion key={j} linea={l} opciones={opciones} />)}
+        </div>
+    )), [estrofas, opciones]);
     return (
         <div ref={ref} className={cn('text-foreground gap-x-10', className)} style={{ fontSize: tamano, columnCount: columnas }}>
-            {estrofas.map((estrofa, i) => (
-                <div key={i} className="break-inside-avoid pb-[0.9em]">
-                    {estrofa.map((l, j) => <LineaCancion key={j} linea={l} opciones={opciones} />)}
-                </div>
-            ))}
+            {contenido}
         </div>
     );
 });
@@ -66,13 +69,16 @@ function LineaCancion({ linea: l, opciones }: { linea: Linea; opciones: Opciones
                 </p>
             );
         case 'mixta':
+            // Una palabra de una sola sílaba va sin envoltorio: se pinta igual con la mitad de nodos
             return (
                 <div className="flex flex-wrap items-end pb-[0.25em]">
-                    {enPalabras(l.trozos).map((palabra, k) => (
-                        <span key={k} className="inline-flex items-end">
-                            {palabra.map((t, n) => <Silaba key={n} trozo={t} opciones={opciones} />)}
-                        </span>
-                    ))}
+                    {enPalabras(l.trozos).map((palabra, k) => (palabra.length === 1
+                        ? <Silaba key={k} trozo={palabra[0]} opciones={opciones} />
+                        : (
+                            <span key={k} className="inline-flex items-end">
+                                {palabra.map((t, n) => <Silaba key={n} trozo={t} opciones={opciones} />)}
+                            </span>
+                        )))}
                 </div>
             );
         default:
@@ -80,24 +86,27 @@ function LineaCancion({ linea: l, opciones }: { linea: Linea; opciones: Opciones
     }
 }
 
+const claseMarca = (marca: Marca) => (marca.acorde ? 'font-bold' : 'font-medium text-muted-foreground');
+
 function NombreMarca({ marca, opciones }: { marca: Marca; opciones: OpcionesNombre }) {
+    return <span className={claseMarca(marca)}>{nombreMarca(marca, opciones)}</span>;
+}
+
+// Sin acorde no hay renglón de acorde: si una línea partida queda sin acordes, no deja hueco.
+// Sin acorde, la sílaba es solo su texto; con acorde, el nombre va en el mismo renglón que lo
+// coloca (antes, un nodo más por acorde)
+function Silaba({ trozo, opciones }: { trozo: Trozo; opciones: OpcionesNombre }) {
+    if (!trozo.marca) return <TextoSilaba texto={trozo.texto} />;
     return (
-        <span className={marca.acorde ? 'font-bold' : 'font-medium text-muted-foreground'}>
-            {nombreMarca(marca, opciones)}
+        <span className="inline-flex flex-col">
+            <span className={cn('whitespace-pre pr-[0.4em] text-[0.92em] leading-[1.25]', claseMarca(trozo.marca))}>
+                {nombreMarca(trozo.marca, opciones)}
+            </span>
+            <TextoSilaba texto={trozo.texto} />
         </span>
     );
 }
 
-// Sin acorde no hay renglón de acorde: si una línea partida queda sin acordes, no deja hueco
-function Silaba({ trozo, opciones }: { trozo: Trozo; opciones: OpcionesNombre }) {
-    return (
-        <span className="inline-flex flex-col">
-            {trozo.marca && (
-                <span className="whitespace-pre pr-[0.4em] text-[0.92em] leading-[1.25]">
-                    <NombreMarca marca={trozo.marca} opciones={opciones} />
-                </span>
-            )}
-            <span className="whitespace-pre leading-[1.35]">{trozo.texto || '\u00a0'}</span>
-        </span>
-    );
+function TextoSilaba({ texto }: { texto: string }) {
+    return <span className="whitespace-pre leading-[1.35]">{texto || '\u00a0'}</span>;
 }
