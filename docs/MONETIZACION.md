@@ -1,6 +1,6 @@
 # Musikeeo — Cómo gana dinero
 
-> 8 de octubre de 2026. Complementa a `docs/LANZAMIENTO.md`.
+> 8 de octubre de 2026. Complementa a `docs/LANZAMIENTO.md`. Cómo cobran otras plataformas (Airbnb, Treatwell, GigSalad, Wallapop…) y qué copiamos: `docs/REFERENCIAS-MONETIZACION.md` (25-oct-2026).
 
 ## La idea en una frase
 
