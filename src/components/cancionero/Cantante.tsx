@@ -1,5 +1,4 @@
 import { Fragment, useEffect, useRef, useState } from 'react';
-import { Volume2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import {
     alParar, claqueta, cuandoSuene, liberarSonido, pararSonido, prepararSonido, sonidoListo, tocarAcorde, tocarNota,
@@ -7,6 +6,7 @@ import {
 import { bpmDeToques, mismoAcorde, PAUSA_TOQUES, TEMPO_MAX, TEMPO_MIN, tonoQueSuena } from '../../lib/cantar';
 import { useCancionero } from '../../hooks/useCancionero';
 import { Paso } from './Controles';
+import { ICONO } from './estilo';
 import type { CancionLeida } from '../../lib/acordes';
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
 
@@ -57,9 +57,9 @@ function darElTono(leida: CancionLeida, ajustes: AjustesCancion, soloNota: boole
 
 const LARGO = 450;    // ms manteniendo pulsado: solo la nota
 
-// «Dame el tono»: el nombre del tono, en el centro del control de tono, se toca. Un toque: el
-// acorde del tono y el primero de la canción, y se ve cuál suena. Mantener: solo la nota de
-// arranque, cerca del Do central, para cantar. Va dentro del valor de <Paso> (no ocupa más sitio).
+// «Dame el tono»: un toque, el acorde del tono y el primero de la canción, y se ve cuál suena.
+// Mantener: solo la nota de arranque, cerca del Do central, para cantar. Es el botón amarillo
+// con el diapasón: la acción principal de quien canta. El tamaño lo pone quien lo usa.
 // «leida» es la de useMusicaCancion: lo que suena es lo mismo que dice tonoSuena
 export function DameElTono({ leida, ajustes, desactivado, className, children }: {
     leida: CancionLeida; ajustes: AjustesCancion; desactivado?: boolean; className?: string; children: React.ReactNode;
@@ -115,11 +115,13 @@ export function DameElTono({ leida, ajustes, desactivado, className, children }:
             onClick={e => { if (e.detail === 0) dar(false); else e.currentTarget.blur(); }}
             onContextMenu={e => e.preventDefault()}
             aria-label="Dame el tono (mantén pulsado: solo la nota)" title="Dame el tono · mantén pulsado: solo la nota"
-            className={cn('pulsable h-9 inline-flex items-center justify-center select-none [-webkit-touch-callout:none] disabled:cursor-default', className)}>
-            <span aria-live="polite" className={cn('h-7 px-1.5 rounded-full inline-flex items-center gap-1 transition-colors',
-                suena ? 'bg-foreground text-background' : nota && 'bg-fill-strong')}>
-                {visto ?? children}
-                {!desactivado && <Volume2 className={cn('h-3 w-3 shrink-0', !visto && 'text-muted-foreground')} aria-hidden />}
+            className={cn('pulsable shrink-0 inline-flex items-center justify-center gap-1.5 rounded-full bg-primary text-primary-foreground font-semibold select-none [-webkit-touch-callout:none] disabled:opacity-40 disabled:cursor-default', className)}>
+            <img src={ICONO.tono} alt="" aria-hidden draggable={false}
+                className={cn('h-[1.9em] w-[1.9em] -my-1 shrink-0 object-contain transition-transform duration-150', visto && '-rotate-12 scale-110')} />
+            {/* Sin saltos de ancho: el botón mide lo que su texto, suene lo que suene */}
+            <span aria-live="polite" className="grid whitespace-nowrap">
+                <span className="col-start-1 row-start-1 invisible" aria-hidden>{children}</span>
+                <span className="col-start-1 row-start-1">{suena ? <>Suena {suena}</> : nota ? <>Nota {nota}</> : children}</span>
             </span>
         </button>
     );
@@ -228,7 +230,7 @@ export function AjustesCantante({ cancion, ajustes, leida }: { cancion: Cancion;
                         Suena <b className="text-foreground">{suena ?? t.tonica.nombre}</b>
                         {!suena && !mismoAcorde(t.tonica, t.primero) && <> y luego <b className="text-foreground">{t.primero.nombre}</b>, el primer acorde</>}
                         {!suena && <>; la nota de arranque es <b className="text-foreground">{t.nota.nombre}</b></>}.
-                        {' '}En la barra, toca el tono para oírlo; si lo mantienes pulsado, suena solo la nota.
+                        {' '}«Dame el tono» los toca; si lo mantienes pulsado, suena solo la nota.
                     </> : 'Sin acordes no sabemos el tono.'}
                 </div>
             </div>

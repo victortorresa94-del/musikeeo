@@ -2,6 +2,7 @@ import { forwardRef, useMemo } from 'react';
 import { cn } from '../../lib/utils';
 import { enEstrofas, enPalabras, nombreMarca, type Linea, type Marca, type OpcionesNombre, type Trozo } from '../../lib/acordes';
 import type { AjustesCancion } from '../../types/cancionero';
+import { estiloSeccion, type EstiloSeccion } from './estilo';
 
 type Vista = AjustesCancion['vista'];
 
@@ -38,11 +39,17 @@ export const HojaCancion = forwardRef<HTMLDivElement, Props>(({ lineas, opciones
     const estrofas = useMemo(() => enEstrofas(segunVista(lineas, vista)), [lineas, vista]);
     // Lo de dentro solo cambia con la letra, la vista o el nombre de los acordes: el zoom con dos
     // dedos, el tamaño y «que quepa» solo tocan el estilo de fuera (una canción larga son miles de nodos)
-    const contenido = useMemo(() => estrofas.map((estrofa, i) => (
-        <div key={i} className="break-inside-avoid pb-[0.9em]">
-            {estrofa.map((l, j) => <LineaCancion key={j} linea={l} opciones={opciones} />)}
-        </div>
-    )), [estrofas, opciones]);
+    const contenido = useMemo(() => estrofas.map((estrofa, i) => {
+        // La estrofa toma el color de su sección (el estribillo, en su baldosa)
+        const estilo = estrofa[0]?.tipo === 'seccion' ? estiloSeccion(estrofa[0].texto) : null;
+        return (
+            <div key={i} className={cn('break-inside-avoid', estilo?.bloque
+                ? cn('mb-[0.9em] rounded-[0.8em] px-[0.75em] pt-[0.6em] pb-[0.35em]', estilo.bloque)
+                : 'pb-[0.9em]')}>
+                {estrofa.map((l, j) => <LineaCancion key={j} linea={l} opciones={opciones} estilo={j === 0 ? estilo : null} />)}
+            </div>
+        );
+    }), [estrofas, opciones]);
     return (
         <div ref={ref} className={cn('text-foreground gap-x-10', className)} style={{ fontSize: tamano, columnCount: columnas }}>
             {contenido}
@@ -51,9 +58,25 @@ export const HojaCancion = forwardRef<HTMLDivElement, Props>(({ lineas, opciones
 });
 HojaCancion.displayName = 'HojaCancion';
 
-function LineaCancion({ linea: l, opciones }: { linea: Linea; opciones: OpcionesNombre }) {
+function LineaCancion({ linea: l, opciones, estilo }: { linea: Linea; opciones: OpcionesNombre; estilo?: EstiloSeccion | null }) {
     switch (l.tipo) {
         case 'seccion':
+            if (estilo?.bloque) {
+                return (
+                    <p className={cn('flex items-center justify-between gap-2 pb-[0.3em] text-[0.72em] font-bold uppercase tracking-[0.08em]', estilo.etiqueta)}>
+                        {l.texto}
+                        {/* Medida fija: «que quepa» mide antes de que llegue la imagen */}
+                        {estilo.icono && <img src={estilo.icono} alt="" aria-hidden draggable={false} className="h-[2.2em] w-[2.2em] -my-[0.6em] shrink-0 object-contain" />}
+                    </p>
+                );
+            }
+            if (estilo) {
+                return (
+                    <p className="pb-[0.35em]">
+                        <span className={cn('inline-block px-[0.65em] py-[0.3em] rounded-[0.9em] text-[0.66em] font-bold uppercase leading-tight tracking-[0.08em]', estilo.etiqueta)}>{l.texto}</span>
+                    </p>
+                );
+            }
             return <p className="pb-[0.3em] text-[0.7em] font-bold uppercase tracking-[0.08em] text-muted-foreground">{l.texto}</p>;
         case 'nota':
             return <p className="pb-[0.2em] text-[0.85em] italic text-muted-foreground">{l.texto}</p>;

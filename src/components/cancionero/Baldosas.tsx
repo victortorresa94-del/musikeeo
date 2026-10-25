@@ -40,3 +40,14 @@ export function TarjetaBolo({ repertorio, etiqueta, temas, fecha, onTocar }: {
         </div>
     );
 }
+
+// Una píldora de la ficha del tema (el bloque, quién canta, la cejilla), con su objeto 3D si lo tiene
+export function Pildora({ texto, pastel, icono }: { texto: string; pastel: Pastel | null; icono?: string }) {
+    return (
+        <span className={cn('h-8 rounded-full flex items-center gap-1.5 text-[13px] font-semibold whitespace-nowrap', icono ? 'pl-1 pr-3' : 'px-3',
+            pastel ? cn(pastel.fondo, pastel.tinta) : 'bg-fill-strong text-foreground')}>
+            {icono && <img src={icono} alt="" aria-hidden draggable={false} className="h-7 w-7 -my-1 object-contain" />}
+            {texto}
+        </span>
+    );
+}

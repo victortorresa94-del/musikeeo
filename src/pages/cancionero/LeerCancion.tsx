@@ -255,9 +255,10 @@ function Lector({ cancion }: { cancion: Cancion }) {
     const pasoTono = (
         <Paso compacto etiqueta="Tono" onMenos={() => cambiarTono(-1)} onMas={() => cambiarTono(1)}
             menosDesactivado={sinAcordes} masDesactivado={sinAcordes}
-            valor={<DameElTono leida={leida} ajustes={ajustes} desactivado={sinAcordes}>
-                <span>{tonoSuena || 'Tono'}{ajustes.semitonos !== 0 && <span className="ml-1 text-[12px] text-muted-foreground">{ajustes.semitonos > 0 ? '+' : ''}{ajustes.semitonos}</span>}</span>
-            </DameElTono>} />
+            valor={<>{tonoSuena || 'Tono'}{ajustes.semitonos !== 0 && <span className="ml-1 text-[12px] text-muted-foreground">{ajustes.semitonos > 0 ? '+' : ''}{ajustes.semitonos}</span>}</>} />
+    );
+    const dameElTono = (className: string) => !sinAcordes && (
+        <DameElTono leida={leida} ajustes={ajustes} className={className}>Dame el tono</DameElTono>
     );
     const botonClaqueta = <BotonClaqueta bpm={cancion.bpm} />;
     const pasoTamano = (
@@ -300,6 +301,13 @@ function Lector({ cancion }: { cancion: Cancion }) {
                         </p>
                     </div>
                 </div>
+                {/* Lo de quien canta, antes de entrar: el tono y la cuenta */}
+                {(!sinAcordes || !!cancion.bpm) && (
+                    <div className="mt-3 flex items-center gap-2">
+                        {dameElTono('h-9 pl-1.5 pr-3.5 text-[14px]')}
+                        {botonClaqueta}
+                    </div>
+                )}
             </div>
 
             {/* Controles */}
@@ -309,8 +317,6 @@ function Lector({ cancion }: { cancion: Cancion }) {
                     {pasoTamano}
                     {botonAjustar}
                     {botonRodar}
-                    {/* En el móvil no cabe aquí: está en Ajustes y en el escenario */}
-                    <BotonClaqueta bpm={cancion.bpm} className="hidden md:flex" />
                     <BotonBarra etiqueta="Ajustes" onClick={() => setPanel(true)} className="ml-auto">
                         <SlidersHorizontal className="h-[18px] w-[18px]" /><span className="hidden md:inline">Ajustes</span>
                     </BotonBarra>
@@ -371,6 +377,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                         'fixed left-1/2 -translate-x-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] max-w-[calc(100vw-24px)] flex items-center gap-1.5 p-1.5 rounded-full bg-sheet border border-hairline shadow-e3 overflow-x-auto hide-scrollbar transition-all duration-200',
                         controles ? 'opacity-100' : 'opacity-0 translate-y-4 pointer-events-none',
                     )}>
+                        {dameElTono('h-9 pl-1.5 pr-3.5 text-[14px]')}
                         {pasoTono}
                         {pasoTamano}
                         {botonAjustar}
