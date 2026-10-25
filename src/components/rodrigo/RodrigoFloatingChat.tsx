@@ -48,9 +48,14 @@ export const RodrigoFloatingChat = () => {
     const location = useLocation();
     // Al bajar, la píldora se encoge a círculo para no tapar contenido
     const [compact, setCompact] = useState(false);
+    // En la portada, el círculo tapaba el botón «Buscar» del hero: sale al bajar del hero
+    const enPortada = location.pathname === '/' || location.pathname === '/home';
+    const [pasadoHero, setPasadoHero] = useState(false);
     useEffect(() => {
-        // Píldora solo en la portada de la home; en el resto, círculo para no tapar contenido
-        const onScroll = () => setCompact(true); // Siempre círculo: la píldora tapaba el buscador de la portada
+        const onScroll = () => {
+            setCompact(true); // Siempre círculo: la píldora tapaba el buscador de la portada
+            setPasadoHero(window.scrollY > window.innerHeight * 0.75);
+        };
         onScroll();
         window.addEventListener('scroll', onScroll, { passive: true });
         return () => window.removeEventListener('scroll', onScroll);
@@ -142,7 +147,7 @@ export const RodrigoFloatingChat = () => {
 
     // Don't show on Rodrigo landing page (it has its own chat)
     // Tampoco en pantallas a pantalla completa o de escritura (reels, chat, auth, publicar)
-    if (location.pathname === '/rodrigo' || (/^\/(reels|messages|login|register|onboarding|publicar|forgot-password|artist\/|cancionero)/.test(location.pathname) || /^\/eventos\/(?!crear)[^/]+$/.test(location.pathname)) || new URLSearchParams(location.search).has('reel')) {
+    if (location.pathname === '/rodrigo' || (/^\/(feed|reels|messages|login|register|onboarding|publicar|forgot-password|artist\/|cancionero)/.test(location.pathname) || /^\/eventos\/(?!crear)[^/]+$/.test(location.pathname)) || new URLSearchParams(location.search).has('reel')) {
         return null;
     }
 
@@ -150,7 +155,7 @@ export const RodrigoFloatingChat = () => {
         <>
             {/* Floating Button */}
             <AnimatePresence>
-                {!isOpen && (
+                {!isOpen && (!enPortada || pasadoHero) && (
                     <motion.button
                         layout
                         initial={{ scale: 0.6, opacity: 0 }}
