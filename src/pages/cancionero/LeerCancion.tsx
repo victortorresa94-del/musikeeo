@@ -12,6 +12,8 @@ import { HojaCancion } from '../../components/cancionero/HojaCancion';
 import { PanelAjustes } from '../../components/cancionero/PanelAjustes';
 import { AnadirLetra } from '../../components/cancionero/AnadirLetra';
 import { BotonBarra, Paso } from '../../components/cancionero/Controles';
+import { AjustesCantante, BotonClaqueta, DameElTono } from '../../components/cancionero/Cantante';
+import { esperaDeIntro, velocidadAlDesplazar } from '../../lib/cantar';
 import { buscarEncaje, columnasPosibles, type Encaje } from '../../components/cancionero/medir';
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
 
@@ -128,6 +130,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
     };
 
     // ---- Desplazamiento automático ----
+    const duracion = cancion.duracion;
     const desplazable = useCallback(
         () => (escenario ? escenarioRef.current : (document.scrollingElement as HTMLElement | null)),
         [escenario],
@@ -135,19 +138,24 @@ function Lector({ cancion }: { cancion: Cancion }) {
     useEffect(() => {
         if (!rodando) return;
         let raf = 0, ultimo = performance.now(), resto = 0;
+        // La de los ajustes o, al ritmo de la canción, la que la baja entera en lo que dura
+        const velocidad = velocidadAlDesplazar({ duracion, ajustes }, desplazable());
+        // Al ritmo y desde el principio, espera la intro
+        const intro = esperaDeIntro({ duracion, ajustes }, desplazable());
+        if (intro) toast(`La hoja baja tras ${intro} s de intro`, { id: 'intro-hoja', duration: 2500 });
         const paso = (t: number) => {
             const el = desplazable();
             if (!el) return;
-            resto += (ajustes.velocidad * Math.min(100, t - ultimo)) / 1000;
+            resto += (velocidad * Math.min(100, t - ultimo)) / 1000;
             ultimo = t;
             const px = Math.floor(resto);
             if (px >= 1) { resto -= px; el.scrollTop += px; }
             if (el.scrollTop + el.clientHeight >= el.scrollHeight - 2) { setRodando(false); return; }
             raf = requestAnimationFrame(paso);
         };
-        raf = requestAnimationFrame(paso);
-        return () => cancelAnimationFrame(raf);
-    }, [rodando, ajustes.velocidad, desplazable]);
+        const empezar = setTimeout(() => { ultimo = performance.now(); raf = requestAnimationFrame(paso); }, intro * 1000);
+        return () => { clearTimeout(empezar); cancelAnimationFrame(raf); if (intro) toast.dismiss('intro-hoja'); };
+    }, [rodando, ajustes, duracion, desplazable]);
 
     // En el escenario, los controles se esconden solos mientras baja
     useEffect(() => {
@@ -246,8 +254,11 @@ function Lector({ cancion }: { cancion: Cancion }) {
     const pasoTono = (
         <Paso compacto etiqueta="Tono" onMenos={() => cambiarTono(-1)} onMas={() => cambiarTono(1)}
             menosDesactivado={sinAcordes} masDesactivado={sinAcordes}
-            valor={<span>{tonoSuena || 'Tono'}{ajustes.semitonos !== 0 && <span className="ml-1 text-[12px] text-muted-foreground">{ajustes.semitonos > 0 ? '+' : ''}{ajustes.semitonos}</span>}</span>} />
+            valor={<DameElTono leida={leida} ajustes={ajustes} desactivado={sinAcordes}>
+                <span>{tonoSuena || 'Tono'}{ajustes.semitonos !== 0 && <span className="ml-1 text-[12px] text-muted-foreground">{ajustes.semitonos > 0 ? '+' : ''}{ajustes.semitonos}</span>}</span>
+            </DameElTono>} />
     );
+    const botonClaqueta = <BotonClaqueta bpm={cancion.bpm} />;
     const pasoTamano = (
         <Paso compacto etiqueta="Tamaño de la letra" valor="Aa" onMenos={() => cambiarTamano(-PASO_TAMANO)} onMas={() => cambiarTamano(PASO_TAMANO)}
             menosDesactivado={!ajustada && tamano <= TAMANO_MIN} masDesactivado={!ajustada && tamano >= TAMANO_MAX} />
@@ -289,6 +300,8 @@ function Lector({ cancion }: { cancion: Cancion }) {
                     {pasoTamano}
                     {botonAjustar}
                     {botonRodar}
+                    {/* En el móvil no cabe aquí: está en Ajustes y en el escenario */}
+                    <BotonClaqueta bpm={cancion.bpm} className="hidden md:flex" />
                     <BotonBarra etiqueta="Ajustes" onClick={() => setPanel(true)} className="ml-auto">
                         <SlidersHorizontal className="h-[18px] w-[18px]" /><span className="hidden md:inline">Ajustes</span>
                     </BotonBarra>
@@ -350,6 +363,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                         {pasoTamano}
                         {botonAjustar}
                         {botonRodar}
+                        {botonClaqueta}
                     </div>
                     <button onClick={salirEscenario} aria-label="Salir del escenario"
                         className={cn('pulsable fixed right-3 top-[calc(env(safe-area-inset-top)+8px)] h-9 w-9 rounded-full bg-sheet border border-hairline shadow-e2 flex items-center justify-center text-foreground transition-opacity duration-200',
@@ -377,6 +391,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                 onImprimir={() => { setPanel(false); setImprimiendo(true); }}
                 onEditar={() => navigate(`/cancionero/${cancion.id}/editar`)}
                 onBorrar={borrarCancion}
+                duracion={duracion} cantante={<AjustesCantante cancion={cancion} ajustes={ajustes} leida={leida} />}
             />
         </div>
     );
