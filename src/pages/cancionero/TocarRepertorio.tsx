@@ -298,7 +298,7 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
             {/* Copia invisible para medir, solo con «que quepa»: el tamaño y las columnas los pone buscarEncaje */}
             {a.ajustar && (
                 <div className="fixed left-0 top-0 h-0 w-0 overflow-hidden invisible" aria-hidden>
-                    <HojaCancion ref={medidorRef} lineas={leida.lineas} opciones={opciones} vista={a.vista} tamano={TAMANO_MAX} columnas={1} />
+                    <HojaCancion ref={medidorRef} lineas={leida.lineas} opciones={opciones} vista={a.vista} tamano={TAMANO_MAX} columnas={1} className="hidden" />
                 </div>
             )}
             {siguiente && (
