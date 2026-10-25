@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { startTransition, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, ListMusic, Loader2, Pause, Play, Shrink, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -48,6 +48,10 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
     const [indice, setIndice] = useState(false);
     const actualRef = useRef(inicio);
     useEffect(() => { actualRef.current = actual; }, [actual]);
+    // Montadas: la que suena y sus vecinas. Las vecinas cambian cuando el carrusel se para:
+    // montar una canción larga a mitad del deslizamiento se comía fotogramas y retrasaba el título
+    const [cerca, setCerca] = useState(inicio);
+    const quieto = useRef<ReturnType<typeof setTimeout>>(undefined);
 
     usePantallaEncendida();
 
@@ -70,6 +74,11 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
         if (!el) return;
         const i = Math.round(el.scrollLeft / el.clientWidth);
         if (i !== actualRef.current && i >= 0 && i < canciones.length) { setActual(i); setRodando(false); }
+        clearTimeout(quieto.current);
+        quieto.current = setTimeout(() => {
+            const j = Math.min(canciones.length - 1, Math.max(0, Math.round(el.scrollLeft / el.clientWidth)));
+            startTransition(() => setCerca(j));
+        }, 150);
     };
 
     const ir = useCallback((i: number) => {
@@ -77,6 +86,8 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
         if (!el || i < 0 || i >= canciones.length) return;
         const d = diapositivas.current[i];
         if (d) d.scrollTop = 0;
+        // Un salto desde la lista: la de destino se monta ya, para que esté al llegar
+        setCerca(c => (Math.abs(i - c) > 1 ? i : c));
         el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
         setIndice(false);
     }, [canciones.length]);
@@ -141,7 +152,7 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
                 {canciones.map((c, i) => (
                     <div key={c.id} ref={el => { diapositivas.current[i] = el; }} onClick={() => setControles(v => !v)} data-diapositiva
                         className="relative h-full w-full shrink-0 snap-start snap-always overflow-y-auto overscroll-contain touch-pan-x touch-pan-y">
-                        {Math.abs(i - actual) <= 1
+                        {Math.abs(i - cerca) <= 1 || i === actual
                             ? <Diapositiva cancion={c} n={i + 1} total={canciones.length} siguiente={canciones[i + 1]}
                                 onSiguiente={() => ir(i + 1)} cambiar={cambio => cambiar(c, cambio)} />
                             : null}
