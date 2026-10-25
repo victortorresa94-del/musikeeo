@@ -107,6 +107,13 @@ async function conectar(p: Persona, crear: boolean): Promise<Agente> {
     return { p, uid, db: getFirestore(app), nombre: p.nombre.split(',')[0] };
 }
 
+// Su propia foto (generada para él); si aún no la tiene, una de su estilo
+function avatarDe(p: Persona, medios: Medio[]): Medio | undefined {
+    return medios.find(m => m.para === 'avatar' && m.persona === p.id)
+        || medios.find(m => m.para === 'avatar' && !m.persona && m.estilos.some(e => p.gustoReal[e]))
+        || medios.find(m => m.tipo === 'image' && !m.persona);
+}
+
 // ─── Sembrar: catálogo público + agentes con perfil ──────────────────────────
 async function sembrar(personas: Persona[], medios: Medio[]) {
     console.log('Copiando el catálogo público de producción (solo lectura) al emulador…');
@@ -119,10 +126,7 @@ async function sembrar(personas: Persona[], medios: Medio[]) {
     console.log('Creando los agentes (con las reglas de verdad)…');
     for (const p of personas) {
         const a = await conectar(p, true);
-        // Su propia foto (generada para él); si aún no la tiene, una de su estilo
-        const avatar = medios.find(m => m.para === 'avatar' && m.persona === p.id)
-            || medios.find(m => m.para === 'avatar' && !m.persona && m.estilos.some(e => p.gustoReal[e]))
-            || medios.find(m => m.tipo === 'image' && !m.persona);
+        const avatar = avatarDe(p, medios);
         const ahora = new Date().toISOString();
         const modos = { musician: p.rol === 'musician', organizer: p.rol === 'organizer', provider: p.rol === 'provider' };
         const estilos = Object.keys(p.gustoReal).slice(0, 3);
@@ -141,7 +145,7 @@ async function sembrar(personas: Persona[], medios: Medio[]) {
                 id: `artist_${a.uid}`, slug: `agente-${p.id}`, userId: a.uid, artistName: a.nombre, bio: p.descripcion,
                 genres: estilos.map(e => e[0].toUpperCase() + e.slice(1)), tags: [], city: p.ciudad, country: 'España',
                 ...(avatar ? { profilePhoto: avatar.poster || avatar.url, coverPhoto: avatar.poster || avatar.url } : {}),
-                ...(clip ? { clipUrl: clip.url, clipPoster: clip.poster } : {}),
+                ...(clip ? { clipUrl: clip.url, ...(clip.poster ? { clipPoster: clip.poster } : {}) } : {}),
                 isVerified: false, isPublic: true, rating: 0, reviewCount: 0, gigsCompleted: 0, packages: [],
                 multimedia: { videos: [], photos: [] }, availability: [], profileCompleteness: 80, createdAt: ahora, updatedAt: ahora,
             });
@@ -295,6 +299,8 @@ async function main() {
         console.log(`\n── Ronda ${ronda}/${RONDAS} · ${new Date().toLocaleTimeString('es-ES')}`);
         for (const p of [...personas].sort(() => rnd() - 0.5)) {
             const a = await conectar(p, false);
+            const av = avatarDe(p, medios);
+            a.foto = av?.poster || av?.url;
             const subio = await publicar(a, medios);
             const { hecho, arriba } = await mirarFeed(a);
             console.log(`  ${a.nombre}: ${[subio, ...hecho].filter(Boolean).join(' · ') || 'mira y pasa'}${arriba.length ? `  [aprende: ${arriba.join(', ')}]` : ''}`);
