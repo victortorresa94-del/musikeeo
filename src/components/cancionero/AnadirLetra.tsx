@@ -1,41 +1,16 @@
 import { toast } from 'sonner';
-import { ClipboardPaste, ExternalLink } from 'lucide-react';
-import { juntarAcordesYLetra, leerAcorde, leerCancion, recortarCancion, semitonosHacia } from '../../lib/acordes';
+import { Link } from 'react-router-dom';
+import { AudioLines, ClipboardPaste, ExternalLink } from 'lucide-react';
+import { unirConFicha } from '../../lib/acordes';
 import { enlaceLetra, enlacesAcordes } from '../../lib/buscarCanciones';
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
-
-// Lo pegado entra en lugar de la chuleta: se queda la cabecera de la ficha (bloque, avisos,
-// cejilla) y la canción se mueve al tono del setlist con el cambio de tono, sin reescribirla
-function unirLetra(actual: string, pegado: string, ajustes: AjustesCancion): { texto: string; semitonos: number } | null {
-    const lineas = actual.split('\n');
-    const corte = lineas.findIndex(l => !l.trim());
-    const cabecera = corte === -1 ? lineas : lineas.slice(0, corte);
-    const lineaTono = cabecera.find(l => l.startsWith('Tono: '));
-    const destino = lineaTono ? leerAcorde(lineaTono.slice(6).trim().split(/\s+/)[0]) : null;
-    const cancion = recortarCancion(pegado);
-    if (!cancion) return null;
-    const acordes = leerCancion(cancion).acordes;
-    if (!acordes.length) {
-        // Solo letra en una canción vacía (recién añadida del buscador): la letra sin más
-        if (!actual.trim()) return { texto: cancion, semitonos: ajustes.semitonos };
-        // Solo letra: si ya había filas de acordes, cada una va encima de su línea (como en
-        // LaCuerda); si no, la letra va debajo
-        const unido = `${actual.trimEnd()}\n\n[Letra]\n${cancion}`;
-        return { texto: juntarAcordesYLetra(unido) ?? unido, semitonos: ajustes.semitonos };
-    }
-    const s = destino ? semitonosHacia(acordes, destino) : 0;
-    return {
-        texto: [...cabecera.filter(l => !l.startsWith('Tono: ')), '', cancion].join('\n'),
-        semitonos: ajustes.semitonos + s,
-    };
-}
 
 // En una ficha o una chuleta sin letra: buscarla, copiarla y pegarla aquí
 export function AnadirLetra({ cancion, ajustes, onPegar }: {
     cancion: Cancion; ajustes: AjustesCancion; onPegar: (texto: string, cambio: Partial<AjustesCancion>) => void;
 }) {
     const meter = (pegado: string) => {
-        const r = unirLetra(cancion.texto, pegado, ajustes);
+        const r = unirConFicha(cancion.texto, pegado, ajustes.semitonos);
         if (!r) { toast('Lo copiado está vacío.'); return; }
         onPegar(r.texto, { semitonos: Math.abs(r.semitonos) >= 12 ? r.semitonos % 12 : r.semitonos, ajustar: false });
     };
@@ -63,6 +38,10 @@ export function AnadirLetra({ cancion, ajustes, onPegar }: {
                         {e.nombre} <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
                     </a>
                 ))}
+                <Link to={`/cancionero/escuchar?cancion=${cancion.id}`}
+                    className="pulsable h-9 px-3.5 rounded-full bg-sheet text-[14px] font-semibold text-foreground flex items-center gap-1.5 shadow-e1">
+                    <AudioLines className="h-4 w-4" /> Sacar de un audio
+                </Link>
                 <button onClick={pegar} className="pulsable h-9 px-3.5 rounded-full bg-foreground text-background text-[14px] font-semibold flex items-center gap-1.5">
                     <ClipboardPaste className="h-4 w-4" /> Pegar aquí
                 </button>

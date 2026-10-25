@@ -432,9 +432,10 @@ export function juntarAcordesYLetra(texto: string): string | null {
     // Las filas que van con letra (las de intro y solos se quedan como están)
     const filas: number[] = [];
     let seccion = '';
-    // Una fila por línea de letra va en bloques (dos o más seguidas) y sin guiones; una sola
-    // fila bajo cada sección o «G – C – D» es el resumen de la progresión, no se reparte
-    const deLinea = (i: number) => esFila(crudas[i]) && !/\s[-–—]\s/.test(crudas[i]);
+    // Una fila por línea de letra va en bloques (dos o más seguidas), sin guiones ni barras; una
+    // sola fila bajo cada sección, «G – C – D» o «| Am | G |» (por compases) es el resumen de la
+    // progresión, no se reparte
+    const deLinea = (i: number) => esFila(crudas[i]) && !/\s[-–—]\s|\|/.test(crudas[i]);
     crudas.forEach((l, i) => {
         const s = esSeccion(l);
         if (s || !l.trim()) { seccion = s ?? ''; return; }   // el intro o el solo acaban en el primer blanco
@@ -652,4 +653,31 @@ export function recortarCancion(texto: string): string {
     const finDeLaWeb = /^\s*(comentarios?|publicidad|anuncio|versi[oó]n para imprimir|imprimir|compartir|valora|votos?|enviad[ao]|tutorial|v[ií]deo|©|https?:)/i;
     while (hasta + 1 < lineas.length && lineas[hasta + 1].trim() && !finDeLaWeb.test(lineas[hasta + 1]) && extra < 6) { hasta++; extra++; }
     return lineas.slice(desde, hasta + 1).join('\n').trim();
+}
+
+// Lo pegado (o lo sacado de un audio) entra en lugar de la chuleta: se queda la cabecera de la
+// ficha (bloque, avisos, cejilla) y la canción se mueve al tono del setlist con el cambio de
+// tono, sin reescribirla
+export function unirConFicha(actual: string, pegado: string, semitonos: number): { texto: string; semitonos: number } | null {
+    const lineas = actual.split('\n');
+    const corte = lineas.findIndex(l => !l.trim());
+    const cabecera = corte === -1 ? lineas : lineas.slice(0, corte);
+    const lineaTono = cabecera.find(l => l.startsWith('Tono: '));
+    const destino = lineaTono ? leerAcorde(lineaTono.slice(6).trim().split(/\s+/)[0]) : null;
+    const cancion = recortarCancion(pegado);
+    if (!cancion) return null;
+    const acordes = leerCancion(cancion).acordes;
+    if (!acordes.length) {
+        // Solo letra en una canción vacía (recién añadida del buscador): la letra sin más
+        if (!actual.trim()) return { texto: cancion, semitonos };
+        // Solo letra: si ya había filas de acordes, cada una va encima de su línea (como en
+        // LaCuerda); si no, la letra va debajo
+        const unido = `${actual.trimEnd()}\n\n[Letra]\n${cancion}`;
+        return { texto: juntarAcordesYLetra(unido) ?? unido, semitonos };
+    }
+    const s = destino ? semitonosHacia(acordes, destino) : 0;
+    return {
+        texto: [...cabecera.filter(l => !l.startsWith('Tono: ')), '', cancion].join('\n'),
+        semitonos: semitonos + s,
+    };
 }

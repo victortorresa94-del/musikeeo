@@ -4,7 +4,7 @@ import { ChevronRight, Cloud, Loader2, Plus, Search, Smartphone, X } from 'lucid
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { CANCION_EJEMPLO } from '../../components/cancionero/ejemplo';
-import { Baldosa, TarjetaBolo } from '../../components/cancionero/Baldosas';
+import { Baldosa, TarjetaBolo, TarjetaEscuchar } from '../../components/cancionero/Baldosas';
 import { ICONO, PASTEL, iconoRepertorio, pastelDe } from '../../components/cancionero/estilo';
 import { ImportarCanciones } from '../../components/cancionero/ImportarCanciones';
 import { Portada } from '../../components/cancionero/Portada';
@@ -139,6 +139,7 @@ export default function Cancionero() {
                             etiqueta={proximo.fecha === hoy ? 'Hoy' : proximo.fecha > hoy ? 'Próximo bolo' : 'Último bolo'}
                             onTocar={() => tocarBolo(proximo.id)} />
                     )}
+                    <TarjetaEscuchar />
 
                     <div className="mt-6 mb-2 flex items-center justify-between gap-3">
                         <h2 className="font-heading text-[20px] font-bold text-foreground">

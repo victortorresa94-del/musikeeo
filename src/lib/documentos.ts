@@ -437,11 +437,14 @@ function leerTitulo(t: string): { titulo: string; artista: string } {
     return { titulo: tituloBonito(sinNumero), artista: '' };
 }
 
-// «05 - LA_FLACA (1).docx» → «La flaca»
-export function tituloDeArchivo(nombre: string): string {
+// «05 - LA_FLACA (1).docx» → «La flaca»; «Estopa - Como Camarón.mp3» trae también el artista
+export function datosDeArchivo(nombre: string): { titulo: string; artista: string } {
     const base = nombre.replace(/\.[^.]{1,8}$/, '').replace(/\s*\(\d+\)$/, '').replace(/[_]+/g, ' ').replace(/\s+/g, ' ').trim();
-    return leerTitulo(base).titulo || 'Sin título';
+    const { titulo, artista } = leerTitulo(base);
+    return { titulo: titulo || 'Sin título', artista };
 }
+
+export const tituloDeArchivo = (nombre: string): string => datosDeArchivo(nombre).titulo;
 
 // Un rótulo suelto en mayúsculas («CORO», «INTRO RASGUEO», «ENTRAMOS TODOS:») es una sección
 function rotulo(texto: string, negrita: boolean, todoMayusculas: boolean): string | null {

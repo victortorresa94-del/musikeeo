@@ -33,6 +33,7 @@ export const ICONO = {
     importar: '/images/cancionero/importar.webp',
     tono: '/images/cancionero/dame-el-tono.webp',
     claqueta: '/images/cancionero/claqueta.webp',
+    escuchar: '/images/cancionero/escuchar.webp',
     pop: '/images/cancionero/pop.webp',
     rumba: '/images/cancionero/rumba.webp',
     latino: '/images/cancionero/latino.webp',

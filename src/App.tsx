@@ -47,6 +47,7 @@ const EditarCancion = lazy(() => import('./pages/cancionero/EditarCancion'));
 const LeerCancion = lazy(() => import('./pages/cancionero/LeerCancion'));
 const Repertorio = lazy(() => import('./pages/cancionero/Repertorio'));
 const TocarRepertorio = lazy(() => import('./pages/cancionero/TocarRepertorio'));
+const SacarAcordes = lazy(() => import('./pages/cancionero/SacarAcordes'));
 
 // Legal pages (public, no layout)
 const LegalNotice = lazy(() => import('./pages/legal/LegalNotice'));
@@ -241,6 +242,7 @@ function App() {
                     el dispositivo; con cuenta, también en users/{uid}/canciones */}
                 <Route path="/cancionero" element={<Cancionero />} />
                 <Route path="/cancionero/nueva" element={<EditarCancion />} />
+                <Route path="/cancionero/escuchar" element={<SacarAcordes />} />
                 <Route path="/cancionero/:id" element={<LeerCancion />} />
                 <Route path="/cancionero/:id/editar" element={<EditarCancion />} />
                 <Route path="/cancionero/repertorio/:id" element={<Repertorio />} />

@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
-import { Play } from 'lucide-react';
+import { ChevronRight, Play } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { iconoRepertorio, type Pastel } from './estilo';
+import { ICONO, iconoRepertorio, type Pastel } from './estilo';
 import type { Repertorio } from '../../types/cancionero';
 
 // Una baldosa como las de Explorar: el objeto 3D sobre su pastel y el nombre debajo
@@ -38,6 +38,20 @@ export function TarjetaBolo({ repertorio, etiqueta, temas, fecha, onTocar }: {
             <img src={iconoRepertorio(repertorio.nombre)} alt="" draggable={false}
                 className="pointer-events-none absolute bottom-2 right-2 h-[128px] w-[40%] object-contain object-bottom drop-shadow-[0_10px_12px_rgba(0,0,0,0.18)]" />
         </div>
+    );
+}
+
+// Sacar los acordes de una grabación: una fila de color con su objeto 3D
+export function TarjetaEscuchar() {
+    return (
+        <Link to="/cancionero/escuchar" className="pulsable mt-3 flex items-center gap-3 rounded-[22px] bg-pastel-menta pl-2 pr-4 py-2">
+            <img src={ICONO.escuchar} alt="" draggable={false} className="h-16 w-16 shrink-0 object-contain drop-shadow-[0_6px_8px_rgba(0,0,0,0.16)]" />
+            <span className="flex-1 min-w-0">
+                <span className="block text-[16px] font-bold leading-tight text-foreground">Sacar acordes de un audio</span>
+                <span className="mt-0.5 block text-[13px] text-muted-foreground">Tu móvil escucha la grabación y te los dice</span>
+            </span>
+            <ChevronRight className="h-5 w-5 shrink-0 text-pastel-menta-ink" />
+        </Link>
     );
 }
 

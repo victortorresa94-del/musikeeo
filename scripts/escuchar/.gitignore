@@ -1,0 +1,8 @@
+# El corpus se descarga y se genera (unos 350 MB): no va en el repo
+guitarset/
+sintetico/
+otros/
+manifest.json
+__pycache__/
+.cli.cjs
+dl/

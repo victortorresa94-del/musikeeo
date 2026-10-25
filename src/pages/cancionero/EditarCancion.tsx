@@ -1,8 +1,8 @@
 import { useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ClipboardPaste, ExternalLink, FileUp, Loader2 } from 'lucide-react';
+import { AudioLines, ClipboardPaste, ExternalLink, FileUp, Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { datosDelPegado, detectarTono, leerCancion, limpiarTexto, nombreTono, recortarCancion } from '../../lib/acordes';
@@ -143,6 +143,11 @@ function Formulario({ existente }: { existente?: Cancion }) {
                 <button onClick={() => archivoRef.current?.click()} className="pulsable h-9 px-3.5 shrink-0 rounded-full bg-fill text-[14px] font-semibold text-foreground flex items-center gap-1.5">
                     <FileUp className="h-4 w-4" /> Abrir archivo
                 </button>
+                {!existente && (
+                    <Link to={`/cancionero/escuchar${repertorio ? `?repertorio=${repertorio.id}` : ''}`} className="pulsable h-9 px-3.5 shrink-0 rounded-full bg-fill text-[14px] font-semibold text-foreground flex items-center gap-1.5">
+                        <AudioLines className="h-4 w-4" /> Desde un audio
+                    </Link>
+                )}
                 <input ref={archivoRef} type="file" className="hidden" accept=".txt,.cho,.chopro,.chordpro,.crd,.pro,text/plain"
                     onChange={e => { void abrir(e.target.files?.[0]); e.target.value = ''; }} />
             </div>
