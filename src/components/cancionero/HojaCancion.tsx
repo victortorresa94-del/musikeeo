@@ -73,10 +73,10 @@ function LineaCancion({ linea: l, opciones }: { linea: Linea; opciones: Opciones
             return (
                 <div className="flex flex-wrap items-end pb-[0.25em]">
                     {enPalabras(l.trozos).map((palabra, k) => (palabra.length === 1
-                        ? <Silaba key={k} trozo={palabra[0]} opciones={opciones} />
+                        ? silaba(palabra[0], opciones, k)
                         : (
                             <span key={k} className="inline-flex items-end">
-                                {palabra.map((t, n) => <Silaba key={n} trozo={t} opciones={opciones} />)}
+                                {palabra.map((t, n) => silaba(t, opciones, n))}
                             </span>
                         )))}
                 </div>
@@ -94,19 +94,16 @@ function NombreMarca({ marca, opciones }: { marca: Marca; opciones: OpcionesNomb
 
 // Sin acorde no hay renglón de acorde: si una línea partida queda sin acordes, no deja hueco.
 // Sin acorde, la sílaba es solo su texto; con acorde, el nombre va en el mismo renglón que lo
-// coloca (antes, un nodo más por acorde)
-function Silaba({ trozo, opciones }: { trozo: Trozo; opciones: OpcionesNombre }) {
-    if (!trozo.marca) return <TextoSilaba texto={trozo.texto} />;
+// coloca (antes, un nodo más por acorde). Es una función y no un componente: una canción larga
+// tiene más de mil sílabas y cada componente es trabajo de más para React al montarla
+function silaba(trozo: Trozo, opciones: OpcionesNombre, key: number) {
+    if (!trozo.marca) return <span key={key} className="whitespace-pre leading-[1.35]">{trozo.texto || '\u00a0'}</span>;
     return (
-        <span className="inline-flex flex-col">
-            <span className={cn('whitespace-pre pr-[0.4em] text-[0.92em] leading-[1.25]', claseMarca(trozo.marca))}>
+        <span key={key} className="inline-flex flex-col">
+            <span className={`whitespace-pre pr-[0.4em] text-[0.92em] leading-[1.25] ${claseMarca(trozo.marca)}`}>
                 {nombreMarca(trozo.marca, opciones)}
             </span>
-            <TextoSilaba texto={trozo.texto} />
+            <span className="whitespace-pre leading-[1.35]">{trozo.texto || '\u00a0'}</span>
         </span>
     );
-}
-
-function TextoSilaba({ texto }: { texto: string }) {
-    return <span className="whitespace-pre leading-[1.35]">{texto || '\u00a0'}</span>;
 }
