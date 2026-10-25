@@ -1,8 +1,9 @@
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Pencil, Printer, RotateCcw, Trash2 } from 'lucide-react';
+import { Pencil, Play, Printer, RotateCcw, Trash2 } from 'lucide-react';
 import { Switch } from '../ui/switch';
 import { Paso, Segmentado } from './Controles';
+import { INTRO, minutos, segundosAlRitmo } from '../../lib/cantar';
 import type { AjustesCancion } from '../../types/cancionero';
 
 interface Props {
@@ -18,6 +19,8 @@ interface Props {
     onImprimir: () => void;
     onEditar: () => void;
     onBorrar: () => void;
+    duracion?: number;                  // segundos de la canción: para bajar la hoja a su ritmo
+    cantante?: React.ReactNode;         // dar el tono y el tempo (Cantante.tsx)
 }
 
 const Fila = ({ titulo, children, nota }: { titulo: string; children: React.ReactNode; nota?: React.ReactNode }) => (
@@ -30,8 +33,10 @@ const Fila = ({ titulo, children, nota }: { titulo: string; children: React.Reac
     </div>
 );
 
-export function PanelAjustes({ abierto, onCerrar, ajustes: a, cambiar, tonoSuena, posturas, recomendada, formasRecomendadas, dificilesAhora, onImprimir, onEditar, onBorrar }: Props) {
+export function PanelAjustes({ abierto, onCerrar, ajustes: a, cambiar, tonoSuena, posturas, recomendada, formasRecomendadas, dificilesAhora, onImprimir, onEditar, onBorrar, duracion, cantante }: Props) {
     const sugerir = recomendada && recomendada.cejilla !== a.cejilla && recomendada.dificiles < dificilesAhora;
+    const ritmo = segundosAlRitmo(duracion, a);
+    const intro = a.intro ?? INTRO;
     return createPortal(
         <AnimatePresence>
             {abierto && (
@@ -103,11 +108,35 @@ export function PanelAjustes({ abierto, onCerrar, ajustes: a, cambiar, tonoSuena
                                     opciones={[[1, 'Una'], [2, 'Dos'], [3, 'Tres']] as const} />
                             </div>
 
-                            <Fila titulo="Velocidad al desplazar">
-                                <Paso etiqueta="Velocidad" valor={Math.round(a.velocidad / 6)}
-                                    onMenos={() => cambiar({ velocidad: Math.max(6, a.velocidad - 6) })} menosDesactivado={a.velocidad <= 6}
-                                    onMas={() => cambiar({ velocidad: Math.min(90, a.velocidad + 6) })} masDesactivado={a.velocidad >= 90} />
-                            </Fila>
+                            <div className="py-3">
+                                <div className="flex items-center justify-between gap-3">
+                                    <p className="text-[15px] font-semibold text-foreground">Velocidad al desplazar</p>
+                                    {ritmo === null && (
+                                        <Paso etiqueta="Velocidad" valor={Math.round(a.velocidad / 6)}
+                                            onMenos={() => cambiar({ velocidad: Math.max(6, a.velocidad - 6) })} menosDesactivado={a.velocidad <= 6}
+                                            onMas={() => cambiar({ velocidad: Math.min(90, a.velocidad + 6) })} masDesactivado={a.velocidad >= 90} />
+                                    )}
+                                </div>
+                                {/* Sabiendo lo que dura, la hoja puede bajar entera en ese tiempo */}
+                                {!!duracion && (
+                                    <div className="mt-2.5 space-y-2.5">
+                                        <Segmentado etiqueta="Cómo baja la hoja" valor={ritmo === null ? 'mano' : 'ritmo'} onCambio={v => cambiar({ alRitmo: v === 'ritmo' })}
+                                            opciones={[['mano', 'A mano'], ['ritmo', 'Al ritmo de la canción']] as const} />
+                                        {ritmo !== null && (
+                                            <div className="flex items-center justify-between gap-3">
+                                                <p className="text-[13px] text-muted-foreground">
+                                                    Dale a <Play className="inline h-3 w-3 align-[-1px]" aria-label="Desplazar" /> al empezar: {intro > 0 ? <>espera la intro ({intro} s) y </> : <>sin intro, </>}baja entera en <b className="text-foreground">{minutos(ritmo)}</b> (dura {minutos(duracion)}).
+                                                </p>
+                                                <Paso etiqueta="Segundos de intro" valor={<>{intro}<span className="ml-0.5 text-[12px] text-muted-foreground">s intro</span></>}
+                                                    onMenos={() => cambiar({ intro: Math.max(0, intro - 5) })} menosDesactivado={intro <= 0}
+                                                    onMas={() => cambiar({ intro: Math.min(60, intro + 5) })} masDesactivado={intro >= 60} />
+                                            </div>
+                                        )}
+                                    </div>
+                                )}
+                            </div>
+
+                            {cantante}
                         </div>
 
                         <div className="mx-4 mt-2 rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">

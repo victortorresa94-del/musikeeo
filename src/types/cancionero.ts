@@ -11,6 +11,8 @@ export interface AjustesCancion {
     ajustar: boolean;           // que quepa entera en la pantalla
     vista: 'completa' | 'letra' | 'acordes';
     velocidad: number;          // desplazamiento automático, px por segundo
+    alRitmo?: boolean;          // con la duración de la canción: la hoja baja entera en lo que dura
+    intro?: number;             // segundos de intro que no cuentan para bajar (10 si no se dice)
 }
 
 // Privada: solo la ve su dueño (en su móvil, y en su cuenta si tiene)

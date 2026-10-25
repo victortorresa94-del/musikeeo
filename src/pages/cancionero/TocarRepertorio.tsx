@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
+import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight, ListMusic, Loader2, Pause, Play, Shrink, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
@@ -7,6 +8,8 @@ import { useMusicaCancion } from '../../hooks/useMusicaCancion';
 import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
 import { HojaCancion } from '../../components/cancionero/HojaCancion';
 import { BotonBarra, Paso } from '../../components/cancionero/Controles';
+import { BotonClaqueta, DameElTono } from '../../components/cancionero/Cantante';
+import { esperaDeIntro, velocidadAlDesplazar } from '../../lib/cantar';
 import { buscarEncaje, columnasPosibles, type Encaje } from '../../components/cancionero/medir';
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
 
@@ -89,7 +92,11 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
     useEffect(() => {
         if (!rodando) return;
         let raf = 0, ultimo = performance.now(), resto = 0;
-        const velocidad = canciones[actual]?.ajustes.velocidad ?? 18;
+        // La de la canción o, al ritmo de la canción, la que la baja entera en lo que dura
+        const velocidad = canciones[actual] ? velocidadAlDesplazar(canciones[actual], diapositivas.current[actual]) : 18;
+        // Al ritmo y desde el principio, espera la intro
+        const intro = canciones[actual] ? esperaDeIntro(canciones[actual], diapositivas.current[actual]) : 0;
+        if (intro) toast(`La hoja baja tras ${intro} s de intro`, { id: 'intro-hoja', duration: 2500 });
         const paso = (t: number) => {
             const el = diapositivas.current[actualRef.current];
             if (!el) return;
@@ -100,8 +107,8 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
             if (el.scrollTop + el.clientHeight >= el.scrollHeight - 2) { setRodando(false); return; }
             raf = requestAnimationFrame(paso);
         };
-        raf = requestAnimationFrame(paso);
-        return () => cancelAnimationFrame(raf);
+        const empezar = setTimeout(() => { ultimo = performance.now(); raf = requestAnimationFrame(paso); }, intro * 1000);
+        return () => { clearTimeout(empezar); cancelAnimationFrame(raf); if (intro) toast.dismiss('intro-hoja'); };
     }, [rodando, actual, canciones]);
 
     useEffect(() => {
@@ -157,6 +164,8 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
                         <span className="block truncate text-[15px] font-semibold text-foreground">{cancion.titulo}</span>
                         <span className="block truncate text-[12px] text-muted-foreground">{actual + 1} de {canciones.length} · {nombre}</span>
                     </button>
+                    {/* La claqueta para entrar (abajo ya no cabe nada) */}
+                    <BotonClaqueta bpm={cancion.bpm} />
                     <BotonBarra etiqueta="Lista de canciones" activo={indice} onClick={() => setIndice(v => !v)}><ListMusic className="h-[18px] w-[18px]" /></BotonBarra>
                 </div>
             </div>
@@ -190,7 +199,7 @@ function ControlesCancion({ cancion, visibles, rodando, onRodar, cambiar, onAnte
     cancion: Cancion; visibles: boolean; rodando: boolean; onRodar: () => void;
     cambiar: (c: Partial<AjustesCancion>) => void; onAnterior?: () => void; onSiguiente?: () => void;
 }) {
-    const { tonoSuena, sinAcordes } = useMusicaCancion(cancion.texto, cancion.ajustes);
+    const { leida, tonoSuena, sinAcordes } = useMusicaCancion(cancion.texto, cancion.ajustes);
     const a = cancion.ajustes;
     const cambiarTono = (d: number) => { const s = a.semitonos + d; cambiar({ semitonos: Math.abs(s) >= 12 ? 0 : s }); };
     const cambiarTamano = (d: number) => cambiar({ tamano: Math.min(TAMANO_MAX, Math.max(TAMANO_MIN, Math.round(a.tamano) + d)), ajustar: false });
@@ -201,7 +210,9 @@ function ControlesCancion({ cancion, visibles, rodando, onRodar, cambiar, onAnte
             <div className="flex items-center justify-center gap-1.5 overflow-x-auto hide-scrollbar">
                 <button onClick={onAnterior} disabled={!onAnterior} aria-label="Canción anterior" className={flecha}><ChevronLeft className="h-5 w-5" /></button>
                 <Paso compacto etiqueta="Tono" onMenos={() => cambiarTono(-1)} onMas={() => cambiarTono(1)} menosDesactivado={sinAcordes} masDesactivado={sinAcordes}
-                    valor={<span>{tonoSuena || 'Tono'}{a.semitonos !== 0 && <span className="ml-1 text-[12px] text-muted-foreground">{a.semitonos > 0 ? '+' : ''}{a.semitonos}</span>}</span>} />
+                    valor={<DameElTono leida={leida} ajustes={a} desactivado={sinAcordes}>
+                        <span>{tonoSuena || 'Tono'}{a.semitonos !== 0 && <span className="ml-1 text-[12px] text-muted-foreground">{a.semitonos > 0 ? '+' : ''}{a.semitonos}</span>}</span>
+                    </DameElTono>} />
                 <Paso compacto etiqueta="Tamaño de la letra" valor="Aa" onMenos={() => cambiarTamano(-1)} onMas={() => cambiarTamano(1)} />
                 <BotonBarra etiqueta="Que quepa en la pantalla" activo={a.ajustar} onClick={() => cambiar({ ajustar: !a.ajustar })}><Shrink className="h-[18px] w-[18px]" /></BotonBarra>
                 <BotonBarra etiqueta={rodando ? 'Parar' : 'Desplazar sola'} activo={rodando} onClick={onRodar}>
