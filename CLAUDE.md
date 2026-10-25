@@ -116,7 +116,23 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 
 ---
 
+## Feed, me gusta, comentarios y agentes (2026-10-25)
+- Me gusta y comentarios en `interacciones/{post_<id> | artista_<id>}` (subcolecciones `meGusta/{uid}` y `comentarios`), aparte del contenido. Lógica en `src/services/interaccionesNucleo.ts` (sin imports de la app: la usan también los agentes desde Node); la app la usa vía `interaccionService.ts`. Las reglas obligan a mover los contadores de uno en uno y a la vez que el me gusta o el comentario (36 casos probados en el emulador)
+- Algoritmo del Feed: `src/lib/recomendador.ts` (sin React ni Firebase). Aprende de me gusta, comentarios, vídeos vistos enteros o saltados, perfiles y bolos abiertos y lo que se ve sin hacer nada; cada familia de rasgos puntúa por separado (estilo, autor, ciudad, tipo, formato, categoría) más novedad, comunidad y descubrimiento, sin repetir autor seguido. Gustos en el móvil (`musikeeo-gustos-v1:<uid|invitado>`) y con cuenta en `users/{uid}/gustos/perfil`. El orden se calcula al entrar y no se mueve mientras miras
+- Agentes que prueban la app: `docs/AGENTES.md` (simulación, red social de agentes en emulador o en el Firebase de pruebas, MiroFish). Nunca en producción: los scripts se niegan con `musikeeo-8e766`. Fotos y vídeos de los agentes en `scripts/agentes/medios.json`
+- `VITE_EMULADORES=1` (solo `npm run dev`) conecta a los emuladores; `VITE_FIREBASE_*` + `VITE_ENTORNO=pruebas` montan el entorno de pruebas con la misma app
+
 ## SESSION LOG
+
+### 2026-10-25 (Feed con me gusta y comentarios, algoritmo «Para ti», agentes y MiroFish)
+
+**✅ Hecho:** me gusta y comentarios de verdad en publicaciones, tarjetas y vídeos de artista (también en el visor y /reels); algoritmo personalizado probado con agentes simulados (con el perfil vacío pasa del 18 % al 34 % de acierto en dos semanas, techo 36 %; `docs/SIMULACION-FEED.md`); red social de agentes sobre el emulador, vista en la app con capturas; entorno de pruebas preparado (config por variables, píldora «Entorno de pruebas», tarea de GitHub cada 4 h); MiroFish instalado y semilla de Musikeeo escrita. 8 retratos generados para los agentes (0,40 €) + 21 clips y fotos reutilizados de Aura Studio.
+
+**❌ Pendiente:**
+- **Víctor: desplegar reglas e índices** — `firebase deploy --only firestore` (en producción: posts, interacciones, gustos, índice de meGusta). Sin esto, en musikeeo.com no se pueden leer publicaciones ni dar me gusta ni comentar (hoy `posts` da permiso denegado)
+- **Víctor: crear el Firebase `musikeeo-pruebas`** y los secretos (pasos en `docs/AGENTES.md` §3)
+- **Víctor: claves** `LLM_API_KEY` (Kimi; en Vercel está como «sensible» y no se puede leer) y `ZEP_API_KEY` (gratis) como variables del entorno de Claude, para comentarios con IA y para lanzar MiroFish
+- No se soñó en Aura Studio la hoja de comentarios ni la columna de acciones (siguen el lenguaje de la hoja de publicar y del visor)
 
 ### 2026-10-24 (Cancionero + repertorios para el bolo)
 

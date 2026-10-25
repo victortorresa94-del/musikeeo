@@ -41,9 +41,17 @@ function leerCsv(texto: string): PerfilOasis[] {
     return resto.filter(f => f.length > 1).map(f => Object.fromEntries(cabecera.map((k, i) => [k, f[i]])) as PerfilOasis);
 }
 
-function rolDe(texto: string): Rol {
-    if (/(tecnic|sonido|ingenier|luthier|tienda|backline|alquiler de equipo|sound engineer|shop|store)/.test(texto)) return 'provider';
-    if (/(sala|promot|programad|organiz|wedding|bodas|planner|venue|club|festival|ayuntamiento|hotel|restaurante)/.test(texto)) return 'organizer';
+// Por la profesión primero (es lo que dice quién es) y luego por todo el texto. Quien toca es
+// músico aunque hable de bodas o de salas: va a ellas a tocar
+function rolDe(profesion: string, texto: string): Rol {
+    const TECNICO = /(tecnic|ingenier|luthier|tienda|backline|alquiler de equipo|sound engineer|shop|store)/;
+    const MUSICO = /(music|cantant|cantautor|guitarr|bater|bajista|pianist|violin|dj\b|\bdj|banda|grupo|toca |rapero|productor musical)/;
+    const ORGANIZA = /(sala|promot|programad|organiz|wedding|planner|venue|club|festival|ayuntamiento|hotel|restaurante)/;
+    for (const t of [profesion, texto]) {
+        if (TECNICO.test(t)) return 'provider';
+        if (MUSICO.test(t)) return 'musician';
+        if (ORGANIZA.test(t)) return 'organizer';
+    }
     return 'musician';
 }
 
@@ -63,7 +71,7 @@ export function personasDeMiroFish(ruta: string): Persona[] {
         const texto = norm([p.bio, p.persona, p.profession, temas].filter(Boolean).join(' '));
         const estilos = estilosDe(texto);
         if (!estilos.length) continue;  // sin nada de música, no mira Musikeeo
-        const rol = rolDe(texto);
+        const rol = rolDe(norm(p.profession || ''), texto);
         const extrovertido = (p.mbti || '').toUpperCase().startsWith('E');
         out.push({
             id: `mirofish-${p.user_id ?? out.length}`,

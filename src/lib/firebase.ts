@@ -4,7 +4,17 @@ import { connectFirestoreEmulator, getFirestore, type Firestore, enableIndexedDb
 import { getStorage, type FirebaseStorage } from "firebase/storage";
 import { getFunctions, type Functions } from "firebase/functions";
 
-const firebaseConfig = {
+// Producción (musikeeo.com). El entorno de pruebas (musikeeo-pruebas, docs/AGENTES.md) usa
+// la misma app con su propio Firebase: basta con dar las VITE_FIREBASE_* en su despliegue.
+const env = import.meta.env;
+const firebaseConfig = env.VITE_FIREBASE_PROJECT_ID ? {
+    apiKey: env.VITE_FIREBASE_API_KEY,
+    authDomain: env.VITE_FIREBASE_AUTH_DOMAIN,
+    projectId: env.VITE_FIREBASE_PROJECT_ID,
+    storageBucket: env.VITE_FIREBASE_STORAGE_BUCKET,
+    messagingSenderId: env.VITE_FIREBASE_MESSAGING_SENDER_ID,
+    appId: env.VITE_FIREBASE_APP_ID,
+} : {
     apiKey: "AIzaSyDTak4DoBdDDcQKqCS5bKVsDwAEYBs52RI",
     authDomain: "musikeeo-8e766.firebaseapp.com",
     projectId: "musikeeo-8e766",
@@ -13,6 +23,9 @@ const firebaseConfig = {
     appId: "1:992584484452:web:7d9308a20b5d497c6d0171",
     measurementId: "G-SVHBBGXMX2"
 };
+
+/** true en el entorno de pruebas o con los emuladores: nunca en musikeeo.com */
+export const esPruebas = env.VITE_ENTORNO === 'pruebas' || (env.DEV && env.VITE_EMULADORES === '1');
 
 // Safety check for missing environment variables
 const isConfigValid = Object.values(firebaseConfig).every(value => !!value);

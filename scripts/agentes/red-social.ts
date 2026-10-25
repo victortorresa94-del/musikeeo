@@ -1,7 +1,8 @@
 // La red social de agentes: personas simuladas con cuenta propia que publican vídeos,
 // fotos, bolos y anuncios, miran el Feed ordenado por el algoritmo de la app y dan me gusta
-// y comentan. SOLO contra los emuladores de Firebase: este script no sabe conectarse a
-// producción (de producción solo LEE el catálogo público para copiarlo al emulador).
+// y comentan. Contra los emuladores de Firebase o contra el Firebase de pruebas
+// (--entorno=pruebas), NUNCA contra producción: se niega si le dan musikeeo-8e766 (de
+// producción solo LEE el catálogo público para copiarlo al emulador). Guía: docs/AGENTES.md.
 //
 // Cómo se usa (desde la raíz del repo):
 //   1) npx firebase-tools emulators:start --only auth,firestore     (déjalo abierto)
@@ -31,7 +32,12 @@ import { reaccionar, sesion } from './comportamiento.ts';
 import { escribirComentario } from './comentarios.ts';
 import { leerCrudo, plano, type DocCrudo, type Valor } from './produccion.ts';
 
-const PROYECTO = 'musikeeo-8e766';   // el mismo id que la app: así el navegador ve estos datos en el emulador
+// Dos sitios donde puede vivir la red, y ninguno es producción:
+//  · emulador (por defecto): el mismo id que la app, para que el navegador vea estos datos en local
+//  · --entorno=pruebas: el Firebase «musikeeo-pruebas» (PRUEBAS_FIREBASE_API_KEY y PRUEBAS_FIREBASE_PROJECT_ID)
+const PRODUCCION = 'musikeeo-8e766';
+const ENPRUEBAS = process.argv.includes('--entorno=pruebas');
+const PROYECTO = ENPRUEBAS ? (process.env.PRUEBAS_FIREBASE_PROJECT_ID || '') : PRODUCCION;
 const FIRESTORE = '127.0.0.1:8080';
 const AUTH = 'http://127.0.0.1:9099';
 const ADMIN = `http://${FIRESTORE}/v1/projects/${PROYECTO}/databases/(default)/documents`;
@@ -47,8 +53,16 @@ const rnd = () => { semilla = (semilla * 1103515245 + 12345) % 2147483648; retur
 const elegir = <T,>(xs: T[]) => xs[Math.floor(rnd() * xs.length)];
 const dormir = (s: number) => new Promise(r => setTimeout(r, s * 1000));
 
-// ─── Seguridad: solo con el emulador encendido ───────────────────────────────
+// ─── Seguridad: solo con el emulador encendido o contra el Firebase de pruebas ─
 async function comprobarEmulador() {
+    if (ENPRUEBAS) {
+        if (!PROYECTO || !process.env.PRUEBAS_FIREBASE_API_KEY) {
+            console.log('Sin PRUEBAS_FIREBASE_PROJECT_ID / PRUEBAS_FIREBASE_API_KEY: no hay entorno de pruebas todavía (docs/AGENTES.md). Nada que hacer.');
+            process.exit(0);
+        }
+        if (PROYECTO === PRODUCCION) { console.error('Ese es el Firebase de PRODUCCIÓN. Los agentes no entran ahí.'); process.exit(1); }
+        return;
+    }
     try {
         const r = await fetch(`http://${FIRESTORE}/`);
         if (!r.ok) throw new Error();
@@ -85,26 +99,35 @@ async function escribirComoAdmin(ruta: string, fields: Record<string, Valor>) {
 }
 
 // ─── Un agente: su cuenta y su conexión ──────────────────────────────────────
-interface Agente { p: Persona; uid: string; db: Firestore; nombre: string; foto?: string }
+interface Agente { p: Persona; uid: string; db: Firestore; nombre: string; foto?: string; nuevo?: boolean }
 
 const apps = new Map<string, FirebaseApp>();
 async function conectar(p: Persona, crear: boolean): Promise<Agente> {
     let app = apps.get(p.id);
     if (!app) {
-        app = initializeApp({ apiKey: 'demo-agentes', projectId: PROYECTO, authDomain: 'localhost' }, p.id);
-        connectAuthEmulator(getAuth(app), AUTH, { disableWarnings: true });
-        connectFirestoreEmulator(getFirestore(app), FIRESTORE.split(':')[0], Number(FIRESTORE.split(':')[1]));
+        if (ENPRUEBAS) {
+            app = initializeApp({
+                apiKey: process.env.PRUEBAS_FIREBASE_API_KEY, projectId: PROYECTO,
+                authDomain: process.env.PRUEBAS_FIREBASE_AUTH_DOMAIN || `${PROYECTO}.firebaseapp.com`,
+            }, p.id);
+        } else {
+            app = initializeApp({ apiKey: 'demo-agentes', projectId: PROYECTO, authDomain: 'localhost' }, p.id);
+            connectAuthEmulator(getAuth(app), AUTH, { disableWarnings: true });
+            connectFirestoreEmulator(getFirestore(app), FIRESTORE.split(':')[0], Number(FIRESTORE.split(':')[1]));
+        }
         apps.set(p.id, app);
     }
     const auth = getAuth(app);
     const email = `${p.id}@agentes.musikeeo.test`;
     let uid: string;
+    let nuevo = false;
     try { uid = (await signInWithEmailAndPassword(auth, email, CLAVE_AGENTES)).user.uid; }
     catch {
         if (!crear) throw new Error(`El agente ${p.id} no existe: lanza antes --sembrar`);
         uid = (await createUserWithEmailAndPassword(auth, email, CLAVE_AGENTES)).user.uid;
+        nuevo = true;
     }
-    return { p, uid, db: getFirestore(app), nombre: p.nombre.split(',')[0] };
+    return { p, uid, db: getFirestore(app), nombre: p.nombre.split(',')[0], nuevo };
 }
 
 // Su propia foto (generada para él); si aún no la tiene, una de su estilo
@@ -116,8 +139,9 @@ function avatarDe(p: Persona, medios: Medio[]): Medio | undefined {
 
 // ─── Sembrar: catálogo público + agentes con perfil ──────────────────────────
 async function sembrar(personas: Persona[], medios: Medio[]) {
-    console.log('Copiando el catálogo público de producción (solo lectura) al emulador…');
-    const colecciones = ['artists', 'events', 'listings', 'publicProfiles', 'providers'];
+    // En el Firebase de pruebas no hay permiso de administrador: allí la red empieza solo con los agentes
+    const colecciones = ENPRUEBAS ? [] : ['artists', 'events', 'listings', 'publicProfiles', 'providers'];
+    if (colecciones.length) console.log('Copiando el catálogo público de producción (solo lectura) al emulador…');
     for (const c of colecciones) {
         const docs: DocCrudo[] = await leerCrudo(c);
         for (const d of docs) await escribirComoAdmin(`${c}/${d.id}`, Object.fromEntries(Object.entries(d.fields).map(([k, v]) => [k, reescribir(v)])));
@@ -126,31 +150,37 @@ async function sembrar(personas: Persona[], medios: Medio[]) {
     console.log('Creando los agentes (con las reglas de verdad)…');
     for (const p of personas) {
         const a = await conectar(p, true);
-        const avatar = avatarDe(p, medios);
-        const ahora = new Date().toISOString();
-        const modos = { musician: p.rol === 'musician', organizer: p.rol === 'organizer', provider: p.rol === 'provider' };
-        const estilos = Object.keys(p.gustoReal).slice(0, 3);
-        await setDoc(doc(a.db, 'users', a.uid), {
-            uid: a.uid, email: `${p.id}@agentes.musikeeo.test`, displayName: a.nombre, primaryMode: p.rol, activeModes: modos,
-            onboardingCompleted: true, location: p.ciudad, genres: p.declarado, ...(avatar ? { photoURL: avatar.poster || avatar.url } : {}), createdAt: ahora,
-        });
-        await setDoc(doc(a.db, 'publicProfiles', a.uid), {
-            uid: a.uid, displayName: a.nombre, primaryMode: p.rol, activeModes: modos, location: p.ciudad, bio: p.descripcion,
-            genres: p.declarado, ...(avatar ? { photoURL: avatar.poster || avatar.url } : {}), createdAt: ahora,
-        });
-        if (p.rol === 'musician') {
-            const clip = medios.find(m => m.tipo === 'video' && m.persona === p.id)
-                || medios.find(m => m.tipo === 'video' && !m.persona && m.estilos.some(e => p.gustoReal[e]));
-            await setDoc(doc(a.db, 'artists', `artist_${a.uid}`), {
-                id: `artist_${a.uid}`, slug: `agente-${p.id}`, userId: a.uid, artistName: a.nombre, bio: p.descripcion,
-                genres: estilos.map(e => e[0].toUpperCase() + e.slice(1)), tags: [], city: p.ciudad, country: 'España',
-                ...(avatar ? { profilePhoto: avatar.poster || avatar.url, coverPhoto: avatar.poster || avatar.url } : {}),
-                ...(clip ? { clipUrl: clip.url, ...(clip.poster ? { clipPoster: clip.poster } : {}) } : {}),
-                isVerified: false, isPublic: true, rating: 0, reviewCount: 0, gigsCompleted: 0, packages: [],
-                multimedia: { videos: [], photos: [] }, availability: [], profileCompleteness: 80, createdAt: ahora, updatedAt: ahora,
-            });
-        }
+        await crearPerfil(a, medios);
         console.log(`  ${a.nombre} (${p.rol}, ${p.ciudad})`);
+    }
+}
+
+// Su ficha: users (privado), publicProfiles y, si es músico, su ficha de artista
+async function crearPerfil(a: Agente, medios: Medio[]) {
+    const { p } = a;
+    const avatar = avatarDe(p, medios);
+    const ahora = new Date().toISOString();
+    const modos = { musician: p.rol === 'musician', organizer: p.rol === 'organizer', provider: p.rol === 'provider' };
+    const estilos = Object.keys(p.gustoReal).slice(0, 3);
+    await setDoc(doc(a.db, 'users', a.uid), {
+        uid: a.uid, email: `${p.id}@agentes.musikeeo.test`, displayName: a.nombre, primaryMode: p.rol, activeModes: modos,
+        onboardingCompleted: true, location: p.ciudad, genres: p.declarado, ...(avatar ? { photoURL: avatar.poster || avatar.url } : {}), createdAt: ahora,
+    });
+    await setDoc(doc(a.db, 'publicProfiles', a.uid), {
+        uid: a.uid, displayName: a.nombre, primaryMode: p.rol, activeModes: modos, location: p.ciudad, bio: p.descripcion,
+        genres: p.declarado, ...(avatar ? { photoURL: avatar.poster || avatar.url } : {}), createdAt: ahora,
+    });
+    if (p.rol === 'musician') {
+        const clip = medios.find(m => m.tipo === 'video' && m.persona === p.id)
+            || medios.find(m => m.tipo === 'video' && !m.persona && m.estilos.some(e => p.gustoReal[e]));
+        await setDoc(doc(a.db, 'artists', `artist_${a.uid}`), {
+            id: `artist_${a.uid}`, slug: `agente-${p.id}`, userId: a.uid, artistName: a.nombre, bio: p.descripcion,
+            genres: estilos.map(e => e[0].toUpperCase() + e.slice(1)), tags: [], city: p.ciudad, country: 'España',
+            ...(avatar ? { profilePhoto: avatar.poster || avatar.url, coverPhoto: avatar.poster || avatar.url } : {}),
+            ...(clip ? { clipUrl: clip.url, ...(clip.poster ? { clipPoster: clip.poster } : {}) } : {}),
+            isVerified: false, isPublic: true, rating: 0, reviewCount: 0, gigsCompleted: 0, packages: [],
+            multimedia: { videos: [], photos: [] }, availability: [], profileCompleteness: 80, createdAt: ahora, updatedAt: ahora,
+        });
     }
 }
 
@@ -298,7 +328,8 @@ async function main() {
     for (let ronda = 1; ronda <= RONDAS; ronda++) {
         console.log(`\n── Ronda ${ronda}/${RONDAS} · ${new Date().toLocaleTimeString('es-ES')}`);
         for (const p of [...personas].sort(() => rnd() - 0.5)) {
-            const a = await conectar(p, false);
+            const a = await conectar(p, ENPRUEBAS);
+            if (a.nuevo) await crearPerfil(a, medios);
             const av = avatarDe(p, medios);
             a.foto = av?.poster || av?.url;
             const subio = await publicar(a, medios);
