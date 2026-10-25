@@ -7,6 +7,7 @@ import { Check, ChevronLeft, GripVertical, Loader2, Play, Plus, Search, Trash2, 
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { norm, pedirPantallaCompleta, tonoDe } from '../../components/cancionero/utilidades';
+import { Portada } from '../../components/cancionero/Portada';
 import type { Cancion, Repertorio as TipoRepertorio } from '../../types/cancionero';
 
 export default function Repertorio() {
@@ -104,10 +105,13 @@ function Fila({ id, n, cancion, tono, onQuitar, onTocar }: {
                 className="h-11 w-9 shrink-0 flex items-center justify-center text-muted-foreground touch-none cursor-grab">
                 <GripVertical className="h-5 w-5" />
             </button>
-            <span className="w-6 shrink-0 text-[14px] font-semibold text-muted-foreground tabular-nums">{n}</span>
-            <Link to={`/cancionero/${cancion.id}`} className="flex-1 min-w-0 py-2.5 active:opacity-60">
-                <span className="block truncate text-[16px] font-semibold text-foreground">{cancion.titulo}</span>
-                {cancion.artista && <span className="block truncate text-[13px] text-muted-foreground">{cancion.artista}</span>}
+            <span className="w-5 shrink-0 text-[14px] font-semibold text-muted-foreground tabular-nums">{n}</span>
+            <Link to={`/cancionero/${cancion.id}`} className="flex-1 min-w-0 py-2.5 flex items-center gap-3 active:opacity-60">
+                <Portada src={cancion.portada} titulo={cancion.titulo} tamano="fila" />
+                <span className="flex-1 min-w-0">
+                    <span className="block truncate text-[16px] font-semibold text-foreground">{cancion.titulo}</span>
+                    {cancion.artista && <span className="block truncate text-[13px] text-muted-foreground">{cancion.artista}</span>}
+                </span>
             </Link>
             {tono && <span className="shrink-0 h-7 px-2.5 rounded-full bg-fill-strong text-[13px] font-semibold text-foreground flex items-center">{tono}</span>}
             <button onClick={onTocar} aria-label={`Tocar desde ${cancion.titulo}`} className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-foreground active:bg-fill">
@@ -155,6 +159,7 @@ function ElegirCanciones({ abierto, onCerrar, canciones, elegidas, onAlternar, r
                                 const dentro = elegidas.includes(c.id);
                                 return (
                                     <button key={c.id} onClick={() => onAlternar(c.id)} className="w-full min-h-[56px] px-4 py-2 flex items-center gap-3 text-left active:bg-fill">
+                                        <Portada src={c.portada} titulo={c.titulo} tamano="fila" />
                                         <span className="flex-1 min-w-0">
                                             <span className="block truncate text-[16px] font-semibold text-foreground">{c.titulo}</span>
                                             {c.artista && <span className="block truncate text-[13px] text-muted-foreground">{c.artista}</span>}

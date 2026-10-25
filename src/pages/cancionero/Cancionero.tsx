@@ -5,7 +5,11 @@ import { useCancionero } from '../../hooks/useCancionero';
 import { CANCION_EJEMPLO } from '../../components/cancionero/ejemplo';
 import { Segmentado } from '../../components/cancionero/Controles';
 import { ImportarCanciones } from '../../components/cancionero/ImportarCanciones';
+import { Portada } from '../../components/cancionero/Portada';
+import { PonerPortadas } from '../../components/cancionero/PonerPortadas';
+import { ResultadosCatalogo } from '../../components/cancionero/ResultadosCatalogo';
 import { norm, tonoDe } from '../../components/cancionero/utilidades';
+import type { Cancion } from '../../types/cancionero';
 
 const fechaCorta = (f: string) => {
     const [a, m, d] = f.split('-').map(Number);
@@ -13,7 +17,8 @@ const fechaCorta = (f: string) => {
 };
 
 // Tu cancionero: lo que pegas de cualquier web de acordes, limpio y a tu manera, y los
-// repertorios para tocarlo en el bolo
+// repertorios para tocarlo en el bolo. Un solo buscador: tus canciones y, debajo, las del
+// catálogo (con portada y muestra) para añadirlas
 export default function Cancionero() {
     const { canciones, repertorios, listo, nube, conCuenta, crear, crearRepertorio } = useCancionero();
     const navigate = useNavigate();
@@ -44,6 +49,27 @@ export default function Cancionero() {
         setParams(p, { replace: true });
     };
     const probarEjemplo = () => navigate(`/cancionero/${crear(CANCION_EJEMPLO).id}`);
+    const buscando = !!q.trim();
+
+    const filas = (l: Cancion[]) => (
+        <div className="rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
+            {l.map(c => (
+                <Link key={c.id} to={`/cancionero/${c.id}`} className="flex items-center gap-3 px-4 min-h-[64px] py-2.5 active:bg-fill">
+                    <Portada src={c.portada} titulo={c.titulo} />
+                    <span className="flex-1 min-w-0">
+                        <span className="block truncate text-[16px] font-semibold text-foreground">{c.titulo}</span>
+                        {c.artista && <span className="block truncate text-[14px] text-muted-foreground">{c.artista}</span>}
+                    </span>
+                    {tonos.get(c.id) && (
+                        <span className="shrink-0 h-7 px-2.5 rounded-full bg-fill-strong text-[13px] font-semibold text-foreground flex items-center">
+                            {tonos.get(c.id)}
+                        </span>
+                    )}
+                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                </Link>
+            ))}
+        </div>
+    );
     const nuevoRepertorio = () => {
         const r = crearRepertorio(`Bolo ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`);
         navigate(`/cancionero/repertorio/${r.id}`);
@@ -100,30 +126,15 @@ export default function Cancionero() {
                         })}
                     </div>
                 )
-            ) : canciones.length === 0 ? (
-                <div className="mt-4 rounded-[22px] bg-fill p-5 md:p-7">
-                    <ListMusic className="h-9 w-9 text-foreground" strokeWidth={1.6} />
-                    <p className="mt-3 font-heading text-[20px] font-bold leading-snug text-foreground">Tus canciones, limpias y a tu manera</p>
-                    <ol className="mt-3 space-y-2 text-[15px] text-muted-foreground">
-                        <li><b className="font-semibold text-foreground">1.</b> Busca la canción en tu web de acordes, cópiala y pégala aquí.</li>
-                        <li><b className="font-semibold text-foreground">2.</b> Cambia el tono, pon la cejilla y elige el tamaño de la letra.</li>
-                        <li><b className="font-semibold text-foreground">3.</b> Haz el repertorio del bolo y pasa de canción deslizando.</li>
-                    </ol>
-                    <Link to="/cancionero/nueva" className="pulsable mt-5 h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] flex items-center justify-center gap-1.5">
-                        <Plus className="h-5 w-5" /> Añadir una canción
-                    </Link>
-                    <div className="mt-2 grid grid-cols-2 gap-2">
-                        <button onClick={() => setImportar(true)} className="h-11 rounded-[14px] text-[15px] font-semibold text-foreground active:opacity-60">Importar varias</button>
-                        <button onClick={probarEjemplo} className="h-11 rounded-[14px] text-[15px] font-semibold text-foreground active:opacity-60">Ver un ejemplo</button>
-                    </div>
-                </div>
             ) : (
                 <>
                     <div className="mt-4 flex items-center gap-2">
                         <label className="relative flex-1">
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                            <input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar canción o artista" aria-label="Buscar en el cancionero"
-                                className="w-full h-11 rounded-2xl bg-fill pl-12 pr-10 text-[16px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10" />
+                            <input value={q} onChange={e => setQ(e.target.value)} type="search" enterKeyHint="search"
+                                onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+                                placeholder={canciones.length ? 'Buscar canción o artista' : 'Busca una canción para añadirla'} aria-label="Buscar en el cancionero y en el catálogo"
+                                className="w-full h-11 rounded-2xl bg-fill pl-12 pr-10 text-[16px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10 [&::-webkit-search-cancel-button]:hidden" />
                             {q && (
                                 <button onClick={() => setQ('')} aria-label="Borrar" className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground">
                                     <X className="h-4 w-4" />
@@ -135,23 +146,42 @@ export default function Cancionero() {
                             <FileDown className="h-5 w-5" />
                         </button>
                     </div>
-                    <div className="mt-3 rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
-                        {lista.map(c => (
-                            <Link key={c.id} to={`/cancionero/${c.id}`} className="flex items-center gap-3 px-4 min-h-[60px] py-2.5 active:bg-fill">
-                                <span className="flex-1 min-w-0">
-                                    <span className="block truncate text-[16px] font-semibold text-foreground">{c.titulo}</span>
-                                    {c.artista && <span className="block truncate text-[14px] text-muted-foreground">{c.artista}</span>}
-                                </span>
-                                {tonos.get(c.id) && (
-                                    <span className="shrink-0 h-7 px-2.5 rounded-full bg-fill-strong text-[13px] font-semibold text-foreground flex items-center">
-                                        {tonos.get(c.id)}
-                                    </span>
-                                )}
-                                <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+
+                    {buscando ? (
+                        <>
+                            {canciones.length > 0 && (lista.length > 0 ? (
+                                <>
+                                    <p className="mt-4 mb-1.5 px-1 text-[13px] font-semibold text-muted-foreground">Tu cancionero</p>
+                                    {filas(lista)}
+                                </>
+                            ) : (
+                                <p className="mt-4 px-1 text-[14px] text-muted-foreground">Nada con «{q.trim()}» en tu cancionero.</p>
+                            ))}
+                            <ResultadosCatalogo q={q} />
+                        </>
+                    ) : canciones.length === 0 ? (
+                        <div className="mt-4 rounded-[22px] bg-fill p-5 md:p-7">
+                            <ListMusic className="h-9 w-9 text-foreground" strokeWidth={1.6} />
+                            <p className="mt-3 font-heading text-[20px] font-bold leading-snug text-foreground">Tus canciones, limpias y a tu manera</p>
+                            <ol className="mt-3 space-y-2 text-[15px] text-muted-foreground">
+                                <li><b className="font-semibold text-foreground">1.</b> Búscala arriba y añádela, y pega la letra con acordes que copies de tu web favorita.</li>
+                                <li><b className="font-semibold text-foreground">2.</b> Cambia el tono, pon la cejilla y elige el tamaño de la letra.</li>
+                                <li><b className="font-semibold text-foreground">3.</b> Haz el repertorio del bolo y pasa de canción deslizando.</li>
+                            </ol>
+                            <Link to="/cancionero/nueva" className="pulsable mt-5 h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] flex items-center justify-center gap-1.5">
+                                <Plus className="h-5 w-5" /> Añadir una canción
                             </Link>
-                        ))}
-                        {lista.length === 0 && <p className="px-4 py-6 text-center text-[15px] text-muted-foreground">Nada con «{q}».</p>}
-                    </div>
+                            <div className="mt-2 grid grid-cols-2 gap-2">
+                                <button onClick={() => setImportar(true)} className="h-11 rounded-[14px] text-[15px] font-semibold text-foreground active:opacity-60">Importar varias</button>
+                                <button onClick={probarEjemplo} className="h-11 rounded-[14px] text-[15px] font-semibold text-foreground active:opacity-60">Ver un ejemplo</button>
+                            </div>
+                        </div>
+                    ) : (
+                        <>
+                            <PonerPortadas className="mt-3" />
+                            <div className="mt-3">{filas(lista)}</div>
+                        </>
+                    )}
                 </>
             )}
 

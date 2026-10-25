@@ -11,6 +11,7 @@ import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
 import { HojaCancion } from '../../components/cancionero/HojaCancion';
 import { PanelAjustes } from '../../components/cancionero/PanelAjustes';
 import { AnadirLetra } from '../../components/cancionero/AnadirLetra';
+import { PortadaMuestra } from '../../components/cancionero/Portada';
 import { BotonBarra, Paso } from '../../components/cancionero/Controles';
 import { AjustesCantante, BotonClaqueta, DameElTono } from '../../components/cancionero/Cantante';
 import { esperaDeIntro, velocidadAlDesplazar } from '../../lib/cantar';
@@ -287,10 +288,18 @@ function Lector({ cancion }: { cancion: Cancion }) {
                         <Maximize className="h-4 w-4" /> Escenario
                     </BotonBarra>
                 </div>
-                <h1 className="mt-1 font-heading text-[28px] font-bold leading-tight text-foreground">{cancion.titulo}</h1>
-                <p className="mt-0.5 text-[15px] text-muted-foreground">
-                    {cancion.artista}{cancion.artista && datosTono && ' · '}{datosTono}
-                </p>
+                <div className="mt-1 flex items-start gap-3">
+                    {/* La portada; si hay muestra, al tocarla suenan 30 s de la grabación */}
+                    {(cancion.portada || cancion.muestra) && (
+                        <PortadaMuestra src={cancion.portada} titulo={cancion.titulo} muestra={cancion.muestra} tamano="cabecera" pararAlSalir />
+                    )}
+                    <div className="flex-1 min-w-0">
+                        <h1 className="font-heading text-[28px] font-bold leading-tight text-foreground">{cancion.titulo}</h1>
+                        <p className="mt-0.5 text-[15px] text-muted-foreground">
+                            {cancion.artista}{cancion.artista && datosTono && ' · '}{datosTono}
+                        </p>
+                    </div>
+                </div>
             </div>
 
             {/* Controles */}
