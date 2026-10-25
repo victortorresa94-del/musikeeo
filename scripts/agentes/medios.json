@@ -1,17 +1,81 @@
 [
   {
-    "persona": "rumbero-bcn", "para": "avatar", "tipo": "image", "estilos": ["rumba", "flamenco", "guitarra"],
+    "persona": "rumbero-bcn",
+    "para": "avatar",
+    "tipo": "image",
+    "estilos": [
+      "rumba",
+      "flamenco",
+      "guitarra"
+    ],
     "asset": "ast_mvnm9mdv_cfos",
     "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnma9j2_5f8a.png?alt=media&token=65302b7f-ca3b-4a4d-9c0b-74fe519d0ab9"
   },
   {
-    "persona": "dj-bodas-girona", "para": "avatar", "tipo": "image", "estilos": ["dj", "bodas", "electronica"],
+    "persona": "dj-bodas-girona",
+    "para": "avatar",
+    "tipo": "image",
+    "estilos": [
+      "dj",
+      "bodas",
+      "electronica"
+    ],
     "asset": "ast_mvno0r6x_2tzr",
     "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvno1bvv_6jqc.png?alt=media&token=262d9d09-f214-48b6-8b7e-292104823133"
   },
   {
-    "persona": "tecnico-bcn", "para": "avatar", "tipo": "image", "estilos": ["sonido"],
+    "persona": "tecnico-bcn",
+    "para": "avatar",
+    "tipo": "image",
+    "estilos": [
+      "sonido"
+    ],
     "asset": "ast_mvnoe9lv_aq1c",
     "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnoeuef_3slk.png?alt=media&token=5f92ea21-2b15-4889-b1f4-00705817127f"
+  },
+  {
+    "persona": "sala-rock-bcn",
+    "para": "avatar",
+    "tipo": "image",
+    "estilos": [
+      "rock",
+      "indie"
+    ],
+    "asset": "ast_mvnoogtv_jf0k",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnop1iv_7519.png?alt=media&token=2dd277c1-f519-433f-bb87-b36686384745"
+  },
+  {
+    "persona": "wedding-planner",
+    "para": "avatar",
+    "tipo": "image",
+    "estilos": [
+      "bodas",
+      "violin",
+      "acustico"
+    ],
+    "asset": "ast_mvnopn58_79ae",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnoqa94_31zj.png?alt=media&token=4d5182a2-8e32-4185-afd1-718752210934"
+  },
+  {
+    "persona": "jazz-madrid",
+    "para": "avatar",
+    "tipo": "image",
+    "estilos": [
+      "jazz",
+      "guitarra"
+    ],
+    "asset": "ast_mvnougbe_dp8r",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnov3d3_5av5.png?alt=media&token=6dea2409-420f-4264-b4ef-f45c361d0cc6"
+  },
+  {
+    "persona": "tienda-bcn",
+    "para": "avatar",
+    "tipo": "image",
+    "estilos": [
+      "guitarra",
+      "flamenco"
+    ],
+    "asset": "ast_mvnsof2f_kh10",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnsp2a2_56iq.png?alt=media&token=0d2e4fde-fb68-48cf-8e4e-437d1463724d"
   }
 ]
