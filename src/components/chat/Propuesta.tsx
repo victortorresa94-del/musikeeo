@@ -19,11 +19,12 @@ const hoy = () => {
 };
 
 // ─── Aviso cuando se escribe un teléfono, un email o «WhatsApp» ─────────────
+// Hasta que se acepta una propuesta, el teléfono y el email salen tapados al enviar
 export function AvisoContacto({ onProponer }: { onProponer: () => void }) {
     return (
         <div role="note" className="mx-3 mb-1.5 flex items-center gap-3 rounded-[14px] bg-pastel-mantequilla px-3.5 py-2.5 text-pastel-mantequilla-ink">
             <p className="flex-1 text-[13px] leading-snug">
-                <b className="font-bold">¿Os pasáis el teléfono?</b> Cerrad el bolo con una propuesta aquí: fecha, sitio y caché quedan por escrito para los dos.
+                <b className="font-bold">El teléfono y el email se ocultan</b> hasta que aceptéis una propuesta de bolo. Así fecha, sitio y caché quedan por escrito para los dos.
             </p>
             <button type="button" onClick={onProponer} className="pulsable shrink-0 h-8 px-3 rounded-full bg-foreground text-background text-[13px] font-semibold">
                 Hacer propuesta

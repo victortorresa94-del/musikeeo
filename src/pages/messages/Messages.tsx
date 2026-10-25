@@ -7,9 +7,9 @@ import { useAuth } from '../../context/AuthContext';
 import { chatService, type ChatPreview } from '../../services/chatService';
 import { userService } from '../../services/userService';
 import { type ChatMessage, type PropuestaBolo } from '../../types';
-import { tieneContacto } from '../../lib/fuga';
+import { taparContacto, tieneContacto } from '../../lib/fuga';
 import { AvisoContacto, HojaPropuesta, TarjetaPropuesta } from '../../components/chat/Propuesta';
-import { resumenPropuesta } from '../../lib/propuesta';
+import { resumenPropuesta, taparPropuesta } from '../../lib/propuesta';
 
 interface Person { displayName: string; photoURL?: string }
 
@@ -50,7 +50,7 @@ const Avatar = ({ person, size = 'h-11 w-11' }: { person?: Person; size?: string
 
 // Hoja del chat abierto. Se usa en línea en escritorio y a pantalla completa en el móvil.
 const ChatPane = ({
-    person, otherId, messages, myId, text, setText, onSend, onBack, error, respuestas, onProponer, onResponder,
+    person, otherId, messages, myId, text, setText, onSend, onBack, error, respuestas, onProponer, onResponder, contactoLibre,
 }: {
     person?: Person;
     otherId?: string;
@@ -64,6 +64,7 @@ const ChatPane = ({
     respuestas: Record<string, ChatMessage>;
     onProponer: () => void;
     onResponder: (propuesta: ChatMessage, aceptada: boolean) => Promise<void>;
+    contactoLibre: boolean;
 }) => {
     const scrollRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
@@ -109,6 +110,7 @@ const ChatPane = ({
                             ) : msg.tipo === 'respuesta' ? (
                                 <p className="text-center text-[12px] font-medium text-muted-foreground my-2">
                                     {mine ? 'Has' : `${person?.displayName || FALLBACK_NAME} ha`} {msg.aceptada ? 'aceptado' : 'rechazado'} la propuesta · {timeOf(msg.timestamp)}
+                                    {msg.aceptada && <span className="block">Ya podéis pasaros el teléfono</span>}
                                 </p>
                             ) : (
                             <div className={cn('flex', mine ? 'justify-end' : 'justify-start', lastOfGroup ? 'mb-2.5' : 'mb-0.5')}>
@@ -132,7 +134,7 @@ const ChatPane = ({
             </div>
 
             {error && <p className="px-4 pb-1 text-[12px] text-red-400">{error}</p>}
-            {tieneContacto(text) && <AvisoContacto onProponer={onProponer} />}
+            {!contactoLibre && tieneContacto(text) && <AvisoContacto onProponer={onProponer} />}
             <form
                 onSubmit={(e) => { e.preventDefault(); onSend(); }}
                 className="shrink-0 flex items-end gap-2 px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] md:pb-3 border-t border-hairline"
@@ -291,8 +293,10 @@ export default function Messages() {
         if (!body || !selected || !user) return;
         setText('');
         setError('');
+        // Hasta que se acepta una propuesta, teléfonos, emails y enlaces de WhatsApp van tapados
+        const envio = contactoLibre ? body : taparContacto(body).texto;
         try {
-            await chatService.sendMessage(selected.id, body, user.uid);
+            await chatService.sendMessage(selected.id, envio, user.uid);
         } catch (err) {
             console.error('Error enviando mensaje', err);
             setText(body);
@@ -301,8 +305,9 @@ export default function Messages() {
     };
 
     // Propuesta de bolo: va como un mensaje más, con su resumen legible en el texto
-    const enviarPropuesta = async (p: PropuestaBolo) => {
+    const enviarPropuesta = async (propuesta: PropuestaBolo) => {
         if (!selected || !user) return;
+        const p = contactoLibre ? propuesta : taparPropuesta(propuesta);
         await chatService.sendMessage(selected.id, resumenPropuesta(p), user.uid, { tipo: 'propuesta', propuesta: p });
     };
     const responder = async (propuesta: ChatMessage, aceptada: boolean) => {
@@ -310,6 +315,7 @@ export default function Messages() {
         try {
             await chatService.sendMessage(selected.id, aceptada ? `Propuesta aceptada · ${resumenPropuesta(propuesta.propuesta).replace('Propuesta de bolo · ', '')}` : 'Propuesta no aceptada',
                 user.uid, { tipo: 'respuesta', propuestaId: propuesta.id, aceptada });
+            if (aceptada) chatService.liberarContacto(selected.id).catch(err => console.error('No se pudo marcar el chat', err));
         } catch (err) {
             console.error('Error respondiendo a la propuesta', err);
             setError('No se ha enviado la respuesta. Revisa la conexión e inténtalo otra vez.');
@@ -326,6 +332,9 @@ export default function Messages() {
         }
         return out;
     }, [messages]);
+    // Contacto libre si se aceptó alguna propuesta (la marca del chat sirve aunque esa
+    // propuesta ya no esté entre los 100 últimos mensajes)
+    const contactoLibre = !!selected?.contactoLibre || Object.values(respuestas).some(r => r.aceptada);
 
     // Desde la lista se apila (atrás vuelve a la lista); si se llegó por «Contactar»
     // o con el enlace directo, volver reemplaza por la lista.
@@ -358,6 +367,7 @@ export default function Messages() {
             respuestas={respuestas}
             onProponer={() => setProponiendo(true)}
             onResponder={responder}
+            contactoLibre={contactoLibre}
         />
     );
 
@@ -468,6 +478,7 @@ export default function Messages() {
                         respuestas={respuestas}
                         onProponer={() => setProponiendo(true)}
                         onResponder={responder}
+                        contactoLibre={contactoLibre}
                     />
                 </div>,
                 document.body,

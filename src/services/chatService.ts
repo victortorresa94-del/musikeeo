@@ -24,6 +24,7 @@ export interface ChatPreview {
         timestamp: number;
     };
     updatedAt: number;
+    contactoLibre?: boolean; // se aceptó una propuesta de bolo: ya no se tapan teléfonos ni emails
     unreadCount?: number; // Calculated locally or stored
     otherUser?: {
         uid: string;
@@ -94,6 +95,11 @@ export const chatService = {
             },
             updatedAt: Date.now()
         });
+    },
+
+    // Al aceptar una propuesta de bolo: desde aquí ya se pueden pasar el teléfono
+    liberarContacto: async (chatId: string) => {
+        await updateDoc(doc(db, 'chats', chatId), { contactoLibre: true });
     },
 
     // Start or get existing chat — idempotent: deterministic doc ID from sorted participants
