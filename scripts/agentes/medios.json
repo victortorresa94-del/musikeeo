@@ -1,0 +1,17 @@
+[
+  {
+    "persona": "rumbero-bcn", "para": "avatar", "tipo": "image", "estilos": ["rumba", "flamenco", "guitarra"],
+    "asset": "ast_mvnm9mdv_cfos",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnma9j2_5f8a.png?alt=media&token=65302b7f-ca3b-4a4d-9c0b-74fe519d0ab9"
+  },
+  {
+    "persona": "dj-bodas-girona", "para": "avatar", "tipo": "image", "estilos": ["dj", "bodas", "electronica"],
+    "asset": "ast_mvno0r6x_2tzr",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvno1bvv_6jqc.png?alt=media&token=262d9d09-f214-48b6-8b7e-292104823133"
+  },
+  {
+    "persona": "tecnico-bcn", "para": "avatar", "tipo": "image", "estilos": ["sonido"],
+    "asset": "ast_mvnoe9lv_aq1c",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnoeuef_3slk.png?alt=media&token=5f92ea21-2b15-4889-b1f4-00705817127f"
+  }
+]

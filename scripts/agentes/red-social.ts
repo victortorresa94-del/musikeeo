@@ -59,7 +59,8 @@ async function comprobarEmulador() {
 }
 
 // ─── Medios: lo que suben los agentes ────────────────────────────────────────
-interface Medio { url: string; tipo: 'video' | 'image'; poster?: string; estilos: string[]; texto?: string; para?: 'post' | 'anuncio' | 'avatar' }
+// persona: el agente al que pertenece (su foto de perfil, sus vídeos); asset: su id en Aura Studio
+interface Medio { url: string; tipo: 'video' | 'image'; poster?: string; estilos: string[]; texto?: string; para?: 'post' | 'anuncio' | 'avatar'; persona?: string; asset?: string }
 
 function mediosGenerados(): Medio[] {
     const f = new URL('./medios.json', import.meta.url);
@@ -118,7 +119,10 @@ async function sembrar(personas: Persona[], medios: Medio[]) {
     console.log('Creando los agentes (con las reglas de verdad)…');
     for (const p of personas) {
         const a = await conectar(p, true);
-        const avatar = medios.find(m => m.para === 'avatar' && m.estilos.some(e => p.gustoReal[e])) || medios.find(m => m.tipo === 'image');
+        // Su propia foto (generada para él); si aún no la tiene, una de su estilo
+        const avatar = medios.find(m => m.para === 'avatar' && m.persona === p.id)
+            || medios.find(m => m.para === 'avatar' && !m.persona && m.estilos.some(e => p.gustoReal[e]))
+            || medios.find(m => m.tipo === 'image' && !m.persona);
         const ahora = new Date().toISOString();
         const modos = { musician: p.rol === 'musician', organizer: p.rol === 'organizer', provider: p.rol === 'provider' };
         const estilos = Object.keys(p.gustoReal).slice(0, 3);
@@ -131,7 +135,8 @@ async function sembrar(personas: Persona[], medios: Medio[]) {
             genres: p.declarado, ...(avatar ? { photoURL: avatar.poster || avatar.url } : {}), createdAt: ahora,
         });
         if (p.rol === 'musician') {
-            const clip = medios.find(m => m.tipo === 'video' && m.estilos.some(e => p.gustoReal[e]));
+            const clip = medios.find(m => m.tipo === 'video' && m.persona === p.id)
+                || medios.find(m => m.tipo === 'video' && !m.persona && m.estilos.some(e => p.gustoReal[e]));
             await setDoc(doc(a.db, 'artists', `artist_${a.uid}`), {
                 id: `artist_${a.uid}`, slug: `agente-${p.id}`, userId: a.uid, artistName: a.nombre, bio: p.descripcion,
                 genres: estilos.map(e => e[0].toUpperCase() + e.slice(1)), tags: [], city: p.ciudad, country: 'España',
@@ -169,7 +174,8 @@ async function publicar(a: Agente, medios: Medio[]) {
     const estilo = elegir(Object.keys(p.gustoReal));
     const ahora = new Date().toISOString();
     if (p.rol === 'musician' && rnd() < 0.45) {
-        const opciones = medios.filter(m => (m.para ?? 'post') === 'post' && m.estilos.includes(estilo));
+        const suyos = medios.filter(m => (m.para ?? 'post') === 'post' && m.persona === p.id);
+        const opciones = suyos.length && rnd() < 0.7 ? suyos : medios.filter(m => (m.para ?? 'post') === 'post' && !m.persona && m.estilos.includes(estilo));
         const m = opciones.length ? elegir(opciones) : elegir(medios.filter(x => (x.para ?? 'post') === 'post'));
         if (!m) return null;
         const caption = m.texto || elegir([
