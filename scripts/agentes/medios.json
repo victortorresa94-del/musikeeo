@@ -77,5 +77,30 @@
     ],
     "asset": "ast_mvnsof2f_kh10",
     "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnsp2a2_56iq.png?alt=media&token=0d2e4fde-fb68-48cf-8e4e-437d1463724d"
+  },
+  {
+    "persona": "cantante-pop-valencia",
+    "para": "avatar",
+    "tipo": "image",
+    "estilos": [
+      "pop",
+      "acustico",
+      "voz"
+    ],
+    "asset": "ast_mvnsrsuh_hwjf",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvnssbr3_aghs.png?alt=media&token=a2ea8ef4-bbbe-4ffd-a8c5-3ab828b3e95e"
+  },
+  {
+    "persona": "rumbero-bcn",
+    "para": "post",
+    "tipo": "image",
+    "estilos": [
+      "rumba",
+      "flamenco",
+      "guitarra",
+      "percusion"
+    ],
+    "asset": "ast_mvny42gx_b64u",
+    "url": "https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmvny4pqk_g9bi.png?alt=media&token=d2a8f35e-9d8b-40e8-8a87-3332fdf1e0ef"
   }
 ]
