@@ -18,11 +18,12 @@ const TAMANO_MAX = 60;
 export default function TocarRepertorio() {
     const { id } = useParams();
     const [params] = useSearchParams();
-    const { repertorios, canciones, listo } = useCancionero();
+    const { repertorios, canciones, listo, nube } = useCancionero();
     const repertorio = repertorios.find(r => r.id === id);
     const lista = repertorio ? repertorio.canciones.map(c => canciones.find(x => x.id === c)).filter((c): c is Cancion => !!c) : [];
 
-    if (!listo) return <div className="h-[100dvh] flex items-center justify-center bg-background"><Loader2 className="h-7 w-7 animate-spin text-muted-foreground" /></div>;
+    // Lo que no está en el móvil puede llegar de la cuenta: se espera a que acabe de mirar
+    if (!listo || (!lista.length && nube === 'sincronizando')) return <div className="h-[100dvh] flex items-center justify-center bg-background"><Loader2 className="h-7 w-7 animate-spin text-muted-foreground" /></div>;
     if (!repertorio || !lista.length) {
         return (
             <div className="h-[100dvh] flex flex-col items-center justify-center gap-4 bg-background px-8 text-center">

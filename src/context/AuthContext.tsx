@@ -159,6 +159,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
                 sessionStorage.removeItem('rodrigo_chat_messages');
                 sessionStorage.removeItem('rodrigo_chat_state');
                 if (uidToClear) clearCachedProfile(uidToClear);
+                // La pista del cancionero (quién lo usó la última vez, ver cancioneroService): que
+                // quien venga después no vea ni un instante las canciones de esta cuenta
+                localStorage.removeItem('musikeeo-cancionero-ultimo');
             } catch { /* storage disabled — ignore */ }
         } catch (error) {
             console.error("Error signing out", error);
