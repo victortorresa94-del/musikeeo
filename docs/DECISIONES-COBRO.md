@@ -12,7 +12,7 @@
 
 **Cobramos el primer encuentro y la herramienta de cada día, nunca la repetición.**
 - La comisión de la primera contratación paga lo que cuesta conseguir al cliente.
-- El beneficio lo dan las cuotas: Plan Sala, Pro, Cancionero Pro y Destacado en bodas.
+- El margen sale de los locales (la primera vez y el Plan Sala), de las tiendas y de la visibilidad.
 
 ## Lo que encontró el consejo
 
@@ -21,7 +21,7 @@
      - la línea «4 postulaciones destacadas por bolo» daba 715 k€ en el año 5, el 16 % de los ingresos y el 36 % del margen;
      - es cobrar a quien busca trabajo, y en bares y salas se parece a una agencia de colocación, que no puede cobrar al trabajador;
      - **sale del modelo y del producto** (10 de 10).
-   - **Volumen:** 9.500 contrataciones al mes en el año 5 serían el 15 % de todas las bodas con música de España. Como referencia, GigPig (Reino Unido) hace unos 5.000 bolos al mes con 3.000 locales.
+   - **Volumen:** 9.500 contrataciones al mes en el año 5 serían el 15 % de todas las bodas con música de España. Como referencia, GigPig (Reino Unido) hace unos 5.000 bolos al mes con 3.000 locales: 60.000 en 2025 según BusinessCloud.
 2. **Lo que decide si es rentable es lo que cuesta conseguir unos novios.**
    - Una boda no repite: su comisión tiene que pagar su captación.
    - Cada 10 € más por pareja quitan unos 250 k€ al margen del año 5.
@@ -56,8 +56,8 @@
 **D2 · Bodas y particulares.**
 - **Quién paga:** el cliente paga «gestión y garantía», metida en el precio final con IVA. **El músico cobra el 100 % de su caché.**
 - **Cuánto:**
-  - **lanzamiento:** 10 % + IVA (el cliente ve un 12,1 %) durante 6 meses, con fecha de fin anunciada;
-  - **después:** **12 % + IVA** (14,5 %), salvo que la prueba A/B muestre que paga dentro 5 puntos menos;
+  - **lanzamiento:** 10 % + IVA (el cliente ve un 12,1 %) durante 6 meses, con fecha de fin anunciada. Al 10 % una boda deja 0 € si conseguir a la pareja cuesta 50 €: **mientras dure, no se pagan anuncios para captar novios**, solo fincas, planners y músicos;
+  - **después:** **12 % + IVA** (14,5 %). No es opcional: con el 10 % las bodas no pagan su captación. Si la prueba A/B muestra que paga dentro 5 puntos menos, se compensa con fincas y planners, no bajando el precio;
   - mínimo 25 € y tope de 300 €.
 - **Pagos:**
   - **señal del 30 % al reservar**, que funciona como arras: si cancelan los novios, la pierden; si cancela el artista, devuelve el doble;
@@ -192,7 +192,65 @@
 
 ## Previsiones (plan del consejo)
 
-_Se están calculando con el modelo por segmentos del matemático del consejo; se añaden en el siguiente commit._
+Calculado con `docs/pitch/modelo_consejo.py`: el modelo por segmentos del matemático, con las decisiones de arriba. «Margen» es el margen de contribución: ingresos menos el cobro (Stripe, Connect, disputas), la garantía, la atención al cliente y lo que cuesta conseguir cada cliente. Sin estructura fija.
+
+| | Año 1 | Año 2 | Año 3 | Año 4 | Año 5 | Cubre 10 / 25 / 50 k€ al mes |
+|---|---|---|---|---|---|---|
+| **Base** (5.700 contrataciones al mes en el año 5) | 27 k€ | 117 k€ | 447 k€ | 1,06 M€ | **1,96 M€** | mes 30 / **41** / 53 |
+| margen | 13 k€ | 35 k€ | 133 k€ | 340 k€ | **669 k€ (34 %)** | |
+| **Conservador** (35 % del volumen de hoy) | 24 k€ | 72 k€ | 259 k€ | 607 k€ | 1,13 M€ | mes 37 / 49 / no llega |
+| margen | 14 k€ | 25 k€ | 79 k€ | 196 k€ | 388 k€ (34 %) | |
+| **Ambicioso** (volumen de hoy, Europa desde el año 4) | 32 k€ | 185 k€ | 722 k€ | 1,72 M€ | 3,21 M€ | mes 25 / 36 / 45 |
+| margen | 11 k€ | 50 k€ | 208 k€ | 549 k€ | 1,09 M€ (34 %) | |
+
+- **Frente al modelo de hoy** (4,47 M€ de ingresos y 1,96 M€ de margen en el año 5), los ingresos bajan a menos de la mitad y el margen a un tercio. Ese modelo estaba inflado: la postulación destacada, 75 % pagado dentro en todo, el volumen, el IVA y Stripe por debajo de lo real.
+- **Por qué el base es el 60 % del volumen de hoy:** GigPig, el más parecido en Europa, hace unos 60.000 bolos al año con 3.000 locales ([BusinessCloud](https://businesscloud.co.uk/news/fast-growing-gigpig-set-to-make-14-5m-from-60000-gigs-in-2025/)), unos 5.000 al mes.
+- **El margen del año 1 es positivo** solo por la preventa de Pro Fundadores (300 × 49 €) y la mesa de eventos: es una hipótesis.
+
+**De dónde sale el dinero en el año 5 (base)**
+
+| Comisión | Suscripciones | Visibilidad | Mercado |
+|---|---|---|---|
+| **77 %** | **17 %** | **4 %** | **3 %** |
+| Bodas y particulares 56 %, salas y eventos 14 %, bares 7 % | Plan Sala 9 %, tiendas 6 %, Pro y Cancionero Pro 2 % | Destacado en bodas 3 %, Promocionado 1 % | Protección al comprador 2 %, destacados 1 % |
+
+- **Lo que se ve en el margen**:
+  - La comisión de bodas apenas paga lo que cuesta conseguir a los novios.
+  - El margen sale de los locales (la primera vez y el Plan Sala), de las tiendas y de la visibilidad.
+  - Pro y Cancionero Pro son pequeños (unos 40 k€): sirven para atraer y retener a los músicos, no para pagar las cuentas.
+- **Ingresos por bolo:** son el 7,5 % de lo que se contrata.
+
+**Lo que deja cada bolo pagado dentro**
+
+| Bolo | Comisión | Menos cobro, garantía y atención | Menos lo que cuesta conseguirlo |
+|---|---|---|---|
+| Boda de 800 € al 12 % | 95 € | 65 € | **15 €** (pareja a 50 €) |
+| Boda de 800 € al 10 % | 80 € | 50 € | **0 €**: por eso el 10 % es solo de lanzamiento y **sin pagar anuncios para captar novios mientras dure** |
+| Bar, primera vez (220 €) | 23 € | 22 € | conseguir el local cuesta 90 €: se paga con unas 4 primeras veces |
+| Sala o evento, primera vez (1.000 €) | 100 € | 98 € | conseguir la sala cuesta 80 € |
+
+**Incertidumbre** (5.000 futuros posibles, con los valores dudosos en sus rangos: volumen ×0,6–1,7, pareja a 31–80 €, bodas pagadas dentro del 50 al 85 %, Plan Sala del 10 al 30 %…)
+
+| Año 5 | Pesimista (P10) | Normal (P50) | Optimista (P90) |
+|---|---|---|---|
+| Ingresos | 1,11 M€ | 1,88 M€ | 3,22 M€ |
+| Margen | 161 k€ | 518 k€ | 1,04 M€ |
+
+- **Riesgo de perder dinero en el año 5:** un 4 %.
+- **Estructura de 25 k€ al mes:** se cubre hacia el mes 46 en el caso normal; en el 18 % de los casos, no en 5 años.
+- **Lo que más pesa** es lo que cuesta conseguir unos novios, seguido del volumen.
+
+**Las palancas** (margen del año 5, base)
+
+| Caso | Margen | Cubre 25 / 50 k€ al mes |
+|---|---|---|
+| Pareja a 30 € (fincas, planners, músicos) | **898 k€** | mes 37 / 48 |
+| Plan (pareja a 50 €) | 669 k€ | mes 41 / 53 |
+| Pareja a 70 € (anuncios) | 440 k€ | mes 49 / no llega |
+| Plan Sala al 12 % en lugar del 20 % | 602 k€ | mes 43 / 55 |
+| Nadie paga dentro y se sigue gastando en captar | −458 k€ | no llega |
+
+**Qué decir al inversor:** «Es rentable por bolo desde el primer día y por cliente si conseguir unos novios cuesta 50 € o menos. Con solo España llega a unos 2 M€ de ingresos y 670 k€ de margen en el año 5; con Europa, a más de 3 M€. Estas son las tres palancas y así las medimos». No se piden cantidades ni se enseñan múltiplos de valoración.
 
 ## Antes del primer euro (abogado)
 

@@ -1,6 +1,7 @@
 # Musikeeo — Cómo gana dinero
 
-> 8 de octubre de 2026. Complementa a `docs/LANZAMIENTO.md`. Cómo cobran otras plataformas (Airbnb, Treatwell, GigSalad, Wallapop…) y qué copiamos: `docs/REFERENCIAS-MONETIZACION.md` (25-oct-2026).
+> 8 de octubre de 2026. Complementa a `docs/LANZAMIENTO.md`.
+> **⚠️ Actualizado el 25-oct-2026 por `docs/DECISIONES-COBRO.md` (consejo de 10 expertos): donde no coincidan, manda aquel.** En especial: ni 5 % al repetir, ni postulación destacada, y las bodas al 12 % + IVA. Cómo cobran otras plataformas (Airbnb, Treatwell, GigSalad, Wallapop…) y qué copiamos: `docs/REFERENCIAS-MONETIZACION.md` (25-oct-2026).
 
 ## La idea en una frase
 

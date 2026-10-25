@@ -131,6 +131,36 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 
 ## SESSION LOG
 
+### 2026-10-25 (Cómo cobrar: consejo de 10 expertos y contacto escondido en el chat)
+
+**✅ Hecho:**
+- `docs/REFERENCIAS-MONETIZACION.md`: cómo cobran 20 plataformas.
+- **Consejo de 10 agentes expertos** (5 de finanzas y 5 de viabilidad) → `docs/DECISIONES-COBRO.md`. Los informes están en `docs/pitch/consejo/` y el modelo en `docs/pitch/modelo_consejo.py`.
+- **En una frase:** se cobra la primera vez y la herramienta, nunca la repetición.
+  - Bares y salas: 10 % + IVA solo la primera vez con cada artista, cobrado al aceptar.
+  - Bodas: gestión y garantía que paga el cliente (10 % + IVA de lanzamiento, luego 12 %); el músico, 0 %.
+  - Suscripciones: Plan Sala 29 €, Pro 7,99 €, Cancionero Pro 24,99 €/año.
+  - **Fuera la postulación destacada:** inflaba el modelo y es cobrar a quien busca trabajo.
+- **Cifras nuevas del año 5 (base, 60 % del volumen):** 1,96 M€ de ingresos y 669 k€ de margen; una estructura de 25 k€/mes se cubre desde el mes 41. El modelo de hoy (4,47 M€ y 1,96 M€) estaba inflado.
+- **Lo que más pesa:** lo que cuesta conseguir unos novios (tope de 50 €).
+- **En la app:** teléfonos, emails, @usuarios y enlaces a WhatsApp, Telegram y redes se ocultan en el chat hasta aceptar una propuesta (`src/lib/fuga.ts`). Lo hace el móvil y no se guarda lo oculto; al aceptar, el chat queda con `contactoLibre`. Probado con dos cuentas en el emulador.
+- Privacidad y condiciones al día con esa regla.
+
+**❌ Pendiente:**
+- **El dossier y la presentación siguen con las cifras viejas (4,47 M€).** Actualizarlos con `DECISIONES-COBRO.md` antes de enseñarlos a Manu.
+- **Antes del primer euro** (lista en `DECISIONES-COBRO.md`):
+  - SL;
+  - dictamen de un asesor laboral y fiscal;
+  - modelo 040 (DAC7);
+  - Stripe Connect;
+  - 18 años para cobrar y contratar.
+- **Primer euro posible:** la mesa de eventos de empresa (Mobile World Congress, marzo de 2027), facturando un 12 %. La vende Víctor.
+- **App:**
+  - contar las propuestas y los avisos, y preguntar «¿con factura?»;
+  - regla de Firestore de respaldo para el chat;
+  - repertorios de banda (base del Cancionero Pro);
+  - preventa Pro Fundadores.
+
 ### 2026-10-25 (Operación Inversores Manu: demo, vídeos y presentación)
 
 **✅ Hecho:** recorrido de la app como la verá Manu (móvil y ordenador, datos de demostración de producción): todo funciona; el botón flotante de Rodrigo tapaba «Buscar» en la portada y se montaba en el Feed (ahora sale al bajar del hero y no sale en el Feed). Vídeo largo v2 (52 s) y vídeo corto (17 s) con pantallas reales, Cancionero y Feed (`docs/VIDEOS.md`). Dossier para inversores de 24 láminas en PDF con la línea de la app: fuente en `docs/pitch/presentacion/` (ver su LEEME), cifras de `docs/pitch/investigacion.md` y `docs/pitch/modelo_financiero.py` (traídos de la rama del 22-oct). NO pide una cantidad (Víctor: «no es para pedir x dinero, es para presentarla como rentable»): previsiones de ingresos a 5 años en 3 escenarios, margen de contribución (44 % en el año 5, base), desde qué mes paga una estructura fija de 10/25/50 k€ al mes (base: mes 22/29/37), LTV/CAC, sensibilidad, valor de la empresa y riesgos; las láminas financieras se generan del modelo (`docs/pitch/rentabilidad.py`). La historia de la correa: el cinturón de seguridad del coche de la madre de Víctor (no de un colega del público). Todo en Trabajos del Studio de Aether Labs (proyecto Musikeeo). La presentación del 22-oct no apareció (ni Aura personal ni de empresa, ni Drive): se hizo nueva.

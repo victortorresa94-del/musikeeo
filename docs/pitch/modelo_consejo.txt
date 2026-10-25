@@ -1,0 +1,88 @@
+# Plan final · cifras para el dossier (f1-quant, modelo por segmentos; margen = contribución sin estructura fija)
+
+## (a) Tres escenarios
+
+### conservador  (contrataciones/mes en dic: 88 → 315 → 910 → 1.925 → 3.325)
+| Año | Ingresos | Margen | % |
+|---|---|---|---|
+| 1 | 24 k€ | 14 k€ | 59% |
+| 2 | 72 k€ | 25 k€ | 34% |
+| 3 | 259 k€ | 79 k€ | 30% |
+| 4 | 607 k€ | 196 k€ | 32% |
+| 5 | 1,13 M€ | 388 k€ | 34% |
+Cubre 10 / 25 / 50 k€/mes desde el mes: 37 / 49 / —
+
+### base  (contrataciones/mes en dic: 150 → 550 → 1.600 → 3.400 → 5.700)
+| Año | Ingresos | Margen | % |
+|---|---|---|---|
+| 1 | 27 k€ | 13 k€ | 47% |
+| 2 | 117 k€ | 35 k€ | 30% |
+| 3 | 447 k€ | 133 k€ | 30% |
+| 4 | 1,06 M€ | 340 k€ | 32% |
+| 5 | 1,96 M€ | 669 k€ | 34% |
+Cubre 10 / 25 / 50 k€/mes desde el mes: 30 / 41 / 53
+
+### ambicioso  (contrataciones/mes en dic: 250 → 900 → 2.600 → 5.500 → 9.500)
+| Año | Ingresos | Margen | % |
+|---|---|---|---|
+| 1 | 32 k€ | 11 k€ | 33% |
+| 2 | 185 k€ | 50 k€ | 27% |
+| 3 | 722 k€ | 208 k€ | 29% |
+| 4 | 1,72 M€ | 549 k€ | 32% |
+| 5 | 3,21 M€ | 1,09 M€ | 34% |
+Cubre 10 / 25 / 50 k€/mes desde el mes: 25 / 36 / 45
+
+## (b) Mezcla del año 5 (base)
+| Línea | A5 | % |
+|---|---|---|
+| Comisión bodas y particulares | 1,09 M€ | 55,7% |
+| Comisión salas y eventos | 266 k€ | 13,6% |
+| Comisión bares | 131 k€ | 6,7% |
+| Plan Sala | 175 k€ | 9,0% |
+| Musikeeo Pro | 27 k€ | 1,4% |
+| Pro fundadores | 2 k€ | 0,1% |
+| Cancionero Pro | 14 k€ | 0,7% |
+| Tiendas | 109 k€ | 5,6% |
+| Destacado en bodas | 68 k€ | 3,5% |
+| Postulación destacada | 0 k€ | 0,0% |
+| Promocionado | 16 k€ | 0,8% |
+| Destacados del Mercado | 19 k€ | 1,0% |
+| Protección al comprador | 41 k€ | 2,1% |
+| **Comisión (total)** | 1,49 M€ | 76% |
+| **Suscripciones** | 326 k€ | 17% |
+| **Visibilidad** | 84 k€ | 4% |
+| **Mercado** | 60 k€ | 3% |
+Diciembre del A5: 2.700 locales activos. 482 pagan Plan Sala (18%); 16.500 perfiles activos. 443 Pro (2,7%); 24.750 usuarios del Cancionero. 691 Cancionero Pro (2,8%); 248 Destacados en bodas
+Costes A5: cobro 237 k€, garantía y soporte 157 k€, captación 893 k€ (parejas 573 k€, bares 115 k€, salas y empresas 164 k€, perfiles 41 k€); GMV A5 27,89 M€; ingresos/GMV 7,0%
+
+## (c) Monte Carlo del plan (3000 tiradas, mis priores alrededor del base)
+| | P10 | P50 | P90 |
+|---|---|---|---|
+| Ingresos A5 | 1,10 M€ | 1,87 M€ | 3,22 M€ |
+| Margen A5 | 164 k€ | 518 k€ | 1,04 M€ |
+| Margen A5 en % | 9% | 30% | 44% |
+| Mes en que cubre 25 k€/mes (P10 = el mejor) | 36 | 46 | >60 |
+No cubre 25 k€/mes en 5 años: 18% · 10 k€: 7% · 50 k€: 50% · margen A5 negativo: 4%
+Lo que más mueve el margen A5 (parte de la varianza): cac_pareja 40%, k 26%, pd_bodas_mult 6%, cac_sala 5%
+
+## (d) Si nadie paga dentro (base)
+Ingresos A5 470 k€ (24% de 1,96 M€). Margen A5 con el mismo gasto en captar -458 k€; sin pagar por parejas 115 k€. Cubre 25 k€/mes: —
+
+## (e) Sensibilidad del margen A5 (base)
+| Caso | Ingresos A5 | Margen A5 | Cubre 25 / 50 k€ |
+|---|---|---|---|
+| Plan (pareja a 50 €) | 1,96 M€ | 669 k€ | 41 / 53 |
+| Pareja a 30 € (fincas y planners) | 1,96 M€ | 898 k€ | 37 / 48 |
+| Pareja a 70 € | 1,96 M€ | 440 k€ | 49 / — |
+| Bodas al 10 % (no 12 %) | 1,78 M€ | 498 k€ | 47 / — |
+| Plan Sala al 12 % (no 20 %) | 1,89 M€ | 602 k€ | 43 / 55 |
+| Bares: CAC como hoy (15 % de sus bolos, cliente nuevo) | 1,96 M€ | 379 k€ | 50 / — |
+
+## (f) Lo que deja cada bolo pagado dentro (régimen, base)
+| Bolo | Comisión media | Cobro | Garantía + soporte | Neto antes de captar | Captación | Neto |
+|---|---|---|---|---|---|---|
+| Boda 800 € al 12 % | 95,0 € | 17,5 € | 13,0 € | 64,6 € | 50 € | 14,6 € |
+| Boda 800 € al 10 % | 79,8 € | 17,2 € | 13,0 € | 49,6 € | 50 € | -0,4 € |
+| Bar, 1.ª vez (220 €) | 22,6 € | 0,72 € | — | 21,9 € | local 90 € (se reparte entre sus bolos) | — |
+| Sala o evento, 1.ª vez (1.000 €) | 99,9 € | 2,12 € | — | 97,8 € | sala/empresa 80 € (se reparte entre sus bolos) | — |
+Un bar nuevo tiene que hacer 4,1 primeras veces cobradas para pagar sus 90 € (≈ 21 bolos); el Plan Sala (7,6 €/local/mes de media) ayuda
