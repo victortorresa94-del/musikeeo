@@ -208,6 +208,9 @@ export function enlacesAcordes(titulo: string, artista: string): EnlaceBusqueda[
         { nombre: 'Ultimate Guitar', url: `https://www.ultimate-guitar.com/search.php?search_type=title&value=${encodeURIComponent(q)}` },
         { nombre: 'Cifra Club', url: google(`${q} site:cifraclub.com`) },
         { nombre: 'Google', url: google(`${q} acordes`) },
+        // Saca los acordes de la grabación (no son texto para copiar: se miran tocando). Con su
+        // app instalada, el enlace la abre
+        { nombre: 'Chordify', url: google(`${q} site:chordify.net`) },
     ];
 }
 

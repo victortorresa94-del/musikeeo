@@ -34,6 +34,7 @@ const BUSCADORES = [
     ['Google', (q: string) => `https://www.google.com/search?q=${encodeURIComponent(`${q} acordes`)}`],
     ['LaCuerda', (q: string) => `https://www.google.com/search?q=${encodeURIComponent(`${q} site:lacuerda.net`)}`],
     ['Ultimate Guitar', (q: string) => `https://www.ultimate-guitar.com/search.php?search_type=title&value=${encodeURIComponent(q)}`],
+    ['Chordify', (q: string) => `https://www.google.com/search?q=${encodeURIComponent(`${q} site:chordify.net`)}`],
 ] as const;
 
 function Formulario({ existente }: { existente?: Cancion }) {
