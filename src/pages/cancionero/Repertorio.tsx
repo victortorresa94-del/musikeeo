@@ -8,6 +8,7 @@ import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { norm, pedirPantallaCompleta, tonoDe } from '../../components/cancionero/utilidades';
 import { Portada } from '../../components/cancionero/Portada';
+import { bloqueDe, estiloBloque, etiquetasDe } from '../../components/cancionero/estilo';
 import type { Cancion, Repertorio as TipoRepertorio } from '../../types/cancionero';
 
 export default function Repertorio() {
@@ -26,6 +27,9 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
 
     const porId = useMemo(() => new Map(canciones.map(c => [c.id, c])), [canciones]);
     const ids = repertorio.canciones.filter(c => porId.has(c));
+    // Lo que dura, si las canciones lo saben (del catálogo)
+    const segundos = ids.reduce((t, id) => t + (porId.get(id)?.duracion ?? 0), 0);
+    const duracion = segundos >= 600 ? (segundos >= 3600 ? `${Math.floor(segundos / 3600)} h ${Math.round((segundos % 3600) / 60)} min` : `${Math.round(segundos / 60)} min`) : '';
 
     const cambiar = (cambio: Partial<TipoRepertorio>) => guardarRepertorio({ ...repertorio, ...cambio });
     const quitar = (id: string) => cambiar({ canciones: repertorio.canciones.filter(c => c !== id) });
@@ -55,22 +59,27 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
             <div className="mt-1 flex items-center gap-2 text-[15px] text-muted-foreground">
                 <input type="date" value={repertorio.fecha} onChange={e => cambiar({ fecha: e.target.value })} aria-label="Fecha del bolo"
                     className="bg-transparent text-muted-foreground focus:outline-none" />
-                <span>· {ids.length} {ids.length === 1 ? 'canción' : 'canciones'}</span>
+                <span>· {ids.length} {ids.length === 1 ? 'tema' : 'temas'}{duracion && ` · ${duracion}`}</span>
             </div>
 
             <button onClick={() => tocar()} disabled={!ids.length}
                 className="pulsable mt-5 w-full h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] flex items-center justify-center gap-2 disabled:opacity-40">
-                <Play className="h-5 w-5" /> Tocar
+                <Play className="h-5 w-5 fill-current" /> Tocar el repertorio
             </button>
-            <p className="mt-2 text-center text-[13px] text-muted-foreground">Desliza de lado para pasar de canción. Funciona sin cobertura.</p>
+            <p className="mt-2 text-center text-[13px] text-muted-foreground">Desliza de lado para pasar de canción. Toca un número para empezar desde ese tema.</p>
 
             {ids.length > 0 ? (
                 <Reorder.Group axis="y" values={ids} onReorder={orden => guardarRepertorio({ ...repertorio, canciones: orden }, { esperar: true })}
-                    className="mt-6 rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
-                    {ids.map((id, i) => (
-                        <Fila key={id} id={id} n={i + 1} cancion={porId.get(id)!} tono={tonoDe(porId.get(id)!)}
-                            onQuitar={() => quitar(id)} onTocar={() => tocar(i)} />
-                    ))}
+                    className="mt-6">
+                    {ids.map((id, i) => {
+                        // El bloque del bolo sale encima de su primer tema
+                        const bloque = bloqueDe(porId.get(id)!);
+                        const nuevoBloque = bloque && (i === 0 || bloque !== bloqueDe(porId.get(ids[i - 1])!)) ? bloque : null;
+                        return (
+                            <Fila key={id} id={id} n={i + 1} cancion={porId.get(id)!} tono={tonoDe(porId.get(id)!)} bloque={nuevoBloque}
+                                onQuitar={() => quitar(id)} onTocar={() => tocar(i)} />
+                        );
+                    })}
                 </Reorder.Group>
             ) : (
                 <p className="mt-6 rounded-2xl bg-fill px-4 py-6 text-center text-[15px] text-muted-foreground">Añade las canciones en el orden en que las vas a tocar.</p>
@@ -95,31 +104,49 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     );
 }
 
-function Fila({ id, n, cancion, tono, onQuitar, onTocar }: {
-    id: string; n: number; cancion: Cancion; tono: string | null; onQuitar: () => void; onTocar: () => void;
+function Fila({ id, n, cancion, tono, bloque, onQuitar, onTocar }: {
+    id: string; n: number; cancion: Cancion; tono: string | null; bloque: string | null; onQuitar: () => void; onTocar: () => void;
 }) {
     const arrastre = useDragControls();
+    const etiquetas = etiquetasDe(cancion);
+    const estilo = bloque ? estiloBloque(bloque) : null;
     return (
-        <Reorder.Item value={id} dragListener={false} dragControls={arrastre} className="relative bg-sheet flex items-center gap-1 pl-1 pr-2 min-h-[60px]">
+        <Reorder.Item value={id} dragListener={false} dragControls={arrastre} className="relative bg-background">
+            {bloque && estilo && (
+                <div className={cn('relative mt-5 mb-1 h-[68px] rounded-[18px] overflow-hidden flex items-center pl-4 pr-[96px]', estilo.pastel.fondo)}>
+                    <span className="font-heading text-[19px] font-bold leading-tight text-foreground line-clamp-2">{bloque}</span>
+                    <img src={estilo.icono} alt="" loading="lazy" draggable={false}
+                        className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-[64px] w-[84px] object-contain drop-shadow-[0_6px_8px_rgba(0,0,0,0.16)]" />
+                </div>
+            )}
+            <div className="flex items-center gap-1 pl-0 pr-1 min-h-[64px] border-b border-hairline">
             <button onPointerDown={e => arrastre.start(e)} aria-label="Arrastra para ordenar"
                 className="h-11 w-9 shrink-0 flex items-center justify-center text-muted-foreground touch-none cursor-grab">
                 <GripVertical className="h-5 w-5" />
             </button>
-            <span className="w-5 shrink-0 text-[14px] font-semibold text-muted-foreground tabular-nums">{n}</span>
+            {/* El número arranca el bolo desde este tema */}
+            <button onClick={onTocar} aria-label={`Tocar desde ${cancion.titulo}`}
+                className="h-9 w-7 shrink-0 rounded-full text-[13px] font-semibold text-muted-foreground tabular-nums active:bg-fill">{n}</button>
             <Link to={`/cancionero/${cancion.id}`} className="flex-1 min-w-0 py-2.5 flex items-center gap-3 active:opacity-60">
                 <Portada src={cancion.portada} titulo={cancion.titulo} tamano="fila" />
                 <span className="flex-1 min-w-0">
                     <span className="block truncate text-[16px] font-semibold text-foreground">{cancion.titulo}</span>
                     {cancion.artista && <span className="block truncate text-[13px] text-muted-foreground">{cancion.artista}</span>}
+                    {etiquetas.length > 0 && (
+                        <span className="mt-1 flex flex-wrap gap-1">
+                            {etiquetas.map(e => (
+                                <span key={e.texto} className={cn('h-5 px-2 rounded-full text-[11.5px] font-semibold flex items-center',
+                                    e.pastel ? cn(e.pastel.fondo, e.pastel.tinta) : 'bg-fill-strong text-muted-foreground')}>{e.texto}</span>
+                            ))}
+                        </span>
+                    )}
                 </span>
             </Link>
             {tono && <span className="shrink-0 h-7 px-2.5 rounded-full bg-fill-strong text-[13px] font-semibold text-foreground flex items-center">{tono}</span>}
-            <button onClick={onTocar} aria-label={`Tocar desde ${cancion.titulo}`} className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-foreground active:bg-fill">
-                <Play className="h-4 w-4" />
-            </button>
             <button onClick={onQuitar} aria-label={`Quitar ${cancion.titulo}`} className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-muted-foreground active:bg-fill">
                 <X className="h-4 w-4" />
             </button>
+            </div>
         </Reorder.Item>
     );
 }
