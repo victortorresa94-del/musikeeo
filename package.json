@@ -21,6 +21,8 @@
     "firebase": "^12.7.0",
     "framer-motion": "^12.25.0",
     "lucide-react": "^0.562.0",
+    "mammoth": "^1.13.0",
+    "pdfjs-dist": "^6.4.299",
     "react": "^19.2.0",
     "react-dom": "^19.2.0",
     "react-hook-form": "^7.71.0",
