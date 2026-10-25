@@ -2,16 +2,18 @@ import { useState, useRef, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence, useMotionValue, useTransform } from 'framer-motion';
 import { Link, useNavigate } from 'react-router-dom';
 import {
-    ChevronDown, ChevronLeft, ChevronUp, Heart, BadgeCheck, Music2, Send, Volume2, VolumeX, Play, X,
+    ChevronDown, ChevronLeft, ChevronUp, Heart, BadgeCheck, MessageCircle, Music2, Send, Volume2, VolumeX, Play, X,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { type Reel } from '../../types/reels';
 import { useAuth } from '../../context/AuthContext';
 import { cn } from '../../lib/utils';
+import type { Senal } from '../../lib/recomendador';
 
 // Visor de reels a pantalla completa. En el móvil se desliza (como Instagram);
 // en el PC, el vídeo vertical va centrado sobre negro, con flechas, rueda y teclado.
-// Solo se enseñan las acciones que existen de verdad: el me gusta, en las publicaciones.
+// Solo se enseñan las acciones que existen de verdad: me gusta y comentarios.
+// Avisa de lo que se ve entero y lo que se salta, para que el Feed aprenda.
 
 interface ReelsViewerProps {
     reels: Reel[];
@@ -19,8 +21,12 @@ interface ReelsViewerProps {
     onClose: () => void;
     /** Publicaciones que el usuario ya ha marcado */
     likedIds?: Set<string>;
-    /** Me gusta de una publicación (quien lo pasa lo guarda en Firestore) */
+    /** Me gusta (quien lo pasa lo guarda en Firestore) */
     onLike?: (reel: Reel, liked: boolean) => void;
+    /** Abrir los comentarios de este vídeo */
+    onComentar?: (reel: Reel) => void;
+    /** Gestos para el algoritmo: impresión, visto entero, saltado */
+    onSenal?: (reel: Reel, s: Senal) => void;
 }
 
 const fmt = (n: number) => {
@@ -34,7 +40,7 @@ const textoPresupuesto = (nombre: string) =>
 
 // ─── Un reel ─────────────────────────────────────────────────────────────────
 const ReelItem = ({
-    reel, isActive, isNear, muted, onToggleMute, liked, onLike, onPedirPresupuesto,
+    reel, isActive, isNear, muted, onToggleMute, liked, onLike, onComentar, onSenal, onPedirPresupuesto,
 }: {
     reel: Reel;
     isActive: boolean;
@@ -43,6 +49,8 @@ const ReelItem = ({
     onToggleMute: () => void;
     liked: boolean;
     onLike?: (liked: boolean) => void;
+    onComentar?: () => void;
+    onSenal?: (s: Senal) => void;
     onPedirPresupuesto: () => void;
 }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
@@ -59,6 +67,18 @@ const ReelItem = ({
         const v = videoRef.current;
         if (v) { v.defaultMuted = true; v.muted = muted; }
     }, [muted]);
+
+    // Lo que se ve entero (60 %) y lo que se salta (menos de 1,5 s), para el algoritmo
+    const aviso = useRef(onSenal);
+    useEffect(() => { aviso.current = onSenal; }, [onSenal]);
+    const visto60 = useRef(false);
+    useEffect(() => {
+        if (!isActive) return;
+        visto60.current = false;
+        const desde = Date.now();
+        aviso.current?.('impresion');
+        return () => { if (Date.now() - desde < 1500 && !visto60.current) aviso.current?.('saltar'); };
+    }, [isActive]);
 
     // Solo avanza el reel que está en pantalla
     useEffect(() => {
@@ -118,7 +138,12 @@ const ReelItem = ({
                 onError={() => setRoto(true)}
                 onTimeUpdate={(e) => {
                     const v = e.currentTarget;
-                    if (v.duration) progreso.set(v.currentTime / v.duration);
+                    if (!v.duration) return;
+                    progreso.set(v.currentTime / v.duration);
+                    if (isActive && !visto60.current && v.currentTime / v.duration >= 0.6) {
+                        visto60.current = true;
+                        aviso.current?.('ver_entero');
+                    }
                 }}
             />
             {roto && reel.thumbnailUrl && (
@@ -167,6 +192,12 @@ const ReelItem = ({
                             <Heart className={cn('h-8 w-8 text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]', liked && 'fill-white')} />
                         </motion.span>
                         {likes > 0 && <span className="text-white text-xs font-bold drop-shadow">{fmt(likes)}</span>}
+                    </button>
+                )}
+                {onComentar && (
+                    <button onClick={onComentar} aria-label={reel.comments > 0 ? `Ver los ${reel.comments} comentarios` : 'Comentar'} className="flex flex-col items-center gap-1 w-14 active:opacity-70">
+                        <MessageCircle className="h-8 w-8 text-white drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]" />
+                        {reel.comments > 0 && <span className="text-white text-xs font-bold drop-shadow">{fmt(reel.comments)}</span>}
                     </button>
                 )}
                 <button onClick={share} aria-label={esArtista ? `Compartir el perfil de ${reel.authorName}` : 'Compartir'} className="w-14 flex justify-center active:opacity-70">
@@ -225,7 +256,7 @@ const ReelItem = ({
 };
 
 // ─── Visor ───────────────────────────────────────────────────────────────────
-export default function ReelsViewer({ reels, initialIndex = 0, onClose, likedIds, onLike }: ReelsViewerProps) {
+export default function ReelsViewer({ reels, initialIndex = 0, onClose, likedIds, onLike, onComentar, onSenal }: ReelsViewerProps) {
     const navigate = useNavigate();
     const { user } = useAuth();
     const rootRef = useRef<HTMLDivElement>(null);
@@ -353,7 +384,9 @@ export default function ReelsViewer({ reels, initialIndex = 0, onClose, likedIds
                                     muted={muted}
                                     onToggleMute={() => setMuted(m => !m)}
                                     liked={!!likedIds?.has(reel.id)}
-                                    onLike={reel.origen !== 'artista' && onLike ? (on) => onLike(reel, on) : undefined}
+                                    onLike={onLike ? (on) => onLike(reel, on) : undefined}
+                                    onComentar={onComentar ? () => onComentar(reel) : undefined}
+                                    onSenal={onSenal ? (x) => onSenal(reel, x) : undefined}
                                     onPedirPresupuesto={() => pedirPresupuesto(reel)}
                                 />
                             </div>

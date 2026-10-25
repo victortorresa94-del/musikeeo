@@ -384,6 +384,8 @@ export interface Post {
     posterUrl?: string;      // miniatura del vídeo
     posterPath?: string;
     caption: string;
-    likeCount: number;
+    etiquetas?: string[];    // estilos del autor y #etiquetas del texto, para el algoritmo del Feed
+    ciudad?: string;         // ciudad del autor al publicar
     createdAt: string;       // ISO
+    // Los me gusta y comentarios van en interacciones/post_{id} (services/interaccionService)
 }

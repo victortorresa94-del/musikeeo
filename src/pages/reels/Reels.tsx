@@ -1,14 +1,17 @@
-import { useState, useEffect } from 'react';
+import { useCallback, useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { AnimatePresence } from 'framer-motion';
 import { toast } from 'sonner';
 import ReelsViewer from './ReelsViewer';
 import { type Reel } from '../../types/reels';
-import { cargarReels } from '../../services/reelsReales';
-import { postService } from '../../services/postService';
+import { cargarReels, claveDeReel, objetivoDeReel, rasgosDeReel } from '../../services/reelsReales';
+import { interaccionService } from '../../services/interaccionService';
+import { gustosService } from '../../services/gustosService';
+import type { Senal } from '../../lib/recomendador';
 import { useAuth } from '../../context/AuthContext';
 import { OBJETO_3D } from '../../config/objetos3d';
+import { HojaComentarios, type DestinoComentarios } from '../../components/feed/HojaComentarios';
 
 // /reels y /reels/:id: los vídeos reales (publicaciones de vídeo y clips de artista).
 // El visor va en un portal: el contenedor de las páginas lleva transform y descolocaría el fixed.
@@ -19,19 +22,35 @@ export default function Reels() {
     const location = useLocation();
     const { user } = useAuth();
     const [reels, setReels] = useState<Reel[] | null>(null);
-    const [likedIds, setLikedIds] = useState<Set<string>>(new Set());
+    const [likedIds, setLikedIds] = useState<Set<string>>(new Set());   // ids de reel
+    const [comentarios, setComentarios] = useState<DestinoComentarios | null>(null);
 
+    // Los vídeos con sus contadores de verdad
     useEffect(() => {
         let vivo = true;
-        cargarReels().then(r => { if (vivo) setReels(r); }).catch(() => { if (vivo) setReels([]); });
+        cargarReels().then(async r => {
+            const cuentas = await interaccionService.contadores(r.map(claveDeReel)).catch(() => new Map());
+            if (!vivo) return;
+            setReels(r.map(x => {
+                const c = cuentas.get(claveDeReel(x));
+                return c ? { ...x, likes: c.likes, comments: c.comentarios } : x;
+            }));
+        }).catch(() => { if (vivo) setReels([]); });
         return () => { vivo = false; };
     }, []);
 
-    const postIds = (reels || []).filter(r => r.origen === 'post').map(r => r.id);
+    const claves = (reels || []).map(claveDeReel);
     useEffect(() => {
-        if (!user || postIds.length === 0) return;
-        postService.likedBy(user.uid, postIds).then(setLikedIds).catch(() => {});
-    }, [user, postIds.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+        if (!user || claves.length === 0) return;
+        void gustosService.usar(user.uid);
+        interaccionService.misMeGusta(user.uid, claves).then(mios => {
+            setLikedIds(new Set((reels || []).filter(r => mios.has(claveDeReel(r))).map(r => r.id)));
+        }).catch(() => {});
+    }, [user, claves.join(',')]); // eslint-disable-line react-hooks/exhaustive-deps
+
+    const mover = (id: string, campo: 'likes' | 'comments', delta: number) =>
+        setReels(prev => prev && prev.map(r => r.id === id ? { ...r, [campo]: Math.max(0, r[campo] + delta) } : r));
+    const senal = (r: Reel, s: Senal) => gustosService.registrar(rasgosDeReel(r), s);
 
     const volver = () => {
         const from = (location.state as { from?: string } | null)?.from;
@@ -45,12 +64,18 @@ export default function Reels() {
         if (!user) { navigate('/login', { state: { from: aqui } }); return; }
         const apply = (on: boolean) => {
             setLikedIds(prev => { const n = new Set(prev); if (on) n.add(reel.id); else n.delete(reel.id); return n; });
-            setReels(prev => prev && prev.map(r => r.id === reel.id ? { ...r, likes: Math.max(0, r.likes + (on ? 1 : -1)) } : r));
+            mover(reel.id, 'likes', on ? 1 : -1);
         };
         apply(liked);
-        try { await postService.setLike(reel.id, user.uid, liked); }
+        senal(reel, liked ? 'me_gusta' : 'quitar_me_gusta');
+        try { await interaccionService.setMeGusta(objetivoDeReel(reel), user.uid, liked); }
         catch { apply(!liked); toast.error('No se pudo guardar el me gusta'); }
     };
+
+    const reelDe = (d: DestinoComentarios) => (reels || []).find(r => claveDeReel(r) === `${d.objetivo.tipo}_${d.objetivo.refId}`);
+    const alComentar = (d: DestinoComentarios) => { const r = reelDe(d); if (r) { mover(r.id, 'comments', 1); senal(r, 'comentar'); } };
+    const alBorrar = (d: DestinoComentarios) => { const r = reelDe(d); if (r) mover(r.id, 'comments', -1); };
+    const cerrarComentarios = useCallback(() => setComentarios(null), []);
 
     if (reels === null) {
         return (
@@ -80,17 +105,24 @@ export default function Reels() {
 
     const desde = id ? reels.findIndex(r => r.id === id) : -1;
 
-    return createPortal(
-        <AnimatePresence>
-            <ReelsViewer
-                key="reels"
-                reels={reels}
-                initialIndex={desde >= 0 ? desde : 0}
-                onClose={volver}
-                likedIds={likedIds}
-                onLike={toggleLike}
-            />
-        </AnimatePresence>,
-        document.body
+    return (
+        <>
+            {createPortal(
+                <AnimatePresence>
+                    <ReelsViewer
+                        key="reels"
+                        reels={reels}
+                        initialIndex={desde >= 0 ? desde : 0}
+                        onClose={volver}
+                        likedIds={likedIds}
+                        onLike={toggleLike}
+                        onComentar={r => setComentarios({ objetivo: objetivoDeReel(r), titulo: r.authorName })}
+                        onSenal={senal}
+                    />
+                </AnimatePresence>,
+                document.body
+            )}
+            <HojaComentarios destino={comentarios} onCerrar={cerrarComentarios} onComentado={alComentar} onBorrado={alBorrar} />
+        </>
     );
 }
