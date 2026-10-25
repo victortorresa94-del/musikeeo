@@ -51,7 +51,7 @@ export const PERSONAS: Persona[] = [
         tipos: { anuncio: 1, bolo: 0.9, post: 0.3, artista: 0.2 }, local: 0.8, generosidad: 0.4, charla: 0.3,
     },
     {
-        id: 'sala-rock-bcn', nombre: 'La Fragua, sala de conciertos',
+        id: 'sala-rock-bcn', nombre: 'Nau 9, sala de conciertos',
         descripcion: 'Sala de 200 personas en el Poblenou. Programa rock, indie y algo de soul los jueves. Busca bandas, no equipo.',
         rol: 'organizer', ciudad: 'Barcelona', declarado: ['rock', 'indie'],
         gustoReal: { rock: 1, indie: 0.9, soul: 0.6, funk: 0.6, blues: 0.5, punk: 0.4 },
@@ -72,7 +72,7 @@ export const PERSONAS: Persona[] = [
         tipos: { post: 0.9, bolo: 0.8, artista: 0.5, anuncio: 0.2 }, local: 0.9, generosidad: 0.6, charla: 0.3,
     },
     {
-        id: 'tienda-bcn', nombre: 'Guitarras Gràcia, tienda',
+        id: 'tienda-bcn', nombre: 'Cordes del Raval, tienda',
         descripcion: 'Tienda de guitarras y luthería. Quiere ver qué se vende en el Mercado y a qué guitarristas seguir.',
         rol: 'provider', ciudad: 'Barcelona', declarado: ['guitarra'],
         gustoReal: { guitarra: 1, bajo: 0.6, rumba: 0.4, flamenco: 0.5, rock: 0.5, jazz: 0.4 },

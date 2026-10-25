@@ -309,7 +309,7 @@ export function puntuar(items: Rasgos[], g: Gustos, d: Declarado, ahora: number)
 
         // 6. Lo propio, abajo (salvo lo recién subido, que se quiere ver arriba)
         let propio = 0;
-        if (d.uid && r.autor === d.uid) propio = ahora - r.fecha < 15 * 60_000 ? 3 : -0.8;
+        if (d.uid && r.autor === d.uid) propio = r.tipo === 'post' && ahora - r.fecha < 15 * 60_000 ? 3 : -0.8;
 
         const puntos = afinidad + 0.35 * frescura + 0.25 * comunidad + descubrir - cansancio - yaHecho + propio;
         return { rasgos: r, puntos, motivo: mejor?.[0] };
