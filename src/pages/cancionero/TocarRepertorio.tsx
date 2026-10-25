@@ -49,9 +49,15 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
     const actualRef = useRef(inicio);
     useEffect(() => { actualRef.current = actual; }, [actual]);
     // Montadas: la que suena y sus vecinas. Las vecinas cambian cuando el carrusel se para:
-    // montar una canción larga a mitad del deslizamiento se comía fotogramas y retrasaba el título
-    const [cerca, setCerca] = useState(inicio);
+    // montar una canción larga a mitad del deslizamiento se comía fotogramas y retrasaba el título.
+    // Al abrir, primero sale la que suena y las vecinas llegan justo después de pintarla
+    const [cerca, setCerca] = useState<number | null>(null);
     const quieto = useRef<ReturnType<typeof setTimeout>>(undefined);
+    useEffect(() => {
+        let t: ReturnType<typeof setTimeout>;
+        const f = requestAnimationFrame(() => { t = setTimeout(() => startTransition(() => setCerca(c => c ?? inicio))); });
+        return () => { cancelAnimationFrame(f); clearTimeout(t); };
+    }, [inicio]);
 
     usePantallaEncendida();
 
@@ -87,7 +93,7 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
         const d = diapositivas.current[i];
         if (d) d.scrollTop = 0;
         // Un salto desde la lista: la de destino se monta ya, para que esté al llegar
-        setCerca(c => (Math.abs(i - c) > 1 ? i : c));
+        setCerca(c => (c === null || Math.abs(i - c) > 1 ? i : c));
         el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
         setIndice(false);
     }, [canciones.length]);
@@ -152,7 +158,7 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
                 {canciones.map((c, i) => (
                     <div key={c.id} ref={el => { diapositivas.current[i] = el; }} onClick={() => setControles(v => !v)} data-diapositiva
                         className="relative h-full w-full shrink-0 snap-start snap-always overflow-y-auto overscroll-contain touch-pan-x touch-pan-y">
-                        {Math.abs(i - cerca) <= 1 || i === actual
+                        {i === actual || (cerca !== null && Math.abs(i - cerca) <= 1)
                             ? <Diapositiva cancion={c} n={i + 1} total={canciones.length} siguiente={canciones[i + 1]}
                                 onSiguiente={() => ir(i + 1)} cambiar={cambio => cambiar(c, cambio)} />
                             : null}
