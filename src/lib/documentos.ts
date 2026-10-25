@@ -190,6 +190,8 @@ async function lineasDePdf(datos: ArrayBuffer): Promise<Linea[]> {
             doc = await tarea.promise;
         } catch (e) {
             if ((e as { name?: string }).name === 'PasswordException') throw new Error('El PDF tiene contraseña: quítasela y vuelve a probar.');
+            // El lector de PDF se baja la primera vez que se abre uno: sin cobertura no llega
+            if (/worker/i.test((e as { message?: string }).message ?? '')) throw new Error('No se pudo cargar el lector de PDF: mira la conexión y vuelve a probar.');
             throw new Error('No parece un PDF que se pueda leer.');
         }
         for (let n = 1; n <= doc.numPages; n++) {
@@ -240,7 +242,7 @@ async function lineasDePdf(datos: ArrayBuffer): Promise<Linea[]> {
             }
             const k = Math.round(f.tam * 2) / 2;
             // Acordes en negrita y más grandes que la letra: siguen siendo acordes, no un título
-            const nivel = grandes.includes(k) && !leerLineaAcordes(letras.map(l => l.c).join('')) ? grandes.indexOf(k) + 1 : 0;
+            const nivel = grandes.includes(k) && !leerLineaAcordes(palabras(letras).map(p => p.texto).join(' ')) ? grandes.indexOf(k) + 1 : 0;
             return { y: f.y, letras, nivel, subtitulo: !nivel && Math.abs(k - cuerpo) > cuerpo * 0.05 };
         });
     });
@@ -407,10 +409,12 @@ const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
 const enMayusculas = (s: string) => /\p{Lu}/u.test(s) && s === s.toUpperCase();
 const RE_NUMERADO = /^\s*\d{1,3}\s*[-–—.)]\s*(\S.{1,60})$/;
 const RE_TITULO_ARTISTA = /^(.{2,60}?)\s+[-–—]\s+(.{2,40})$/;
-// «Título - Artista», pero no «Hace calor — Am (capo 2)», que es una línea de setlist con su tono
+// «Título - Artista», pero no «Hace calor — Am (capo 2)», que es una línea de setlist con su
+// tono (y «La Pegatina» sí es un artista, aunque «La» sea un acorde)
 const tituloYArtista = (s: string) => {
     const m = RE_TITULO_ARTISTA.exec(s.trim());
-    return m && !leerAcorde(m[2].split(/[\s(]/)[0]) ? m : null;
+    const tono = m && /^(\S+?)[,.;:]?(?:\s*(?:\([^)]*\)|\[[^\]]*\]))*\s*$/.exec(m[2]);
+    return m && !(tono && leerAcorde(tono[1])) ? m : null;
 };
 const RE_TONO = /^\s*(?:tono|tonalidad)\s*:?\s+(\S+)(.*)$/i;
 const RE_RAYA = /^\s*(?:[-_=–—~]\s*){3,}$/;
