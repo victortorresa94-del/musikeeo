@@ -1,6 +1,7 @@
 import { toast } from 'sonner';
 import { ClipboardPaste, ExternalLink } from 'lucide-react';
-import { leerAcorde, leerCancion, limpiarTexto, recortarCancion, semitonosHacia } from '../../lib/acordes';
+import { juntarAcordesYLetra, leerAcorde, leerCancion, recortarCancion, semitonosHacia } from '../../lib/acordes';
+import { enlaceLetra, enlacesAcordes } from '../../lib/buscarCanciones';
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
 
 // Lo pegado entra en lugar de la chuleta: se queda la cabecera de la ficha (bloque, avisos,
@@ -15,8 +16,12 @@ function unirLetra(actual: string, pegado: string, ajustes: AjustesCancion): { t
     if (!cancion) return null;
     const acordes = leerCancion(cancion).acordes;
     if (!acordes.length) {
-        // Solo letra: va debajo de los acordes que ya había
-        return { texto: `${actual.trimEnd()}\n\n[Letra]\n${limpiarTexto(pegado).trim()}`, semitonos: ajustes.semitonos };
+        // Solo letra en una canción vacía (recién añadida del buscador): la letra sin más
+        if (!actual.trim()) return { texto: cancion, semitonos: ajustes.semitonos };
+        // Solo letra: si ya había filas de acordes, cada una va encima de su línea (como en
+        // LaCuerda); si no, la letra va debajo
+        const unido = `${actual.trimEnd()}\n\n[Letra]\n${cancion}`;
+        return { texto: juntarAcordesYLetra(unido) ?? unido, semitonos: ajustes.semitonos };
     }
     const s = destino ? semitonosHacia(acordes, destino) : 0;
     return {
@@ -24,8 +29,6 @@ function unirLetra(actual: string, pegado: string, ajustes: AjustesCancion): { t
         semitonos: ajustes.semitonos + s,
     };
 }
-
-const buscar = (q: string) => `https://www.google.com/search?q=${encodeURIComponent(`${q} acordes site:lacuerda.net`)}`;
 
 // En una ficha o una chuleta sin letra: buscarla, copiarla y pegarla aquí
 export function AnadirLetra({ cancion, ajustes, onPegar }: {
@@ -44,18 +47,22 @@ export function AnadirLetra({ cancion, ajustes, onPegar }: {
             toast('Mantén pulsado el recuadro de abajo y elige «Pegar».');
         }
     };
-    const q = `${cancion.titulo.replace(/^Mix[^:]*:\s*/i, '').split('→')[0]} ${cancion.artista}`.trim();
+    // En una mezcla del setlist se busca el primer tema. LaCuerda no va: en el móvil no deja copiar
+    const titulo = cancion.titulo.replace(/^Mix[^:]*:\s*/i, '').split('→')[0].trim();
+    const enlaces = [...enlacesAcordes(titulo, cancion.artista), enlaceLetra(titulo, cancion.artista)];
     return (
         <div className="mb-4 rounded-2xl bg-fill px-4 py-3">
             <p className="text-[15px] font-semibold text-foreground">Falta la letra</p>
             <p className="mt-0.5 text-[13px] text-muted-foreground">
-                Ábrela en LaCuerda, copia la canción (vale «Seleccionar todo») y pégala aquí: se queda en tu tono.
+                Búscala en una web de acordes, copia la canción (vale «Seleccionar todo») y pégala aquí: se queda en tu tono.
             </p>
             <div className="mt-2.5 flex flex-wrap gap-2">
-                <a href={buscar(q)} target="_blank" rel="noopener noreferrer"
-                    className="pulsable h-9 px-3.5 rounded-full bg-sheet text-[14px] font-semibold text-foreground flex items-center gap-1.5 shadow-e1">
-                    Buscar en LaCuerda <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
-                </a>
+                {enlaces.map(e => (
+                    <a key={e.nombre} href={e.url} target="_blank" rel="noopener noreferrer"
+                        className="pulsable h-9 px-3.5 rounded-full bg-sheet text-[14px] font-semibold text-foreground flex items-center gap-1.5 shadow-e1">
+                        {e.nombre} <ExternalLink className="h-3.5 w-3.5 text-muted-foreground" />
+                    </a>
+                ))}
                 <button onClick={pegar} className="pulsable h-9 px-3.5 rounded-full bg-foreground text-background text-[14px] font-semibold flex items-center gap-1.5">
                     <ClipboardPaste className="h-4 w-4" /> Pegar aquí
                 </button>

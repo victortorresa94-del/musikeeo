@@ -3,7 +3,7 @@ import { createPortal } from 'react-dom';
 import { useNavigate } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { toast } from 'sonner';
-import { ClipboardPaste, FileUp } from 'lucide-react';
+import { ClipboardPaste, FileUp, Loader2 } from 'lucide-react';
 import { Switch } from '../ui/switch';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
@@ -23,6 +23,13 @@ O canciones enteras con sus acordes, separadas por una línea con ---`;
 
 const letra = (texto: string) => lineasDeLetra(leerCancion(texto));
 
+// Word (.docx, también un Google Docs descargado como Word), PDF, texto y ChordPro
+const ACEPTA = [
+    '.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    '.pdf', 'application/pdf',
+    '.txt', 'text/plain', '.cho', '.chopro', '.chordpro', '.crd', '.pro',
+].join(',');
+
 // Con qué canción del cancionero se junta lo que llega: si ya está, se reutiliza; una ficha
 // del setlist (sin artista) o una chuleta de acordes sin letra se rellena con la canción entera
 function emparejar(canciones: Cancion[], t: CancionImportada): { ya?: Cancion; rellena?: Cancion } {
@@ -33,14 +40,15 @@ function emparejar(canciones: Cancion[], t: CancionImportada): { ya?: Cancion; r
 }
 
 // Un repertorio entero de golpe: el setlist (una ficha por tema) o canciones enteras, pegado o
-// en archivos (.txt, ChordPro). Lo que ya está en el cancionero no se duplica: una ficha se
-// une a la canción del mismo título (que ya trae sus acordes).
+// en archivos (Word, PDF, .txt, ChordPro). Lo que ya está en el cancionero no se duplica: una
+// ficha se une a la canción del mismo título (que ya trae sus acordes).
 export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onCerrar: () => void }) {
     const navigate = useNavigate();
     const { canciones, repertorios, nuevaCancion, guardarVarias, crearRepertorio } = useCancionero();
     const [texto, setTexto] = useState('');
     const [conRepertorio, setConRepertorio] = useState(true);
     const [nombre, setNombre] = useState('');
+    const [leyendo, setLeyendo] = useState(false);
     const archivoRef = useRef<HTMLInputElement>(null);
 
     const encontradas: CancionImportada[] = useMemo(() => leerSetlist(texto) ?? separarCanciones(texto), [texto]);
@@ -56,11 +64,37 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
         }
     };
 
-    const abrir = async (archivos: FileList | null) => {
-        if (!archivos?.length) return;
-        const textos = await Promise.all([...archivos].filter(f => f.size < 2_000_000).map(f => f.text()));
-        setTexto(t => [t.trim(), ...textos].filter(Boolean).join('\n---\n'));
-        if (!nombre && archivos.length === 1) setNombre(archivos[0].name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' '));
+    // Word, PDF, .txt y ChordPro: cada archivo pasa a texto en la caja (y de ahí, lo de siempre:
+    // emparejar con lo que ya hay y guardar todo de una vez). El lector de documentos (con
+    // mammoth y pdf.js, cada uno en su trozo) se descarga solo la primera vez que se abre algo
+    const abrir = async (lista: FileList | null) => {
+        const archivos = lista ? [...lista] : [];
+        if (!archivos.length || leyendo) return;
+        setLeyendo(true);
+        const textos: string[] = [];
+        const fallos: string[] = [];
+        try {
+            const { textoDeArchivo } = await import('../../lib/documentos');
+            // Uno detrás de otro: varios PDF a la vez se comen la memoria del iPhone
+            for (const f of archivos) {
+                try {
+                    const t = (await textoDeArchivo(f, x => !!leerSetlist(x))).trim();
+                    if (t) textos.push(t); else fallos.push(`«${f.name}»: está vacío.`);
+                } catch (e) {
+                    fallos.push(`«${f.name}»: ${e instanceof Error ? e.message : 'no se pudo leer.'}`);
+                }
+            }
+        } catch {
+            fallos.push('No se pudo cargar el lector de documentos. Mira la conexión y vuelve a probar.');
+        } finally {
+            setLeyendo(false);
+        }
+        if (textos.length) {
+            setTexto(t => [t.trim(), ...textos].filter(Boolean).join('\n---\n'));
+            if (!nombre && archivos.length === 1) setNombre(archivos[0].name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim());
+        }
+        if (fallos.length === 1) toast.error(`No se pudo abrir ${fallos[0]}`);
+        else if (fallos.length > 1) toast.error(`No se pudieron abrir ${fallos.length} archivos`, { description: fallos.join('\n') });
     };
 
     const importar = () => {
@@ -117,7 +151,7 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
                             <div className="mt-2 flex items-center justify-between">
                                 <button onClick={onCerrar} className="w-[70px] text-left text-[15px] text-muted-foreground active:opacity-60">Cancelar</button>
                                 <p className="font-semibold text-[16px] text-foreground">Importar canciones</p>
-                                <button onClick={importar} disabled={!encontradas.length}
+                                <button onClick={importar} disabled={!encontradas.length || leyendo}
                                     className="w-[70px] text-right text-[15px] font-semibold text-foreground disabled:opacity-30 active:opacity-60">Importar</button>
                             </div>
                         </div>
@@ -126,12 +160,14 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
                                 <button onClick={pegar} className="pulsable h-9 px-3.5 rounded-full bg-fill text-[14px] font-semibold text-foreground flex items-center gap-1.5">
                                     <ClipboardPaste className="h-4 w-4" /> Pegar lo copiado
                                 </button>
-                                <button onClick={() => archivoRef.current?.click()} className="pulsable h-9 px-3.5 rounded-full bg-fill text-[14px] font-semibold text-foreground flex items-center gap-1.5">
-                                    <FileUp className="h-4 w-4" /> Abrir archivos
+                                <button onClick={() => archivoRef.current?.click()} disabled={leyendo} aria-busy={leyendo}
+                                    className="pulsable h-9 px-3.5 rounded-full bg-fill text-[14px] font-semibold text-foreground flex items-center gap-1.5 disabled:opacity-60">
+                                    {leyendo ? <><Loader2 className="h-4 w-4 animate-spin" /> Leyendo…</> : <><FileUp className="h-4 w-4" /> Abrir archivos</>}
                                 </button>
                             </div>
-                            <input ref={archivoRef} type="file" multiple className="hidden" accept=".txt,.cho,.chopro,.chordpro,.crd,.pro,text/plain"
-                                onChange={e => { void abrir(e.target.files); e.target.value = ''; }} />
+                            {/* Word y PDF con su tipo y su extensión: el iPhone filtra por las dos */}
+                            <input ref={archivoRef} type="file" multiple className="hidden" aria-label="Abrir archivos (Word, PDF o texto)"
+                                accept={ACEPTA} onChange={e => { void abrir(e.target.files); e.target.value = ''; }} />
                             <textarea value={texto} onChange={e => setTexto(e.target.value)} placeholder={AYUDA} wrap="off" spellCheck={false} aria-label="Canciones"
                                 className={cn('mt-3 w-full rounded-2xl bg-fill p-4 font-mono text-[13px] leading-[1.45] text-foreground placeholder:text-muted-foreground resize-y focus:outline-none', encontradas.length ? 'h-[16dvh]' : 'h-[34dvh]')} />
 
@@ -167,7 +203,7 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
                                 </>
                             )}
 
-                            <button onClick={importar} disabled={!encontradas.length}
+                            <button onClick={importar} disabled={!encontradas.length || leyendo}
                                 className="pulsable mt-4 w-full h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] disabled:opacity-40">
                                 {encontradas.length > 1 ? `Importar ${encontradas.length} canciones` : 'Importar'}
                             </button>

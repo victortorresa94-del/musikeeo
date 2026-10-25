@@ -11,6 +11,8 @@ export interface AjustesCancion {
     ajustar: boolean;           // que quepa entera en la pantalla
     vista: 'completa' | 'letra' | 'acordes';
     velocidad: number;          // desplazamiento automático, px por segundo
+    alRitmo?: boolean;          // con la duración de la canción: la hoja baja entera en lo que dura
+    intro?: number;             // segundos de intro que no cuentan para bajar (10 si no se dice)
 }
 
 // Privada: solo la ve su dueño (en su móvil, y en su cuenta si tiene)
@@ -23,6 +25,11 @@ export interface Cancion {
     creadaEn: string;           // ISO
     actualizadaEn: string;      // ISO
     sincronizada?: boolean;     // solo en el móvil: ya estuvo en la cuenta
+    // Lo que sabemos de la canción grabada (buscador de canciones, catálogo de Apple)
+    portada?: string;           // URL de la carátula
+    duracion?: number;          // segundos (para que el desplazamiento dure lo que la canción)
+    muestra?: string;           // URL de 30 s para escucharla y coger el tono
+    bpm?: number;               // tempo, para la claqueta
 }
 
 // Un repertorio (setlist) para un bolo: canciones del cancionero en el orden en que se tocan

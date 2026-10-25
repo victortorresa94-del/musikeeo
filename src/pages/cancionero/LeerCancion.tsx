@@ -1,17 +1,20 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ChevronLeft, Loader2, Maximize, Pause, Play, Shrink, SlidersHorizontal, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { lineasDeLetra } from '../../lib/acordes';
+import { juntarAcordesYLetra, lineasDeLetra } from '../../lib/acordes';
 import { useCancionero } from '../../hooks/useCancionero';
 import { useMusicaCancion } from '../../hooks/useMusicaCancion';
 import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
 import { HojaCancion } from '../../components/cancionero/HojaCancion';
 import { PanelAjustes } from '../../components/cancionero/PanelAjustes';
 import { AnadirLetra } from '../../components/cancionero/AnadirLetra';
+import { PortadaMuestra } from '../../components/cancionero/Portada';
 import { BotonBarra, Paso } from '../../components/cancionero/Controles';
+import { AjustesCantante, BotonClaqueta, DameElTono } from '../../components/cancionero/Cantante';
+import { esperaDeIntro, velocidadAlDesplazar } from '../../lib/cantar';
 import { buscarEncaje, columnasPosibles, type Encaje } from '../../components/cancionero/medir';
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
 
@@ -71,6 +74,8 @@ function Lector({ cancion }: { cancion: Cancion }) {
 
     // ---- La música: tono, cejilla y nombres de los acordes ----
     const { leida, opciones, tonoSuena, posturas, recomendada, dificilesAhora, formasRecomendadas, sinAcordes } = useMusicaCancion(cancion.texto, ajustes);
+    // Acordes por un lado y letra por otro: se pueden poner los acordes encima, como en LaCuerda
+    const juntada = useMemo(() => juntarAcordesYLetra(cancion.texto), [cancion.texto]);
 
     const cambiarTono = (d: number) => {
         const s = ajustes.semitonos + d;
@@ -107,14 +112,18 @@ function Lector({ cancion }: { cancion: Cancion }) {
         setEncaje(buscarEncaje(hoja, c.ancho, c.alto, columnasPosibles(c.ancho), TAMANO_MAX));
     }, [ajustes.ajustar, ajustes.vista, opciones, leida, escenario, medida, caja]);
 
-    // Al activarlo, la hoja se coloca justo debajo de la barra
+    // Una ficha o una chuleta sin letra: arriba sale «Falta la letra» para pegarla
+    const faltaLetra = !leida.lineas.some(l => l.tipo === 'mixta') && lineasDeLetra(leida) < 8;
+
+    // Al activarlo, la hoja se coloca justo debajo de la barra. Si falta la letra, no: taparía
+    // el recuadro para pegarla (las fichas del setlist llegan con «que quepa»)
     useEffect(() => {
-        if (!ajustes.ajustar || escenario) return;
+        if (!ajustes.ajustar || escenario || faltaLetra) return;
         const zona = zonaRef.current, barra = barraRef.current;
         if (!zona || !barra) return;
         const arriba = (parseFloat(getComputedStyle(barra).top) || 0) + barra.offsetHeight + 12;
         window.scrollTo({ top: Math.max(0, zona.getBoundingClientRect().top + window.scrollY - arriba), behavior: 'smooth' });
-    }, [ajustes.ajustar, escenario]);
+    }, [ajustes.ajustar, escenario, faltaLetra]);
 
     const ajustada = ajustes.ajustar && encaje?.cabe;
     const tamano = ajustada ? encaje!.tamano : ajustes.tamano;
@@ -126,6 +135,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
     };
 
     // ---- Desplazamiento automático ----
+    const duracion = cancion.duracion;
     const desplazable = useCallback(
         () => (escenario ? escenarioRef.current : (document.scrollingElement as HTMLElement | null)),
         [escenario],
@@ -133,19 +143,24 @@ function Lector({ cancion }: { cancion: Cancion }) {
     useEffect(() => {
         if (!rodando) return;
         let raf = 0, ultimo = performance.now(), resto = 0;
+        // La de los ajustes o, al ritmo de la canción, la que la baja entera en lo que dura
+        const velocidad = velocidadAlDesplazar({ duracion, ajustes }, desplazable());
+        // Al ritmo y desde el principio, espera la intro
+        const intro = esperaDeIntro({ duracion, ajustes }, desplazable());
+        if (intro) toast(`La hoja baja tras ${intro} s de intro`, { id: 'intro-hoja', duration: 2500 });
         const paso = (t: number) => {
             const el = desplazable();
             if (!el) return;
-            resto += (ajustes.velocidad * Math.min(100, t - ultimo)) / 1000;
+            resto += (velocidad * Math.min(100, t - ultimo)) / 1000;
             ultimo = t;
             const px = Math.floor(resto);
             if (px >= 1) { resto -= px; el.scrollTop += px; }
             if (el.scrollTop + el.clientHeight >= el.scrollHeight - 2) { setRodando(false); return; }
             raf = requestAnimationFrame(paso);
         };
-        raf = requestAnimationFrame(paso);
-        return () => cancelAnimationFrame(raf);
-    }, [rodando, ajustes.velocidad, desplazable]);
+        const empezar = setTimeout(() => { ultimo = performance.now(); raf = requestAnimationFrame(paso); }, intro * 1000);
+        return () => { clearTimeout(empezar); cancelAnimationFrame(raf); if (intro) toast.dismiss('intro-hoja'); };
+    }, [rodando, ajustes, duracion, desplazable]);
 
     // En el escenario, los controles se esconden solos mientras baja
     useEffect(() => {
@@ -218,6 +233,15 @@ function Lector({ cancion }: { cancion: Cancion }) {
         });
     };
 
+    const juntar = () => {
+        if (!juntada) return;
+        const antes = { ...cancion, ajustes };
+        guardar({ ...cancion, texto: juntada, ajustes });
+        toast.success('Acordes encima de la letra', {
+            action: { label: 'Deshacer', onClick: () => guardar(antes) },
+        });
+    };
+
     const borrarCancion = () => {
         setPanel(false);
         void borrar(cancion.id);
@@ -235,8 +259,12 @@ function Lector({ cancion }: { cancion: Cancion }) {
     const pasoTono = (
         <Paso compacto etiqueta="Tono" onMenos={() => cambiarTono(-1)} onMas={() => cambiarTono(1)}
             menosDesactivado={sinAcordes} masDesactivado={sinAcordes}
-            valor={<span>{tonoSuena || 'Tono'}{ajustes.semitonos !== 0 && <span className="ml-1 text-[12px] text-muted-foreground">{ajustes.semitonos > 0 ? '+' : ''}{ajustes.semitonos}</span>}</span>} />
+            valor={<>{tonoSuena || 'Tono'}{ajustes.semitonos !== 0 && <span className="ml-1 text-[12px] text-muted-foreground">{ajustes.semitonos > 0 ? '+' : ''}{ajustes.semitonos}</span>}</>} />
     );
+    const dameElTono = (className: string) => !sinAcordes && (
+        <DameElTono leida={leida} ajustes={ajustes} className={className}>Dame el tono</DameElTono>
+    );
+    const botonClaqueta = <BotonClaqueta bpm={cancion.bpm} />;
     const pasoTamano = (
         <Paso compacto etiqueta="Tamaño de la letra" valor="Aa" onMenos={() => cambiarTamano(-PASO_TAMANO)} onMas={() => cambiarTamano(PASO_TAMANO)}
             menosDesactivado={!ajustada && tamano <= TAMANO_MIN} masDesactivado={!ajustada && tamano >= TAMANO_MAX} />
@@ -265,10 +293,25 @@ function Lector({ cancion }: { cancion: Cancion }) {
                         <Maximize className="h-4 w-4" /> Escenario
                     </BotonBarra>
                 </div>
-                <h1 className="mt-1 font-heading text-[28px] font-bold leading-tight text-foreground">{cancion.titulo}</h1>
-                <p className="mt-0.5 text-[15px] text-muted-foreground">
-                    {cancion.artista}{cancion.artista && datosTono && ' · '}{datosTono}
-                </p>
+                <div className="mt-1 flex items-start gap-3">
+                    {/* La portada; si hay muestra, al tocarla suenan 30 s de la grabación */}
+                    {(cancion.portada || cancion.muestra) && (
+                        <PortadaMuestra src={cancion.portada} titulo={cancion.titulo} muestra={cancion.muestra} tamano="cabecera" pararAlSalir />
+                    )}
+                    <div className="flex-1 min-w-0">
+                        <h1 className="font-heading text-[28px] font-bold leading-tight text-foreground">{cancion.titulo}</h1>
+                        <p className="mt-0.5 text-[15px] text-muted-foreground">
+                            {cancion.artista}{cancion.artista && datosTono && ' · '}{datosTono}
+                        </p>
+                    </div>
+                </div>
+                {/* Lo de quien canta, antes de entrar: el tono y la cuenta */}
+                {(!sinAcordes || !!cancion.bpm) && (
+                    <div className="mt-3 flex items-center gap-2">
+                        {dameElTono('h-9 pl-1.5 pr-3.5 text-[14px]')}
+                        {botonClaqueta}
+                    </div>
+                )}
             </div>
 
             {/* Controles */}
@@ -287,8 +330,16 @@ function Lector({ cancion }: { cancion: Cancion }) {
             {/* La hoja */}
             <div className="max-w-5xl mx-auto px-4 md:px-0 mt-4">
                 {/* Ficha o chuleta sin letra: buscarla, copiarla y pegarla, y entra en el tono del setlist */}
-                {!leida.lineas.some(l => l.tipo === 'mixta') && lineasDeLetra(leida) < 8 && (
+                {faltaLetra && (
                     <AnadirLetra cancion={cancion} ajustes={ajustes} onPegar={ponerLetra} />
+                )}
+                {juntada && (
+                    <div className="mb-4 rounded-2xl bg-fill px-4 py-3 flex items-center gap-3">
+                        <p className="flex-1 text-[14px] text-muted-foreground">Los acordes y la letra están separados.</p>
+                        <button onClick={juntar} className="pulsable h-9 px-3.5 rounded-full bg-foreground text-background text-[14px] font-semibold shrink-0">
+                            Ponerlos encima
+                        </button>
+                    </div>
                 )}
                 {sinAcordes && leida.lineas.length > 0 && (
                     <p className="mb-4 rounded-2xl bg-fill px-4 py-3 text-[14px] text-muted-foreground">
@@ -308,10 +359,13 @@ function Lector({ cancion }: { cancion: Cancion }) {
                 )}
             </div>
 
-            {/* Copia invisible para medir */}
-            <div className="fixed left-0 top-0 h-0 w-0 overflow-hidden invisible" aria-hidden>
-                {hoja(medidorRef)}
-            </div>
+            {/* Copia invisible para medir: solo con «que quepa» (pintar la canción dos veces cuesta el doble).
+                El tamaño y las columnas los pone buscarEncaje: no sigue al de la hoja */}
+            {ajustes.ajustar && (
+                <div className="fixed left-0 top-0 h-0 w-0 overflow-hidden invisible" aria-hidden>
+                    <HojaCancion ref={medidorRef} lineas={leida.lineas} opciones={opciones} vista={ajustes.vista} tamano={TAMANO_MAX} columnas={1} className="hidden" />
+                </div>
+            )}
 
             {/* Escenario: la canción a pantalla completa, sin nada más */}
             {escenario && createPortal(
@@ -327,10 +381,12 @@ function Lector({ cancion }: { cancion: Cancion }) {
                         'fixed left-1/2 -translate-x-1/2 bottom-[calc(env(safe-area-inset-bottom)+16px)] max-w-[calc(100vw-24px)] flex items-center gap-1.5 p-1.5 rounded-full bg-sheet border border-hairline shadow-e3 overflow-x-auto hide-scrollbar transition-all duration-200',
                         controles ? 'opacity-100' : 'opacity-0 translate-y-4 pointer-events-none',
                     )}>
+                        {dameElTono('h-9 pl-1.5 pr-3.5 text-[14px]')}
                         {pasoTono}
                         {pasoTamano}
                         {botonAjustar}
                         {botonRodar}
+                        {botonClaqueta}
                     </div>
                     <button onClick={salirEscenario} aria-label="Salir del escenario"
                         className={cn('pulsable fixed right-3 top-[calc(env(safe-area-inset-top)+8px)] h-9 w-9 rounded-full bg-sheet border border-hairline shadow-e2 flex items-center justify-center text-foreground transition-opacity duration-200',
@@ -358,6 +414,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                 onImprimir={() => { setPanel(false); setImprimiendo(true); }}
                 onEditar={() => navigate(`/cancionero/${cancion.id}/editar`)}
                 onBorrar={borrarCancion}
+                duracion={duracion} cantante={<AjustesCantante cancion={cancion} ajustes={ajustes} leida={leida} />}
             />
         </div>
     );

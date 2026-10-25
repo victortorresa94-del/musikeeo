@@ -17,6 +17,7 @@ export interface EstadoAlmacen<T> {
     duenio: string | null;      // uid, 'invitado' o null mientras arranca
     items: T[];
     nube: EstadoNube;
+    provisional?: boolean;      // aún no se sabe quién es: lo del móvil de quien entró la última vez
 }
 
 const esUid = (duenio: string | null): duenio is string => !!duenio && duenio !== INVITADO;
@@ -90,11 +91,19 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
         await Promise.all(pendientes.map(x => subir(uid, x)));
     }
 
+    // Antes de saber quién es, lo que hay en el móvil de quien lo usó la última vez: Firebase
+    // tarda en decirlo y, con cuenta, antes comprueba la sesión en la red (sin cobertura, hasta 30 s)
+    function cargarPrevio(duenio: string) {
+        if (estado.duenio !== null) return;
+        avisar({ duenio, items: leerLocal(duenio), nube: esUid(duenio) ? 'sincronizando' : 'local', provisional: true });
+    }
+
     // Al cambiar de cuenta (o entrar/salir) se carga lo de quien está
     function cargar(uid: string | null) {
         const duenio = uid || INVITADO;
-        if (estado.duenio === duenio) return;
-        let items = leerLocal(duenio);
+        const yaEstan = estado.provisional && estado.duenio === duenio;
+        if (estado.duenio === duenio && !yaEstan) return;
+        let items = yaEstan ? estado.items : leerLocal(duenio);
         if (uid) {
             // Lo que se guardó sin cuenta pasa a la cuenta al entrar
             const sueltos = leerLocal(INVITADO);
@@ -105,7 +114,7 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
                 try { localStorage.removeItem(`${clave}:${INVITADO}`); } catch { /* */ }
             }
         }
-        avisar({ duenio, items, nube: 'local' });
+        avisar({ duenio, items, nube: 'local', provisional: false });
         if (uid) void sincronizar(uid);
     }
 
@@ -165,11 +174,15 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
     }
 
     const suscribir = (f: () => void) => { oyentes.add(f); return () => { oyentes.delete(f); }; };
-    return { suscribir, estado: () => estado, cargar, guardar, guardarVarias, borrar };
+    return { suscribir, estado: () => estado, cargarPrevio, cargar, guardar, guardarVarias, borrar };
 }
+
+// Firestore no admite undefined: los datos opcionales solo van si están
+const siHay = <T extends object>(o: T) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined && v !== null && v !== ''));
 
 export const almacenCanciones = crearAlmacen<Cancion>('musikeeo-cancionero-v1', 'canciones', c => ({
     titulo: c.titulo, artista: c.artista, texto: c.texto, ajustes: c.ajustes, creadaEn: c.creadaEn, actualizadaEn: c.actualizadaEn,
+    ...siHay({ portada: c.portada, duracion: c.duracion, muestra: c.muestra, bpm: c.bpm }),
 }));
 
 export const almacenRepertorios = crearAlmacen<Repertorio>('musikeeo-repertorios-v1', 'repertorios', r => ({
@@ -229,10 +242,25 @@ async function borrarCancion(id: string) {
     await almacenCanciones.borrar(id);
 }
 
+// Quién usó el cancionero la última vez en este dispositivo (uid o 'invitado'): solo una pista
+// para enseñar sus canciones al momento, sin esperar a Firebase (en el bolo puede no haber red)
+const CLAVE_ULTIMO = 'musikeeo-cancionero-ultimo';
+
 function cargar(uid: string | null) {
     almacenCanciones.cargar(uid);
     almacenRepertorios.cargar(uid);
+    try { localStorage.setItem(CLAVE_ULTIMO, uid || INVITADO); } catch { /* sin almacenamiento */ }
 }
+
+// Sin pista (la primera vez) se espera a Firebase como siempre
+function cargarPrevio() {
+    let ultimo: string | null = null;
+    try { ultimo = localStorage.getItem(CLAVE_ULTIMO); } catch { /* sin almacenamiento */ }
+    if (!ultimo) return;
+    almacenCanciones.cargarPrevio(ultimo);
+    almacenRepertorios.cargarPrevio(ultimo);
+}
+if (typeof window !== 'undefined') cargarPrevio();
 
 export const cancioneroService = {
     cargar,

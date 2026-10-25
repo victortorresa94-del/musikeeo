@@ -30,7 +30,7 @@ service cloud.firestore {
       match /canciones/{cancionId} {
         allow read, delete: if isOwner(userId);
         allow create, update: if isOwner(userId)
-          && request.resource.data.keys().hasOnly(['titulo', 'artista', 'texto', 'ajustes', 'creadaEn', 'actualizadaEn'])
+          && request.resource.data.keys().hasOnly(['titulo', 'artista', 'texto', 'ajustes', 'creadaEn', 'actualizadaEn', 'portada', 'duracion', 'muestra', 'bpm'])
           && request.resource.data.titulo is string && request.resource.data.titulo.size() <= 120
           && request.resource.data.artista is string && request.resource.data.artista.size() <= 120
           && request.resource.data.texto is string && request.resource.data.texto.size() <= 50000

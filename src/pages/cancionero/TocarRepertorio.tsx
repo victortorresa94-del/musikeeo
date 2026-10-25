@@ -1,12 +1,19 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { startTransition, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, ListMusic, Loader2, Pause, Play, Shrink, X } from 'lucide-react';
+import { toast } from 'sonner';
+import { ChevronDown, ChevronLeft, ChevronRight, ListMusic, Loader2, Pause, Play, Shrink, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { useMusicaCancion } from '../../hooks/useMusicaCancion';
 import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
 import { HojaCancion } from '../../components/cancionero/HojaCancion';
 import { BotonBarra, Paso } from '../../components/cancionero/Controles';
+import { BotonClaqueta, DameElTono } from '../../components/cancionero/Cantante';
+import { Portada } from '../../components/cancionero/Portada';
+import { Pildora } from '../../components/cancionero/Baldosas';
+import { bloqueDe, estiloBloque, etiquetasDe, sinLoDeLasPildoras } from '../../components/cancionero/estilo';
+import { tonoDe } from '../../components/cancionero/utilidades';
+import { esperaDeIntro, velocidadAlDesplazar } from '../../lib/cantar';
 import { buscarEncaje, columnasPosibles, type Encaje } from '../../components/cancionero/medir';
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
 
@@ -18,11 +25,12 @@ const TAMANO_MAX = 60;
 export default function TocarRepertorio() {
     const { id } = useParams();
     const [params] = useSearchParams();
-    const { repertorios, canciones, listo } = useCancionero();
+    const { repertorios, canciones, listo, nube } = useCancionero();
     const repertorio = repertorios.find(r => r.id === id);
     const lista = repertorio ? repertorio.canciones.map(c => canciones.find(x => x.id === c)).filter((c): c is Cancion => !!c) : [];
 
-    if (!listo) return <div className="h-[100dvh] flex items-center justify-center bg-background"><Loader2 className="h-7 w-7 animate-spin text-muted-foreground" /></div>;
+    // Lo que no está en el móvil puede llegar de la cuenta: se espera a que acabe de mirar
+    if (!listo || (!lista.length && nube === 'sincronizando')) return <div className="h-[100dvh] flex items-center justify-center bg-background"><Loader2 className="h-7 w-7 animate-spin text-muted-foreground" /></div>;
     if (!repertorio || !lista.length) {
         return (
             <div className="h-[100dvh] flex flex-col items-center justify-center gap-4 bg-background px-8 text-center">
@@ -47,6 +55,16 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
     const [indice, setIndice] = useState(false);
     const actualRef = useRef(inicio);
     useEffect(() => { actualRef.current = actual; }, [actual]);
+    // Montadas: la que suena y sus vecinas. Las vecinas cambian cuando el carrusel se para:
+    // montar una canción larga a mitad del deslizamiento se comía fotogramas y retrasaba el título.
+    // Al abrir, primero sale la que suena y las vecinas llegan justo después de pintarla
+    const [cerca, setCerca] = useState<number | null>(null);
+    const quieto = useRef<ReturnType<typeof setTimeout>>(undefined);
+    useEffect(() => {
+        let t: ReturnType<typeof setTimeout>;
+        const f = requestAnimationFrame(() => { t = setTimeout(() => startTransition(() => setCerca(c => c ?? inicio))); });
+        return () => { cancelAnimationFrame(f); clearTimeout(t); };
+    }, [inicio]);
 
     usePantallaEncendida();
 
@@ -69,6 +87,11 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
         if (!el) return;
         const i = Math.round(el.scrollLeft / el.clientWidth);
         if (i !== actualRef.current && i >= 0 && i < canciones.length) { setActual(i); setRodando(false); }
+        clearTimeout(quieto.current);
+        quieto.current = setTimeout(() => {
+            const j = Math.min(canciones.length - 1, Math.max(0, Math.round(el.scrollLeft / el.clientWidth)));
+            startTransition(() => setCerca(j));
+        }, 150);
     };
 
     const ir = useCallback((i: number) => {
@@ -76,6 +99,8 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
         if (!el || i < 0 || i >= canciones.length) return;
         const d = diapositivas.current[i];
         if (d) d.scrollTop = 0;
+        // Un salto desde la lista: la de destino se monta ya, para que esté al llegar
+        setCerca(c => (c === null || Math.abs(i - c) > 1 ? i : c));
         el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
         setIndice(false);
     }, [canciones.length]);
@@ -89,7 +114,11 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
     useEffect(() => {
         if (!rodando) return;
         let raf = 0, ultimo = performance.now(), resto = 0;
-        const velocidad = canciones[actual]?.ajustes.velocidad ?? 18;
+        // La de la canción o, al ritmo de la canción, la que la baja entera en lo que dura
+        const velocidad = canciones[actual] ? velocidadAlDesplazar(canciones[actual], diapositivas.current[actual]) : 18;
+        // Al ritmo y desde el principio, espera la intro
+        const intro = canciones[actual] ? esperaDeIntro(canciones[actual], diapositivas.current[actual]) : 0;
+        if (intro) toast(`La hoja baja tras ${intro} s de intro`, { id: 'intro-hoja', duration: 2500 });
         const paso = (t: number) => {
             const el = diapositivas.current[actualRef.current];
             if (!el) return;
@@ -100,8 +129,8 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
             if (el.scrollTop + el.clientHeight >= el.scrollHeight - 2) { setRodando(false); return; }
             raf = requestAnimationFrame(paso);
         };
-        raf = requestAnimationFrame(paso);
-        return () => cancelAnimationFrame(raf);
+        const empezar = setTimeout(() => { ultimo = performance.now(); raf = requestAnimationFrame(paso); }, intro * 1000);
+        return () => { clearTimeout(empezar); cancelAnimationFrame(raf); if (intro) toast.dismiss('intro-hoja'); };
     }, [rodando, actual, canciones]);
 
     useEffect(() => {
@@ -140,7 +169,7 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
                 {canciones.map((c, i) => (
                     <div key={c.id} ref={el => { diapositivas.current[i] = el; }} onClick={() => setControles(v => !v)} data-diapositiva
                         className="relative h-full w-full shrink-0 snap-start snap-always overflow-y-auto overscroll-contain touch-pan-x touch-pan-y">
-                        {Math.abs(i - actual) <= 1
+                        {i === actual || (cerca !== null && Math.abs(i - cerca) <= 1)
                             ? <Diapositiva cancion={c} n={i + 1} total={canciones.length} siguiente={canciones[i + 1]}
                                 onSiguiente={() => ir(i + 1)} cambiar={cambio => cambiar(c, cambio)} />
                             : null}
@@ -152,16 +181,16 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
             <div className={cn('fixed inset-x-0 top-0 z-10 pt-[env(safe-area-inset-top)] bg-chrome backdrop-blur-2xl border-b border-hairline transition-all duration-200',
                 controles ? 'opacity-100' : 'opacity-0 -translate-y-2 pointer-events-none')}>
                 <div className="h-12 px-2 flex items-center gap-2">
-                    <button onClick={salir} aria-label="Salir" className="pulsable h-9 w-9 rounded-full flex items-center justify-center text-foreground"><X className="h-5 w-5" /></button>
-                    <button onClick={() => setIndice(v => !v)} className="flex-1 min-w-0 text-center active:opacity-60">
-                        <span className="block truncate text-[15px] font-semibold text-foreground">{cancion.titulo}</span>
-                        <span className="block truncate text-[12px] text-muted-foreground">{actual + 1} de {canciones.length} · {nombre}</span>
+                    <button onClick={salir} aria-label="Salir" className="pulsable h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-foreground"><X className="h-5 w-5" /></button>
+                    <button onClick={() => setIndice(v => !v)} className="flex-1 min-w-0 flex items-center justify-center gap-1 text-[14px] font-semibold text-foreground active:opacity-60">
+                        <span className="truncate"><span className="tabular-nums">{actual + 1} de {canciones.length}</span> · {nombre}</span>
+                        <ChevronDown className={cn('h-4 w-4 shrink-0 text-muted-foreground transition-transform', indice && 'rotate-180')} />
                     </button>
                     <BotonBarra etiqueta="Lista de canciones" activo={indice} onClick={() => setIndice(v => !v)}><ListMusic className="h-[18px] w-[18px]" /></BotonBarra>
                 </div>
             </div>
 
-            {/* Abajo: anterior, tono, tamaño, que quepa, desplazar y siguiente */}
+            {/* Abajo: tono, tamaño, que quepa y desplazar; y «Dame el tono», la cuenta, anterior y siguiente */}
             <ControlesCancion cancion={cancion} visibles={controles} rodando={rodando}
                 onRodar={() => setRodando(r => !r)} cambiar={cambio => cambiar(cancion, cambio)}
                 onAnterior={actual > 0 ? () => ir(actual - 1) : undefined}
@@ -190,24 +219,35 @@ function ControlesCancion({ cancion, visibles, rodando, onRodar, cambiar, onAnte
     cancion: Cancion; visibles: boolean; rodando: boolean; onRodar: () => void;
     cambiar: (c: Partial<AjustesCancion>) => void; onAnterior?: () => void; onSiguiente?: () => void;
 }) {
-    const { tonoSuena, sinAcordes } = useMusicaCancion(cancion.texto, cancion.ajustes);
+    const { leida, tonoSuena, sinAcordes } = useMusicaCancion(cancion.texto, cancion.ajustes);
     const a = cancion.ajustes;
     const cambiarTono = (d: number) => { const s = a.semitonos + d; cambiar({ semitonos: Math.abs(s) >= 12 ? 0 : s }); };
     const cambiarTamano = (d: number) => cambiar({ tamano: Math.min(TAMANO_MAX, Math.max(TAMANO_MIN, Math.round(a.tamano) + d)), ajustar: false });
-    const flecha = 'pulsable h-9 w-9 shrink-0 rounded-full bg-fill flex items-center justify-center text-foreground disabled:opacity-25';
+    const flecha = 'pulsable h-[52px] w-[52px] shrink-0 rounded-full bg-fill flex items-center justify-center text-foreground disabled:opacity-25';
     return (
-        <div className={cn('fixed inset-x-0 bottom-0 z-10 pb-[calc(env(safe-area-inset-bottom)+8px)] pt-2 px-2 bg-chrome backdrop-blur-2xl border-t border-hairline transition-all duration-200',
+        <div className={cn('fixed inset-x-0 bottom-0 z-10 pb-[calc(env(safe-area-inset-bottom)+8px)] pt-2 px-3 bg-chrome backdrop-blur-2xl border-t border-hairline transition-all duration-200',
             visibles ? 'opacity-100' : 'opacity-0 translate-y-2 pointer-events-none')}>
-            <div className="flex items-center justify-center gap-1.5 overflow-x-auto hide-scrollbar">
-                <button onClick={onAnterior} disabled={!onAnterior} aria-label="Canción anterior" className={flecha}><ChevronLeft className="h-5 w-5" /></button>
-                <Paso compacto etiqueta="Tono" onMenos={() => cambiarTono(-1)} onMas={() => cambiarTono(1)} menosDesactivado={sinAcordes} masDesactivado={sinAcordes}
-                    valor={<span>{tonoSuena || 'Tono'}{a.semitonos !== 0 && <span className="ml-1 text-[12px] text-muted-foreground">{a.semitonos > 0 ? '+' : ''}{a.semitonos}</span>}</span>} />
-                <Paso compacto etiqueta="Tamaño de la letra" valor="Aa" onMenos={() => cambiarTamano(-1)} onMas={() => cambiarTamano(1)} />
-                <BotonBarra etiqueta="Que quepa en la pantalla" activo={a.ajustar} onClick={() => cambiar({ ajustar: !a.ajustar })}><Shrink className="h-[18px] w-[18px]" /></BotonBarra>
-                <BotonBarra etiqueta={rodando ? 'Parar' : 'Desplazar sola'} activo={rodando} onClick={onRodar}>
-                    {rodando ? <Pause className="h-[18px] w-[18px]" /> : <Play className="h-[18px] w-[18px]" />}
-                </BotonBarra>
-                <button onClick={onSiguiente} disabled={!onSiguiente} aria-label="Canción siguiente" className={flecha}><ChevronRight className="h-5 w-5" /></button>
+            <div className="max-w-xl mx-auto">
+                <div className="flex items-center justify-center gap-1.5 overflow-x-auto hide-scrollbar">
+                    <Paso compacto etiqueta="Tono" onMenos={() => cambiarTono(-1)} onMas={() => cambiarTono(1)} menosDesactivado={sinAcordes} masDesactivado={sinAcordes}
+                        valor={<>{tonoSuena || 'Tono'}{a.semitonos !== 0 && <span className="ml-1 text-[12px] text-muted-foreground">{a.semitonos > 0 ? '+' : ''}{a.semitonos}</span>}</>} />
+                    <Paso compacto etiqueta="Tamaño de la letra" valor="Aa" onMenos={() => cambiarTamano(-1)} onMas={() => cambiarTamano(1)} />
+                    <BotonBarra etiqueta="Que quepa en la pantalla" activo={a.ajustar} onClick={() => cambiar({ ajustar: !a.ajustar })}><Shrink className="h-[18px] w-[18px]" /></BotonBarra>
+                    <BotonBarra etiqueta={rodando ? 'Parar' : 'Desplazar sola'} activo={rodando} onClick={onRodar}>
+                        {rodando ? <Pause className="h-[18px] w-[18px]" /> : <Play className="h-[18px] w-[18px]" />}
+                    </BotonBarra>
+                </div>
+                <div className="mt-2 flex items-center gap-2">
+                    {/* Con la cuenta al lado no cabe el tono en el botón: se ve justo encima */}
+                    {sinAcordes ? <div className="flex-1" /> : (
+                        <DameElTono leida={leida} ajustes={a} className="flex-1 min-w-0 h-[52px] pl-2 pr-4 text-[16px]">
+                            Dame el tono{tonoSuena && !cancion.bpm && <> · {tonoSuena}</>}
+                        </DameElTono>
+                    )}
+                    <BotonClaqueta bpm={cancion.bpm} className="h-[52px] px-3.5" />
+                    <button onClick={onAnterior} disabled={!onAnterior} aria-label="Canción anterior" className={flecha}><ChevronLeft className="h-6 w-6" /></button>
+                    <button onClick={onSiguiente} disabled={!onSiguiente} aria-label="Canción siguiente" className={flecha}><ChevronRight className="h-6 w-6" /></button>
+                </div>
             </div>
         </div>
     );
@@ -219,13 +259,19 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
     cambiar: (c: Partial<AjustesCancion>) => void;
 }) {
     const a = cancion.ajustes;
-    const { leida, opciones, tonoSuena } = useMusicaCancion(cancion.texto, a);
+    const { leida, opciones } = useMusicaCancion(cancion.texto, a);
+    const bloque = bloqueDe(cancion);
+    const estiloDelBloque = bloque ? estiloBloque(bloque) : null;
+    const etiquetas = etiquetasDe(cancion);
+    const tonoSiguiente = siguiente ? tonoDe(siguiente) : null;
+    const lineas = useMemo(() => sinLoDeLasPildoras(leida.lineas, bloque), [leida.lineas, bloque]);
+
     const zonaRef = useRef<HTMLDivElement>(null);
     const medidorRef = useRef<HTMLDivElement>(null);
     const [encaje, setEncaje] = useState<Encaje | null>(null);
     const [medida, setMedida] = useState(0);
     const [pellizco, setPellizco] = useState<number | null>(null);
-    const gesto = useRef<{ d0: number; base: number } | null>(null);
+    const gesto = useRef<{ d0: number; base: number; ultimo: number | null; fotograma: number } | null>(null);
 
     useEffect(() => {
         const f = () => setMedida(m => m + 1);
@@ -239,53 +285,68 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
         const caja = zona?.closest<HTMLElement>('[data-diapositiva]');
         if (!caja || !zona || !hoja) return;
         // Arriba y abajo quedan las barras de controles (se esconden, pero mejor que no tapen)
-        const alto = caja.clientHeight - zona.offsetTop - 84;
+        const alto = caja.clientHeight - zona.offsetTop - 132;
         if (alto < 120) return;
         const e = buscarEncaje(hoja, zona.clientWidth, alto, columnasPosibles(zona.clientWidth), TAMANO_MAX);
         setEncaje(x => (x && x.tamano === e.tamano && x.columnas === e.columnas && x.cabe === e.cabe ? x : e));
-    }, [a.ajustar, a.vista, opciones, leida, medida]);
+    }, [a.ajustar, a.vista, opciones, lineas, medida]);
 
     const ajustada = a.ajustar && encaje?.cabe;
     const tamanoBase = ajustada ? encaje!.tamano : a.tamano;
     const tamano = pellizco ?? tamanoBase;
     const columnas = ajustada ? encaje!.columnas : a.columnas;
 
-    // Zoom con dos dedos: cambia el tamaño de la letra (no la página), y se guarda
+    // Zoom con dos dedos: cambia el tamaño de la letra (no la página), y se guarda.
+    // Como mucho un tamaño nuevo por fotograma: cada uno vuelve a colocar toda la letra
     const distancia = (t: React.TouchList) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
     const alEmpezar = (e: React.TouchEvent) => {
-        if (e.touches.length === 2) gesto.current = { d0: distancia(e.touches), base: tamanoBase };
+        if (e.touches.length === 2) gesto.current = { d0: distancia(e.touches), base: tamanoBase, ultimo: null, fotograma: 0 };
     };
     const alMover = (e: React.TouchEvent) => {
-        if (!gesto.current || e.touches.length !== 2) return;
-        const t = gesto.current.base * (distancia(e.touches) / gesto.current.d0);
-        setPellizco(Math.min(TAMANO_MAX, Math.max(TAMANO_MIN, Math.round(t * 2) / 2)));
+        const g = gesto.current;
+        if (!g || e.touches.length !== 2) return;
+        const t = g.base * (distancia(e.touches) / g.d0);
+        g.ultimo = Math.min(TAMANO_MAX, Math.max(TAMANO_MIN, Math.round(t * 2) / 2));
+        if (!g.fotograma) g.fotograma = requestAnimationFrame(() => { g.fotograma = 0; setPellizco(g.ultimo); });
     };
     const alSoltar = () => {
-        if (!gesto.current) return;
+        const g = gesto.current;
+        if (!g) return;
         gesto.current = null;
-        if (pellizco !== null && Math.abs(pellizco - tamanoBase) >= 0.5) cambiar({ tamano: Math.round(pellizco), ajustar: false, columnas: Math.min(3, columnas) as 1 | 2 | 3 });
+        cancelAnimationFrame(g.fotograma);
+        const final = g.ultimo ?? pellizco;
+        if (final !== null && Math.abs(final - tamanoBase) >= 0.5) cambiar({ tamano: Math.round(final), ajustar: false, columnas: Math.min(3, columnas) as 1 | 2 | 3 });
         setPellizco(null);
     };
 
     return (
         <div onTouchStart={alEmpezar} onTouchMove={alMover} onTouchEnd={alSoltar} onTouchCancel={alSoltar}
-            className="min-h-full px-5 md:px-10 pt-[calc(env(safe-area-inset-top)+60px)] pb-[calc(env(safe-area-inset-bottom)+80px)]">
-            <p className="text-[13px] font-semibold text-muted-foreground truncate">
-                {n} de {total}{tonoSuena && <> · {tonoSuena}</>}{a.cejilla > 0 && <> · Cejilla {a.cejilla}</>}
-            </p>
-            <h2 className="text-[22px] font-bold leading-tight text-foreground">{cancion.titulo}</h2>
-            <div ref={zonaRef} className="mt-2">
-                <HojaCancion lineas={leida.lineas} opciones={opciones} vista={a.vista} tamano={tamano} columnas={columnas} />
+            className="min-h-full px-5 md:px-10 pt-[calc(env(safe-area-inset-top)+60px)] pb-[calc(env(safe-area-inset-bottom)+132px)]">
+            <h2 className="font-heading text-[28px] font-bold leading-tight text-foreground">
+                <span className="sr-only">{n} de {total}: </span>{cancion.titulo}
+            </h2>
+            {(bloque || etiquetas.length > 0) && (
+                <div className="mt-2 flex flex-wrap gap-1.5">
+                    {bloque && estiloDelBloque && <Pildora texto={bloque} pastel={estiloDelBloque.pastel} icono={estiloDelBloque.icono} />}
+                    {etiquetas.map(e => <Pildora key={e.texto} texto={e.texto} pastel={e.pastel} icono={e.icono} />)}
+                </div>
+            )}
+            <div ref={zonaRef} className="mt-3">
+                <HojaCancion lineas={lineas} opciones={opciones} vista={a.vista} tamano={tamano} columnas={columnas} />
             </div>
-            <div className="fixed left-0 top-0 h-0 w-0 overflow-hidden invisible" aria-hidden>
-                <HojaCancion ref={medidorRef} lineas={leida.lineas} opciones={opciones} vista={a.vista} tamano={tamano} columnas={columnas} />
-            </div>
+            {/* Copia invisible para medir, solo con «que quepa»: el tamaño y las columnas los pone buscarEncaje */}
+            {a.ajustar && (
+                <div className="fixed left-0 top-0 h-0 w-0 overflow-hidden invisible" aria-hidden>
+                    <HojaCancion ref={medidorRef} lineas={lineas} opciones={opciones} vista={a.vista} tamano={TAMANO_MAX} columnas={1} className="hidden" />
+                </div>
+            )}
             {siguiente && (
                 <button onClick={e => { e.stopPropagation(); onSiguiente(); }}
-                    className="pulsable mt-6 w-full h-14 rounded-2xl bg-fill px-4 flex items-center gap-3 text-left">
+                    className="pulsable mt-6 w-full rounded-2xl bg-sheet border border-hairline shadow-e1 p-2 pr-4 flex items-center gap-3 text-left">
+                    <Portada src={siguiente.portada} titulo={siguiente.titulo} tamano="lista" />
                     <span className="flex-1 min-w-0">
                         <span className="block text-[12px] text-muted-foreground">Siguiente</span>
-                        <span className="block truncate text-[16px] font-semibold text-foreground">{siguiente.titulo}</span>
+                        <span className="block truncate text-[16px] font-semibold text-foreground">{siguiente.titulo}{tonoSiguiente && <> · {tonoSiguiente}</>}</span>
                     </span>
                     <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </button>

@@ -17,8 +17,9 @@ export function useCancionero() {
         canciones: canciones.items,
         repertorios: repertorios.items,
         nube: canciones.nube,
+        // Sin esperar a Firebase si se sabe quién lo usó la última vez (ver cargarPrevio)
         listo: canciones.duenio !== null && repertorios.duenio !== null,
-        conCuenta: !!uid,
+        conCuenta: !!uid || (loading && !!canciones.duenio && canciones.duenio !== 'invitado'),
         ...cancioneroService,
     };
 }

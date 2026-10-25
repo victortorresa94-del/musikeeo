@@ -38,6 +38,9 @@ export default {
                 },
                 sheet:  "var(--sheet)",
                 chrome: "var(--chrome)",
+                // Baldosas pastel de Explorar (bg-pastel-menta) y su tinta (text-pastel-menta-ink)
+                pastel: Object.fromEntries(['mantequilla', 'cielo', 'menta', 'lavanda', 'melocoton', 'rosa']
+                    .map(c => [c, { DEFAULT: `var(--pastel-${c})`, ink: `var(--pastel-${c}-ink)` }])),
                 secondary: {
                     DEFAULT:    "hsl(var(--secondary))",
                     foreground: "hsl(var(--secondary-foreground))",

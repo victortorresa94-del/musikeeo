@@ -142,7 +142,7 @@ export const RodrigoFloatingChat = () => {
 
     // Don't show on Rodrigo landing page (it has its own chat)
     // Tampoco en pantallas a pantalla completa o de escritura (reels, chat, auth, publicar)
-    if (location.pathname === '/rodrigo' || (/^\/(reels|messages|login|register|onboarding|publicar|forgot-password|artist\/|cancionero\/)/.test(location.pathname) || /^\/eventos\/(?!crear)[^/]+$/.test(location.pathname)) || new URLSearchParams(location.search).has('reel')) {
+    if (location.pathname === '/rodrigo' || (/^\/(reels|messages|login|register|onboarding|publicar|forgot-password|artist\/|cancionero)/.test(location.pathname) || /^\/eventos\/(?!crear)[^/]+$/.test(location.pathname)) || new URLSearchParams(location.search).has('reel')) {
         return null;
     }
 
