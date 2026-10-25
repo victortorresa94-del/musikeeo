@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { ClipboardPaste, ExternalLink, FileUp, Loader2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
-import { datosDelPegado, detectarTono, leerCancion, limpiarTexto, nombreTono } from '../../lib/acordes';
+import { datosDelPegado, detectarTono, leerCancion, limpiarTexto, nombreTono, recortarCancion } from '../../lib/acordes';
 import { LIMITE_TEXTO } from '../../services/cancioneroService';
 import { HojaCancion } from '../../components/cancionero/HojaCancion';
 import { Segmentado } from '../../components/cancionero/Controles';
@@ -58,6 +58,8 @@ function Formulario({ existente }: { existente?: Cancion }) {
         let limpio = limpiarTexto(crudo);
         const datos = datosDelPegado(limpio);
         if (datos.primeraLineaEsTitulo) limpio = limpio.split('\n').slice(1).join('\n').replace(/^\n+/, '');
+        // Solo letra copiada de una web con «Seleccionar todo»: fuera menús, botones y créditos
+        if (!leerCancion(limpio).acordes.length) limpio = recortarCancion(limpio);
         if (datos.titulo && !titulo.trim()) setTitulo(datos.titulo);
         if (datos.artista && !artista.trim()) setArtista(datos.artista);
         setTexto(limpio);

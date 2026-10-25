@@ -277,7 +277,8 @@ export function datosDelPegado(texto: string): DatosPegado {
         if (primera && m && !leerLineaAcordes(primera) && !esSeccion(primera)) {
             // «Acordes de Canción - Artista» y similares
             datos.titulo = m[1].replace(/^(acordes|letra( y acordes)?|chords|tab)\s+(de|of)\s+/i, '');
-            datos.artista = datos.artista || m[2];
+            // «Canción - Letra»: lo de detrás no es el artista
+            if (!/^(letra|lyrics|acordes|chords|tabs?)( y acordes| \(.*\))?$/i.test(m[2])) datos.artista = datos.artista || m[2];
             datos.primeraLineaEsTitulo = true;
         }
     }
@@ -606,12 +607,44 @@ export function semitonosHacia(acordes: Acorde[], destino: Acorde): number {
     return elegido;
 }
 
+// Lo que en una web de letras no es la canción: menús, botones, créditos y enlaces. Las palabras
+// solo cuentan en una línea corta: «Seguir viviendo sin tu amor» es letra, «Seguir» es un botón
+const RE_WEB = /^(inicio|men[uú]|buscar|iniciar sesi[oó]n|reg[ií]str|entrar|compartir|imprimir|traducci[oó]n|traducir|significado|escuchar|reproducir|v[ií]deos?|ver (m[aá]s|todo|v[ií]deo|letra)|mostrar (m[aá]s|menos)|m[aá]s (letras|canciones|resultados|populares|de)|otras (canciones|letras|personas)|letras?( de| traducida)?|lyrics|fuente|source|compositor(es)?|composici[oó]n|escrita por|autor(es)?|productor|publicad[ao]|copyright|todos los derechos|cookies?|aceptar|rechazar|anuncio|publicidad|enviar|corregir|comentarios?|valora|me gusta|seguir|suscr[ií]b|descargar|spotify|apple music|youtube|deezer|amazon music)\b/i;
+const esDeLaWeb = (t: string) => /https?:|www\.|\.(com|es|net|org)\b|©|@/.test(t) || (RE_WEB.test(t) && t.split(/\s+/).length <= 5);
+const palabras = (t: string) => t.split(/\s+/).filter(Boolean).length;
+
+// Solo letra copiada con «Seleccionar todo»: se queda el trozo más largo de estrofas (bloques
+// de versos de varias palabras, no menús de una palabra por línea). Si no se ve claro, tal cual
+function recortarLetra(lineas: string[]): string {
+    const bloques: string[][] = [];
+    for (const l of lineas) {
+        if (!l.trim()) { if (bloques.length && bloques[bloques.length - 1].length) bloques.push([]); continue; }
+        if (!bloques.length) bloques.push([]);
+        bloques[bloques.length - 1].push(l);
+    }
+    const esEstrofa = (b: string[]) => {
+        const versos = b.filter(l => /\p{L}/u.test(l) && l.trim().length <= 100 && !esDeLaWeb(l.trim()));
+        return versos.length >= 2 && versos.length >= b.length * 0.75 && b.filter(l => palabras(l) >= 3).length >= b.length / 2;
+    };
+    // Entre dos estrofas vale una línea suelta (un «[Estribillo]», un «(x2)»), no la publicidad
+    let mejor: string[][] = [], actual: string[][] = [], suelta: string[][] = [];
+    const versosDe = (bs: string[][]) => bs.filter(esEstrofa).reduce((n, b) => n + b.length, 0);
+    for (const b of bloques.filter(b => b.length)) {
+        if (esEstrofa(b)) { actual.push(...suelta, b); suelta = []; }
+        else if (actual.length && b.length === 1 && !esDeLaWeb(b[0].trim())) suelta.push(b);
+        else { if (versosDe(actual) > versosDe(mejor)) mejor = actual; actual = []; suelta = []; }
+    }
+    if (versosDe(actual) > versosDe(mejor)) mejor = actual;
+    if (versosDe(mejor) < 4) return lineas.join('\n').trim();
+    return mejor.map(b => b.join('\n')).join('\n\n').trim();
+}
+
 // Al copiar con «Seleccionar todo» viene la página entera: se queda de la primera línea de
 // acordes a la última (más la letra que cuelga de ella), y fuera la cejilla de la web
 export function recortarCancion(texto: string): string {
     const lineas = limpiarTexto(texto).split('\n').filter(l => !RE_CEJILLA.test(l.trim()) && !/^\s*(tono|key)\s*:/i.test(l));
     const conAcordes = lineas.map((l, i) => (leerLineaAcordes(l) ? i : -1)).filter(i => i >= 0);
-    if (!conAcordes.length) return lineas.join('\n').trim();
+    if (!conAcordes.length) return recortarLetra(lineas);
     let desde = conAcordes[0], hasta = conAcordes[conAcordes.length - 1];
     // La sección que lo anuncia («Intro», «[Verso]») se queda
     if (desde > 0 && esSeccion(lineas[desde - 1])) desde--;

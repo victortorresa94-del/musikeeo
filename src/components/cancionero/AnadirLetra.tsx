@@ -1,6 +1,6 @@
 import { toast } from 'sonner';
 import { ClipboardPaste, ExternalLink } from 'lucide-react';
-import { juntarAcordesYLetra, leerAcorde, leerCancion, limpiarTexto, recortarCancion, semitonosHacia } from '../../lib/acordes';
+import { juntarAcordesYLetra, leerAcorde, leerCancion, recortarCancion, semitonosHacia } from '../../lib/acordes';
 import { enlaceLetra, enlacesAcordes } from '../../lib/buscarCanciones';
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
 
@@ -17,10 +17,10 @@ function unirLetra(actual: string, pegado: string, ajustes: AjustesCancion): { t
     const acordes = leerCancion(cancion).acordes;
     if (!acordes.length) {
         // Solo letra en una canción vacía (recién añadida del buscador): la letra sin más
-        if (!actual.trim()) return { texto: limpiarTexto(pegado).trim(), semitonos: ajustes.semitonos };
+        if (!actual.trim()) return { texto: cancion, semitonos: ajustes.semitonos };
         // Solo letra: si ya había filas de acordes, cada una va encima de su línea (como en
         // LaCuerda); si no, la letra va debajo
-        const unido = `${actual.trimEnd()}\n\n[Letra]\n${limpiarTexto(pegado).trim()}`;
+        const unido = `${actual.trimEnd()}\n\n[Letra]\n${cancion}`;
         return { texto: juntarAcordesYLetra(unido) ?? unido, semitonos: ajustes.semitonos };
     }
     const s = destino ? semitonosHacia(acordes, destino) : 0;

@@ -112,14 +112,18 @@ function Lector({ cancion }: { cancion: Cancion }) {
         setEncaje(buscarEncaje(hoja, c.ancho, c.alto, columnasPosibles(c.ancho), TAMANO_MAX));
     }, [ajustes.ajustar, ajustes.vista, opciones, leida, escenario, medida, caja]);
 
-    // Al activarlo, la hoja se coloca justo debajo de la barra
+    // Una ficha o una chuleta sin letra: arriba sale «Falta la letra» para pegarla
+    const faltaLetra = !leida.lineas.some(l => l.tipo === 'mixta') && lineasDeLetra(leida) < 8;
+
+    // Al activarlo, la hoja se coloca justo debajo de la barra. Si falta la letra, no: taparía
+    // el recuadro para pegarla (las fichas del setlist llegan con «que quepa»)
     useEffect(() => {
-        if (!ajustes.ajustar || escenario) return;
+        if (!ajustes.ajustar || escenario || faltaLetra) return;
         const zona = zonaRef.current, barra = barraRef.current;
         if (!zona || !barra) return;
         const arriba = (parseFloat(getComputedStyle(barra).top) || 0) + barra.offsetHeight + 12;
         window.scrollTo({ top: Math.max(0, zona.getBoundingClientRect().top + window.scrollY - arriba), behavior: 'smooth' });
-    }, [ajustes.ajustar, escenario]);
+    }, [ajustes.ajustar, escenario, faltaLetra]);
 
     const ajustada = ajustes.ajustar && encaje?.cabe;
     const tamano = ajustada ? encaje!.tamano : ajustes.tamano;
@@ -326,7 +330,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
             {/* La hoja */}
             <div className="max-w-5xl mx-auto px-4 md:px-0 mt-4">
                 {/* Ficha o chuleta sin letra: buscarla, copiarla y pegarla, y entra en el tono del setlist */}
-                {!leida.lineas.some(l => l.tipo === 'mixta') && lineasDeLetra(leida) < 8 && (
+                {faltaLetra && (
                     <AnadirLetra cancion={cancion} ajustes={ajustes} onPegar={ponerLetra} />
                 )}
                 {juntada && (
