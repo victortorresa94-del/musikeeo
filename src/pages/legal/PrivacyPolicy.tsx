@@ -2,7 +2,7 @@ import LegalPageLayout from './LegalPageLayout';
 
 export default function PrivacyPolicy() {
     return (
-        <LegalPageLayout title="Política de privacidad" updatedAt="2026-05-26">
+        <LegalPageLayout title="Política de privacidad" updatedAt="2026-10-25">
             <p>
                 En Musikeeo nos tomamos en serio tu privacidad. Esta política explica qué
                 datos recogemos, con qué finalidad, cuál es la base legal del tratamiento,
@@ -24,7 +24,6 @@ export default function PrivacyPolicy() {
                 <li><strong>Datos de cuenta:</strong> nombre/usuario, email, contraseña (cifrada por Firebase Auth), rol (músico, técnico, promotor, tienda), ubicación, foto de perfil.</li>
                 <li><strong>Datos de perfil profesional:</strong> biografía, géneros, servicios, equipo, disponibilidad, multimedia (fotos y vídeos).</li>
                 <li><strong>Contenidos generados por el usuario:</strong> anuncios del marketplace, eventos publicados, mensajes, valoraciones.</li>
-                <li><strong>Datos de contacto opcionales:</strong> número de WhatsApp si decides facilitarlo para que otros usuarios te contacten.</li>
                 <li><strong>Datos de uso:</strong> registros de actividad, dirección IP, identificadores del dispositivo, páginas visitadas (para seguridad y mejora del servicio).</li>
             </ul>
 
@@ -36,13 +35,25 @@ export default function PrivacyPolicy() {
                 <tbody>
                     <tr><td>Crear y gestionar tu cuenta</td><td>Ejecución del contrato (Art. 6.1.b RGPD)</td></tr>
                     <tr><td>Publicar tu perfil, anuncios o eventos</td><td>Ejecución del contrato</td></tr>
-                    <tr><td>Permitir el contacto entre usuarios (mensajes internos, WhatsApp opcional)</td><td>Ejecución del contrato</td></tr>
+                    <tr><td>Permitir el contacto entre usuarios (mensajes internos)</td><td>Ejecución del contrato</td></tr>
+                    <tr><td>Ocultar teléfonos, emails y enlaces de mensajería en el chat hasta que se acepta una propuesta de bolo</td><td>Interés legítimo (Art. 6.1.f): prevenir fraudes y proteger los acuerdos hechos en Musikeeo</td></tr>
                     <tr><td>Seguridad de la plataforma, prevención de fraude y abusos</td><td>Interés legítimo (Art. 6.1.f)</td></tr>
                     <tr><td>Analítica agregada para mejorar el servicio</td><td>Consentimiento (Art. 6.1.a)</td></tr>
                     <tr><td>Comunicaciones comerciales propias</td><td>Consentimiento</td></tr>
                     <tr><td>Cumplimiento de obligaciones legales</td><td>Obligación legal (Art. 6.1.c)</td></tr>
                 </tbody>
             </table>
+
+            <h3 id="chat">Teléfonos y emails en el chat</h3>
+            <p>
+                En los chats ocultamos teléfonos, emails y enlaces de WhatsApp o Telegram hasta
+                que se acepta una propuesta de bolo, para evitar fraudes y que fecha, sitio y
+                caché queden por escrito para las dos partes. Lo hace tu propio dispositivo
+                antes de enviar el mensaje: lo que se oculta no llega a Musikeeo y no lo
+                guardamos. Solo leemos una conversación si uno de los dos la denuncia, y nunca
+                la usamos para publicidad ni para entrenar una inteligencia artificial. Puedes
+                oponerte a este tratamiento escribiendo a hola@musikeeo.com.
+            </p>
 
             <h2>4. ¿Con quién compartimos tus datos?</h2>
             <p>

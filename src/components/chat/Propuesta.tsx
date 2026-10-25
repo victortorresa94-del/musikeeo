@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CalendarCheck, Check, X } from 'lucide-react';
+import { Link } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import type { ChatMessage, PropuestaBolo } from '../../types';
 
@@ -24,7 +25,8 @@ export function AvisoContacto({ onProponer }: { onProponer: () => void }) {
     return (
         <div role="note" className="mx-3 mb-1.5 flex items-center gap-3 rounded-[14px] bg-pastel-mantequilla px-3.5 py-2.5 text-pastel-mantequilla-ink">
             <p className="flex-1 text-[13px] leading-snug">
-                <b className="font-bold">El teléfono y el email se ocultan</b> hasta que aceptéis una propuesta de bolo. Así fecha, sitio y caché quedan por escrito para los dos.
+                <b className="font-bold">Se ocultan teléfono y email</b> hasta aceptar una propuesta de bolo, para que fecha, sitio y caché queden por escrito. Lo hace tu móvil y no se guarda.{' '}
+                <Link to="/privacidad#chat" className="underline underline-offset-2">Por qué</Link>
             </p>
             <button type="button" onClick={onProponer} className="pulsable shrink-0 h-8 px-3 rounded-full bg-foreground text-background text-[13px] font-semibold">
                 Hacer propuesta

@@ -2,7 +2,7 @@ import LegalPageLayout from './LegalPageLayout';
 
 export default function TermsOfService() {
     return (
-        <LegalPageLayout title="Términos y condiciones de uso" updatedAt="2026-05-26">
+        <LegalPageLayout title="Términos y condiciones de uso" updatedAt="2026-10-25">
             <p>
                 Los presentes Términos y condiciones (en adelante, &laquo;los Términos&raquo;)
                 regulan el uso de la plataforma Musikeeo, accesible en
@@ -59,8 +59,7 @@ export default function TermsOfService() {
                 cumplimiento por las partes del acuerdo alcanzado.
             </p>
             <p>
-                El contacto entre usuarios se realiza a través de mensajería interna y,
-                opcionalmente, WhatsApp si el anunciante lo facilita.
+                El contacto entre usuarios se realiza a través de la mensajería interna.
             </p>
 
             <h2>5. Eventos y solicitudes</h2>
@@ -68,6 +67,15 @@ export default function TermsOfService() {
                 Los organizadores pueden publicar eventos y los profesionales pueden postularse
                 a ellos. La aceptación o rechazo de candidaturas y los términos económicos del
                 bolo son responsabilidad de las partes.
+            </p>
+            <p>
+                Para proteger a las dos partes, en el chat se ocultan automáticamente teléfonos,
+                emails y enlaces de mensajería (WhatsApp, Telegram…) hasta que se acepta una
+                propuesta de bolo; así fecha, sitio y caché quedan por escrito. Lo hace el
+                dispositivo de quien escribe y lo oculto no se guarda. Si alguien insiste en
+                saltarse esta regla podemos avisarle y, en casos repetidos, limitar su
+                visibilidad; cualquier medida la revisa una persona y se comunica con sus
+                motivos. Puedes reclamar en hola@musikeeo.com.
             </p>
 
             <h2>6. Asistente IA &laquo;Rodrigo&raquo;</h2>
