@@ -33,8 +33,10 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="preload" href="/fonts/manrope-latin.woff2" as="font" type="font/woff2" crossorigin>
+  <!-- Sin bloquear el primer pintado: con poca cobertura, la app se quedaba en blanco esperando
+       a Google (solo lo usa un icono del pie de Rodrigo) -->
   <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1"
-    rel="stylesheet" />
+    rel="stylesheet" media="print" onload="this.media='all'" />
 
   <!-- PWA Configuration -->
   <link rel="manifest" href="/manifest.json" />
