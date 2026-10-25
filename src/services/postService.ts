@@ -1,6 +1,5 @@
 import {
-    addDoc, collection, deleteDoc, doc, getDoc, getDocs, increment, limit, orderBy, query,
-    updateDoc, where, writeBatch,
+    addDoc, collection, deleteDoc, doc, getDocs, limit, orderBy, query, updateDoc, where,
 } from 'firebase/firestore';
 import { deleteObject, getDownloadURL, ref, uploadBytesResumable } from 'firebase/storage';
 import { db, storage } from '../lib/firebase';
@@ -37,6 +36,15 @@ export async function videoPoster(file: File): Promise<{ blob: Blob | null; dura
     });
 }
 
+// Los estilos del autor y las #etiquetas del texto («#rumba #boda»), para que el Feed sepa
+// a quién enseñárselo. Como mucho 10, sin repetir, y solo si hay algo
+function etiquetasYCiudad(caption: string, genres: string[] = [], location?: string) {
+    const deTexto = [...caption.matchAll(/#([\p{L}\p{N}_]{2,30})/gu)].map(m => m[1]);
+    const etiquetas = [...new Set([...genres, ...deTexto].map(x => x.trim().toLowerCase().slice(0, 40)).filter(Boolean))].slice(0, 10);
+    const ciudad = (location || '').split(',')[0].trim().slice(0, 80);
+    return { ...(etiquetas.length ? { etiquetas } : {}), ...(ciudad ? { ciudad } : {}) };
+}
+
 const safeName = (name: string) => name.replace(/[^a-zA-Z0-9._-]/g, '_').slice(-60);
 
 function upload(path: string, data: Blob, contentType: string, onProgress?: (p: number) => void) {
@@ -53,7 +61,7 @@ export const postService = {
     async create(params: {
         file: File;
         caption: string;
-        author: { uid: string; name: string; photo?: string; role?: UserMode };
+        author: { uid: string; name: string; photo?: string; role?: UserMode; genres?: string[]; location?: string };
         onProgress?: (p: number) => void;
     }): Promise<Post> {
         const { file, caption, author, onProgress } = params;
@@ -81,7 +89,7 @@ export const postService = {
             mediaUrl, mediaPath,
             ...(posterUrl ? { posterUrl, posterPath } : {}),
             caption: caption.trim().slice(0, POST_LIMITS.caption),
-            likeCount: 0,
+            ...etiquetasYCiudad(caption, author.genres, author.location),
             createdAt: new Date().toISOString(),
         };
         const created = await addDoc(collection(db, 'posts'), data);
@@ -96,22 +104,6 @@ export const postService = {
     async byAuthor(uid: string, max = 30): Promise<Post[]> {
         const s = await getDocs(query(collection(db, 'posts'), where('authorId', '==', uid), limit(max)));
         return s.docs.map(d => ({ id: d.id, ...d.data() }) as Post).sort((a, b) => b.createdAt.localeCompare(a.createdAt));
-    },
-
-    // Qué posts de la lista ha marcado ya este usuario
-    async likedBy(uid: string, postIds: string[]): Promise<Set<string>> {
-        const checks = await Promise.all(postIds.map(id =>
-            getDoc(doc(db, 'posts', id, 'likes', uid)).then(s => (s.exists() ? id : null)).catch(() => null)));
-        return new Set(checks.filter((x): x is string => !!x));
-    },
-
-    async setLike(postId: string, uid: string, liked: boolean) {
-        const b = writeBatch(db);
-        const likeRef = doc(db, 'posts', postId, 'likes', uid);
-        if (liked) b.set(likeRef, { uid, createdAt: new Date().toISOString() });
-        else b.delete(likeRef);
-        b.update(doc(db, 'posts', postId), { likeCount: increment(liked ? 1 : -1) });
-        await b.commit();
     },
 
     async remove(post: Post) {

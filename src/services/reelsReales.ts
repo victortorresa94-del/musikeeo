@@ -2,16 +2,26 @@ import type { Artist, Post } from '../types';
 import type { Reel } from '../types/reels';
 import { postService } from './postService';
 import { explorarService } from './explorarService';
+import { claveDe, type Objetivo } from './interaccionService';
+import { estilosDe, type Rasgos } from '../lib/recomendador';
 
 // La única fuente de reels: los vídeos que de verdad hay en Musikeeo.
 //  · publicaciones de vídeo de la comunidad (colección «posts»)
 //  · clips de artista (campo clipUrl de «artists»: mp4 vertical de 4 s, sin audio)
-// Nada de contadores inventados: un clip de artista no tiene me gusta, y no se pintan.
+// Nada de contadores inventados: salen de interacciones/{clave} (services/interaccionService).
 
 const CLIP_SEGUNDOS = 4;
 
 /** Id del reel de un artista (no choca con los ids de «posts») */
 export const idReelArtista = (a: Pick<Artist, 'id'>) => `artista-${a.id}`;
+
+/** A qué se le da el me gusta o se comenta: la publicación o el artista del vídeo */
+export const objetivoDeReel = (r: Reel): Objetivo => r.origen === 'artista'
+    ? { tipo: 'artista', refId: r.id.replace(/^artista-/, ''), duenioId: r.authorId }
+    : { tipo: 'post', refId: r.id, duenioId: r.authorId };
+
+/** Su clave en interacciones: «post_<id>» o «artista_<id>» */
+export const claveDeReel = (r: Reel) => claveDe(objetivoDeReel(r));
 
 export function reelDePost(p: Post): Reel {
     return {
@@ -26,8 +36,8 @@ export function reelDePost(p: Post): Reel {
         authorRole: p.authorRole || 'musician',
         perfilUrl: `/profile/${p.authorId}`,
         shareUrl: `/reels/${p.id}`,
-        likes: Math.max(0, p.likeCount || 0),
-        comments: 0, shares: 0, views: 0,
+        // Los contadores de verdad están en interacciones/post_{id}: los pone quien los carga
+        likes: 0, comments: 0, shares: 0, views: 0,
         timestamp: new Date(p.createdAt).getTime() || 0,
         duration: 0,
     };
@@ -76,4 +86,17 @@ export async function cargarReels(): Promise<Reel[]> {
         explorarService.artistas().catch(() => [] as Artist[]),
     ]);
     return reelsDe(posts, artistas);
+}
+
+/** Rasgos de un vídeo para el algoritmo, con lo que trae el propio reel (página /reels) */
+export function rasgosDeReel(r: Reel): Rasgos {
+    return {
+        clave: claveDeReel(r),
+        tipo: r.origen === 'artista' ? 'artista' : 'post',
+        autor: r.authorId,
+        estilos: estilosDe(r.description),
+        formato: 'video',
+        fecha: r.timestamp,
+        likes: r.likes, comentarios: r.comments,
+    };
 }

@@ -1,6 +1,6 @@
 import { initializeApp, getApps, type FirebaseApp } from "firebase/app";
-import { getAuth, type Auth } from "firebase/auth";
-import { getFirestore, type Firestore, enableIndexedDbPersistence } from "firebase/firestore";
+import { connectAuthEmulator, getAuth, type Auth } from "firebase/auth";
+import { connectFirestoreEmulator, getFirestore, type Firestore, enableIndexedDbPersistence } from "firebase/firestore";
 import { getStorage, type FirebaseStorage } from "firebase/storage";
 import { getFunctions, type Functions } from "firebase/functions";
 
@@ -41,6 +41,13 @@ try {
 
     auth = getAuth(app);
     db = getFirestore(app);
+
+    // Pruebas en local (npm run dev con VITE_EMULADORES=1): Auth y Firestore de los
+    // emuladores de Firebase, nunca los de producción. En el build de Vercel no existe.
+    if (import.meta.env.DEV && import.meta.env.VITE_EMULADORES === '1') {
+        connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
+        connectFirestoreEmulator(db, '127.0.0.1', 8080);
+    }
 
     // ENABLE OFFLINE PERSISTENCE
     // This fixes "Client is offline" errors and allows the app to work without network.

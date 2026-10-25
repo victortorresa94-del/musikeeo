@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react';
+import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import {
@@ -105,7 +105,60 @@ function ClipArtista({ src, poster, onFallo }: { src: string; poster?: string; o
 
 const sinMovimiento = () => typeof window !== 'undefined' && window.matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-export function TarjetaArtistaGrande({ a, onAbrirClip }: { a: Artist; onAbrirClip?: () => void }) {
+// ─── Me gusta y comentarios, a la derecha como en el concepto ───────────────
+// Los números solo salen si hay algo: nunca un contador inventado
+export function Acciones({ liked, likes, comentarios, onLike, onComentar, className }: {
+    liked: boolean; likes: number; comentarios: number;
+    onLike: () => void; onComentar: () => void; className?: string;
+}) {
+    const sombra = 'drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]';
+    const boton = 'w-12 flex flex-col items-center gap-0.5 text-white active:opacity-70';
+    return (
+        <div className={cn('absolute right-3 z-10 flex flex-col items-center gap-3', className)}>
+            <button onClick={onLike} aria-pressed={liked} aria-label={liked ? 'Quitar me gusta' : 'Me gusta'} className={boton}>
+                <motion.span animate={liked ? { scale: [1, 1.3, 1] } : { scale: 1 }} transition={{ duration: 0.3 }}>
+                    <Heart className={cn('h-7 w-7', sombra, liked && 'fill-white')} />
+                </motion.span>
+                {likes > 0 && <span className={cn('text-[13px] font-semibold', sombra)}>{fmt(likes)}</span>}
+            </button>
+            <button onClick={onComentar} aria-label={comentarios > 0 ? `Ver los ${comentarios} comentarios` : 'Comentar'} className={boton}>
+                <MessageCircle className={cn('h-7 w-7', sombra)} />
+                {comentarios > 0 && <span className={cn('text-[13px] font-semibold', sombra)}>{fmt(comentarios)}</span>}
+            </button>
+        </div>
+    );
+}
+
+// ─── Avisa una vez cuando la tarjeta ha estado a la vista (60 % durante 1 s) ─
+export function Visto({ onVisto, children }: { onVisto: () => void; children: ReactNode }) {
+    const ref = useRef<HTMLDivElement>(null);
+    const aviso = useRef(onVisto);
+    useEffect(() => { aviso.current = onVisto; }, [onVisto]);
+    useEffect(() => {
+        const el = ref.current;
+        if (!el || typeof IntersectionObserver === 'undefined') return;
+        let t: ReturnType<typeof setTimeout> | null = null;
+        let hecho = false;
+        const io = new IntersectionObserver(([e]) => {
+            if (hecho) return;
+            if (e.intersectionRatio >= 0.6) t ??= setTimeout(() => { hecho = true; aviso.current(); io.disconnect(); }, 1000);
+            else if (t) { clearTimeout(t); t = null; }
+        }, { threshold: [0, 0.6] });
+        io.observe(el);
+        return () => { io.disconnect(); if (t) clearTimeout(t); };
+    }, []);
+    return <div ref={ref}>{children}</div>;
+}
+
+export function TarjetaArtistaGrande({ a, onAbrirClip, liked, likes, comentarios, onLike, onComentar, onPerfil }: {
+    a: Artist;
+    onAbrirClip?: () => void;
+    liked: boolean; likes: number; comentarios: number;
+    onLike: (on: boolean) => void;
+    onComentar: () => void;
+    /** Se ha tocado para ir a su ficha (para el algoritmo) */
+    onPerfil?: () => void;
+}) {
     // «House y disco», como en el concepto
     const generos = (a.genres || []).slice(0, 2).map((g, i) => i ? g.toLowerCase() : g).join(' y ');
     const linea = [ciudad(a.city), generos].filter(Boolean).join(' · ');
@@ -117,61 +170,52 @@ export function TarjetaArtistaGrande({ a, onAbrirClip }: { a: Artist; onAbrirCli
     const medio = clip
         ? <ClipArtista src={clip} poster={a.clipPoster || a.coverPhoto || a.profilePhoto} onFallo={() => setClipRoto(true)} />
         : <Foto src={a.coverPhoto || a.clipPoster || a.profilePhoto} className="absolute inset-0 h-full w-full" icon={Music2} />;
-    const sinSonido = clip && (
-        <span className="pointer-events-none absolute top-3 right-3 h-8 w-8 rounded-full bg-black/45 backdrop-blur flex items-center justify-center text-white" role="img" aria-label="Vídeo sin sonido">
-            <VolumeX className="h-4 w-4" />
-        </span>
-    );
-    const degradado = <span className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-black/75 via-black/30 to-transparent" />;
-    const quien = (
-        <>
-            <Avatar src={a.profilePhoto || a.coverPhoto} name={a.artistName} className="h-11 w-11 shrink-0 ring-2 ring-white text-[17px]" />
-            <span className="min-w-0 flex-1">
-                <span className="flex items-center gap-1 text-[18px] font-bold leading-tight text-white">
-                    <span className="truncate">{a.artistName}</span>
-                    {a.isVerified && <BadgeCheck className="h-4 w-4 shrink-0 text-white" aria-label="Verificado" />}
-                </span>
-                {linea && <span className="mt-0.5 block truncate text-[14px] text-white/85">{linea}</span>}
-            </span>
-        </>
-    );
-    const verPerfil = 'shrink-0 h-9 px-3.5 rounded-full bg-white text-black text-[14px] font-semibold flex items-center';
+    const perfil = `/artist/${a.slug}`;
+    const like = () => { onLike(!liked); if (navigator.vibrate) navigator.vibrate(10); };
 
-    // Con clip, tocar el vídeo lo abre en el visor (recorre todos los vídeos); «Ver perfil» va a la ficha
-    if (clip && onAbrirClip) {
-        return (
-            <div className={caja}>
+    return (
+        <div className={caja}>
+            {/* Con clip, tocar el vídeo lo abre en el visor (recorre todos los vídeos); sin clip, va a la ficha */}
+            {clip && onAbrirClip ? (
                 <button type="button" onClick={onAbrirClip} aria-label={`Ver el vídeo de ${a.artistName}`}
                     className="pulsable absolute inset-0 block w-full cursor-pointer">
                     {medio}
                 </button>
-                {sinSonido}
-                {degradado}
-                <span className="absolute inset-x-0 bottom-0 flex items-center gap-2.5 p-4">
-                    <Link to={`/artist/${a.slug}`} className="min-w-0 flex-1 flex items-center gap-2.5 active:opacity-70">{quien}</Link>
-                    <Link to={`/artist/${a.slug}`} aria-label={`Ver el perfil de ${a.artistName}`} className={cn('pulsable', verPerfil)}>Ver perfil</Link>
+            ) : (
+                <Link to={perfil} onClick={onPerfil} aria-label={`Ver el perfil de ${a.artistName}`} className="pulsable absolute inset-0 block">
+                    {medio}
+                </Link>
+            )}
+            {clip && (
+                <span className="pointer-events-none absolute top-3 right-3 h-8 w-8 rounded-full bg-black/45 backdrop-blur flex items-center justify-center text-white" role="img" aria-label="Vídeo sin sonido">
+                    <VolumeX className="h-4 w-4" />
                 </span>
-            </div>
-        );
-    }
-
-    return (
-        <Link to={`/artist/${a.slug}`} aria-label={`Ver el perfil de ${a.artistName}`} className={cn('pulsable', caja)}>
-            {medio}
-            {sinSonido}
-            {degradado}
+            )}
+            <span className="pointer-events-none absolute inset-x-0 bottom-0 h-[62%] bg-gradient-to-t from-black/75 via-black/30 to-transparent" />
+            <Acciones liked={liked} likes={likes} comentarios={comentarios} onLike={like} onComentar={onComentar} className="bottom-[72px]" />
             <span className="absolute inset-x-0 bottom-0 flex items-center gap-2.5 p-4">
-                {quien}
-                <span className={verPerfil}>Ver perfil</span>
+                <Link to={perfil} onClick={onPerfil} className="min-w-0 flex-1 flex items-center gap-2.5 active:opacity-70">
+                    <Avatar src={a.profilePhoto || a.coverPhoto} name={a.artistName} className="h-11 w-11 shrink-0 ring-2 ring-white text-[17px]" />
+                    <span className="min-w-0 flex-1">
+                        <span className="flex items-center gap-1 text-[18px] font-bold leading-tight text-white">
+                            <span className="truncate">{a.artistName}</span>
+                            {a.isVerified && <BadgeCheck className="h-4 w-4 shrink-0 text-white" aria-label="Verificado" />}
+                        </span>
+                        {linea && <span className="mt-0.5 block truncate text-[14px] text-white/85">{linea}</span>}
+                    </span>
+                </Link>
+                <Link to={perfil} onClick={onPerfil} aria-label={`Ver el perfil de ${a.artistName}`}
+                    className="pulsable shrink-0 h-9 px-3.5 rounded-full bg-white text-black text-[14px] font-semibold flex items-center">Ver perfil</Link>
             </span>
-        </Link>
+        </div>
     );
 }
 
 // ─── Tarjeta grande: publicación real de la comunidad ───────────────────────
-export function TarjetaPost({ post, liked, myId, onLike, onOpen, onDelete }: {
-    post: Post; liked: boolean; myId?: string;
-    onLike: (p: Post, liked: boolean) => void; onOpen: () => void; onDelete: (p: Post) => void;
+export function TarjetaPost({ post, liked, likes, comentarios, myId, onLike, onComentar, onOpen, onDelete, onPerfil }: {
+    post: Post; liked: boolean; likes: number; comentarios: number; myId?: string;
+    onLike: (p: Post, liked: boolean) => void; onComentar: () => void; onOpen: () => void; onDelete: (p: Post) => void;
+    onPerfil?: () => void;
 }) {
     const [burst, setBurst] = useState(0);
     const [menu, setMenu] = useState(false);
@@ -262,24 +306,17 @@ export function TarjetaPost({ post, liked, myId, onLike, onOpen, onDelete }: {
                     )}
                 </div>
 
-                {/* Me gusta, a la derecha como en el concepto */}
-                <button onClick={() => like()} aria-pressed={liked} aria-label={liked ? 'Quitar me gusta' : 'Me gusta'}
-                    className="absolute right-3 bottom-[76px] w-12 flex flex-col items-center gap-0.5 text-white active:opacity-70">
-                    <motion.span animate={liked ? { scale: [1, 1.3, 1] } : { scale: 1 }} transition={{ duration: 0.3 }}>
-                        <Heart className={cn('h-7 w-7 drop-shadow-[0_2px_6px_rgba(0,0,0,0.35)]', liked && 'fill-white')} />
-                    </motion.span>
-                    {post.likeCount > 0 && <span className="text-[13px] font-semibold">{fmt(post.likeCount)}</span>}
-                </button>
+                <Acciones liked={liked} likes={likes} comentarios={comentarios} onLike={() => like()} onComentar={onComentar} className="bottom-[76px]" />
 
                 <div className="absolute inset-x-0 bottom-0 flex items-center gap-3 p-4">
-                    <Link to={`/profile/${post.authorId}`} className="min-w-0 flex-1 flex items-center gap-3 active:opacity-70">
+                    <Link to={`/profile/${post.authorId}`} onClick={onPerfil} className="min-w-0 flex-1 flex items-center gap-3 active:opacity-70">
                         <Avatar src={post.authorPhoto} name={post.authorName} className="h-11 w-11 shrink-0 ring-2 ring-white text-[16px]" />
                         <span className="min-w-0">
                             <span className="block truncate text-[17px] font-bold leading-tight text-white">{post.authorName}</span>
                             <span className="mt-0.5 block text-[13px] text-white/80">{when}</span>
                         </span>
                     </Link>
-                    <Link to={`/profile/${post.authorId}`} className="pulsable shrink-0 h-9 px-4 rounded-full bg-white text-black text-[14px] font-semibold flex items-center">Ver perfil</Link>
+                    <Link to={`/profile/${post.authorId}`} onClick={onPerfil} className="pulsable shrink-0 h-9 px-4 rounded-full bg-white text-black text-[14px] font-semibold flex items-center">Ver perfil</Link>
                 </div>
             </div>
             {post.caption && (
@@ -290,7 +327,7 @@ export function TarjetaPost({ post, liked, myId, onLike, onOpen, onDelete }: {
 }
 
 // ─── Bolo abierto: tarjeta compacta con su objeto 3D asomando ───────────────
-export function TarjetaBolo({ e }: { e: Event }) {
+export function TarjetaBolo({ e, onAbrir }: { e: Event; onAbrir?: () => void }) {
     const d = new Date(e.date);
     const fecha = isNaN(d.getTime()) ? '' : fechaCorta(d);
     const linea = [e.price && e.price > 0 ? euros(e.price) : ciudad(e.location), fecha].filter(Boolean).join(' · ');
@@ -298,7 +335,7 @@ export function TarjetaBolo({ e }: { e: Event }) {
     return (
         // El objeto no cabe a propósito: los altos asoman por arriba (de ahí el pt)
         <div className="pt-4">
-            <Link to={`/eventos/${e.id}`} aria-label={`Ver el bolo ${e.title}`}
+            <Link to={`/eventos/${e.id}`} onClick={onAbrir} aria-label={`Ver el bolo ${e.title}`}
                 className="pulsable relative flex items-center gap-3 min-h-[120px] rounded-[22px] bg-card border border-hairline shadow-e1 py-3.5 pl-[112px] pr-3.5">
                 <img src={objeto3dDeBolo(e)} alt="" loading="lazy" decoding="async"
                     className="pointer-events-none absolute left-1 bottom-3 h-[146px] w-[100px] object-contain object-bottom drop-shadow-[0_8px_10px_rgba(0,0,0,0.16)]" />
@@ -318,7 +355,7 @@ export function TarjetaBolo({ e }: { e: Event }) {
 }
 
 // ─── Recién llegado al Mercado ───────────────────────────────────────────────
-export function FilaMercado({ anuncios }: { anuncios: Listing[] }) {
+export function FilaMercado({ anuncios, onAbrir }: { anuncios: Listing[]; onAbrir?: (l: Listing) => void }) {
     return (
         <section aria-label="Recién llegado al Mercado">
             <div className="flex items-center justify-between">
@@ -329,19 +366,19 @@ export function FilaMercado({ anuncios }: { anuncios: Listing[] }) {
                 </Link>
             </div>
             <div className="mt-2 -mx-4 px-4 md:mx-0 md:px-0 flex gap-3 overflow-x-auto hide-scrollbar pb-2 snap-x scroll-pl-4 md:scroll-pl-0">
-                {anuncios.map(l => <div key={l.id} className="snap-start"><TarjetaAnuncio l={l} ancho /></div>)}
+                {anuncios.map(l => <div key={l.id} className="snap-start" onClickCapture={() => onAbrir?.(l)}><TarjetaAnuncio l={l} ancho /></div>)}
             </div>
         </section>
     );
 }
 
 // ─── Fila de artistas arriba (solo cuando hay bastantes) ────────────────────
-export function FilaArtistas({ artistas }: { artistas: Artist[] }) {
+export function FilaArtistas({ artistas, onAbrir }: { artistas: Artist[]; onAbrir?: (a: Artist) => void }) {
     return (
         <nav aria-label="Artistas en Musikeeo" className="-mx-4 px-4 md:mx-0 md:px-0">
             <div className="flex gap-3.5 overflow-x-auto hide-scrollbar pb-1">
                 {artistas.map(a => (
-                    <Link key={a.id} to={`/artist/${a.slug}`} className="pulsable shrink-0 w-[72px] flex flex-col items-center gap-1.5">
+                    <Link key={a.id} to={`/artist/${a.slug}`} onClick={() => onAbrir?.(a)} className="pulsable shrink-0 w-[72px] flex flex-col items-center gap-1.5">
                         <span className="h-[68px] w-[68px] rounded-full p-[2px] border border-hairline-strong">
                             <Avatar src={a.profilePhoto || a.coverPhoto} name={a.artistName} className="h-full w-full text-[20px]" />
                         </span>

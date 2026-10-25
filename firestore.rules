@@ -37,6 +37,17 @@ service cloud.firestore {
           && request.resource.data.ajustes is map;
       }
 
+      // Gustos que aprende el Feed (src/lib/recomendador.ts). Privados, solo su dueño.
+      match /gustos/{gustoId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && gustoId == 'perfil'
+          && request.resource.data.keys().hasOnly(['v', 'pesos', 'vistos', 'hechos', 't'])
+          && request.resource.data.v == 1
+          && request.resource.data.pesos is map && request.resource.data.pesos.size() <= 300
+          && request.resource.data.vistos is map && request.resource.data.vistos.size() <= 400
+          && request.resource.data.hechos is map && request.resource.data.hechos.size() <= 400;
+      }
+
       // Repertorios del cancionero (el orden de las canciones de un bolo). Privados.
       match /repertorios/{repertorioId} {
         allow read, delete: if isOwner(userId);
@@ -145,8 +156,8 @@ service cloud.firestore {
     }
 
     // Publicaciones del Feed (fotos y vídeos). Cualquiera las ve; solo el autor
-    // las crea, edita el texto o las borra. El contador de me gusta lo mueve
-    // cualquiera con sesión, de uno en uno y sin tocar nada más.
+    // las crea, edita el texto o las borra. Los me gusta y comentarios van aparte,
+    // en interacciones/post_{id}.
     match /posts/{postId} {
       allow read: if true;
       allow create: if isAuthenticated()
@@ -155,21 +166,88 @@ service cloud.firestore {
         && request.resource.data.mediaUrl is string
         && request.resource.data.caption is string
         && request.resource.data.caption.size() <= 500
-        && request.resource.data.likeCount == 0;
-      allow update: if (isOwner(resource.data.authorId)
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['caption'])
-          && request.resource.data.caption.size() <= 500)
-        || (isAuthenticated()
-          && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount'])
-          && (request.resource.data.likeCount == resource.data.likeCount + 1
-              || request.resource.data.likeCount == resource.data.likeCount - 1));
+        && (!('etiquetas' in request.resource.data)
+            || (request.resource.data.etiquetas is list && request.resource.data.etiquetas.size() <= 10))
+        && (!('ciudad' in request.resource.data)
+            || (request.resource.data.ciudad is string && request.resource.data.ciudad.size() <= 80));
+      allow update: if isOwner(resource.data.authorId)
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['caption'])
+        && request.resource.data.caption.size() <= 500;
       allow delete: if isOwner(resource.data.authorId);
+    }
 
-      // Un me gusta por persona: el id del documento es su uid
-      match /likes/{likerId} {
-        allow read: if true;
-        allow create, delete: if isOwner(likerId);
+    // Me gusta y comentarios de lo que sale en el Feed: interacciones/{post_<id> | artista_<id>}.
+    // Cualquiera los ve. Con sesión: un me gusta por persona (el id es su uid) y comentarios
+    // propios. Los contadores se mueven de uno en uno y a la vez que el me gusta o el
+    // comentario (los servicios lo hacen en una transacción).
+    match /interacciones/{clave} {
+      function contenido() {
+        let d = request.resource.data;
+        return (d.tipo == 'post'
+            && exists(/databases/$(database)/documents/posts/$(d.refId))
+            && get(/databases/$(database)/documents/posts/$(d.refId)).data.authorId == d.duenioId)
+          || (d.tipo == 'artista'
+            && exists(/databases/$(database)/documents/artists/$(d.refId))
+            && get(/databases/$(database)/documents/artists/$(d.refId)).data.userId == d.duenioId);
       }
+      function miMeGusta() {
+        return /databases/$(database)/documents/interacciones/$(clave)/meGusta/$(request.auth.uid);
+      }
+
+      allow read: if true;
+      // Nace con el primer me gusta o el primer comentario
+      allow create: if isAuthenticated()
+        && request.resource.data.keys().hasOnly(['tipo', 'refId', 'duenioId', 'likeCount', 'commentCount', 'creadoEn'])
+        && clave == request.resource.data.tipo + '_' + request.resource.data.refId
+        && contenido()
+        && ((request.resource.data.likeCount == 1 && request.resource.data.commentCount == 0 && existsAfter(miMeGusta()))
+            || (request.resource.data.likeCount == 0 && request.resource.data.commentCount == 1));
+      allow update: if isAuthenticated()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount', 'commentCount'])
+        && ((request.resource.data.commentCount == resource.data.commentCount
+              && ((request.resource.data.likeCount == resource.data.likeCount + 1 && !exists(miMeGusta()) && existsAfter(miMeGusta()))
+                  || (request.resource.data.likeCount == resource.data.likeCount - 1 && exists(miMeGusta()) && !existsAfter(miMeGusta()))))
+          || (request.resource.data.likeCount == resource.data.likeCount
+              && (request.resource.data.commentCount == resource.data.commentCount + 1
+                  || request.resource.data.commentCount == resource.data.commentCount - 1)));
+
+      match /meGusta/{likerId} {
+        allow read: if true;
+        allow create: if isOwner(likerId)
+          && request.resource.data.keys().hasOnly(['uid', 'clave', 'creadoEn'])
+          && request.resource.data.uid == likerId
+          && request.resource.data.clave == clave
+          && getAfter(/databases/$(database)/documents/interacciones/$(clave)).data.likeCount
+             == (exists(/databases/$(database)/documents/interacciones/$(clave))
+                 ? get(/databases/$(database)/documents/interacciones/$(clave)).data.likeCount + 1 : 1);
+        allow delete: if isOwner(likerId)
+          && getAfter(/databases/$(database)/documents/interacciones/$(clave)).data.likeCount
+             == get(/databases/$(database)/documents/interacciones/$(clave)).data.likeCount - 1;
+      }
+
+      match /comentarios/{comentarioId} {
+        allow read: if true;
+        allow create: if isAuthenticated()
+          && request.resource.data.keys().hasOnly(['autorId', 'autorNombre', 'autorFoto', 'texto', 'creadoEn'])
+          && request.resource.data.autorId == request.auth.uid
+          && request.resource.data.autorNombre is string && request.resource.data.autorNombre.size() <= 80
+          && request.resource.data.texto is string
+          && request.resource.data.texto.size() > 0 && request.resource.data.texto.size() <= 500
+          && getAfter(/databases/$(database)/documents/interacciones/$(clave)).data.commentCount
+             == (exists(/databases/$(database)/documents/interacciones/$(clave))
+                 ? get(/databases/$(database)/documents/interacciones/$(clave)).data.commentCount + 1 : 1);
+        // Lo borra quien lo escribió o el dueño de la publicación o del perfil
+        allow delete: if isAuthenticated()
+          && (resource.data.autorId == request.auth.uid
+              || get(/databases/$(database)/documents/interacciones/$(clave)).data.duenioId == request.auth.uid)
+          && getAfter(/databases/$(database)/documents/interacciones/$(clave)).data.commentCount
+             == get(/databases/$(database)/documents/interacciones/$(clave)).data.commentCount - 1;
+      }
+    }
+
+    // «Qué me ha gustado a mí»: una consulta sobre todos los meGusta (collection group)
+    match /{ruta=**}/meGusta/{likerId} {
+      allow read: if true;
     }
 
     // Reports (DMCA/LSSI moderation queue) — users can create, only admins read
