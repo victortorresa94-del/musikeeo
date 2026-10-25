@@ -152,17 +152,25 @@ export function esTab(linea: string) {
 interface LineaDeAcordes { etiqueta?: string; marcas: { col: number; marca: Marca }[] }
 
 export function leerLineaAcordes(linea: string): LineaDeAcordes | null {
-    const tokens = [...linea.matchAll(/\S+/g)].map(m => ({ t: m[0], col: m.index ?? 0 }));
-    if (!tokens.length) return null;
+    // Palabra a palabra y sin partir la línea entera: casi todas las líneas son letra y
+    // se descartan en la primera palabra (se mira varias veces por línea al leer la canción)
+    const palabras = /\S+/g;
+    let palabra = palabras.exec(linea);
+    if (!palabra) return null;
+    let siguiente = palabras.exec(linea);
     let etiqueta: string | undefined;
-    if (tokens.length > 1 && esEtiqueta(tokens[0].t)) {
-        etiqueta = tokens.shift()!.t.replace(/^\[|\]$|:$/g, '');
+    if (siguiente && esEtiqueta(palabra[0])) {
+        etiqueta = palabra[0].replace(/^\[|\]$|:$/g, '');
+        palabra = siguiente;
+        siguiente = palabras.exec(linea);
     }
     const marcas: LineaDeAcordes['marcas'] = [];
-    for (const { t, col } of tokens) {
-        const m = marca(t);
+    while (palabra) {
+        const m = marca(palabra[0]);
         if (!m) return null;
-        marcas.push({ col, marca: m });
+        marcas.push({ col: palabra.index, marca: m });
+        palabra = siguiente;
+        siguiente = palabra ? palabras.exec(linea) : null;
     }
     if (!marcas.some(m => m.marca.acorde)) return null;
     return { etiqueta, marcas };
@@ -225,9 +233,13 @@ export function limpiarTexto(texto: string): string {
         .split('\n')
         .map(l => {
             // Tabuladores a espacios (paradas cada 4) para no descolocar los acordes
-            let s = '';
-            for (const c of l) s += c === '\t' ? ' '.repeat(4 - (s.length % 4)) : c;
-            return s.replace(/\s+$/, '');
+            let s = l;
+            if (l.includes('\t')) {
+                s = '';
+                for (const c of l) s += c === '\t' ? ' '.repeat(4 - (s.length % 4)) : c;
+            }
+            // Los mismos blancos que /\s+$/, sin volver atrás en cada hueco de una fila de acordes
+            return s.trimEnd();
         })
         .filter(l => !BASURA.test(l.trim()));
     // Como mucho una línea en blanco seguida
@@ -274,7 +286,27 @@ export function datosDelPegado(texto: string): DatosPegado {
 
 // ---------- Leer la canción ----------
 
+// La misma canción se lee desde muchos sitios (la lista para el tono, el lector, cada
+// diapositiva de Tocar y su barra) y en un móvil lento una larga cuesta decenas de ms:
+// se recuerdan las últimas leídas por su texto. Lo leído no lo cambia nadie: solo se lee
+const LEIDAS_MAX = 64;
+const leidas = new Map<string, CancionLeida>();
+
 export function leerCancion(texto: string): CancionLeida {
+    const hecha = leidas.get(texto);
+    if (hecha) {
+        // La más reciente pasa al final: se olvidan primero las que hace más que no se miran
+        leidas.delete(texto);
+        leidas.set(texto, hecha);
+        return hecha;
+    }
+    const leida = leerCancionSinRecordar(texto);
+    leidas.set(texto, leida);
+    if (leidas.size > LEIDAS_MAX) leidas.delete(leidas.keys().next().value as string);
+    return leida;
+}
+
+function leerCancionSinRecordar(texto: string): CancionLeida {
     const crudas = limpiarTexto(texto).split('\n');
     const lineas: Linea[] = [];
     const acordes: Acorde[] = [];
@@ -288,16 +320,30 @@ export function leerCancion(texto: string): CancionLeida {
     };
     const esDirectiva = (l: string) => RE_DIRECTIVA.test(l.trim());
     const llevaChordPro = (l: string) => /\[[^\]]+\]/.test(l) && leerChordPro(l) !== null;
-    const esLetra = (l: string | undefined): l is string => l !== undefined && l.trim() !== ''
-        && !esTab(l) && !esSeccion(l) && !esDirectiva(l) && !leerLineaAcordes(l) && !llevaChordPro(l);
+    // Cada línea se mira varias veces (¿es de acordes?, ¿es letra?, la de abajo también):
+    // se averigua una sola vez por línea
+    const deAcordes: (LineaDeAcordes | null)[] = [];
+    const acordesEn = (i: number) => {
+        if (deAcordes[i] === undefined) deAcordes[i] = crudas[i]?.trim() ? leerLineaAcordes(crudas[i]) : null;
+        return deAcordes[i];
+    };
+    const deLetra: boolean[] = [];
+    const esLetra = (i: number) => {
+        const l = crudas[i];
+        if (deLetra[i] === undefined) {
+            deLetra[i] = l !== undefined && l.trim() !== ''
+                && !esTab(l) && !esSeccion(l) && !esDirectiva(l) && !acordesEn(i) && !llevaChordPro(l);
+        }
+        return deLetra[i];
+    };
     // Pegado de Word o Docs, con una línea en blanco entre cada línea: si los acordes van casi
     // siempre separados de su letra por un blanco, se juntan igual
     let pegadas = 0, separadas = 0;
-    crudas.forEach((l, i) => {
-        const a = l.trim() ? leerLineaAcordes(l) : null;
+    crudas.forEach((_, i) => {
+        const a = acordesEn(i);
         if (!a || a.etiqueta) return;
-        if (esLetra(crudas[i + 1])) pegadas++;
-        else if (crudas[i + 1]?.trim() === '' && esLetra(crudas[i + 2])) separadas++;
+        if (esLetra(i + 1)) pegadas++;
+        else if (crudas[i + 1]?.trim() === '' && esLetra(i + 2)) separadas++;
     });
     const dobleEspacio = separadas >= 3 && separadas > pegadas * 2;
 
@@ -334,10 +380,10 @@ export function leerCancion(texto: string): CancionLeida {
             if (cp) { meter(cp); continue; }
         }
 
-        const enLinea = leerLineaAcordes(l);
+        const enLinea = acordesEn(i);
         if (enLinea) {
-            const salto = esLetra(crudas[i + 1]) ? 1
-                : dobleEspacio && crudas[i + 1]?.trim() === '' && esLetra(crudas[i + 2]) ? 2 : 0;
+            const salto = esLetra(i + 1) ? 1
+                : dobleEspacio && crudas[i + 1]?.trim() === '' && esLetra(i + 2) ? 2 : 0;
             if (!enLinea.etiqueta && salto) {
                 meter({ tipo: 'mixta', trozos: combinar(enLinea.marcas, crudas[i + salto]) });
                 i += salto;

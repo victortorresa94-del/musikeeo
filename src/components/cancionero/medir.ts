@@ -5,12 +5,15 @@
 
 export interface Encaje { tamano: number; columnas: number; cabe: boolean }
 
+// La copia puede llegar escondida (display: none, clase «hidden»): así no se coloca entera a
+// ancho cero cuando alguien mide la página antes que ella. Se enseña ya con su caja puesta
 export function buscarEncaje(hoja: HTMLElement, ancho: number, alto: number, maxColumnas: number, maxTamano = 44): Encaje {
     const s = hoja.style;
     s.width = `${ancho}px`;
     s.height = `${alto}px`;
     s.columnFill = 'auto';
     s.overflow = 'hidden';
+    s.display = 'block';
     const cabe = (tamano: number) => {
         s.fontSize = `${tamano}px`;
         return hoja.scrollWidth <= hoja.clientWidth + 1 && hoja.scrollHeight <= hoja.clientHeight + 1;

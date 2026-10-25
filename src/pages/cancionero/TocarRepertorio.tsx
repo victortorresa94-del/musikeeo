@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { startTransition, useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight, ListMusic, Loader2, Pause, Play, Shrink, X } from 'lucide-react';
@@ -21,11 +21,12 @@ const TAMANO_MAX = 60;
 export default function TocarRepertorio() {
     const { id } = useParams();
     const [params] = useSearchParams();
-    const { repertorios, canciones, listo } = useCancionero();
+    const { repertorios, canciones, listo, nube } = useCancionero();
     const repertorio = repertorios.find(r => r.id === id);
     const lista = repertorio ? repertorio.canciones.map(c => canciones.find(x => x.id === c)).filter((c): c is Cancion => !!c) : [];
 
-    if (!listo) return <div className="h-[100dvh] flex items-center justify-center bg-background"><Loader2 className="h-7 w-7 animate-spin text-muted-foreground" /></div>;
+    // Lo que no está en el móvil puede llegar de la cuenta: se espera a que acabe de mirar
+    if (!listo || (!lista.length && nube === 'sincronizando')) return <div className="h-[100dvh] flex items-center justify-center bg-background"><Loader2 className="h-7 w-7 animate-spin text-muted-foreground" /></div>;
     if (!repertorio || !lista.length) {
         return (
             <div className="h-[100dvh] flex flex-col items-center justify-center gap-4 bg-background px-8 text-center">
@@ -50,6 +51,16 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
     const [indice, setIndice] = useState(false);
     const actualRef = useRef(inicio);
     useEffect(() => { actualRef.current = actual; }, [actual]);
+    // Montadas: la que suena y sus vecinas. Las vecinas cambian cuando el carrusel se para:
+    // montar una canción larga a mitad del deslizamiento se comía fotogramas y retrasaba el título.
+    // Al abrir, primero sale la que suena y las vecinas llegan justo después de pintarla
+    const [cerca, setCerca] = useState<number | null>(null);
+    const quieto = useRef<ReturnType<typeof setTimeout>>(undefined);
+    useEffect(() => {
+        let t: ReturnType<typeof setTimeout>;
+        const f = requestAnimationFrame(() => { t = setTimeout(() => startTransition(() => setCerca(c => c ?? inicio))); });
+        return () => { cancelAnimationFrame(f); clearTimeout(t); };
+    }, [inicio]);
 
     usePantallaEncendida();
 
@@ -72,6 +83,11 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
         if (!el) return;
         const i = Math.round(el.scrollLeft / el.clientWidth);
         if (i !== actualRef.current && i >= 0 && i < canciones.length) { setActual(i); setRodando(false); }
+        clearTimeout(quieto.current);
+        quieto.current = setTimeout(() => {
+            const j = Math.min(canciones.length - 1, Math.max(0, Math.round(el.scrollLeft / el.clientWidth)));
+            startTransition(() => setCerca(j));
+        }, 150);
     };
 
     const ir = useCallback((i: number) => {
@@ -79,6 +95,8 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
         if (!el || i < 0 || i >= canciones.length) return;
         const d = diapositivas.current[i];
         if (d) d.scrollTop = 0;
+        // Un salto desde la lista: la de destino se monta ya, para que esté al llegar
+        setCerca(c => (c === null || Math.abs(i - c) > 1 ? i : c));
         el.scrollTo({ left: i * el.clientWidth, behavior: 'smooth' });
         setIndice(false);
     }, [canciones.length]);
@@ -147,7 +165,7 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
                 {canciones.map((c, i) => (
                     <div key={c.id} ref={el => { diapositivas.current[i] = el; }} onClick={() => setControles(v => !v)} data-diapositiva
                         className="relative h-full w-full shrink-0 snap-start snap-always overflow-y-auto overscroll-contain touch-pan-x touch-pan-y">
-                        {Math.abs(i - actual) <= 1
+                        {i === actual || (cerca !== null && Math.abs(i - cerca) <= 1)
                             ? <Diapositiva cancion={c} n={i + 1} total={canciones.length} siguiente={canciones[i + 1]}
                                 onSiguiente={() => ir(i + 1)} cambiar={cambio => cambiar(c, cambio)} />
                             : null}
@@ -236,7 +254,7 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
     const [encaje, setEncaje] = useState<Encaje | null>(null);
     const [medida, setMedida] = useState(0);
     const [pellizco, setPellizco] = useState<number | null>(null);
-    const gesto = useRef<{ d0: number; base: number } | null>(null);
+    const gesto = useRef<{ d0: number; base: number; ultimo: number | null; fotograma: number } | null>(null);
 
     useEffect(() => {
         const f = () => setMedida(m => m + 1);
@@ -261,20 +279,26 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
     const tamano = pellizco ?? tamanoBase;
     const columnas = ajustada ? encaje!.columnas : a.columnas;
 
-    // Zoom con dos dedos: cambia el tamaño de la letra (no la página), y se guarda
+    // Zoom con dos dedos: cambia el tamaño de la letra (no la página), y se guarda.
+    // Como mucho un tamaño nuevo por fotograma: cada uno vuelve a colocar toda la letra
     const distancia = (t: React.TouchList) => Math.hypot(t[0].clientX - t[1].clientX, t[0].clientY - t[1].clientY);
     const alEmpezar = (e: React.TouchEvent) => {
-        if (e.touches.length === 2) gesto.current = { d0: distancia(e.touches), base: tamanoBase };
+        if (e.touches.length === 2) gesto.current = { d0: distancia(e.touches), base: tamanoBase, ultimo: null, fotograma: 0 };
     };
     const alMover = (e: React.TouchEvent) => {
-        if (!gesto.current || e.touches.length !== 2) return;
-        const t = gesto.current.base * (distancia(e.touches) / gesto.current.d0);
-        setPellizco(Math.min(TAMANO_MAX, Math.max(TAMANO_MIN, Math.round(t * 2) / 2)));
+        const g = gesto.current;
+        if (!g || e.touches.length !== 2) return;
+        const t = g.base * (distancia(e.touches) / g.d0);
+        g.ultimo = Math.min(TAMANO_MAX, Math.max(TAMANO_MIN, Math.round(t * 2) / 2));
+        if (!g.fotograma) g.fotograma = requestAnimationFrame(() => { g.fotograma = 0; setPellizco(g.ultimo); });
     };
     const alSoltar = () => {
-        if (!gesto.current) return;
+        const g = gesto.current;
+        if (!g) return;
         gesto.current = null;
-        if (pellizco !== null && Math.abs(pellizco - tamanoBase) >= 0.5) cambiar({ tamano: Math.round(pellizco), ajustar: false, columnas: Math.min(3, columnas) as 1 | 2 | 3 });
+        cancelAnimationFrame(g.fotograma);
+        const final = g.ultimo ?? pellizco;
+        if (final !== null && Math.abs(final - tamanoBase) >= 0.5) cambiar({ tamano: Math.round(final), ajustar: false, columnas: Math.min(3, columnas) as 1 | 2 | 3 });
         setPellizco(null);
     };
 
@@ -288,9 +312,12 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
             <div ref={zonaRef} className="mt-2">
                 <HojaCancion lineas={leida.lineas} opciones={opciones} vista={a.vista} tamano={tamano} columnas={columnas} />
             </div>
-            <div className="fixed left-0 top-0 h-0 w-0 overflow-hidden invisible" aria-hidden>
-                <HojaCancion ref={medidorRef} lineas={leida.lineas} opciones={opciones} vista={a.vista} tamano={tamano} columnas={columnas} />
-            </div>
+            {/* Copia invisible para medir, solo con «que quepa»: el tamaño y las columnas los pone buscarEncaje */}
+            {a.ajustar && (
+                <div className="fixed left-0 top-0 h-0 w-0 overflow-hidden invisible" aria-hidden>
+                    <HojaCancion ref={medidorRef} lineas={leida.lineas} opciones={opciones} vista={a.vista} tamano={TAMANO_MAX} columnas={1} className="hidden" />
+                </div>
+            )}
             {siguiente && (
                 <button onClick={e => { e.stopPropagation(); onSiguiente(); }}
                     className="pulsable mt-6 w-full h-14 rounded-2xl bg-fill px-4 flex items-center gap-3 text-left">
