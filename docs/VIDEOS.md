@@ -12,6 +12,17 @@ Desde el 8-oct el final dice «Musikeeeeeeooo» (se estiran la e y la o; la u y 
 
 Voz en off que lo explica todo: el caos de WhatsApp, artistas, músicos, salas, mercado, Rodrigo, «Conecta. Crea. Suena.» y la firma sonora.
 
+### Versión 2 (25-oct-2026, 52 s) y vídeo corto (17 s)
+
+Para Manu e inversores. El de 47 s enseñaba la app antigua (oscura, el Mercado viejo) y no tenía Cancionero ni Feed.
+
+- **Largo, 52 s:** los 10,2 primeros segundos son los del de 47 s (las tres preguntas y «Hasta ahora, todo por WhatsApp», con su voz). Después, pantallas reales de la app nueva: «Todo en una app», Explorar, Feed «Para ti» con me gusta, Bolos, Cancionero (en tu tono, Tocar deslizando, sacar acordes de un audio), Rodrigo, «Conecta. Crea. Suena.» y la firma.
+- **Corto, 17 s:** bandas y técnicos, bolos, Cancionero, Rodrigo, «Todo, en una app» y la firma.
+- **Firma:** el audio final del vídeo v2 con Kling (segundos 20,0–23,5: el «Musikeeeeeeooo» de Víctor pasado a la voz del narrador con Seed-VC). Siempre esa grabación.
+- **Voz:** George, eleven_v3, en Aura (lienzo «Vídeos y anuncios» del proyecto Musikeeo del Studio de Aether Labs). Música: Lyria 3 Pro, rumba-pop instrumental de 112 s (el corto usa del segundo 36 al 50). Coste total ≈ 0,30 €.
+- **Cómo se monta (sin generar vídeo con IA):** capturas de la vista previa local a 3x (1170×2532) con datos públicos de producción y un repertorio de ejemplo con canciones INVENTADAS (sin letras con derechos). Las páginas que se desplazan se capturan sin lo fijo (cabecera y barra de abajo) y lo fijo se pone encima: si no, la barra se queda en mitad de la pantalla. La composición es un HTML que se pinta fotograma a fotograma con Playwright (30 fps) y se une con ffmpeg; la mezcla baja la música bajo la voz (sidechain) y deja todo a −14 LUFS. «Sacar acordes» se grabó de verdad con una rumba sintética (Am G F E, hecha por código): el motor acertó los 8 compases.
+- Están en Trabajos del Studio de Aether Labs (proyecto Musikeeo). El código del montaje está en Aura como fuente del trabajo.
+
 ## Vídeo 2 · «Entra en Musikeeo» (hecho, 24 s)
 
 Muy básico y fácil de entender. Pregunta sobre imagen real y corte seco a amarillo con la respuesta, siempre la misma:

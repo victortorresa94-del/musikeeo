@@ -1,0 +1,322 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<title>Musikeeo · Presentación para inversores · octubre 2026</title>
+<style>
+@font-face { font-family: 'Manrope'; src: url('../../../public/fonts/manrope-latin.woff2') format('woff2'); font-weight: 200 800; }
+@font-face { font-family: 'Manrope'; src: url('../../../public/fonts/manrope-latin-ext.woff2') format('woff2'); font-weight: 200 800; unicode-range: U+0100-024F, U+1E00-1EFF, U+2020, U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF; }
+@font-face { font-family: 'Inter'; src: url('../../../public/fonts/inter-latin.woff2') format('woff2'); font-weight: 400 800; }
+@font-face { font-family: 'Inter'; src: url('../../../public/fonts/inter-latin-ext.woff2') format('woff2'); font-weight: 400 800; unicode-range: U+0100-024F, U+1E00-1EFF, U+20A0-20C0, U+2113; }
+@page { size: 1920px 1080px; margin: 0; }
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { background: #FFFFFF; }
+body { font-family: 'Inter', -apple-system, sans-serif; color: #111111; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+.s { width: 1920px; height: 1080px; position: relative; overflow: hidden; page-break-after: always; break-after: page; padding: 104px 128px 150px; display: flex; flex-direction: column; background: #FFFFFF; }
+.s.gris { background: #F4F4F3; }
+.s.osc { background: #0A0A0A; color: #FFFFFF; }
+.s.am { background: #FFD60A; color: #0A0A0A; }
+.ante { display: inline-flex; align-self: flex-start; align-items: center; gap: 12px; height: 46px; padding: 0 20px; border-radius: 23px; background: #FFD60A; color: #0A0A0A; font: 700 22px/1 'Inter'; letter-spacing: 0.2px; }
+.osc .ante { background: rgba(255,214,10,0.14); color: #FFD60A; }
+.tit { margin-top: 26px; font: 800 76px/1.04 'Manrope'; letter-spacing: -2px; max-width: 1500px; }
+.tit .am { color: #FFD60A; }
+.s:not(.osc) .tit .am { background: linear-gradient(transparent 62%, #FFD60A 62%); color: inherit; }
+.sub { margin-top: 22px; font: 500 30px/1.4 'Inter'; color: #555555; max-width: 1200px; }
+.osc .sub { color: #BDBDBD; }
+.pie { position: absolute; left: 128px; right: 128px; bottom: 56px; display: flex; justify-content: space-between; align-items: center; font: 500 20px/1.3 'Inter'; color: #8A8A8A; }
+.osc .pie { color: #7A7A7A; }
+.am .pie { color: #5A4A00; }
+.pie .marca { display: flex; align-items: center; gap: 12px; font-weight: 700; color: #111; }
+.osc .pie .marca { color: #fff; }
+.pie .marca img { width: 30px; height: 30px; border-radius: 8px; }
+.fuente { position: absolute; left: 128px; right: 128px; bottom: 96px; font: 500 18px/1.35 'Inter'; color: #9A9A9A; }
+.cuerpo { flex: 1; display: flex; margin-top: 48px; gap: 40px; min-height: 0; }
+/* Móvil */
+.tel { position: relative; border-radius: 46px; background: #111; padding: 11px; box-shadow: 0 30px 70px rgba(0,0,0,0.18), 0 0 0 1px rgba(0,0,0,0.08); flex: none; }
+.osc .tel { box-shadow: 0 30px 80px rgba(0,0,0,0.6), 0 0 0 1px rgba(255,255,255,0.12); }
+.tel img { display: block; border-radius: 36px; width: 100%; }
+/* Tarjetas pastel */
+.tarjeta { border-radius: 28px; padding: 36px 36px 34px; display: flex; flex-direction: column; gap: 14px; }
+.tarjeta h3 { font: 800 34px/1.15 'Manrope'; letter-spacing: -0.5px; }
+.tarjeta p { font: 500 25px/1.42 'Inter'; }
+.tarjeta .obj { width: 120px; height: 120px; object-fit: contain; margin: -6px 0 2px -6px; }
+.mantequilla { background: #FDEEB9; color: #3F3000; } .mantequilla p { color: #5A4500; }
+.cielo { background: #CEE8FD; color: #0F3352; } .cielo p { color: #1B4F7A; }
+.menta { background: #D8F1DD; color: #173D22; } .menta p { color: #245C33; }
+.lavanda { background: #E0D7FD; color: #2E2266; } .lavanda p { color: #4B3A99; }
+.melocoton { background: #FDD6C8; color: #5C2410; } .melocoton p { color: #8A3A1C; }
+.rosa { background: #FDDCEC; color: #5E1D3D; } .rosa p { color: #8E2F5C; }
+.blanca { background: #FFFFFF; border: 1px solid #E8E8E5; }
+.blanca p { color: #555; }
+.osc .oscura { background: #161616; border: 1px solid #262626; }
+.osc .oscura p { color: #BDBDBD; }
+.leyenda { font: 500 23px/1.4 'Inter'; color: #555; }
+.leyenda b { display: block; font: 800 27px/1.2 'Manrope'; color: #111; margin-bottom: 8px; letter-spacing: -0.3px; }
+.osc .leyenda { color: #BDBDBD; } .osc .leyenda b { color: #fff; }
+.cifra { font: 800 104px/1 'Manrope'; letter-spacing: -3px; }
+.cifra small { font-size: 54px; letter-spacing: -1px; }
+table { border-collapse: collapse; width: 100%; font: 500 23px/1.35 'Inter'; }
+th { text-align: left; font: 700 19px/1.2 'Inter'; color: #8A8A8A; text-transform: uppercase; letter-spacing: 0.6px; padding: 0 22px 16px; border-bottom: 2px solid #111; }
+td { padding: 18px 22px; border-bottom: 1px solid #E8E8E5; vertical-align: top; }
+td b { font-weight: 700; color: #111; }
+tr.nos td { background: #FFD60A; border-bottom: none; font-weight: 600; }
+.check { display: flex; gap: 18px; align-items: flex-start; font: 500 26px/1.38 'Inter'; }
+.check i { flex: none; width: 36px; height: 36px; border-radius: 18px; background: #FFD60A; display: flex; align-items: center; justify-content: center; margin-top: 1px; }
+.check i svg { width: 20px; height: 20px; }
+.check.no i { background: #2A2A2A; }
+</style>
+</head>
+<body>
+
+<!-- 1 · Portada -->
+<section class="s osc" style="padding: 104px 128px 150px; flex-direction: row; align-items: center; gap: 80px;">
+  <div style="flex: 1; display: flex; flex-direction: column;">
+    <div style="display: flex; align-items: center; gap: 22px;">
+      <img src="img/logo.png" style="width: 84px; height: 84px; border-radius: 20px;">
+      <span style="font: 800 46px/1 'Manrope'; letter-spacing: -1px;">Musikeeo</span>
+    </div>
+    <h1 style="margin-top: 70px; font: 800 118px/1.0 'Manrope'; letter-spacing: -4px;">Pide una banda<br>como pides <span style="color: #FFD60A;">sushi.</span></h1>
+    <p style="margin-top: 40px; font: 500 34px/1.42 'Inter'; color: #C8C8C8; max-width: 980px;">La app de la música en directo: artistas, técnicos, salas, equipo y el cancionero del músico, en un solo sitio. Empezamos en Barcelona.</p>
+    <p style="margin-top: 64px; font: 600 24px/1.3 'Inter'; color: #8A8A8A;">Presentación para inversores · octubre de 2026 · musikeeo.com</p>
+  </div>
+  <div class="tel" style="width: 370px; transform: rotate(4deg); margin-right: 60px;"><img src="img/app-home.webp"></div>
+</section>
+
+<!-- 2 · Problema -->
+<section class="s">
+  <span class="ante">El problema</span>
+  <h2 class="tit">La música en directo se contrata <span class="am">por WhatsApp.</span></h2>
+  <div class="cuerpo" style="gap: 32px;">
+    <div class="tarjeta rosa" style="flex: 1;"><img class="obj" src="img/ic-boda.webp"><h3>Quien contrata</h3><p>Una boda, un bar o una sala no sabe a quién llamar ni cuánto cuesta. Pregunta en grupos y espera.</p></div>
+    <div class="tarjeta cielo" style="flex: 1;"><img class="obj" src="img/ic-rol-musico.webp"><h3>Músicos y técnicos</h3><p>Viven del boca a boca. Una baja de última hora se arregla a base de mensajes y favores.</p></div>
+    <div class="tarjeta menta" style="flex: 1;"><img class="obj" src="img/ic-alquiler.webp"><h3>El equipo</h3><p>Un cable, una correa o un PA para esta noche: las tiendas cerradas y Wallapop a 40 minutos.</p></div>
+  </div>
+  <p class="leyenda" style="margin-top: 34px;">Hoy todo está repartido entre WhatsApp, Instagram, Wallapop, bodas.net y el boca a boca. Nadie lo junta.</p>
+  <div class="pie"><span class="marca"><img src="img/logo.png">Musikeeo</span><span>2</span></div>
+</section>
+
+<!-- 3 · Por qué existe -->
+<section class="s osc" style="justify-content: center;">
+  <span class="ante">Por qué existe</span>
+  <h2 style="margin-top: 40px; font: 800 96px/1.05 'Manrope'; letter-spacing: -3px; max-width: 1560px;">«Sábado, 21:30. Se me rompe la correa <span style="color: #FFD60A;">media hora antes del bolo.»</span></h2>
+  <p style="margin-top: 44px; font: 500 32px/1.5 'Inter'; color: #C8C8C8; max-width: 1340px;">Tres tiendas cerradas y nadie en el bar con una. Acabé tocando con el cinturón de un colega del público. Con Musikeeo, un músico a 600 metros me la habría alquilado en diez minutos.</p>
+  <p style="margin-top: 40px; font: 700 26px/1.3 'Inter'; color: #FFD60A;">Víctor Torres · músico de bolos y fundador</p>
+  <div class="pie"><span class="marca"><img src="img/logo.png">Musikeeo</span><span>3</span></div>
+</section>
+
+<!-- 4 · Solución -->
+<section class="s">
+  <span class="ante">La solución</span>
+  <h2 class="tit">Todo el directo, <span class="am">en una app.</span></h2>
+  <div class="cuerpo" style="gap: 56px; align-items: flex-start; justify-content: space-between; margin-top: 52px;">
+    <div style="width: 330px; display: flex; flex-direction: column; gap: 26px;"><div class="tel" style="width: 300px; align-self: center;"><img src="img/app-explorar.webp" style="height: 500px; object-fit: cover; object-position: top;"></div><p class="leyenda"><b>Explorar</b>Bandas, DJs, técnicos, salas y equipo cerca de ti.</p></div>
+    <div style="width: 330px; display: flex; flex-direction: column; gap: 26px;"><div class="tel" style="width: 300px; align-self: center;"><img src="img/app-bolos.webp" style="height: 500px; object-fit: cover; object-position: top;"></div><p class="leyenda"><b>Bolos</b>Publicas tu bolo y te llegan propuestas.</p></div>
+    <div style="width: 330px; display: flex; flex-direction: column; gap: 26px;"><div class="tel" style="width: 300px; align-self: center;"><img src="img/app-feed.webp" style="height: 500px; object-fit: cover; object-position: top;"></div><p class="leyenda"><b>Feed «Para ti»</b>Vídeos y fotos de artistas, con me gusta y comentarios.</p></div>
+    <div style="width: 330px; display: flex; flex-direction: column; gap: 26px;"><div class="tel" style="width: 300px; align-self: center;"><img src="img/app-rodrigo.webp" style="height: 500px; object-fit: cover; object-position: top;"></div><p class="leyenda"><b>Rodrigo, IA</b>Prepara anuncios, bolos y perfiles. Publicas tú.</p></div>
+  </div>
+  <div class="pie"><span class="marca"><img src="img/logo.png">Musikeeo</span><span>En producción en musikeeo.com · sin descargar nada · 4</span></div>
+</section>
+
+<!-- 5 · Cancionero -->
+<section class="s gris">
+  <span class="ante">Nuevo · octubre de 2026</span>
+  <h2 class="tit">El Cancionero: <span class="am">lo que el músico abre en cada bolo.</span></h2>
+  <div class="cuerpo" style="gap: 44px; align-items: flex-start; margin-top: 50px;">
+    <div style="width: 290px; display: flex; flex-direction: column; gap: 20px;"><div class="tel" style="width: 250px;"><img src="img/app-cancion-am.webp" style="height: 400px; object-fit: cover; object-position: top;"></div><p class="leyenda"><b>En tu tono</b>Letra y acordes limpios, con cejilla y tamaño a tu medida.</p></div>
+    <div style="width: 290px; display: flex; flex-direction: column; gap: 20px;"><div class="tel" style="width: 250px;"><img src="img/app-tocar-4.webp" style="height: 400px; object-fit: cover; object-position: top;"></div><p class="leyenda"><b>Tocar</b>El repertorio del bolo, deslizando o con pedal. Sin cobertura.</p></div>
+    <div style="width: 290px; display: flex; flex-direction: column; gap: 20px;"><div class="tel" style="width: 250px;"><img src="img/app-escuchar-resultado.webp" style="height: 400px; object-fit: cover; object-position: top;"></div><p class="leyenda"><b>Sacar acordes</b>El móvil escucha una grabación y te dice los acordes.</p></div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 24px;">
+      <div class="tarjeta mantequilla"><img class="obj" src="img/ic-micro.webp" style="width: 96px; height: 96px;"><h3>Por qué importa</h3><p>Un músico no entra cada día en un marketplace, pero sí en su cancionero. El Cancionero trae al músico; la red hace el resto.</p></div>
+      <div class="tarjeta blanca" style="padding: 30px 32px;"><p style="color: #111; font-weight: 600;">Víctor lo usó en su bolo del 24 de octubre: una boda con 53 temas.</p></div>
+    </div>
+  </div>
+  <div class="pie"><span class="marca"><img src="img/logo.png">Musikeeo</span><span>Las letras las pega cada músico: Musikeeo no publica letras con derechos · 5</span></div>
+</section>
+
+<!-- 6 · Feed -->
+<section class="s osc">
+  <span class="ante">Feed «Para ti»</span>
+  <h2 class="tit">Un feed que aprende <span class="am">lo que te gusta.</span></h2>
+  <div class="cuerpo" style="gap: 90px; align-items: center; margin-top: 30px;">
+    <div class="tel" style="width: 320px;"><img src="img/app-feed.webp" style="height: 590px; object-fit: cover; object-position: top;"></div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 26px;">
+      <div class="check"><i><svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><span>Me gusta y comentarios en fotos, vídeos y artistas.</span></div>
+      <div class="check"><i><svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><span>Aprende de lo que ves entero, lo que saltas, los perfiles y los bolos que abres.</span></div>
+      <div class="check"><i><svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><span>Cada perfil ve su propio orden: estilo, ciudad, tipo de contenido y algo nuevo para descubrir.</span></div>
+      <div style="display: flex; gap: 28px; margin-top: 22px;">
+        <div class="tarjeta oscura" style="flex: 1; padding: 30px 32px;"><span class="cifra" style="color: #7A7A7A;">18 %</span><p>de acierto ordenando por fecha, como estaba antes.</p></div>
+        <div class="tarjeta oscura" style="flex: 1; padding: 30px 32px; border-color: #FFD60A;"><span class="cifra" style="color: #FFD60A;">34 %</span><p>con el algoritmo nuevo tras 14 días (el máximo posible era un 36 %).</p></div>
+      </div>
+      <p style="font: 500 20px/1.4 'Inter'; color: #7A7A7A;">Simulación con 8 perfiles de agentes durante 14 días, no con usuarios reales. Detalle en docs/SIMULACION-FEED.md.</p>
+    </div>
+  </div>
+  <div class="pie"><span class="marca"><img src="img/logo.png">Musikeeo</span><span>6</span></div>
+</section>
+
+<!-- 7 · Por qué ahora -->
+<section class="s">
+  <span class="ante">Por qué ahora</span>
+  <h2 class="tit">El directo está en máximos <span class="am">y sigue sin herramientas.</span></h2>
+  <div class="cuerpo" style="gap: 32px; margin-top: 56px;">
+    <div class="tarjeta mantequilla" style="flex: 1;"><span class="cifra">807 M€</span><p>en entradas de música en directo en España en 2025. Récord, un 11 % más que el año anterior.</p></div>
+    <div class="tarjeta rosa" style="flex: 1;"><span class="cifra">175.364</span><p>bodas en España en 2024. El 87 % de las parejas contrata DJ.</p></div>
+    <div class="tarjeta cielo" style="flex: 1;"><span class="cifra">120.510</span><p>conciertos de música popular en 2024, un 9,4 % más.</p></div>
+  </div>
+  <p class="leyenda" style="margin-top: 30px; margin-bottom: 18px;">Y la IA ya permite que publicar un bolo o un perfil cueste un minuto: Rodrigo lo prepara y la persona solo pulsa «Publicar».</p>
+  <p class="fuente">Fuentes: APM vía El Debate y Euronews (abr-2026) · INE, Movimiento Natural de la Población 2024 · bodas.net, Informe del Sector Nupcial 2026 · Anuario SGAE vía que.es (nov-2025)</p>
+  <div class="pie"><span class="marca"><img src="img/logo.png">Musikeeo</span><span>7</span></div>
+</section>
+
+<!-- 8 · Mercado -->
+<section class="s gris">
+  <span class="ante">Mercado</span>
+  <h2 class="tit">Solo la música de las bodas mueve <span class="am">unos 160 M€ al año</span> en España.</h2>
+  <div style="margin-top: 56px; display: flex; flex-direction: column; gap: 22px;">
+    <div style="display: flex; align-items: center; gap: 22px; font: 800 44px/1 'Manrope'; letter-spacing: -1px;">
+      <div class="tarjeta blanca" style="padding: 26px 32px; gap: 6px;"><span>175.364</span><p style="font-size: 21px;">bodas al año</p></div><span style="color: #8A8A8A;">×</span>
+      <div class="tarjeta blanca" style="padding: 26px 32px; gap: 6px;"><span>87 %</span><p style="font-size: 21px;">con música</p></div><span style="color: #8A8A8A;">×</span>
+      <div class="tarjeta blanca" style="padding: 26px 32px; gap: 6px;"><span>1.050 €</span><p style="font-size: 21px;">de música por boda</p></div><span style="color: #8A8A8A;">=</span>
+      <div class="tarjeta mantequilla" style="padding: 26px 32px; gap: 6px;"><span>≈ 160 M€</span><p style="font-size: 21px;">al año</p></div><span style="color: #8A8A8A;">→</span>
+      <div class="tarjeta" style="padding: 26px 32px; gap: 6px; background: #0A0A0A; color: #FFD60A;"><span>≈ 16 M€</span><p style="font-size: 21px; color: #C8C8C8;">con un 10 %</p></div>
+    </div>
+    <p class="leyenda">En Cataluña, donde empezamos: 27.836 bodas × 87 % × 748 € ≈ 18 M€ al año, y un 10 % son unos 1,8 M€.</p>
+  </div>
+  <div style="margin-top: 44px; display: flex; gap: 24px;">
+    <div class="tarjeta cielo" style="flex: 1; padding: 28px 30px;"><h3 style="font-size: 30px;">163.000 bares</h3><p style="font-size: 22px;">en España. Cuántos programan directo está por medir.</p></div>
+    <div class="tarjeta lavanda" style="flex: 1; padding: 28px 30px;"><h3 style="font-size: 30px;">Unas 300 salas</h3><p style="font-size: 22px;">con programación regular de directo.</p></div>
+    <div class="tarjeta menta" style="flex: 1; padding: 28px 30px;"><h3 style="font-size: 30px;">32.000 conciertos</h3><p style="font-size: 22px;">en Cataluña en 2025, muchos en fiestas mayores.</p></div>
+    <div class="tarjeta melocoton" style="flex: 1; padding: 28px 30px;"><h3 style="font-size: 30px;">Eventos de empresa</h3><p style="font-size: 22px;">13.367 M€ en reuniones y eventos (2023).</p></div>
+  </div>
+  <p class="fuente">Estimación propia con datos de INE e Idescat (2024), bodas.net (gasto medio en música), Hostelería de España, ACCES, Anuario de la Música 2026 y Braintrust. Se valida con el piloto de Barcelona.</p>
+  <div class="pie"><span class="marca"><img src="img/logo.png">Musikeeo</span><span>8</span></div>
+</section>
+
+<!-- 9 · Modelo de negocio -->
+<section class="s">
+  <span class="ante">Cómo gana dinero</span>
+  <h2 class="tit">Gratis para empezar. <span class="am">Un 10 % cuando se contrata.</span></h2>
+  <div class="cuerpo" style="gap: 56px; margin-top: 48px;">
+    <div style="width: 760px; display: flex; flex-direction: column; gap: 20px;">
+      <div class="tarjeta mantequilla" style="padding: 30px 34px;"><h3>Reserva protegida · 10 %</h3><p>Lo paga quien contrata, como gastos de gestión y garantía. El músico cobra el 100 % de su caché.</p></div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
+        <div class="tarjeta lavanda" style="padding: 26px 30px; gap: 8px;"><h3 style="font-size: 30px;">Plan Sala · 39 €/mes</h3><p style="font-size: 22px;">Publicar bolos y recibir propuestas sin límite.</p></div>
+        <div class="tarjeta cielo" style="padding: 26px 30px; gap: 8px;"><h3 style="font-size: 30px;">Pro · 8 €/mes</h3><p style="font-size: 22px;">Para músicos y técnicos que quieren destacar.</p></div>
+        <div class="tarjeta menta" style="padding: 26px 30px; gap: 8px;"><h3 style="font-size: 30px;">Tiendas · 49 €/mes</h3><p style="font-size: 22px;">Escaparate para músicos de su zona.</p></div>
+        <div class="tarjeta rosa" style="padding: 26px 30px; gap: 8px;"><h3 style="font-size: 30px;">Destacados · 3 €</h3><p style="font-size: 22px;">Subir un anuncio o un perfil arriba.</p></div>
+      </div>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 22px;">
+      <p style="font: 800 32px/1.2 'Manrope'; letter-spacing: -0.4px;">Lo que deja cada contratación</p>
+      <table>
+        <tr><th style="width: 34%;">Bolo</th><th style="width: 22%;">Caché</th><th style="width: 22%;">Paga el cliente</th><th style="width: 22%;">Nos queda</th></tr>
+        <tr><td><b>Boda</b></td><td>1.500 €</td><td>1.650 €</td><td><b>112,80 €</b></td></tr>
+        <tr><td><b>Bolo medio</b></td><td>558 €</td><td>613 €</td><td><b>41,92 €</b></td></tr>
+        <tr><td><b>Bar</b></td><td>250 €</td><td>275 €</td><td><b>18,80 €</b></td></tr>
+      </table>
+      <p class="leyenda" style="font-size: 21px;">Ya descontados el pago con tarjeta (1,8 %) y un fondo de garantía (0,5 %) para sustitutos y devoluciones. Lanzamos sin comisión: primero que haya bolos, después cobrar. Como referencia, Encore cobra un 20 % y GigSalad entre un 12,5 y un 17 %.</p>
+    </div>
+  </div>
+  <div class="pie"><span class="marca"><img src="img/logo.png">Musikeeo</span><span>Modelo financiero de Musikeeo (docs/pitch) · 9</span></div>
+</section>
+
+<!-- 10 · Competencia -->
+<section class="s gris">
+  <span class="ante">Competencia</span>
+  <h2 class="tit">Otros hacen una parte. <span class="am">Nadie lo junta todo</span> en España.</h2>
+  <div style="margin-top: 50px;">
+    <table>
+      <tr><th style="width: 22%;">Quién</th><th style="width: 40%;">Qué hace</th><th style="width: 38%;">Cómo cobra</th></tr>
+      <tr><td><b>GigSalad</b> · EE. UU.</td><td>Artistas para eventos</td><td>10-12 % al cliente y 2,5-5 % al artista</td></tr>
+      <tr><td><b>Encore</b> · Reino Unido</td><td>Músicos para bodas y eventos</td><td>20 % con IVA al contratar</td></tr>
+      <tr><td><b>GigPig</b> · Reino Unido</td><td>Música en directo para bares y pubs</td><td>Paga el local · ronda seed de 1,3 M£ en 2024</td></tr>
+      <tr><td><b>bodas.net</b> · España</td><td>Directorio de proveedores de boda</td><td>Suscripción y publicidad del proveedor</td></tr>
+      <tr><td><b>WhatsApp y Wallapop</b></td><td>Todo lo demás, a mano</td><td>Gratis, sin perfiles ni garantías</td></tr>
+      <tr class="nos"><td><b>Musikeeo</b> · España</td><td>Artistas, técnicos, salas, equipo, cancionero e IA</td><td>10 % al que contrata y suscripciones</td></tr>
+    </table>
+  </div>
+  <p class="fuente">Fuentes: páginas de ayuda de GigSalad (may-2026) y Encore (nov-2025), Hypebot (may-2024), The Knot Worldwide.</p>
+  <div class="pie"><span class="marca"><img src="img/logo.png">Musikeeo</span><span>10</span></div>
+</section>
+
+<!-- 11 · Dónde estamos -->
+<section class="s osc">
+  <span class="ante">Dónde estamos</span>
+  <h2 class="tit">La app está hecha <span class="am">y en producción.</span></h2>
+  <div class="cuerpo" style="gap: 80px; margin-top: 54px;">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 22px;">
+      <p style="font: 800 30px/1 'Manrope'; color: #FFD60A;">Hecho</p>
+      <div class="check"><i><svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><span>Explorar, Bolos, Mercado, Feed, chat y perfiles, en musikeeo.com.</span></div>
+      <div class="check"><i><svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><span>Rodrigo, con IA, prepara anuncios, bolos y perfiles. Nunca publica solo.</span></div>
+      <div class="check"><i><svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><span>Cancionero completo, probado en un bolo real.</span></div>
+      <div class="check"><i><svg viewBox="0 0 24 24" fill="none" stroke="#0A0A0A" stroke-width="3.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12.5l4.5 4.5L19 7.5"/></svg></i><span>Funciona en cualquier móvil sin descargar nada, también sin cobertura.</span></div>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 22px;">
+      <p style="font: 800 30px/1 'Manrope'; color: #FFFFFF;">Lo que falta, dicho claro</p>
+      <div class="check no"><i><svg viewBox="0 0 24 24" fill="none" stroke="#FFD60A" stroke-width="3" stroke-linecap="round"><path d="M12 6v7M12 17.5v.5"/></svg></i><span>Usuarios: empezamos en cero. Lo que ves en la demo es contenido de demostración, y así lo decimos.</span></div>
+      <div class="check no"><i><svg viewBox="0 0 24 24" fill="none" stroke="#FFD60A" stroke-width="3" stroke-linecap="round"><path d="M12 6v7M12 17.5v.5"/></svg></i><span>Antes de abrir: 20-30 perfiles reales de nuestra red, datos legales y avisos por email.</span></div>
+      <div class="check no"><i><svg viewBox="0 0 24 24" fill="none" stroke="#FFD60A" stroke-width="3" stroke-linecap="round"><path d="M12 6v7M12 17.5v.5"/></svg></i><span>Pagos protegidos (Stripe Connect) en la siguiente fase.</span></div>
+    </div>
+  </div>
+  <div class="pie"><span class="marca"><img src="img/logo.png">Musikeeo</span><span>11</span></div>
+</section>
+
+<!-- 12 · Cómo llegamos -->
+<section class="s">
+  <span class="ante">Cómo llegamos</span>
+  <h2 class="tit">Barcelona primero: los músicos, <span class="am">luego quien contrata.</span></h2>
+  <div class="cuerpo" style="gap: 28px; margin-top: 54px;">
+    <div class="tarjeta cielo" style="flex: 1;"><img class="obj" src="img/ic-rol-musico.webp"><h3>1 · Los músicos</h3><p>20-30 perfiles reales de nuestra red: rumba, bodas, versiones y técnicos. El Cancionero, gratis, como gancho para músicos.</p></div>
+    <div class="tarjeta rosa" style="flex: 1;"><img class="obj" src="img/ic-boda.webp"><h3>2 · Quien contrata</h3><p>Bodas (ferias y wedding planners), bares y salas de Barcelona, uno a uno. Vídeos cortos con la firma «Musikeeeeeeooo».</p></div>
+    <div class="tarjeta mantequilla" style="flex: 1;"><img class="obj" src="img/ic-salas.webp"><h3>3 · Cobrar</h3><p>Con bolos de verdad, la Reserva protegida del 10 %, el Plan Sala y Pro.</p></div>
+  </div>
+  <p class="leyenda" style="margin-top: 30px;">Después: el resto de España, Europa y, más adelante, Latinoamérica.</p>
+  <div class="pie"><span class="marca"><img src="img/logo.png">Musikeeo</span><span>12</span></div>
+</section>
+
+<!-- 13 · Equipo -->
+<section class="s gris">
+  <span class="ante">Equipo</span>
+  <h2 class="tit">Músicos que hacen <span class="am">software.</span></h2>
+  <div class="cuerpo" style="gap: 28px; margin-top: 54px; align-items: flex-start;">
+    <div class="tarjeta blanca" style="flex: 1.2;"><h3>Víctor Torres</h3><p style="color: #111; font-weight: 600;">Fundador</p><p>Músico de bolos (rumba y bodas) en Barcelona. Producto, marca y marketing. Ha vivido el problema cada fin de semana.</p></div>
+    <div class="tarjeta blanca" style="flex: 1;"><h3>Adrián Rull</h3><p style="color: #111; font-weight: 600;">Socio · Aether Labs</p><p>[Su papel en Musikeeo, en una línea]</p></div>
+    <div class="tarjeta blanca" style="flex: 1;"><h3>David [apellido]</h3><p style="color: #111; font-weight: 600;">Socio · Aether Labs</p><p>[Su papel en Musikeeo, en una línea]</p></div>
+  </div>
+  <p class="leyenda" style="margin-top: 34px;">Aether Labs es un estudio de software e IA de Barcelona. Ha construido Artiverse para Bonito Sound y Aura Studio, su propio estudio de contenido con IA.</p>
+  <div class="pie"><span class="marca"><img src="img/logo.png">Musikeeo</span><span>13</span></div>
+</section>
+
+<!-- 14 · La ronda -->
+<section class="s">
+  <span class="ante">La ronda</span>
+  <h2 class="tit">Buscamos 350.000 € para lanzar en Barcelona <span class="am">y crecer en España.</span></h2>
+  <div class="cuerpo" style="gap: 64px; margin-top: 48px;">
+    <div style="width: 600px; display: flex; flex-direction: column; gap: 20px;">
+      <div class="tarjeta mantequilla" style="padding: 34px 36px;"><span class="cifra">350.000 €</span><p>Pre-seed, con valoración previa de 2 M€, y un préstamo ENISA de hasta 300.000 €.</p></div>
+      <div class="tarjeta blanca" style="padding: 28px 32px; gap: 12px;"><p style="color: #111; font-weight: 700;">En qué se usa</p><p>El equipo pasa de 3 a 6 personas, captación en Barcelona y los pagos protegidos.</p></div>
+    </div>
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 22px;">
+      <p style="font: 800 32px/1.2 'Manrope'; letter-spacing: -0.4px;">Escenario base del modelo</p>
+      <table>
+        <tr><th style="width: 22%;"></th><th style="width: 26%;">Contrataciones</th><th style="width: 26%;">Volumen (GMV)</th><th style="width: 26%;">Ingresos</th></tr>
+        <tr><td><b>Año 1</b></td><td>1.124</td><td>0,63 M€</td><td>0,02 M€</td></tr>
+        <tr><td><b>Año 2</b></td><td>6.420</td><td>3,6 M€</td><td>0,27 M€</td></tr>
+        <tr><td><b>Año 3</b></td><td>20.092</td><td>11,2 M€</td><td>0,95 M€</td></tr>
+      </table>
+      <p class="leyenda" style="font-size: 21px;">Rentable en el mes 45 en el escenario base. Son hipótesis del modelo financiero (docs/pitch/modelo_financiero.py), no una previsión cerrada: los supuestos están en el fichero.</p>
+    </div>
+  </div>
+  <div class="pie"><span class="marca"><img src="img/logo.png">Musikeeo</span><span>14</span></div>
+</section>
+
+<!-- 15 · Cierre -->
+<section class="s am" style="justify-content: center; align-items: flex-start;">
+  <img src="img/logo.png" style="width: 120px; height: 120px; border-radius: 28px; box-shadow: 0 0 0 4px #0A0A0A;">
+  <h2 style="margin-top: 56px; font: 800 150px/1.0 'Manrope'; letter-spacing: -5px;">Conecta.<br>Crea.<br>Suena.</h2>
+  <p style="margin-top: 50px; font: 700 34px/1.3 'Inter';">musikeeo.com · Víctor Torres · Aether Labs</p>
+  <p style="margin-top: 14px; font: 500 26px/1.4 'Inter'; color: #4A3D00;">La demo de 52 s y la de 17 s enseñan la app tal cual está hoy.</p>
+  <div class="pie"><span class="marca"><img src="img/logo.png">Musikeeo</span><span>15</span></div>
+</section>
+
+</body>
+</html>

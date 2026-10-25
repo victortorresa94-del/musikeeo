@@ -131,6 +131,15 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 
 ## SESSION LOG
 
+### 2026-10-25 (Operación Inversores Manu: demo, vídeos y presentación)
+
+**✅ Hecho:** recorrido de la app como la verá Manu (móvil y ordenador, datos de demostración de producción): todo funciona; el botón flotante de Rodrigo tapaba «Buscar» en la portada y se montaba en el Feed (ahora sale al bajar del hero y no sale en el Feed). Vídeo largo v2 (52 s) y vídeo corto (17 s) con pantallas reales, Cancionero y Feed (`docs/VIDEOS.md`). Presentación de 15 láminas en PDF con la línea de la app: fuente en `docs/pitch/presentacion/` (`node docs/pitch/presentacion/pdf.cjs <salida.pdf>`), cifras de `docs/pitch/investigacion.md` y `docs/pitch/modelo_financiero.py` (traídos de la rama del 22-oct). Todo en Trabajos del Studio de Aether Labs (proyecto Musikeeo). La presentación del 22-oct no apareció (ni Aura personal ni de empresa, ni Drive): se hizo nueva.
+
+**❌ Pendiente:**
+- **Víctor: desplegar las reglas de verdad.** El 25-oct se lanzó `firebase deploy --only firestore` desde el PC, pero esa copia de `main` era vieja (último cambio de reglas 245fdf3): no subió nada nuevo y `posts` sigue dando permiso denegado. Antes: `git pull origin main` en `C:\Users\Usuario\Desktop\Dev\Musikeeo`, y luego `firebase deploy --only firestore --project musikeeo-8e766`. Sin esto, en musikeeo.com no se ven publicaciones ni funcionan me gusta, comentarios ni el Cancionero en la cuenta
+- Presentación: el papel de Adrián y de David y el apellido de David (lámina 13). La lámina de la ronda pide 350.000 € (modelo del 22-oct): si a Manu se le pide el ticket de su programa (~20.000 €), cambiarla
+- Para la demo en el móvil: el Cancionero de Víctor (repertorio de Lloret) vive en SU móvil; el de las capturas es un repertorio de ejemplo con canciones inventadas, solo en el navegador de las capturas
+
 ### 2026-10-25 (Feed con me gusta y comentarios, algoritmo «Para ti», agentes y MiroFish)
 
 **✅ Hecho:** me gusta y comentarios de verdad en publicaciones, tarjetas y vídeos de artista (también en el visor y /reels); algoritmo personalizado probado con agentes simulados (con el perfil vacío pasa del 18 % al 34 % de acierto en dos semanas, techo 36 %; `docs/SIMULACION-FEED.md`); red social de agentes sobre el emulador, vista en la app con capturas; entorno de pruebas preparado (config por variables, píldora «Entorno de pruebas», tarea de GitHub cada 4 h); MiroFish instalado y semilla de Musikeeo escrita. 8 retratos generados para los agentes (0,40 €) + 21 clips y fotos reutilizados de Aura Studio.
