@@ -80,6 +80,13 @@
     --hairline-strong: rgba(14, 14, 20, 0.14);
     --sheet: #FFFFFF;                /* hojas, menús y popovers */
     --chrome: rgba(255, 255, 255, 0.78); /* barras de cristal */
+    /* baldosas pastel (las de Explorar) y su tinta para el texto encima */
+    --pastel-mantequilla: #FDEEB9;  --pastel-mantequilla-ink: #6B5000;
+    --pastel-cielo: #CEE8FD;        --pastel-cielo-ink: #1B4F7A;
+    --pastel-menta: #D8F1DD;        --pastel-menta-ink: #245C33;
+    --pastel-lavanda: #E0D7FD;      --pastel-lavanda-ink: #4B3A99;
+    --pastel-melocoton: #FDD6C8;    --pastel-melocoton-ink: #8A3A1C;
+    --pastel-rosa: #FDDCEC;         --pastel-rosa-ink: #8E2F5C;
     /* una sola luz, arriba; sombras en capas teñidas del suelo */
     --rim: inset 0 1px 0 rgba(255, 255, 255, 0.9);
     --e1: 0 1px 2px rgba(14, 14, 20, 0.05), 0 2px 8px rgba(14, 14, 20, 0.05);
@@ -137,6 +144,12 @@
     --hairline-strong: rgba(255, 255, 255, 0.14);
     --sheet: #161616;
     --chrome: rgba(10, 10, 10, 0.78);
+    --pastel-mantequilla: #3A321C;  --pastel-mantequilla-ink: #F5D97A;
+    --pastel-cielo: #1C2B3A;        --pastel-cielo-ink: #9CCBF5;
+    --pastel-menta: #1D3324;        --pastel-menta-ink: #A6DDB2;
+    --pastel-lavanda: #29233F;      --pastel-lavanda-ink: #C2B5F7;
+    --pastel-melocoton: #3A2520;    --pastel-melocoton-ink: #F5B9A2;
+    --pastel-rosa: #39222E;         --pastel-rosa-ink: #F5B3D3;
     --rim: inset 0 1px 0 rgba(255, 255, 255, 0.08);
     /* en oscuro la sombra es más negra, no más suave */
     --e1: 0 1px 2px rgba(0, 0, 0, 0.35), 0 2px 8px rgba(0, 0, 0, 0.30);
