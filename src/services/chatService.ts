@@ -73,14 +73,16 @@ export const chatService = {
         });
     },
 
-    // Send a message
-    sendMessage: async (chatId: string, text: string, senderId: string) => {
+    // Send a message. `extra` lleva lo de una propuesta de bolo o de su respuesta;
+    // `text` es siempre un resumen legible (la lista de chats y las versiones viejas lo enseñan)
+    sendMessage: async (chatId: string, text: string, senderId: string, extra?: Pick<ChatMessage, 'tipo' | 'propuesta' | 'propuestaId' | 'aceptada'>) => {
         // 1. Add message to subcollection
         await addDoc(collection(db, 'chats', chatId, 'messages'), {
             text,
             senderId,
             timestamp: Date.now(),
-            read: false
+            read: false,
+            ...(extra || {}),
         });
 
         // 2. Update last message on chat doc

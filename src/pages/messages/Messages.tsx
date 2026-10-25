@@ -1,12 +1,15 @@
-import { useState, useEffect, useRef, useMemo } from 'react';
+import { useState, useEffect, useRef, useMemo, useCallback } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { Search, ChevronLeft, ArrowUp, MessageCircle, X } from 'lucide-react';
+import { Search, ChevronLeft, ArrowUp, MessageCircle, X, CalendarPlus } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
 import { chatService, type ChatPreview } from '../../services/chatService';
 import { userService } from '../../services/userService';
-import { type ChatMessage } from '../../types';
+import { type ChatMessage, type PropuestaBolo } from '../../types';
+import { tieneContacto } from '../../lib/fuga';
+import { AvisoContacto, HojaPropuesta, TarjetaPropuesta } from '../../components/chat/Propuesta';
+import { resumenPropuesta } from '../../lib/propuesta';
 
 interface Person { displayName: string; photoURL?: string }
 
@@ -47,7 +50,7 @@ const Avatar = ({ person, size = 'h-11 w-11' }: { person?: Person; size?: string
 
 // Hoja del chat abierto. Se usa en línea en escritorio y a pantalla completa en el móvil.
 const ChatPane = ({
-    person, otherId, messages, myId, text, setText, onSend, onBack, error,
+    person, otherId, messages, myId, text, setText, onSend, onBack, error, respuestas, onProponer, onResponder,
 }: {
     person?: Person;
     otherId?: string;
@@ -58,6 +61,9 @@ const ChatPane = ({
     onSend: () => void;
     onBack?: () => void;
     error: string;
+    respuestas: Record<string, ChatMessage>;
+    onProponer: () => void;
+    onResponder: (propuesta: ChatMessage, aceptada: boolean) => Promise<void>;
 }) => {
     const scrollRef = useRef<HTMLDivElement>(null);
     useEffect(() => {
@@ -96,6 +102,15 @@ const ChatPane = ({
                             {newDay && (
                                 <p className="text-center text-[12px] font-medium text-muted-foreground my-3 first-letter:uppercase">{dayLabel(msg.timestamp)}</p>
                             )}
+                            {msg.tipo === 'propuesta' && msg.propuesta ? (
+                                <div className="mb-2.5">
+                                    <TarjetaPropuesta msg={msg} mia={mine} respuesta={respuestas[msg.id]} onResponder={(a) => onResponder(msg, a)} />
+                                </div>
+                            ) : msg.tipo === 'respuesta' ? (
+                                <p className="text-center text-[12px] font-medium text-muted-foreground my-2">
+                                    {mine ? 'Has' : `${person?.displayName || FALLBACK_NAME} ha`} {msg.aceptada ? 'aceptado' : 'rechazado'} la propuesta · {timeOf(msg.timestamp)}
+                                </p>
+                            ) : (
                             <div className={cn('flex', mine ? 'justify-end' : 'justify-start', lastOfGroup ? 'mb-2.5' : 'mb-0.5')}>
                                 <div className={cn(
                                     'max-w-[78%] px-3.5 py-2 text-[15px] leading-snug whitespace-pre-wrap break-words rounded-[20px]',
@@ -110,16 +125,27 @@ const ChatPane = ({
                                     )}
                                 </div>
                             </div>
+                            )}
                         </div>
                     );
                 })}
             </div>
 
             {error && <p className="px-4 pb-1 text-[12px] text-red-400">{error}</p>}
+            {tieneContacto(text) && <AvisoContacto onProponer={onProponer} />}
             <form
                 onSubmit={(e) => { e.preventDefault(); onSend(); }}
                 className="shrink-0 flex items-end gap-2 px-3 pt-2 pb-[calc(0.5rem+env(safe-area-inset-bottom))] md:pb-3 border-t border-hairline"
             >
+                <button
+                    type="button"
+                    onClick={onProponer}
+                    aria-label="Proponer un bolo"
+                    title="Proponer un bolo"
+                    className="h-10 w-10 shrink-0 rounded-full bg-fill text-foreground flex items-center justify-center active:opacity-70"
+                >
+                    <CalendarPlus className="h-5 w-5" />
+                </button>
                 <textarea
                     rows={1}
                     value={text}
@@ -158,6 +184,8 @@ export default function Messages() {
     const [drafts, setDrafts] = useState<Record<string, string>>({});
     const [error, setError] = useState('');
     const [query, setQuery] = useState('');
+    const [proponiendo, setProponiendo] = useState(false);
+    const cerrarPropuesta = useCallback(() => setProponiendo(false), []);
     const requested = useRef(new Set<string>());
 
     // «Contactar» desde mercado, bolos o perfiles llega como /messages?userId=X:
@@ -272,6 +300,33 @@ export default function Messages() {
         }
     };
 
+    // Propuesta de bolo: va como un mensaje más, con su resumen legible en el texto
+    const enviarPropuesta = async (p: PropuestaBolo) => {
+        if (!selected || !user) return;
+        await chatService.sendMessage(selected.id, resumenPropuesta(p), user.uid, { tipo: 'propuesta', propuesta: p });
+    };
+    const responder = async (propuesta: ChatMessage, aceptada: boolean) => {
+        if (!selected || !user || !propuesta.propuesta) return;
+        try {
+            await chatService.sendMessage(selected.id, aceptada ? `Propuesta aceptada · ${resumenPropuesta(propuesta.propuesta).replace('Propuesta de bolo · ', '')}` : 'Propuesta no aceptada',
+                user.uid, { tipo: 'respuesta', propuestaId: propuesta.id, aceptada });
+        } catch (err) {
+            console.error('Error respondiendo a la propuesta', err);
+            setError('No se ha enviado la respuesta. Revisa la conexión e inténtalo otra vez.');
+        }
+    };
+    // La primera respuesta de la OTRA persona es la que cuenta (nadie acepta su propia propuesta)
+    const respuestas = useMemo(() => {
+        const porId = new Map(messages.map(m => [m.id, m]));
+        const out: Record<string, ChatMessage> = {};
+        for (const m of messages) {
+            if (m.tipo !== 'respuesta' || !m.propuestaId || out[m.propuestaId]) continue;
+            const prop = porId.get(m.propuestaId);
+            if (prop && prop.senderId !== m.senderId) out[m.propuestaId] = m;
+        }
+        return out;
+    }, [messages]);
+
     // Desde la lista se apila (atrás vuelve a la lista); si se llegó por «Contactar»
     // o con el enlace directo, volver reemplaza por la lista.
     const openChat = (id: string) => navigate(`/messages?chat=${id}`, { replace: !!selectedId, state: { fromList: true } });
@@ -300,6 +355,9 @@ export default function Messages() {
             setText={setText}
             onSend={handleSend}
             error={error}
+            respuestas={respuestas}
+            onProponer={() => setProponiendo(true)}
+            onResponder={responder}
         />
     );
 
@@ -407,10 +465,14 @@ export default function Messages() {
                         onSend={handleSend}
                         onBack={closeChat}
                         error={error}
+                        respuestas={respuestas}
+                        onProponer={() => setProponiendo(true)}
+                        onResponder={responder}
                     />
                 </div>,
                 document.body,
             )}
+            <HojaPropuesta abierta={proponiendo && !!selected} onCerrar={cerrarPropuesta} onEnviar={enviarPropuesta} />
         </div>
     );
 }

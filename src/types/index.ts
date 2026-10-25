@@ -154,6 +154,21 @@ export interface ChatMessage {
     timestamp: number;
     isSystem?: boolean;
     read?: boolean;
+    // Propuesta de bolo dentro del chat: se cierra el trato aquí y no por WhatsApp
+    tipo?: 'texto' | 'propuesta' | 'respuesta';
+    propuesta?: PropuestaBolo;
+    propuestaId?: string;      // en una respuesta: a qué propuesta contesta
+    aceptada?: boolean;        // en una respuesta
+}
+
+// Lo que se acuerda de un bolo en el chat. Sin pago todavía: queda por escrito para los dos
+export interface PropuestaBolo {
+    fecha: string;             // AAAA-MM-DD
+    hora?: string;             // HH:MM
+    sitio: string;
+    cache: number;             // euros
+    duracion?: string;         // «2 h», «3 pases de 45 min»…
+    notas?: string;
 }
 
 export type FeedPostType = 'post' | 'event_highlight' | 'market_highlight' | 'milestone' | 'announcement';
