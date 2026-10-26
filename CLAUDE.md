@@ -153,7 +153,7 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 **❌ Pendiente:**
 - **Víctor: desplegar las reglas** (`firebase deploy --only firestore --project musikeeo-8e766`), incluida la nueva de `mapa`.
 - **Víctor: crear la clave gratuita de CARTO** (carto.com/basemaps/apikey) y ponerla en Vercel como `VITE_CARTO_KEY`. Sin ella, el mapa sale con la marca de agua «API key required».
-- **Comprobar en la vista previa de Vercel** que `/api/chat` y `/api/leer-perfil` responden (imports `.js` → `.ts`).
+- Vista previa de Vercel (26-oct): `/api/chat` y `/api/leer-perfil` arrancan bien (los imports `.js` → `.ts` se resuelven). Falta probar una lectura real con Kimi y una web de verdad.
 - Ninguna de las dos pantallas nuevas se soñó en Aura Studio (había prisa).
 - Mapa: la zona fija vive en cada dispositivo; los «ahora» caducados se quedan en Firestore hasta que su dueño vuelve a abrir la app; el nombre y la foto del mapa no siguen al perfil.
 - El técnico no tiene «Rellénalo con tu web»: su ficha no tiene bio ni ciudad.
