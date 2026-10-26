@@ -82,7 +82,7 @@ git push origin main  # triggers Vercel auto-deploy
 ## Acceso
 - Navegar es público: /home, /feed, /explorar(/:categoría), /eventos(/:id), /market/:id, /profile/:id, /artist/:slug, /reels
 - Explorar = el marketplace (Explorar + Mercado unidos): categorías en `src/config/categorias.ts` (una tabla para hub, vista, buscador), iconos 3D en `public/images/categorias/` recortados del sueño elegido (concepto A + cabecera «por momento» de C). /discover, /artistas, /sonido y /market redirigen. Barra: Feed · Explorar · Bolos · Perfil
-- Requieren cuenta (RequireAuthCompleted → /login con `state.from` y vuelta tras entrar): /messages, /market/create, /eventos/crear, /projects, /profile; /publicar requiere sesión (RequireAuthSimple)
+- Requieren cuenta (RequireAuthCompleted → /login con `state.from` y vuelta tras entrar): /messages, /mapa, /market/create, /eventos/crear, /projects, /profile; /publicar requiere sesión (RequireAuthSimple)
 - /cancionero es público y funciona sin cuenta (ver «Cancionero»)
 
 ## Cancionero (2026-10-24)
@@ -130,6 +130,33 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 - `VITE_EMULADORES=1` (solo `npm run dev`) conecta a los emuladores; `VITE_FIREBASE_*` + `VITE_ENTORNO=pruebas` montan el entorno de pruebas con la misma app
 
 ## SESSION LOG
+
+### 2026-10-26 (Dossier v3, mapa de musikeers y rellenar el perfil con tu web)
+
+**✅ Hecho:**
+- **Dossier v3** (27 láminas, en Trabajos de Aura, `trb_11czx4n0nh7wq7`):
+  - nuevas: «¿Por qué el mundo necesita Musikeeo?», con 10 problemas (a quién le pasa, un caso y qué hace Musikeeo, marcado «Ya» o «En camino»), y «Por qué sabemos que va a funcionar»;
+  - las láminas de cifras salen de `docs/pitch/rentabilidad_consejo.py`; fuera los múltiplos de valoración.
+- **Mapa «Musikeers cerca»** (`/mapa`, con cuenta). Lo hizo un agente: `src/pages/mapa`, `src/components/mapa`, `src/lib/{geohash,mapa,barrios,ubicacion}.ts` y `src/services/mapaService.ts`.
+  - Solo aparece quien lo activa, en una celda geohash de 6 letras; la posición exacta no sale del móvil.
+  - Dos modos: «Mi zona» y «Estoy aquí ahora», que caduca a las 4 h.
+  - Al tocar a alguien sale su micro perfil con «Escribir» (lleva al chat).
+  - Reglas en `firestore.rules` (`mapa/{uid}`).
+  - Leaflet va en un trozo aparte y no entra en el precache.
+  - Pruebas en `scripts/mapa/`.
+- **«Rellénalo con tu web o tu Instagram»** en `/panel/perfil` y en el onboarding del músico. Lo hizo otro agente.
+  - `api/leer-perfil.ts` descarga la página con protecciones (`api/_descargar.ts`: nada de IPs privadas, como mucho 3 redirecciones, 8 s y 1,5 MB) y saca los campos con reglas (`src/lib/leerPerfil.ts`) y, si hay clave, con Kimi (`api/_kimi.ts`, compartido con `/api/chat`).
+  - Nada se guarda sin que la persona acepte. Las redes van en `Artist.redes`.
+  - De Instagram solo se leen las metaetiquetas públicas, una vez. En la práctica casi siempre pide iniciar sesión, y entonces se ofrece pegar la bio.
+  - Pruebas en `scripts/leer-perfil/`.
+
+**❌ Pendiente:**
+- **Víctor: desplegar las reglas** (`firebase deploy --only firestore --project musikeeo-8e766`), incluida la nueva de `mapa`.
+- **Víctor: crear la clave gratuita de CARTO** (carto.com/basemaps/apikey) y ponerla en Vercel como `VITE_CARTO_KEY`. Sin ella, el mapa sale con la marca de agua «API key required».
+- **Comprobar en la vista previa de Vercel** que `/api/chat` y `/api/leer-perfil` responden (imports `.js` → `.ts`).
+- Ninguna de las dos pantallas nuevas se soñó en Aura Studio (había prisa).
+- Mapa: la zona fija vive en cada dispositivo; los «ahora» caducados se quedan en Firestore hasta que su dueño vuelve a abrir la app; el nombre y la foto del mapa no siguen al perfil.
+- El técnico no tiene «Rellénalo con tu web»: su ficha no tiene bio ni ciudad.
 
 ### 2026-10-25 (Cómo cobrar: consejo de 10 expertos y contacto escondido en el chat)
 
