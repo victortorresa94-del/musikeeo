@@ -49,6 +49,8 @@ const LeerCancion = lazy(() => import('./pages/cancionero/LeerCancion'));
 const Repertorio = lazy(() => import('./pages/cancionero/Repertorio'));
 const TocarRepertorio = lazy(() => import('./pages/cancionero/TocarRepertorio'));
 const SacarAcordes = lazy(() => import('./pages/cancionero/SacarAcordes'));
+// Musikeers cerca: Leaflet solo se descarga al abrir el mapa
+const Mapa = lazy(() => import('./pages/mapa/Mapa'));
 
 // Legal pages (public, no layout)
 const LegalNotice = lazy(() => import('./pages/legal/LegalNotice'));
@@ -251,6 +253,8 @@ function App() {
                 {/* Acciones: publicar, escribir y gestionar requieren cuenta */}
                 <Route element={<RequireAuthCompleted />}>
                   <Route path="/messages" element={<Messages />} />
+                  {/* Quién hay cerca para escribirle. Solo con cuenta: nadie sale sin haberlo activado */}
+                  <Route path="/mapa" element={<Mapa />} />
                   <Route path="/market/create" element={<CreateListing />} />
                   {/* Un solo flujo para publicar bolos: /publicar (este tenía una «IA» de mentira) */}
                   <Route path="/eventos/crear" element={<Navigate to="/publicar" replace />} />

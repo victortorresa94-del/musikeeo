@@ -3,7 +3,7 @@ import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { collection, getDocs, limit, query, where } from 'firebase/firestore';
 import {
     MapPin, Share2, Pencil, MessageCircle, CalendarDays, Settings, LogOut, ChevronRight,
-    Image as ImageIcon, ShoppingBag, Plus, Eye, Sparkles, Play, ListMusic,
+    Image as ImageIcon, ShoppingBag, Plus, Eye, Sparkles, Play, ListMusic, Map as MapaIcono,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { db } from '../../lib/firebase';
@@ -259,6 +259,7 @@ export default function Profile() {
                 <Row to="/messages" icon={MessageCircle} label="Mensajes" />
                 <Row to="/panel/calendario" icon={CalendarDays} label="Calendario y disponibilidad" />
                 <Row to="/cancionero" icon={ListMusic} label="Cancionero: letras y acordes" />
+                <Row to="/mapa" icon={MapaIcono} label="Musikeers cerca: el mapa" />
                 {mode === 'musician' && <Row to="/panel/multimedia" icon={ImageIcon} label="Fotos y vídeos" />}
                 <Row to="/panel/ajustes" icon={Settings} label="Ajustes de la cuenta" />
             </div>

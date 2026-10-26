@@ -16,8 +16,9 @@ function precacheServiceWorker(): Plugin {
       const sw = join(outDir, 'service-worker.js')
       if (!existsSync(sw)) return
       const lista = (dir: string, re: RegExp) => existsSync(join(outDir, dir)) ? readdirSync(join(outDir, dir)).filter(f => re.test(f)).map(f => `/${dir}/${f}`) : []
-      // Los lectores de Word y PDF (~250 kB) solo hacen falta al importar: se guardan cuando se usan
-      const assets = lista('assets', /\.(js|css|woff2)$/).filter(f => !/\/(lectorWord|pdf)[-.]/.test(f))
+      // Los lectores de Word y PDF (~250 kB) solo hacen falta al importar: se guardan cuando se usan.
+      // El mapa (Leaflet, ~45 kB) tampoco: sin red no hay teselas ni musikeers que enseñar
+      const assets = lista('assets', /\.(js|css|woff2)$/).filter(f => !/\/(lectorWord|pdf|Mapa)[-.]/.test(f))
       const fuentes = lista('fonts', /\.woff2$/)
       const version = Date.now().toString(36)
       writeFileSync(sw, readFileSync(sw, 'utf8')

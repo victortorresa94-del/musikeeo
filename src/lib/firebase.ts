@@ -57,9 +57,10 @@ try {
 
     // Pruebas en local (npm run dev con VITE_EMULADORES=1): Auth y Firestore de los
     // emuladores de Firebase, nunca los de producción. En el build de Vercel no existe.
+    // Los puertos se pueden cambiar (VITE_EMULADOR_AUTH / VITE_EMULADOR_FIRESTORE) para tener dos a la vez
     if (import.meta.env.DEV && import.meta.env.VITE_EMULADORES === '1') {
-        connectAuthEmulator(auth, 'http://127.0.0.1:9099', { disableWarnings: true });
-        connectFirestoreEmulator(db, '127.0.0.1', 8080);
+        connectAuthEmulator(auth, `http://127.0.0.1:${env.VITE_EMULADOR_AUTH || 9099}`, { disableWarnings: true });
+        connectFirestoreEmulator(db, '127.0.0.1', Number(env.VITE_EMULADOR_FIRESTORE || 8080));
     }
 
     // ENABLE OFFLINE PERSISTENCE

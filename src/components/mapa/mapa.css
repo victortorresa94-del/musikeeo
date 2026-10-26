@@ -1,0 +1,42 @@
+/* Leaflet con los tokens de la casa (claro y oscuro salen solos de src/index.css).
+   Se carga solo con la página del mapa (pages/mapa/Mapa.tsx, en su trozo diferido). */
+
+.mapa-musikeeo.leaflet-container {
+  background: hsl(var(--muted));
+  font-family: inherit;
+  -webkit-tap-highlight-color: transparent;
+}
+
+/* Los marcadores son nuestros: sin la caja blanca de Leaflet */
+.mapa-musikeeo .mk-icono {
+  background: none;
+  border: none;
+}
+.mapa-musikeeo .mk-icono:focus-visible {
+  outline: 2px solid hsl(var(--foreground));
+  outline-offset: 3px;
+  border-radius: 9999px;
+}
+
+/* La atribución de OpenStreetMap y CARTO, siempre visible pero discreta */
+.mapa-musikeeo .leaflet-control-attribution {
+  background: var(--chrome);
+  color: hsl(var(--muted-foreground));
+  font-size: 10px;
+  line-height: 16px;
+  padding: 0 6px;
+  border-top-left-radius: 8px;
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+}
+.mapa-musikeeo .leaflet-control-attribution a {
+  color: inherit;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+/* Eligiendo la zona: los demás se apagan para que se vea la chincheta */
+.mapa-eligiendo .mapa-musikeeo .leaflet-marker-pane {
+  opacity: 0.35;
+  transition: opacity 200ms ease;
+}

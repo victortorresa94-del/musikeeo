@@ -6,6 +6,7 @@ import {
   Calendar,
   Bot,
   ListMusic,
+  Map as MapaIcono,
   LogOut,
   User,
 } from 'lucide-react';
@@ -22,6 +23,7 @@ interface NavItem {
 const NAV_ITEMS: NavItem[] = [
   { icon: Rss,         label: 'Feed',       path: '/feed'     },
   { icon: Compass,     label: 'Explorar',   path: '/explorar' },
+  { icon: MapaIcono,   label: 'Mapa',       path: '/mapa'     },
   { icon: Calendar,    label: 'Bolos',      path: '/eventos'  },
   { icon: ListMusic,   label: 'Cancionero', path: '/cancionero' },
   { icon: Bot,         label: 'Rodrigo AI', path: '/rodrigo'  },
