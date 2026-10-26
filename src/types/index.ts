@@ -234,6 +234,18 @@ export interface ArtistMultimedia {
     }[];
 }
 
+/** Enlaces de un artista: solo URL https completas */
+export interface RedesArtista {
+    web?: string;
+    instagram?: string;
+    youtube?: string;
+    spotify?: string;
+    soundcloud?: string;
+    bandcamp?: string;
+    tiktok?: string;
+    facebook?: string;
+}
+
 export interface Artist {
     id: string;
     slug: string; // URL-friendly identifier
@@ -267,6 +279,9 @@ export interface Artist {
         idiomas?: string;       // 'Castellano, catalán'
         idealPara?: string[];   // ['Bodas','Fiestas','Salas','Terrazas']
     };
+    // Su web y sus redes (las rellena «Rellénalo con tu web o tu Instagram» o la persona).
+    // La ficha pública no las enseña: el contacto va por Musikeeo (como en el chat)
+    redes?: RedesArtista;
 
     // Stats
     rating: number;
