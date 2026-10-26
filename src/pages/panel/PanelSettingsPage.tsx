@@ -10,6 +10,7 @@ import { db, auth } from "../../lib/firebase";
 import { deleteUser } from "firebase/auth";
 import { toast } from "sonner";
 import { Loader2, Download, AlertTriangle } from "lucide-react";
+import { AjusteMapa } from "../../components/mapa/AjusteMapa";
 
 export default function PanelSettingsPage() {
     const { user, userProfile, logout } = useAuth();
@@ -155,6 +156,10 @@ export default function PanelSettingsPage() {
                             {saving ? 'Guardando...' : saved ? '✓ Guardado' : 'Guardar cambios'}
                         </Button>
                     </form>
+                </div>
+
+                <div className="pt-4 border-t border-border">
+                    <AjusteMapa />
                 </div>
 
                 <div className="pt-4 border-t border-border">

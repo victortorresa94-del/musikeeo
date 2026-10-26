@@ -37,6 +37,7 @@ export default function PrivacyPolicy() {
                     <tr><td>Publicar tu perfil, anuncios o eventos</td><td>Ejecución del contrato</td></tr>
                     <tr><td>Permitir el contacto entre usuarios (mensajes internos)</td><td>Ejecución del contrato</td></tr>
                     <tr><td>Ocultar teléfonos, emails y enlaces de mensajería en el chat hasta que se acepta una propuesta de bolo</td><td>Interés legítimo (Art. 6.1.f): prevenir fraudes y proteger los acuerdos hechos en Musikeeo</td></tr>
+                    <tr id="mapa"><td>Mostrarte en el mapa de musikeers cerca, en una zona aproximada (unos 500 m), si lo activas. Solo para mayores de 18 años. «Estoy aquí ahora» caduca solo a las 4 horas; tu posición exacta no sale de tu dispositivo, solo se guarda la zona, y solo la ven quienes tienen cuenta. El fondo del mapa lo sirve CARTO, que ve qué zona del mapa estás mirando</td><td>Consentimiento (Art. 6.1.a RGPD): lo retiras cuando quieras quitándote del mapa, en el propio mapa o en los ajustes</td></tr>
                     <tr><td>Seguridad de la plataforma, prevención de fraude y abusos</td><td>Interés legítimo (Art. 6.1.f)</td></tr>
                     <tr><td>Analítica agregada para mejorar el servicio</td><td>Consentimiento (Art. 6.1.a)</td></tr>
                     <tr><td>Comunicaciones comerciales propias</td><td>Consentimiento</td></tr>

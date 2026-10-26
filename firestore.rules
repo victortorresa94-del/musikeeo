@@ -250,6 +250,39 @@ service cloud.firestore {
       allow read: if true;
     }
 
+    // Musikeers cerca (/mapa): solo quien lo activa, y solo su zona aproximada. El geohash de
+    // como mucho 6 letras (celdas de ~1,2 × 0,6 km): la posición exacta nunca sale del móvil.
+    // Lo ven quienes tienen cuenta (como mucho 300 de golpe); cada uno escribe y borra el suyo.
+    // «Estoy aquí ahora» caduca a las 4 h: la hora de fin es obligatoria y no puede ir más allá.
+    match /mapa/{uid} {
+      function fichaDeMapa() {
+        let d = request.resource.data;
+        let e = d.etiquetas;
+        return d.keys().hasOnly(['uid', 'nombre', 'foto', 'papel', 'etiquetas', 'zona', 'geohash', 'ahora', 'caduca', 'actualizado'])
+          && d.keys().hasAll(['uid', 'nombre', 'foto', 'papel', 'etiquetas', 'zona', 'geohash', 'ahora', 'caduca', 'actualizado'])
+          && d.uid == uid
+          && d.nombre is string && d.nombre.size() > 0 && d.nombre.size() <= 60
+          && d.foto is string && d.foto.size() <= 600
+          && d.papel in ['musico', 'tecnico', 'sala', 'tienda', 'otro']
+          && e is list && e.size() <= 3
+          && (e.size() < 1 || (e[0] is string && e[0].size() <= 24))
+          && (e.size() < 2 || (e[1] is string && e[1].size() <= 24))
+          && (e.size() < 3 || (e[2] is string && e[2].size() <= 24))
+          && d.zona is string && d.zona.size() <= 60
+          && d.geohash is string && d.geohash.size() >= 4 && d.geohash.size() <= 6
+          && d.geohash.matches('^[0-9b-hjkmnp-z]+$')
+          && d.ahora is bool
+          && (d.ahora
+              ? (d.caduca is timestamp && d.caduca > request.time && d.caduca <= request.time + duration.value(245, 'm'))
+              : d.caduca == null)
+          && d.actualizado == request.time;
+      }
+      allow get: if isAuthenticated();
+      allow list: if isAuthenticated() && request.query.limit <= 300;
+      allow create, update: if isOwner(uid) && fichaDeMapa();
+      allow delete: if isOwner(uid);
+    }
+
     // Reports (DMCA/LSSI moderation queue) — users can create, only admins read
     match /reports/{reportId} {
       allow create: if isAuthenticated()

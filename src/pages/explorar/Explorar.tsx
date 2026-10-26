@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Search, X, MapPin, ChevronDown, Sparkles } from 'lucide-react';
+import { Search, X, MapPin, ChevronDown, Sparkles, Map as MapaIcono } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useAuth } from '../../context/AuthContext';
 import { CATEGORIAS, MOMENTOS, iconoCategoria, type Categoria } from '../../config/categorias';
@@ -86,7 +86,11 @@ export default function Explorar() {
             <div className="px-4 md:px-0">
                 <div className="flex items-center justify-between">
                     <h1 className="font-heading text-[28px] font-bold leading-tight text-foreground">Explorar</h1>
-                    <div className="relative">
+                    <div className="relative flex items-center gap-1.5">
+                        {/* Musikeers cerca: quién hay por tu zona, para escribirle */}
+                        <Link to="/mapa" className="pulsable h-9 px-3 rounded-full bg-fill flex items-center gap-1.5 text-[14px] font-semibold text-foreground">
+                            <MapaIcono className="h-4 w-4" /> Mapa
+                        </Link>
                         <button onClick={() => setMenuCiudad(v => !v)} className="pulsable h-9 pl-3 pr-2.5 rounded-full bg-fill flex items-center gap-1.5 text-[14px] font-semibold text-foreground">
                             <MapPin className="h-4 w-4" /> {ciudad || 'Toda España'} <ChevronDown className="h-4 w-4 text-muted-foreground" />
                         </button>
