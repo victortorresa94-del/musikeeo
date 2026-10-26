@@ -2,7 +2,7 @@ import LegalPageLayout from './LegalPageLayout';
 
 export default function PrivacyPolicy() {
     return (
-        <LegalPageLayout title="Política de privacidad" updatedAt="2026-10-25">
+        <LegalPageLayout title="Política de privacidad" updatedAt="2026-10-26">
             <p>
                 En Musikeeo nos tomamos en serio tu privacidad. Esta política explica qué
                 datos recogemos, con qué finalidad, cuál es la base legal del tratamiento,
@@ -65,7 +65,7 @@ export default function PrivacyPolicy() {
             <ul>
                 <li><strong>Google LLC (Firebase / Google Cloud)</strong> — alojamiento, autenticación, base de datos, almacenamiento de archivos.</li>
                 <li><strong>Vercel Inc.</strong> — hosting de la aplicación y funciones serverless.</li>
-                <li><strong>Moonshot AI (Kimi)</strong> — proveedor de la inferencia del asistente IA &laquo;Rodrigo&raquo; cuando el usuario lo utiliza.</li>
+                <li><strong>Moonshot AI (Kimi)</strong> — proveedor de la inferencia del asistente IA &laquo;Rodrigo&raquo; cuando el usuario lo utiliza. También se usa para resumir la web pública (o el Instagram, o la bio) que la persona pega al crear su perfil, para proponerle los campos: le enviamos el texto de esa página sin teléfonos, emails ni enlaces, y nunca los datos de su cuenta. No guardamos la página descargada: solo los campos que la persona acepta y guarda en su perfil.</li>
                 <li><strong>Functional Software, Inc. (Sentry)</strong> — registro de errores técnicos de la aplicación, cuando está activado.</li>
             </ul>
             <p>

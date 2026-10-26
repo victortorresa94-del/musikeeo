@@ -3,14 +3,64 @@ import { Save, X, Camera, MapPin, Plus, Check, ExternalLink } from 'lucide-react
 import { useAuth } from '../../context/AuthContext';
 import { getArtistByUserId, updateArtist, createArtist, calculateProfileCompleteness } from '../../services/artistService';
 import { storageService } from '../../services/storageService';
-import type { Artist } from '../../types';
+import type { Artist, RedesArtista } from '../../types';
 import { toast } from 'sonner';
+import RellenarConWeb from '../../components/perfil/RellenarConWeb';
+import { GENEROS, IDEAL_PARA, MAX_BIO, type PropuestaPerfil } from '../../lib/leerPerfil';
+import { cn } from '../../lib/utils';
 
-const GENRE_OPTIONS = [
-    'Pop', 'Rock', 'Indie', 'Jazz', 'Blues', 'Flamenco', 'Clásica',
-    'Electrónica', 'House', 'Techno', 'Reggaeton', 'Hip Hop', 'R&B',
-    'Folk', 'Country', 'Latin', 'Salsa', 'Swing', 'Soul', 'Funk'
+// Los estilos del formulario: la misma lista que usa «Rellénalo con tu web» (src/lib/leerPerfil.ts)
+const GENRE_OPTIONS = GENEROS;
+
+// La ficha del artista (lo que enseña su ficha pública) en el formulario: todo texto
+type FichaForm = { formacion: string; musicos: string; duracion: string; repertorio: string; equipo: string; viaja: string; idiomas: string; idealPara: string[] };
+const FICHA_VACIA: FichaForm = { formacion: '', musicos: '', duracion: '', repertorio: '', equipo: '', viaja: '', idiomas: '', idealPara: [] };
+const fichaDe = (a: Artist): FichaForm => ({
+    formacion: a.ficha?.formacion || '', musicos: a.ficha?.musicos ? String(a.ficha.musicos) : '', duracion: a.ficha?.duracion || '',
+    repertorio: a.ficha?.repertorio || '', equipo: a.ficha?.equipo || '', viaja: a.ficha?.viaja || '', idiomas: a.ficha?.idiomas || '',
+    idealPara: a.ficha?.idealPara || [],
+});
+const CAMPOS_FICHA: { clave: Exclude<keyof FichaForm, 'idealPara'>; etiqueta: string; ejemplo: string }[] = [
+    { clave: 'formacion', etiqueta: 'Formación', ejemplo: 'Voz, dos guitarras y cajón' },
+    { clave: 'musicos', etiqueta: 'Músicos', ejemplo: '4' },
+    { clave: 'duracion', etiqueta: 'Duración del show', ejemplo: '2 h, en dos pases' },
+    { clave: 'repertorio', etiqueta: 'Repertorio', ejemplo: 'Rumba catalana, pop y versiones' },
+    { clave: 'equipo', etiqueta: 'Equipo', ejemplo: 'Llevamos sonido para 150 personas' },
+    { clave: 'viaja', etiqueta: 'Desplazamiento', ejemplo: 'Cataluña y alrededores' },
+    { clave: 'idiomas', etiqueta: 'Idiomas', ejemplo: 'Castellano y catalán' },
 ];
+const CAMPOS_REDES: { clave: keyof RedesArtista; etiqueta: string; ejemplo: string }[] = [
+    { clave: 'web', etiqueta: 'Web', ejemplo: 'https://tuweb.com' },
+    { clave: 'instagram', etiqueta: 'Instagram', ejemplo: 'https://www.instagram.com/tuusuario/' },
+    { clave: 'youtube', etiqueta: 'YouTube', ejemplo: 'https://www.youtube.com/@tucanal' },
+    { clave: 'spotify', etiqueta: 'Spotify', ejemplo: 'https://open.spotify.com/artist/…' },
+    { clave: 'soundcloud', etiqueta: 'SoundCloud', ejemplo: 'https://soundcloud.com/…' },
+    { clave: 'bandcamp', etiqueta: 'Bandcamp', ejemplo: 'https://tunombre.bandcamp.com/' },
+    { clave: 'tiktok', etiqueta: 'TikTok', ejemplo: 'https://www.tiktok.com/@…' },
+    { clave: 'facebook', etiqueta: 'Facebook', ejemplo: 'https://www.facebook.com/…' },
+];
+const CAMPO = 'w-full h-11 rounded-xl bg-fill px-4 text-[16px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10';
+
+/** Lo que se guarda: solo lo relleno (Firestore no admite undefined) */
+function fichaParaGuardar(f: FichaForm): NonNullable<Artist['ficha']> {
+    const out: NonNullable<Artist['ficha']> = {};
+    for (const { clave } of CAMPOS_FICHA) {
+        const v = f[clave].trim();
+        if (!v) continue;
+        if (clave === 'musicos') { const n = Number(v); if (Number.isInteger(n) && n >= 1 && n <= 50) out.musicos = n; }
+        else out[clave] = v.slice(0, 160);
+    }
+    if (f.idealPara.length) out.idealPara = f.idealPara;
+    return out;
+}
+function redesParaGuardar(r: RedesArtista): RedesArtista {
+    const out: RedesArtista = {};
+    for (const { clave } of CAMPOS_REDES) {
+        const v = (r[clave] || '').trim();
+        if (v) out[clave] = (/^https?:\/\//i.test(v) ? v : `https://${v}`).slice(0, 300);
+    }
+    return out;
+}
 
 export default function PanelProfilePage() {
     const { user, loading: authLoading } = useAuth();
@@ -31,6 +81,8 @@ export default function PanelProfilePage() {
     const [bio, setBio] = useState('');
     const [genres, setGenres] = useState<string[]>([]);
     const [isPublic, setIsPublic] = useState(false);
+    const [ficha, setFicha] = useState<FichaForm>(FICHA_VACIA);
+    const [redes, setRedes] = useState<RedesArtista>({});
 
     useEffect(() => {
         if (!authLoading) {
@@ -71,6 +123,8 @@ export default function PanelProfilePage() {
             setBio(artistData.bio);
             setGenres(artistData.genres);
             setIsPublic(artistData.isPublic);
+            setFicha(fichaDe(artistData));
+            setRedes(artistData.redes || {});
         } catch (error) {
             console.error('Error loading artist profile:', error);
             setError("No se pudo cargar el perfil. Comprueba tu conexión.");
@@ -91,6 +145,8 @@ export default function PanelProfilePage() {
                 bio,
                 genres,
                 isPublic,
+                ficha: fichaParaGuardar(ficha),
+                redes: redesParaGuardar(redes),
                 profileCompleteness: calculateProfileCompleteness({
                     ...artist,
                     artistName,
@@ -119,8 +175,30 @@ export default function PanelProfilePage() {
             setBio(artist.bio);
             setGenres(artist.genres);
             setIsPublic(artist.isPublic);
+            setFicha(fichaDe(artist));
+            setRedes(artist.redes || {});
             setHasChanges(false);
         }
+    };
+
+    // «Rellénalo con tu web o tu Instagram»: solo rellena el formulario; guarda la persona
+    const aplicarPropuesta = (p: PropuestaPerfil) => {
+        if (p.nombre) setArtistName(p.nombre);
+        if (p.ciudad) setCity(p.ciudad);
+        if (p.bio) setBio(p.bio.slice(0, MAX_BIO));
+        if (p.generos?.length) setGenres(g => [...new Set([...g, ...p.generos!])]);
+        if (p.ficha) {
+            const f = p.ficha;
+            setFicha(x => ({
+                ...x,
+                ...Object.fromEntries((['formacion', 'duracion', 'repertorio', 'equipo', 'viaja', 'idiomas'] as const).filter(k => f[k]).map(k => [k, f[k]!])),
+                ...(f.musicos ? { musicos: String(f.musicos) } : {}),
+                ...(f.idealPara?.length ? { idealPara: [...new Set([...x.idealPara, ...f.idealPara])] } : {}),
+            }));
+        }
+        if (p.redes) setRedes(r => ({ ...r, ...p.redes }));
+        setHasChanges(true);
+        toast.success('Listo: revisa los campos y pulsa «Guardar cambios»');
     };
 
     const addGenre = (genre: string) => {
@@ -311,6 +389,8 @@ export default function PanelProfilePage() {
                     <section className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                         {/* Left Column: Basic Info */}
                         <div className="lg:col-span-2 space-y-6">
+                            <RellenarConWeb onAplicar={aplicarPropuesta} actual={{ nombre: artistName, ciudad: city, bio }} />
+
                             <div className="bg-card rounded-xl p-6 border border-border shadow-sm">
                                 <h3 className="text-foreground text-lg font-bold mb-1 flex items-center gap-2">
                                     📋 Información Básica
@@ -348,11 +428,11 @@ export default function PanelProfilePage() {
                                     <label className="flex flex-col gap-2">
                                         <div className="flex justify-between">
                                             <span className="text-foreground text-sm font-medium">Biografía</span>
-                                            <span className="text-muted-foreground text-xs">{bio.length}/500 caracteres</span>
+                                            <span className="text-muted-foreground text-xs">{bio.length}/{MAX_BIO} caracteres</span>
                                         </div>
                                         <textarea
                                             value={bio}
-                                            onChange={(e) => { setBio(e.target.value.slice(0, 500)); setHasChanges(true); }}
+                                            onChange={(e) => { setBio(e.target.value.slice(0, MAX_BIO)); setHasChanges(true); }}
                                             rows={4}
                                             className="w-full bg-background border border-border rounded-lg px-4 py-3 text-foreground focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-colors placeholder:text-muted-foreground resize-none"
                                             placeholder="Describe tu proyecto musical, tu estilo y qué te hace único..."
@@ -392,6 +472,59 @@ export default function PanelProfilePage() {
                                             </div>
                                         </div>
                                     </div>
+                                </div>
+                            </div>
+
+                            {/* La ficha: lo que enseña la ficha pública (formación, duración, idiomas…) */}
+                            <div className="bg-card rounded-xl p-5 md:p-6 border border-hairline shadow-e1">
+                                <h3 className="text-foreground text-lg font-bold">La ficha</h3>
+                                <p className="text-muted-foreground text-sm mb-5">Lo que ve quien te quiere contratar. Rellena solo lo que quieras.</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {CAMPOS_FICHA.map(({ clave, etiqueta, ejemplo }) => (
+                                        <label key={clave} className="flex flex-col gap-1.5">
+                                            <span className="text-foreground text-sm font-medium">{etiqueta}</span>
+                                            <input
+                                                value={ficha[clave]}
+                                                inputMode={clave === 'musicos' ? 'numeric' : undefined}
+                                                onChange={(e) => { const v = clave === 'musicos' ? e.target.value.replace(/\D/g, '').slice(0, 2) : e.target.value.slice(0, 160); setFicha(f => ({ ...f, [clave]: v })); setHasChanges(true); }}
+                                                placeholder={ejemplo}
+                                                className={CAMPO}
+                                            />
+                                        </label>
+                                    ))}
+                                </div>
+                                <p className="mt-5 text-foreground text-sm font-medium">Ideal para</p>
+                                <div className="mt-2 flex flex-wrap gap-1.5">
+                                    {IDEAL_PARA.map(o => {
+                                        const on = ficha.idealPara.includes(o);
+                                        return (
+                                            <button key={o} type="button" aria-pressed={on}
+                                                onClick={() => { setFicha(f => ({ ...f, idealPara: on ? f.idealPara.filter(x => x !== o) : [...f.idealPara, o] })); setHasChanges(true); }}
+                                                className={cn('pulsable h-9 px-3.5 rounded-full text-[14px] font-semibold', on ? 'bg-foreground text-background' : 'bg-fill text-foreground')}>
+                                                {o}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Su web y sus redes */}
+                            <div className="bg-card rounded-xl p-5 md:p-6 border border-hairline shadow-e1">
+                                <h3 className="text-foreground text-lg font-bold">Tus enlaces</h3>
+                                <p className="text-muted-foreground text-sm mb-5">Tu web y tus redes. De momento no salen en tu ficha pública.</p>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {CAMPOS_REDES.map(({ clave, etiqueta, ejemplo }) => (
+                                        <label key={clave} className="flex flex-col gap-1.5">
+                                            <span className="text-foreground text-sm font-medium">{etiqueta}</span>
+                                            <input
+                                                type="url" inputMode="url" autoCapitalize="none" autoCorrect="off" spellCheck={false}
+                                                value={redes[clave] || ''}
+                                                onChange={(e) => { setRedes(r => ({ ...r, [clave]: e.target.value.slice(0, 300) })); setHasChanges(true); }}
+                                                placeholder={ejemplo}
+                                                className={CAMPO}
+                                            />
+                                        </label>
+                                    ))}
                                 </div>
                             </div>
                         </div>

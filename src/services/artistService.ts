@@ -196,6 +196,9 @@ export async function createArtist(userId: string, data: Partial<Artist>): Promi
         bio: data.bio || '',
         genres: data.genres || [],
         tags: data.tags || [],
+        // Lo que la persona aceptó de su web al crearse el perfil (onboarding)
+        ...(data.ficha && Object.keys(data.ficha).length ? { ficha: data.ficha } : {}),
+        ...(data.redes && Object.keys(data.redes).length ? { redes: data.redes } : {}),
         rating: 0,
         reviewCount: 0,
         gigsCompleted: 0,

@@ -11,6 +11,8 @@ import { storageService } from '../../services/storageService';
 import { createArtist } from '../../services/artistService';
 import { createProvider } from '../../services/providerService';
 import { createOrganizer } from '../../services/organizerService';
+import RellenarConWeb from '../../components/perfil/RellenarConWeb';
+import type { PropuestaPerfil } from '../../lib/leerPerfil';
 import type { UserMode } from '../../types';
 
 // La primera vez (sueño 1 + 4, skill equipo-activacion-y-onboarding): eliges quién eres,
@@ -48,8 +50,23 @@ export const Onboarding = () => {
     const [guardando, setGuardando] = useState(false);
     const [error, setError] = useState('');
     const inputFoto = useRef<HTMLInputElement>(null);
+    // Lo que el músico ha aceptado de su web o su Instagram (se guarda al entrar, con lo demás)
+    const [deLaWeb, setDeLaWeb] = useState<Pick<PropuestaPerfil, 'bio' | 'generos' | 'ficha' | 'redes'> | null>(null);
 
     const r = ROLES.find(x => x.id === rol);
+
+    const aplicarWeb = (p: PropuestaPerfil) => {
+        if (p.nombre) setNombre(p.nombre.slice(0, 80));
+        if (p.ciudad) setCiudad(p.ciudad.slice(0, 60));
+        const resto = { bio: p.bio, generos: p.generos, ficha: p.ficha, redes: p.redes };
+        setDeLaWeb(Object.values(resto).some(Boolean) ? resto : null);
+    };
+    const queDeLaWeb = deLaWeb ? [
+        deLaWeb.bio && 'tu bio',
+        deLaWeb.generos?.length && `${deLaWeb.generos.length === 1 ? 'un estilo' : `${deLaWeb.generos.length} estilos`}`,
+        deLaWeb.ficha && Object.keys(deLaWeb.ficha).length && 'tu ficha',
+        deLaWeb.redes && Object.keys(deLaWeb.redes).length && `${Object.keys(deLaWeb.redes).length === 1 ? 'un enlace' : `${Object.keys(deLaWeb.redes).length} enlaces`}`,
+    ].filter(Boolean).join(', ') : '';
 
     useEffect(() => {
         if (user?.displayName && !nombre) setNombre(user.displayName);
@@ -90,7 +107,13 @@ export const Onboarding = () => {
             if (completo) {
                 try {
                     if (r.id === 'musico') {
-                        await createArtist(user.uid, { artistName: name, city, profilePhoto: photoURL || undefined, tags: que.map(q => q.toLowerCase()), genres: [] });
+                        await createArtist(user.uid, {
+                            artistName: name, city, profilePhoto: photoURL || undefined, tags: que.map(q => q.toLowerCase()),
+                            genres: deLaWeb?.generos || [],
+                            ...(deLaWeb?.bio ? { bio: deLaWeb.bio } : {}),
+                            ...(deLaWeb?.ficha ? { ficha: deLaWeb.ficha } : {}),
+                            ...(deLaWeb?.redes ? { redes: deLaWeb.redes } : {}),
+                        });
                         await updateDoc(doc(db, 'artists', `artist_${user.uid}`), { isPublic: true, updatedAt: new Date().toISOString() });
                     } else if (r.id === 'tecnico' || r.id === 'tienda') {
                         await createProvider(user.uid, {
@@ -162,6 +185,10 @@ export const Onboarding = () => {
                                 {r.id === 'cliente' ? 'Para que los artistas sepan con quién hablan.' : 'Así te encuentran en Explorar.'}
                             </p>
 
+                            {r.id === 'musico' && (
+                                <RellenarConWeb className="mt-5" onAplicar={aplicarWeb} campos={['nombre', 'ciudad', 'bio', 'generos', 'ficha', 'redes']} actual={{ nombre, ciudad }} />
+                            )}
+
                             <button onClick={() => inputFoto.current?.click()} className="pulsable mt-5 mx-auto h-28 w-28 rounded-full overflow-hidden bg-fill flex flex-col items-center justify-center text-muted-foreground">
                                 {fotoUrl
                                     ? <img src={fotoUrl} alt="" className="h-full w-full object-cover" />
@@ -203,10 +230,17 @@ export const Onboarding = () => {
                                         </span>
                                         <span className="min-w-0">
                                             <span className="block text-[16px] font-bold line-clamp-1">{nombre || 'Tu nombre'}</span>
-                                            <span className="block text-[13px] text-muted-foreground line-clamp-1">{[que.slice(0, 2).join(' · ') || r.titulo, ciudad].filter(Boolean).join(' · ')}</span>
+                                            <span className="block text-[13px] text-muted-foreground line-clamp-1">{[que.slice(0, 2).join(' · ') || r.titulo, ciudad, r.id === 'musico' ? deLaWeb?.generos?.slice(0, 2).join(', ') : ''].filter(Boolean).join(' · ')}</span>
+                                            {r.id === 'musico' && deLaWeb?.bio && <span className="block mt-0.5 text-[13px] text-muted-foreground line-clamp-2">{deLaWeb.bio}</span>}
                                             <span className="mt-1 inline-block px-2 py-0.5 rounded-full bg-primary text-primary-foreground text-[11px] font-bold">Nuevo en Musikeeo</span>
                                         </span>
                                     </div>
+                                    {r.id === 'musico' && queDeLaWeb && (
+                                        <p className="mt-2 text-[13px] text-muted-foreground">
+                                            Al entrar se guarda también {queDeLaWeb}, de tu web.{' '}
+                                            <button type="button" onClick={() => setDeLaWeb(null)} className="underline underline-offset-2 active:opacity-60">Quitar</button>
+                                        </p>
+                                    )}
                                 </>
                             )}
 

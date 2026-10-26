@@ -2,6 +2,10 @@
 // POST /api/chat  { message: string, history: {role, content}[] }
 // POST /api/chat  { mode: 'filtros', message, categoria, opciones, hoy } → { filtros, explicacion } (Explorar)
 
+import { callKimiWithFallbacks, cleanApiKey, extraerJson } from './_kimi.js';
+
+export { extraerJson };
+
 const RODRIGO_SYSTEM_PROMPT = `
 IDENTIDAD PROFUNDA, FILOSOFÍA Y ESTÁNDARES DE RODRIGO
 
@@ -146,31 +150,8 @@ const MAX_MESSAGE_CHARS = 1000;
 const MAX_HISTORY_ITEMS = 20;
 const MAX_HISTORY_CHARS = 6000; // suma de contenidos en history
 
-// API de Kimi (Moonshot AI), compatible con el formato OpenAI.
-// Modelo y endpoint configurables desde Vercel sin tocar codigo.
-// Si un endpoint devuelve 401 se prueba el siguiente: una key de platform.moonshot.cn
-// solo vale en .cn y una de Kimi Code en api.kimi.com. KIMI_BASE_URL (si existe) va primero.
-const MODEL = process.env.KIMI_MODEL || 'kimi-k2-turbo-preview';
-const KIMI_ENDPOINTS: { baseUrl: string; model: string }[] = [
-  ...(process.env.KIMI_BASE_URL ? [{ baseUrl: process.env.KIMI_BASE_URL.replace(/\/$/, ''), model: MODEL }] : []),
-  { baseUrl: 'https://api.moonshot.ai/v1', model: MODEL },
-  { baseUrl: 'https://api.moonshot.cn/v1', model: MODEL },
-  { baseUrl: 'https://api.kimi.com/coding/v1', model: 'kimi-for-coding' },
-].filter((e, i, a) => a.findIndex((x) => x.baseUrl === e.baseUrl) === i);
+// Kimi (endpoints, modelos de respaldo y la clave): api/_kimi.ts, compartido con /api/leer-perfil.
 const MAX_TOKENS = 800;
-
-// Si el endpoint acepta la key pero el modelo da 404 ("Not found the model ... or
-// Permission denied"), la cuenta no tiene acceso a ese modelo: se prueban estos.
-const FALLBACK_MODELS = ['kimi-k2-0905-preview', 'kimi-k2-0711-preview', 'kimi-latest', 'moonshot-v1-8k'];
-
-// Endpoint y modelo que funcionaron la ultima vez (contenedor caliente): se prueban primero.
-let workingEndpoint = 0;
-let workingModel: string | null = null;
-
-// Limpia la key pegada en Vercel: espacios, comillas envolventes y prefijo "Bearer ".
-function cleanApiKey(raw: string): string {
-  return raw.trim().replace(/^["']|["']$/g, '').replace(/^Bearer\s+/i, '').trim();
-}
 
 const rateStore = new Map<string, { count: number; resetAt: number }>();
 
@@ -268,54 +249,6 @@ Los marcados (PRUEBA) son de ejemplo: si los recomiendas, avisa de que son de pr
   }
 }
 
-// Llama a Kimi probando endpoints (ante 401) y modelos (ante 404). Lo usan el chat y los filtros.
-async function callKimiWithFallbacks(apiKey: string, messages: { role: string; content: string }[], maxTokens: number, extra: Record<string, unknown> = {}) {
-  const callKimi = (baseUrl: string, model: string) =>
-    fetch(`${baseUrl}/chat/completions`, {
-      method: 'POST',
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ model, messages, max_tokens: maxTokens, ...extra }),
-    });
-
-  const order = [workingEndpoint, ...KIMI_ENDPOINTS.keys()].filter((v, i, a) => a.indexOf(v) === i);
-  const tried: string[] = [];
-  const triedModels: string[] = [];
-  let upstream: Response | null = null;
-  let endpoint = KIMI_ENDPOINTS[0];
-  let model = endpoint.model;
-
-  // 1) Endpoint: el primero que no rechace la key (401)
-  for (const idx of order) {
-    endpoint = KIMI_ENDPOINTS[idx];
-    model = workingModel ?? endpoint.model;
-    tried.push(endpoint.baseUrl);
-    upstream = await callKimi(endpoint.baseUrl, model);
-    if (upstream.status !== 401) {
-      workingEndpoint = idx;
-      break;
-    }
-    console.error('Kimi 401 en', endpoint.baseUrl);
-  }
-
-  // 2) Modelo: si da 404 (sin acceso al modelo), probar los de respaldo
-  if (upstream?.status === 404) {
-    triedModels.push(model);
-    for (const candidate of [endpoint.model, ...FALLBACK_MODELS]) {
-      if (triedModels.includes(candidate)) continue;
-      console.error('Kimi 404 con modelo', model, '-> probando', candidate);
-      model = candidate;
-      triedModels.push(model);
-      upstream = await callKimi(endpoint.baseUrl, model);
-      if (upstream.status !== 404) break;
-    }
-  }
-  if (upstream?.ok) workingModel = model;
-  return { upstream, endpoint, model, tried, triedModels };
-}
-
 // ─── Modo «filtros»: una frase de Explorar → filtros en JSON ────────────────
 // POST /api/chat { mode: 'filtros', message, categoria: {slug, nombre, tipo}, opciones, hoy }
 // → { filtros: {...}, explicacion }. Solo JSON, validado y limpio aquí.
@@ -382,14 +315,6 @@ export function limpiarFiltros(raw: any, tipo: TipoCat, opciones: Record<string,
   poner('texto', limpio(src.texto));
 
   return { filtros: f, explicacion: limpio(src.explicacion, 160) };
-}
-
-/** El primer objeto JSON de la respuesta (por si el modelo lo envuelve en ``` o en una frase) */
-export function extraerJson(content: string): any | null {
-  const sinBloques = content.replace(/```(?:json)?/gi, '');
-  const a = sinBloques.indexOf('{'), b = sinBloques.lastIndexOf('}');
-  if (a < 0 || b <= a) return null;
-  try { return JSON.parse(sinBloques.slice(a, b + 1)); } catch { return null; }
 }
 
 function promptFiltros(cat: { nombre: string; tipo: TipoCat }, opciones: Record<string, string[]>, hoy: string) {
