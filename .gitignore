@@ -31,3 +31,7 @@ tsc_output.txt
 *.njsproj
 *.sln
 *.sw?
+
+# Copias de trabajo de los agentes y cachés de Python
+.claude/worktrees/
+__pycache__/
