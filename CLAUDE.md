@@ -134,6 +134,7 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 ### 2026-10-26 (Dossier v3, mapa de musikeers y rellenar el perfil con tu web)
 
 **✅ Hecho:**
+- **Todo pasado a `main` el 26-oct** (avance directo de `claude/optimistic-davinci-cd20p2`, sin mezclas) y desplegado en musikeeo.com. **Pendientes de Víctor, ordenados:** `docs/PENDIENTES-VICTOR.md`.
 - **Dossier v3** (27 láminas, en Trabajos de Aura, `trb_11czx4n0nh7wq7`):
   - nuevas: «¿Por qué el mundo necesita Musikeeo?», con 10 problemas (a quién le pasa, un caso y qué hace Musikeeo, marcado «Ya» o «En camino»), y «Por qué sabemos que va a funcionar»;
   - las láminas de cifras salen de `docs/pitch/rentabilidad_consejo.py`; fuera los múltiplos de valoración.
@@ -174,7 +175,7 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 - Privacidad y condiciones al día con esa regla.
 
 **❌ Pendiente:**
-- **El dossier y la presentación siguen con las cifras viejas (4,47 M€).** Actualizarlos con `DECISIONES-COBRO.md` antes de enseñarlos a Manu.
+- ~~El dossier sigue con las cifras viejas~~: hecho el 26-oct (dossier v3).
 - **Antes del primer euro** (lista en `DECISIONES-COBRO.md`):
   - SL;
   - dictamen de un asesor laboral y fiscal;
