@@ -1,8 +1,17 @@
 import { forwardRef, useMemo } from 'react';
 import { cn } from '../../lib/utils';
-import { enEstrofas, enPalabras, formatear, formatearTrozos, llevaFormato, nombreMarca, type EstadoFormato, type Pedazo, type Linea, type Marca, type OpcionesNombre, type Trozo } from '../../lib/acordes';
+import { enEstrofas, enPalabras, formatear, formatearTrozos, llevaFormato, nombreAcorde, nombreMarca, type EstadoFormato, type Pedazo, type Linea, type Marca, type OpcionesNombre, type Trozo } from '../../lib/acordes';
 import type { AjustesCancion } from '../../types/cancionero';
 import { estiloSeccion, type EstiloSeccion } from './estilo';
+import { verAcorde } from '../../lib/verAcorde';
+
+// Tocar un acorde abre su diagrama (el nombre que se ve: con el tono y la cejilla de ahora)
+function alTocar(e: React.MouseEvent) {
+    const el = (e.target as HTMLElement).closest<HTMLElement>('[data-acorde]');
+    if (!el?.dataset.acorde) return;
+    e.stopPropagation();
+    verAcorde(el.dataset.acorde);
+}
 
 type Vista = AjustesCancion['vista'];
 
@@ -51,7 +60,7 @@ export const HojaCancion = forwardRef<HTMLDivElement, Props>(({ lineas, opciones
         );
     }), [estrofas, opciones]);
     return (
-        <div ref={ref} className={cn('text-foreground gap-x-10', className)} style={{ fontSize: tamano, columnCount: columnas }}>
+        <div ref={ref} onClick={alTocar} className={cn('text-foreground gap-x-10', className)} style={{ fontSize: tamano, columnCount: columnas }}>
             {contenido}
         </div>
     );
@@ -126,7 +135,7 @@ function LineaCancion({ linea: l, opciones, estilo }: { linea: Linea; opciones: 
 const claseMarca = (marca: Marca) => (marca.acorde ? 'font-bold' : 'font-medium text-muted-foreground');
 
 function NombreMarca({ marca, opciones }: { marca: Marca; opciones: OpcionesNombre }) {
-    return <span className={claseMarca(marca)}>{nombreMarca(marca, opciones)}</span>;
+    return <span className={claseMarca(marca)} data-acorde={marca.acorde ? nombreAcorde(marca.acorde, opciones) : undefined}>{nombreMarca(marca, opciones)}</span>;
 }
 
 // Sin acorde no hay renglón de acorde: si una línea partida queda sin acordes, no deja hueco.
@@ -138,7 +147,8 @@ function silaba(trozo: Trozo, opciones: OpcionesNombre, key: number, pedazos: Pe
     if (!trozo.marca) return <span key={key} className="whitespace-pre leading-[1.35]">{texto}</span>;
     return (
         <span key={key} className="inline-flex flex-col">
-            <span className={`whitespace-pre pr-[0.4em] text-[0.92em] leading-[1.25] ${claseMarca(trozo.marca)}`}>
+            <span className={`whitespace-pre pr-[0.4em] text-[0.92em] leading-[1.25] ${claseMarca(trozo.marca)}`}
+                data-acorde={trozo.marca.acorde ? nombreAcorde(trozo.marca.acorde, opciones) : undefined}>
                 {nombreMarca(trozo.marca, opciones)}
             </span>
             <span className="whitespace-pre leading-[1.35]">{texto}</span>

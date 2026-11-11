@@ -4,7 +4,8 @@ import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ChevronLeft, Loader2, Maximize, Pause, Play, Shrink, SlidersHorizontal, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { juntarAcordesYLetra, lineasDeLetra } from '../../lib/acordes';
+import { juntarAcordesYLetra, lineasDeLetra, nombreAcorde } from '../../lib/acordes';
+import { verAcordes } from '../../lib/verAcorde';
 import { useCancionero } from '../../hooks/useCancionero';
 import { useMusicaCancion } from '../../hooks/useMusicaCancion';
 import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
@@ -325,6 +326,10 @@ function Lector({ cancion }: { cancion: Cancion }) {
                     <div className="mt-3 flex items-center gap-2">
                         {dameElTono('h-9 pl-1.5 pr-3.5 text-[14px]')}
                         {botonClaqueta}
+                        {!sinAcordes && (
+                            <button onClick={() => verAcordes([...new Set(leida.acordes.map(a => nombreAcorde(a, opciones)))].slice(0, 30))}
+                                className="pulsable h-9 px-3.5 rounded-full bg-fill text-[14px] font-semibold text-foreground">Ver acordes</button>
+                        )}
                     </div>
                 )}
             </div>

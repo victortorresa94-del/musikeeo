@@ -60,6 +60,7 @@ const TermsOfService = lazy(() => import('./pages/legal/TermsOfService'));
 const CookiePolicy = lazy(() => import('./pages/legal/CookiePolicy'));
 
 const CookieBanner = lazy(() => import('./components/CookieBanner'));
+const VisorDiagramas = lazy(() => import('./components/cancionero/VisorDiagramas'));
 const Analytics = lazy(() => import('./components/Analytics'));
 const EmailVerificationBanner = lazy(() => import('./components/EmailVerificationBanner'));
 
@@ -299,6 +300,7 @@ function App() {
           </Suspense>
           <Suspense fallback={null}>
             <CookieBanner />
+            <VisorDiagramas />
           </Suspense>
           <Suspense fallback={null}>
             <Analytics />
