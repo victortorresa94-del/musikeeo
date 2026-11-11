@@ -86,6 +86,8 @@ git push origin main  # triggers Vercel auto-deploy
 - Requieren cuenta (RequireAuthCompleted → /login con `state.from` y vuelta tras entrar): /messages, /mapa, /market/create, /eventos/crear, /projects, /profile; /publicar requiere sesión (RequireAuthSimple)
 - /cancionero es público y funciona sin cuenta (ver «Cancionero»)
 
+> 📌 **TODO LO QUE HA PEDIDO VÍCTOR DEL CANCIONERO, con sus palabras y su estado → [`docs/PETICIONES-CANCIONERO.md`](docs/PETICIONES-CANCIONERO.md).** Léelo antes de tocar el Cancionero y actualízalo el mismo día: *«que no se escape ni una de mis peticiones»*.
+
 ## Cancionero (2026-10-24)
 - Letras y acordes que la persona PEGA de cualquier web (nunca los ponemos nosotros: derechos), limpios y sin anuncios. Privados: solo los ve su dueño
 - Rutas: /cancionero (Canciones · Repertorios, `?ver=repertorios`), /cancionero/nueva (`?repertorio=<id>` la mete en ese repertorio), /cancionero/:id (leer), /cancionero/:id/editar, /cancionero/repertorio/:id (ordenar arrastrando), /cancionero/repertorio/:id/tocar (FUERA de MainLayout: el bolo a pantalla completa)
