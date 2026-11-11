@@ -1,5 +1,5 @@
 import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
+import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Reorder, useDragControls } from 'framer-motion';
 import { toast } from 'sonner';
 import { ChevronLeft, GripVertical, Loader2, Play, Plus, Search, Share2, Trash2, X } from 'lucide-react';
@@ -18,6 +18,9 @@ import { minutos } from '../../lib/cantar';
 import { duracionDe, filtrar, mismoTitulo, mismoTonoSeguido, reparto, textoDuracion, tonoMostrado } from '../../lib/biblioteca';
 import type { Cancion, Repertorio as TipoRepertorio } from '../../types/cancionero';
 import { CompartirGrupo } from '../../components/cancionero/CompartirGrupo';
+import { SelectorVista, type Vista } from '../../components/cancionero/SelectorVista';
+import { CifradoEnDirecto, HojaSet } from '../../components/cancionero/VistaCifrado';
+import { temaDe } from '../../lib/compartir';
 import { NotasRicas } from '../../components/notas/NotasRicas';
 import { notasVacias } from '../../lib/notas';
 
@@ -34,7 +37,17 @@ export default function Repertorio() {
 
 function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     const navigate = useNavigate();
+    const [params, setParams] = useSearchParams();
     const { canciones, guardarRepertorio, borrarRepertorio } = useCancionero();
+    // La vista va en la dirección: al volver de una canción se queda donde estaba
+    const vista: Vista = params.get('vista') === 'cifrado' ? 'cifrado' : 'lista';
+    const directo = params.get('directo') === '1';
+    const cambiarParams = (cambio: Record<string, string | null>) => {
+        const p = new URLSearchParams(params);
+        for (const [k, v] of Object.entries(cambio)) { if (v) p.set(k, v); else p.delete(k); }
+        setParams(p, { replace: true });
+    };
+    const claveScroll = `musikeeo-cifrado-scroll:${repertorio.id}`;
     const [nombre, setNombre] = useState(repertorio.nombre);
     const [anadir, setAnadir] = useState(false);
     const [compartir, setCompartir] = useState(false);
@@ -54,6 +67,18 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     const tonos = temas.map(c => tonoMostrado(c, tonoDe(c)));
     const repetidos = mismoTonoSeguido(tonos);
     const voces = reparto(temas);
+    const temasCifrado = useMemo(() => (vista === 'cifrado' || directo ? temas.map(c => temaDe(c, false)) : []), [vista, directo, temas]);
+    const abrirDesdeCifrado = (i: number, enDirecto: boolean) => {
+        if (!enDirecto) { try { sessionStorage.setItem(claveScroll, String(window.scrollY)); } catch { /* */ } }
+        navigate(`/cancionero/${ids[i]}`);
+    };
+    // Al volver de una canción abierta desde el cifrado, la hoja vuelve a donde estaba
+    useEffect(() => {
+        if (vista !== 'cifrado' || directo) return;
+        let y = 0;
+        try { y = Number(sessionStorage.getItem(claveScroll)) || 0; sessionStorage.removeItem(claveScroll); } catch { /* */ }
+        if (y) requestAnimationFrame(() => window.scrollTo({ top: y }));
+    }, [vista, directo, claveScroll]);
 
     const cambiar = (cambio: Partial<TipoRepertorio>) => guardarRepertorio({ ...repertorio, ...cambio });
     const quitar = (id: string) => cambiar({ canciones: repertorio.canciones.filter(c => c !== id) });
@@ -85,6 +110,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                     className="bg-transparent text-muted-foreground focus:outline-none" />
                 <span>· {ids.length} {ids.length === 1 ? 'tema' : 'temas'}{duracion && ` · ${duracion}`}</span>
             </div>
+            <Hueco minutos={repertorio.hueco} segundos={ids.length ? segundos : 0} estimada={estimada} onCambio={h => cambiar({ hueco: h })} />
             {/* Quién canta cuántas: para repartir la voz */}
             {voces.length > 0 && (
                 <div className="mt-2 flex flex-wrap gap-1.5">
@@ -135,9 +161,21 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                 )}
             </section>
 
-            {ids.length > 0 ? (
+            {ids.length > 0 && (
+                <div className="mt-6 flex items-center gap-2">
+                    <SelectorVista valor={vista} onCambio={v => cambiarParams({ vista: v === 'lista' ? null : v })} opciones={['lista', 'cifrado']} />
+                    {vista === 'cifrado' && (
+                        <button onClick={() => cambiarParams({ directo: '1' })} className="pulsable ml-auto h-9 px-3.5 rounded-full bg-foreground text-background text-[14px] font-semibold">
+                            En directo
+                        </button>
+                    )}
+                </div>
+            )}
+            {ids.length > 0 && vista === 'cifrado' ? (
+                <HojaSet temas={temasCifrado} tamano={17} onAbrir={i => abrirDesdeCifrado(i, false)} className="mt-2" />
+            ) : ids.length > 0 ? (
                 <Reorder.Group axis="y" values={ids} onReorder={orden => guardarRepertorio({ ...repertorio, canciones: orden }, { esperar: true })}
-                    className="mt-6">
+                    className="mt-2">
                     {ids.map((id, i) => {
                         // El bloque del bolo sale encima de su primer tema
                         const bloque = bloqueDe(porId.get(id)!);
@@ -165,9 +203,48 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                 <Trash2 className="h-4 w-4" /> Borrar repertorio
             </button>
 
+            <CifradoEnDirecto abierta={directo} onCerrar={() => cambiarParams({ directo: null })} titulo={repertorio.nombre} temas={temasCifrado}
+                onAbrir={i => abrirDesdeCifrado(i, true)}
+                scrollInicial={(() => { try { return Number(sessionStorage.getItem(`${claveScroll}:directo`)) || 0; } catch { return 0; } })()}
+                onScroll={y => { try { sessionStorage.setItem(`${claveScroll}:directo`, String(Math.round(y))); } catch { /* */ } }} />
             <CompartirGrupo abierta={compartir} onCerrar={() => setCompartir(false)} repertorio={repertorio} canciones={canciones} />
             <ElegirCanciones abierto={anadir} onCerrar={() => setAnadir(false)} canciones={canciones}
                 elegidas={repertorio.canciones} onAlternar={alternar} repertorio={repertorio} />
+        </div>
+    );
+}
+
+// El hueco del bolo (60 min, 2 × 45…) frente a lo que dura el set: «te pasas 4 min»
+function Hueco({ minutos: hueco, segundos, estimada, onCambio }: { minutos?: number; segundos: number; estimada: boolean; onCambio: (m: number | undefined) => void }) {
+    const [texto, setTexto] = useState(hueco ? String(hueco) : '');
+    const [editando, setEditando] = useState(false);
+    const fijar = () => {
+        const n = parseInt(texto, 10);
+        onCambio(n > 0 && n <= 1440 ? n : undefined);
+        if (!(n > 0 && n <= 1440)) setTexto('');
+        setEditando(false);
+    };
+    const diferencia = hueco ? Math.round(segundos / 60 - hueco) : 0;
+    const aviso = !hueco || !segundos ? null
+        : Math.abs(diferencia) <= 1 ? { texto: 'Clavado al hueco', clase: cn(PASTEL.menta.fondo, PASTEL.menta.tinta) }
+        : diferencia > 0 ? { texto: `Te pasas ${estimada ? '≈ ' : ''}${diferencia} min`, clase: cn(PASTEL.melocoton.fondo, PASTEL.melocoton.tinta) }
+        : { texto: `Te sobran ${estimada ? '≈ ' : ''}${-diferencia} min`, clase: cn(PASTEL.cielo.fondo, PASTEL.cielo.tinta) };
+    return (
+        <div className="mt-2 flex flex-wrap items-center gap-2 text-[14px]">
+            {editando || !hueco ? (
+                <label className="h-8 pl-3 pr-1 rounded-full bg-fill flex items-center gap-1.5 text-muted-foreground">
+                    Hueco del bolo
+                    <input value={texto} autoFocus={editando} inputMode="numeric" onChange={e => setTexto(e.target.value.replace(/\D/g, '').slice(0, 4))}
+                        onBlur={fijar} onKeyDown={e => { if (e.key === 'Enter') (e.target as HTMLInputElement).blur(); }}
+                        placeholder="60" aria-label="Minutos del hueco del bolo"
+                        className="w-12 h-6 rounded-full bg-sheet px-2 text-center text-[14px] font-semibold text-foreground focus:outline-none" />
+                    <span className="pr-2">min</span>
+                </label>
+            ) : (
+                <button onClick={() => setEditando(true)} className="h-8 px-3 rounded-full bg-fill text-foreground font-semibold">Hueco {hueco} min</button>
+            )}
+            {aviso && <span className={cn('h-8 px-3 rounded-full font-semibold flex items-center', aviso.clase)}>{aviso.texto}</span>}
+            {aviso && estimada && <span className="text-[12.5px] text-muted-foreground">Algún tema sin duración: cuenta 3:30</span>}
         </div>
     );
 }

@@ -3,13 +3,15 @@ import { ChevronLeft, ChevronRight, List, Minus, Plus } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { descodificar, type Compartido, type TemaCompartido } from '../../lib/compartir';
 import { detectarTono, leerCancion, usaBemoles, type OpcionesNombre } from '../../lib/acordes';
-import { minutos } from '../../lib/cantar';
 import { textoDuracion } from '../../lib/biblioteca';
 import { notasVacias } from '../../lib/notas';
 import { HojaCancion } from '../../components/cancionero/HojaCancion';
 import { NotasRicas } from '../../components/notas/NotasRicas';
 import { Pildora } from '../../components/cancionero/Baldosas';
-import { ICONO, estiloBloque, pastelCanta, sinLoDeLasPildoras } from '../../components/cancionero/estilo';
+import { ICONO, estiloBloque, sinLoDeLasPildoras } from '../../components/cancionero/estilo';
+import { datosTemaConTono } from '../../components/cancionero/datosTema';
+import { SelectorVista, type Vista } from '../../components/cancionero/SelectorVista';
+import { HojaSet } from '../../components/cancionero/VistaCifrado';
 import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
 
 // La página del músico: el repertorio que le ha pasado su compañero, sin cuenta y sin la app
@@ -66,18 +68,11 @@ export default function Grupo() {
         : <Escenario datos={datos} inicio={abierta} onLista={() => setAbierta(null)} />;
 }
 
-function datosTema(t: TemaCompartido) {
-    const piezas: { texto: string; clase: string }[] = [];
-    if (t.k) piezas.push({ texto: `Tono ${t.k}`, clase: 'bg-foreground text-background' });
-    if (t.p) piezas.push({ texto: t.p, clase: 'bg-fill-strong text-foreground' });
-    if (t.c) { const p = pastelCanta(t.c); piezas.push({ texto: `Canta ${t.c}`, clase: cn(p.fondo, p.tinta) }); }
-    if (t.e && t.e.toLowerCase() !== t.g?.toLowerCase()) { const p = estiloBloque(t.e).pastel; piezas.push({ texto: t.e, clase: cn(p.fondo, p.tinta) }); }
-    if (t.b) piezas.push({ texto: `${t.b} bpm`, clase: 'bg-fill-strong text-foreground' });
-    if (t.d) piezas.push({ texto: minutos(t.d), clase: 'bg-fill-strong text-foreground' });
-    return piezas;
-}
-
 function ListaSet({ datos, onAbrir }: { datos: Compartido; onAbrir: (i: number) => void }) {
+    // Cifrado: el set entero seguido (con letra, solo si viene); se recuerda en el móvil
+    const [vista, setVista] = useState<Vista>(() => { try { return localStorage.getItem('musikeeo-grupo-vista') === 'cifrado' ? 'cifrado' : 'lista'; } catch { return 'lista'; } });
+    const [tamano] = useState(() => leerTamano(false));
+    const cambiarVista = (v: Vista) => { setVista(v); try { localStorage.setItem('musikeeo-grupo-vista', v); } catch { /* */ } };
     const conocida = datos.c.reduce((s, t) => s + (t.d ?? 0), 0);
     const faltan = datos.c.filter(t => !t.d).length;
     const total = conocida + faltan * DURACION_MEDIA;
@@ -103,7 +98,9 @@ function ListaSet({ datos, onAbrir }: { datos: Compartido; onAbrir: (i: number) 
                     </section>
                 )}
 
-                <ol className="mt-5">
+                <SelectorVista className="mt-5" valor={vista} onCambio={cambiarVista} opciones={['lista', 'cifrado']} />
+                {vista === 'cifrado' && <HojaSet className="mt-2" temas={datos.c} tamano={Math.min(tamano, 22)} onAbrir={onAbrir} />}
+                <ol className={cn('mt-3', vista === 'cifrado' && 'hidden')}>
                     {datos.c.map((t, i) => {
                         const nuevoBloque = t.g && (i === 0 || t.g !== datos.c[i - 1].g) ? t.g : null;
                         const estilo = nuevoBloque ? estiloBloque(nuevoBloque) : null;
@@ -121,7 +118,7 @@ function ListaSet({ datos, onAbrir }: { datos: Compartido; onAbrir: (i: number) 
                                         <span className="block text-[17px] font-semibold leading-snug">{t.t}</span>
                                         {(t.v || t.a) && <span className="block truncate text-[13px] text-muted-foreground">{[t.v && `Versión ${t.v}`, t.a].filter(Boolean).join(' · ')}</span>}
                                         <span className="mt-1.5 flex flex-wrap gap-1">
-                                            {datosTema(t).map(p => <span key={p.texto} className={cn('h-6 px-2 rounded-full text-[12px] font-semibold flex items-center', p.clase)}>{p.texto}</span>)}
+                                            {datosTemaConTono(t).map(p => <span key={p.texto} className={cn('h-6 px-2 rounded-full text-[12px] font-semibold flex items-center', p.clase)}>{p.texto}</span>)}
                                         </span>
                                     </span>
                                     <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-muted-foreground" />
@@ -273,7 +270,7 @@ function Diapositiva({ tema, n, total, tamano, delta, soloAcordes, siguiente, on
             {(tema.v || tema.a) && <p className="text-[14px] text-muted-foreground">{[tema.v && `Versión ${tema.v}`, tema.a].filter(Boolean).join(' · ')}</p>}
             <div className="mt-2 flex flex-wrap gap-1.5">
                 {tema.g && estiloG && <Pildora texto={tema.g} pastel={estiloG.pastel} icono={estiloG.icono} />}
-                {datosTema(tema).map(p => <span key={p.texto} className={cn('h-8 px-3 rounded-full text-[13px] font-semibold flex items-center', p.clase)}>{p.texto}</span>)}
+                {datosTemaConTono(tema).map(p => <span key={p.texto} className={cn('h-8 px-3 rounded-full text-[13px] font-semibold flex items-center', p.clase)}>{p.texto}</span>)}
                 {delta !== 0 && <span className="h-8 px-3 rounded-full text-[13px] font-semibold flex items-center bg-pastel-mantequilla text-pastel-mantequilla-ink">Transportado {delta > 0 ? '+' : ''}{delta}</span>}
             </div>
             {!notasVacias(tema.o) && <NotasRicas json={tema.o} className="mt-3 text-[16px]" />}

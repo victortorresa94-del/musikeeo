@@ -57,10 +57,11 @@ service cloud.firestore {
       match /repertorios/{repertorioId} {
         allow read, delete: if isOwner(userId);
         allow create, update: if isOwner(userId)
-          && request.resource.data.keys().hasOnly(['nombre', 'fecha', 'canciones', 'creadaEn', 'actualizadaEn', 'notas'])
+          && request.resource.data.keys().hasOnly(['nombre', 'fecha', 'canciones', 'creadaEn', 'actualizadaEn', 'notas', 'hueco'])
           && request.resource.data.nombre is string && request.resource.data.nombre.size() <= 120
           && request.resource.data.canciones is list && request.resource.data.canciones.size() <= 300
-          && (!('notas' in request.resource.data) || (request.resource.data.notas is string && request.resource.data.notas.size() <= 30000));
+          && (!('notas' in request.resource.data) || (request.resource.data.notas is string && request.resource.data.notas.size() <= 30000))
+          && (!('hueco' in request.resource.data) || (request.resource.data.hueco is number && request.resource.data.hueco > 0 && request.resource.data.hueco <= 1440));
       }
     }
 

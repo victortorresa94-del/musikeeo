@@ -41,11 +41,22 @@ export interface Compartido {
 export function soloCifrado(texto: string): string {
     const leida = leerCancion(texto);
     const salida: string[] = [];
-    let anterior = '', veces = 1;
+    let filas: string[] = [];
+    // Filas de acordes seguidas: si se repite un dibujo de 1 a 4 filas, va una vez con «(xN)»
     const cerrar = () => {
-        if (!anterior) return;
-        salida.push(veces > 1 ? `${anterior}  (x${veces})` : anterior);
-        anterior = ''; veces = 1;
+        if (!filas.length) return;
+        let mejor: { p: number; n: number } | null = null;
+        for (let p = 1; p <= 4 && p * 2 <= filas.length; p++) {
+            if (filas.length % p) continue;
+            const n = filas.length / p;
+            if (filas.every((f, i) => f === filas[i % p])) { mejor = { p, n }; break; }
+        }
+        if (mejor) {
+            const dibujo = filas.slice(0, mejor.p);
+            dibujo[dibujo.length - 1] += `  (x${mejor.n})`;
+            salida.push(...dibujo);
+        } else salida.push(...filas);
+        filas = [];
     };
     const fila = (l: Linea): string | null => {
         if (l.tipo === 'acordes') return [l.etiqueta, ...l.marcas.map(m => m.texto)].filter(Boolean).join('  ');
@@ -54,19 +65,14 @@ export function soloCifrado(texto: string): string {
     };
     for (const l of leida.lineas) {
         const f = fila(l);
-        if (f !== null) {
-            if (!f.trim()) continue;
-            if (f === anterior) { veces++; continue; }
-            cerrar();
-            anterior = f;
-            continue;
-        }
+        if (f !== null) { if (f.trim()) filas.push(f); continue; }
+        if (l.tipo === 'letra') continue;   // la letra no va (y no corta el dibujo)
+        if (l.tipo === 'vacia' && filas.length) continue;   // entre estrofas iguales tampoco
         cerrar();
         if (l.tipo === 'seccion') salida.push(`[${l.texto}]`);
         else if (l.tipo === 'nota') salida.push(l.aviso ? `> ${l.texto}` : `{c: ${l.texto}}`);
         else if (l.tipo === 'tab') salida.push(l.texto);
         else if (l.tipo === 'vacia') { if (salida.length && salida[salida.length - 1] !== '') salida.push(''); }
-        // la letra no va
     }
     cerrar();
     return salida.join('\n').trim();
@@ -78,6 +84,24 @@ const sinCejillaEscrita = (texto: string) => texto
     .filter(l => !/^\s*\{\s*capo\s*:/i.test(l) && !/^\s*(?:capo|cejilla)\s*:?\s*\d{1,2}\s*$/i.test(l))
     .join('\n');
 
+// Cada canción, tal como la ve quien no tiene la canción: su ficha y su cifrado (o letra)
+export function temaDe(c: Cancion, conLetra: boolean): TemaCompartido {
+    const leida = leerCancion(c.texto);
+    const s = (leida.meta.cejilla ?? 0) + c.ajustes.semitonos;
+    const canta = c.ficha?.canta?.trim() || etiquetasDe(c).find(e => /^canta /i.test(e.texto))?.texto.replace(/^canta /i, '');
+    const texto = sinCejillaEscrita(conLetra ? c.texto : soloCifrado(c.texto));
+    const quitarVacios = (o: Partial<TemaCompartido>) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined && v !== null && v !== '' && v !== 0));
+    return {
+        t: c.titulo,
+        x: texto,
+        ...quitarVacios({
+            a: c.artista, s, k: tonoMostrado(c, tonoDe(c)) ?? undefined, p: c.ficha?.capo, c: canta, e: c.ficha?.estilo,
+            b: c.bpm, d: c.duracion, o: notasVacias(c.notas) ? undefined : c.notas, g: bloqueDe(c) ?? undefined, v: c.version,
+            m: c.ajustes.cejilla,
+        }),
+    };
+}
+
 export function paquete(repertorio: Repertorio, canciones: Cancion[], conLetra: boolean): Compartido {
     const porId = new Map(canciones.map(c => [c.id, c]));
     const temas = repertorio.canciones.map(id => porId.get(id)).filter((c): c is Cancion => !!c);
@@ -87,22 +111,7 @@ export function paquete(repertorio: Repertorio, canciones: Cancion[], conLetra: 
         ...(repertorio.fecha ? { f: repertorio.fecha } : {}),
         ...(!notasVacias(repertorio.notas) ? { h: repertorio.notas } : {}),
         ...(conLetra ? { l: 1 as const } : {}),
-        c: temas.map(c => {
-            const leida = leerCancion(c.texto);
-            const s = (leida.meta.cejilla ?? 0) + c.ajustes.semitonos;
-            const canta = c.ficha?.canta?.trim() || etiquetasDe(c).find(e => /^canta /i.test(e.texto))?.texto.replace(/^canta /i, '');
-            const texto = sinCejillaEscrita(conLetra ? c.texto : soloCifrado(c.texto));
-            const t: TemaCompartido = { t: c.titulo, x: texto };
-            const quitarVacios = (o: Partial<TemaCompartido>) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined && v !== null && v !== '' && v !== 0));
-            return {
-                ...t,
-                ...quitarVacios({
-                    a: c.artista, s, k: tonoMostrado(c, tonoDe(c)) ?? undefined, p: c.ficha?.capo, c: canta, e: c.ficha?.estilo,
-                    b: c.bpm, d: c.duracion, o: notasVacias(c.notas) ? undefined : c.notas, g: bloqueDe(c) ?? undefined, v: c.version,
-                    m: c.ajustes.cejilla,
-                }),
-            };
-        }),
+        c: temas.map(c => temaDe(c, conLetra)),
     };
 }
 

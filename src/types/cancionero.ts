@@ -64,6 +64,7 @@ export interface Repertorio {
     fecha: string;              // AAAA-MM-DD
     canciones: string[];        // ids de Cancion, en orden
     notas?: string;             // la hoja del bolo, con formato (JSON del editor, en texto)
+    hueco?: number;             // minutos que dura el hueco del bolo (para ver si te pasas)
     creadaEn: string;
     actualizadaEn: string;
     sincronizada?: boolean;

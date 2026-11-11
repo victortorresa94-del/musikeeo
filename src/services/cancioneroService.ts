@@ -187,7 +187,7 @@ export const almacenCanciones = crearAlmacen<Cancion>('musikeeo-cancionero-v1', 
 
 export const almacenRepertorios = crearAlmacen<Repertorio>('musikeeo-repertorios-v1', 'repertorios', r => ({
     nombre: r.nombre, fecha: r.fecha, canciones: r.canciones, creadaEn: r.creadaEn, actualizadaEn: r.actualizadaEn,
-    ...siHay({ notas: r.notas }),
+    ...siHay({ notas: r.notas, hueco: r.hueco }),
 }));
 
 export const AJUSTES_INICIALES: AjustesCancion = {
