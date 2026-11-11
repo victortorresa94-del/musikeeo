@@ -4,6 +4,7 @@ import { Check, ChevronRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { etiquetasTema } from './estilo';
 import { Portada } from './Portada';
+import { minutos } from '../../lib/cantar';
 import type { Cancion } from '../../types/cancionero';
 
 // Una canción en una lista: portada, título, artista y grupos, sus píldoras (quién canta,
@@ -35,6 +36,9 @@ export function FilaCancion({ cancion, tono, elegida, onElegir, href, derecha, c
                     </span>
                 )}
             </span>
+            {cancion.duracion ? (
+                <span className="shrink-0 text-[13px] text-muted-foreground tabular-nums" aria-label={`Dura ${minutos(cancion.duracion)}`}>{minutos(cancion.duracion)}</span>
+            ) : null}
             {tono && (
                 <span className="shrink-0 min-w-[36px] h-7 px-2.5 rounded-full bg-fill-strong text-[13px] font-bold text-foreground flex items-center justify-center">{tono}</span>
             )}

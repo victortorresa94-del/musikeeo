@@ -71,6 +71,7 @@ function Formulario({ existente }: { existente?: Cancion }) {
     const [pestana, setPestana] = useState<'texto' | 'previa'>('texto');
     const [ficha, setFicha] = useState<FichaCancion>(existente?.ficha ?? {});
     const [bpm, setBpm] = useState<number | undefined>(existente?.bpm);
+    const [duracion, setDuracion] = useState<number | undefined>(existente?.duracion);
     const [leyendo, setLeyendo] = useState(false);
     const archivoRef = useRef<HTMLInputElement>(null);
     // Desde «Editar ficha» se baja directo a la ficha
@@ -131,10 +132,10 @@ function Formulario({ existente }: { existente?: Cancion }) {
         const datos = { titulo: titulo.trim(), artista: artista.trim(), texto: limpiarTexto(texto) };
         const fichaLimpia = Object.keys(ficha).length ? ficha : undefined;
         if (existente) {
-            guardar({ ...existente, ...datos, titulo: datos.titulo || existente.titulo, ficha: fichaLimpia, bpm });
+            guardar({ ...existente, ...datos, titulo: datos.titulo || existente.titulo, ficha: fichaLimpia, bpm, duracion });
             navigate(`/cancionero/${existente.id}`, { replace: true });
         } else {
-            const c = guardar({ ...crear(datos), ficha: fichaLimpia, bpm });
+            const c = guardar({ ...crear(datos), ficha: fichaLimpia, bpm, duracion });
             if (repertorio) {
                 guardarRepertorio({ ...repertorio, canciones: [...repertorio.canciones, c.id] });
                 toast.success(`Añadida a «${repertorio.nombre}»`);
@@ -230,7 +231,7 @@ function Formulario({ existente }: { existente?: Cancion }) {
             </div>
 
             <div className="mt-5 md:max-w-xl">
-                <EditorFicha ficha={ficha} onCambio={setFicha} canciones={canciones} tonoDetectado={tonoTexto} bpm={bpm} onBpm={setBpm} />
+                <EditorFicha ficha={ficha} onCambio={setFicha} canciones={canciones} tonoDetectado={tonoTexto} bpm={bpm} onBpm={setBpm} duracion={duracion} onDuracion={setDuracion} />
             </div>
 
             {/* Ordenador: al final. Móvil: fija encima de la barra de navegación */}

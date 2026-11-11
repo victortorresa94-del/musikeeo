@@ -149,6 +149,16 @@ export function esperaDeIntro(cancion: { duracion?: number; bpm?: number; ajuste
     return Math.max(0, cancion.ajustes.intro ?? INTRO);
 }
 
+// «3:42», «3.42», «3'42», «4» (minutos) → segundos; null si no se entiende (o fuera de 0:10…30:00)
+export function leerDuracion(texto: string): number | null {
+    const t = texto.trim();
+    const m = /^(\d{1,2})(?:\s*[:.,'’´]\s*(\d{1,2}))?$/.exec(t);
+    if (!m) return null;
+    const s = Number(m[1]) * 60 + (m[2] ? Number(m[2].padEnd(2, '0')) : 0);
+    if (m[2] && Number(m[2].padEnd(2, '0')) >= 60) return null;
+    return s >= 10 && s <= 1800 ? s : null;
+}
+
 // 222 → «3:42»
 export function minutos(segundos: number): string {
     const s = Math.max(0, Math.round(segundos));

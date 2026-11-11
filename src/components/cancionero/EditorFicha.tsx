@@ -2,6 +2,7 @@ import { useMemo, useState } from 'react';
 import { Plus } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { ENERGIAS, ESTADOS, opcionesDe } from '../../lib/biblioteca';
+import { leerDuracion, minutos } from '../../lib/cantar';
 import type { Cancion, EstadoCancion, FichaCancion } from '../../types/cancionero';
 import { ICONO } from './estilo';
 
@@ -49,13 +50,15 @@ function Campo({ titulo, children }: { titulo: string; children: React.ReactNode
 
 // La ficha del tema: lo que hace falta para elegirlo para un repertorio (tono, quién canta,
 // grupo, estilo, energía, estado) y la claqueta. Lo que ya usas en otras canciones sale para tocar
-export function EditorFicha({ ficha, onCambio, canciones, tonoDetectado, bpm, onBpm }: {
+export function EditorFicha({ ficha, onCambio, canciones, tonoDetectado, bpm, onBpm, duracion, onDuracion }: {
     ficha: FichaCancion;
     onCambio: (f: FichaCancion) => void;
     canciones: Cancion[];
     tonoDetectado?: string | null;
     bpm?: number;
     onBpm: (n: number | undefined) => void;
+    duracion?: number;
+    onDuracion: (s: number | undefined) => void;
 }) {
     const valores = useMemo(() => ({
         canta: opcionesDe(canciones, 'canta', () => null).map(o => o.valor),
@@ -66,6 +69,9 @@ export function EditorFicha({ ficha, onCambio, canciones, tonoDetectado, bpm, on
     // El tempo se escribe a gusto y se da por bueno al salir (si no, «1» de «120» lo borraba)
     const [tempo, setTempo] = useState(bpm ? String(bpm) : '');
     const fijarTempo = () => { const n = parseInt(tempo, 10); onBpm(n >= 30 && n <= 260 ? n : undefined); if (!(n >= 30 && n <= 260)) setTempo(''); };
+    // La duración de TU versión, en minutos:segundos («3:42»)
+    const [dura, setDura] = useState(duracion ? minutos(duracion) : '');
+    const fijarDura = () => { const s = leerDuracion(dura); onDuracion(s ?? undefined); setDura(s ? minutos(s) : ''); };
     const unico = (actual: string | undefined, v: string) => (actual === v ? undefined : v);
 
     return (
@@ -127,11 +133,19 @@ export function EditorFicha({ ficha, onCambio, canciones, tonoDetectado, bpm, on
                     ))}
                 </div>
             </Campo>
-            <Campo titulo="Tempo (BPM)">
-                <input value={tempo} inputMode="numeric" onChange={e => setTempo(e.target.value.replace(/\D/g, '').slice(0, 3))} onBlur={fijarTempo}
-                    placeholder="Para la claqueta y el modo al ritmo" aria-label="Tempo en BPM"
-                    className="w-full h-11 rounded-xl bg-sheet px-3 text-[16px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10" />
-            </Campo>
+            <div className="grid grid-cols-2 gap-3">
+                <Campo titulo="Tempo (BPM)">
+                    <input value={tempo} inputMode="numeric" onChange={e => setTempo(e.target.value.replace(/\D/g, '').slice(0, 3))} onBlur={fijarTempo}
+                        placeholder="120" aria-label="Tempo en BPM"
+                        className="w-full h-11 rounded-xl bg-sheet px-3 text-[16px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10" />
+                </Campo>
+                <Campo titulo="Duración">
+                    <input value={dura} inputMode="decimal" onChange={e => setDura(e.target.value.slice(0, 6))} onBlur={fijarDura}
+                        placeholder="3:42" aria-label="Duración en minutos y segundos"
+                        className="w-full h-11 rounded-xl bg-sheet px-3 text-[16px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10" />
+                </Campo>
+            </div>
+            <p className="-mt-2 text-[12.5px] text-muted-foreground">Para la claqueta, el modo auto de Tocar y lo que dura el repertorio. Si la tocáis más corta, pon la duración de tu versión.</p>
         </div>
     );
 }

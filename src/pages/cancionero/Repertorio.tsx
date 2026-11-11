@@ -14,6 +14,7 @@ import { useFiltrosGuardados } from '../../hooks/useFiltrosGuardados';
 import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
 import { ImportarCanciones } from '../../components/cancionero/ImportarCanciones';
 import { ResultadosCatalogo } from '../../components/cancionero/ResultadosCatalogo';
+import { minutos } from '../../lib/cantar';
 import { duracionDe, filtrar, mismoTitulo, mismoTonoSeguido, reparto, textoDuracion, tonoMostrado } from '../../lib/biblioteca';
 import type { Cancion, Repertorio as TipoRepertorio } from '../../types/cancionero';
 
@@ -166,6 +167,7 @@ function Fila({ id, n, cancion, tono, bloque, mismoTono, onQuitar, onTocar }: {
                     )}
                 </span>
             </Link>
+            {cancion.duracion ? <span className="shrink-0 pr-1 text-[13px] text-muted-foreground tabular-nums">{minutos(cancion.duracion)}</span> : null}
             {tono && (
                 <span title={mismoTono ? 'Mismo tono que el tema de antes' : undefined}
                     className={cn('shrink-0 min-w-[36px] h-7 px-2.5 rounded-full text-[13px] font-bold flex items-center justify-center',
