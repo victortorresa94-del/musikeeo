@@ -64,6 +64,7 @@ export function EditorFicha({ ficha, onCambio, canciones, tonoDetectado, bpm, on
         canta: opcionesDe(canciones, 'canta', () => null).map(o => o.valor),
         proyectos: opcionesDe(canciones, 'proyectos', () => null).map(o => o.valor),
         estilos: opcionesDe(canciones, 'estilos', () => null).map(o => o.valor),
+        etiquetas: opcionesDe(canciones, 'etiquetas', () => null).map(o => o.valor),
     }), [canciones]);
     const poner = (cambio: Partial<FichaCancion>) => onCambio({ ...ficha, ...cambio });
     // El tempo se escribe a gusto y se da por bueno al salir (si no, «1» de «120» lo borraba)
@@ -116,6 +117,19 @@ export function EditorFicha({ ficha, onCambio, canciones, tonoDetectado, bpm, on
             <Campo titulo="Estilo">
                 <Elegir valores={valores.estilos} elegidos={ficha.estilo ? [ficha.estilo] : []} nuevo="Estilo"
                     onAlternar={v => poner({ estilo: unico(ficha.estilo, v) })} />
+            </Campo>
+            <Campo titulo="Etiquetas">
+                <Elegir valores={valores.etiquetas} elegidos={ficha.etiquetas ?? []} nuevo="Nueva etiqueta" multiple
+                    onAlternar={v => {
+                        const l = ficha.etiquetas ?? [];
+                        const sin = l.filter(x => x !== v);
+                        poner({ etiquetas: l.includes(v) ? (sin.length ? sin : undefined) : [...l, v].slice(0, 30) });
+                    }} />
+            </Campo>
+            <Campo titulo="Enlace a sus acordes">
+                <input value={ficha.enlace ?? ''} onChange={e => poner({ enlace: e.target.value.trim().slice(0, 500) || undefined })}
+                    placeholder="https://acordes.lacuerda.net/…" aria-label="Enlace a sus acordes" inputMode="url" autoCapitalize="none"
+                    className="w-full h-11 rounded-xl bg-sheet px-3 text-[16px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10" />
             </Campo>
             <Campo titulo="Energía">
                 <div className="grid grid-cols-4 gap-1.5">

@@ -32,7 +32,7 @@ service cloud.firestore {
         allow create, update: if isOwner(userId)
           && request.resource.data.keys().hasOnly(['titulo', 'artista', 'texto', 'ajustes', 'creadaEn', 'actualizadaEn', 'portada', 'duracion', 'muestra', 'bpm', 'ficha', 'version', 'original', 'notas'])
           && (!('ficha' in request.resource.data) || (request.resource.data.ficha is map
-            && request.resource.data.ficha.keys().hasOnly(['tono', 'capo', 'canta', 'proyectos', 'estilo', 'energia', 'estado'])))
+            && request.resource.data.ficha.keys().hasOnly(['tono', 'capo', 'canta', 'proyectos', 'estilo', 'energia', 'estado', 'etiquetas', 'enlace'])))
           && request.resource.data.titulo is string && request.resource.data.titulo.size() <= 120
           && request.resource.data.artista is string && request.resource.data.artista.size() <= 120
           && request.resource.data.texto is string && request.resource.data.texto.size() <= 50000

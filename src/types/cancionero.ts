@@ -29,6 +29,8 @@ export interface FichaCancion {
     estilo?: string;            // «Rumba», «Pop-rock», «Latino»…
     energia?: 1 | 2 | 3 | 4;    // 1 suave · 2 media · 3 media-alta · 4 arriba
     estado?: EstadoCancion;
+    etiquetas?: string[];       // categorías propias, libres: «Bodas», «Tardeo», «Flamencas»…
+    enlace?: string;            // su página de acordes (LaCuerda u otra web)
 }
 
 // Privada: solo la ve su dueño (en su móvil, y en su cuenta si tiene)

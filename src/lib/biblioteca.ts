@@ -19,13 +19,14 @@ export interface Filtros {
     tonos: string[];
     energias: string[];
     estados: string[];
+    etiquetas: string[];
 }
 export type CampoFiltro = keyof Filtros;
-export const SIN_FILTROS: Filtros = { proyectos: [], canta: [], estilos: [], tonos: [], energias: [], estados: [] };
+export const SIN_FILTROS: Filtros = { proyectos: [], canta: [], estilos: [], tonos: [], energias: [], estados: [], etiquetas: [] };
 export const hayFiltros = (f: Filtros) => Object.values(f).some(v => v.length > 0);
 
 export const NOMBRE_CAMPO: Record<CampoFiltro, string> = {
-    proyectos: 'Grupo', canta: 'Canta', estilos: 'Estilo', tonos: 'Tono', energias: 'Energía', estados: 'Estado',
+    proyectos: 'Grupo', canta: 'Canta', estilos: 'Estilo', tonos: 'Tono', energias: 'Energía', estados: 'Estado', etiquetas: 'Etiquetas',
 };
 
 // Lo que vale una canción en cada campo (puede tener varios grupos)
@@ -38,6 +39,7 @@ export function valoresDe(c: Cancion, campo: CampoFiltro, tono: string | null): 
         case 'tonos': return tono ? [tono] : [];
         case 'energias': return f.energia ? [String(f.energia)] : [];
         case 'estados': return f.estado ? [f.estado] : [];
+        case 'etiquetas': return (f.etiquetas ?? []).filter(Boolean);
     }
 }
 
@@ -85,9 +87,9 @@ export function opcionesDe(canciones: Cancion[], campo: CampoFiltro, tonoDe: (c:
     return lista.sort((a, b) => b.n - a.n || a.valor.localeCompare(b.valor, 'es'));
 }
 
-export type Agrupar = 'nada' | 'tonos' | 'canta' | 'estilos' | 'proyectos' | 'energias' | 'estados';
+export type Agrupar = 'nada' | 'tonos' | 'canta' | 'estilos' | 'proyectos' | 'energias' | 'estados' | 'etiquetas';
 export const NOMBRE_AGRUPAR: Record<Agrupar, string> = {
-    nada: 'Sin agrupar', tonos: 'Por tono', canta: 'Por quién canta', estilos: 'Por estilo', proyectos: 'Por grupo', energias: 'Por energía', estados: 'Por estado',
+    nada: 'Sin agrupar', tonos: 'Por tono', canta: 'Por quién canta', estilos: 'Por estilo', proyectos: 'Por grupo', energias: 'Por energía', estados: 'Por estado', etiquetas: 'Por etiqueta',
 };
 
 export interface Grupo { titulo: string; canciones: Cancion[] }
@@ -136,7 +138,7 @@ export function mismoTonoSeguido(tonos: (string | null)[]): Set<number> {
 // En un texto ChordPro: {tono: Bm} o {key: Bm}, {capo: 2 · formas de Am}, {canta: Mafe},
 // {grupo: Lady Jarana, Cataleya} (o {proyecto: …}), {estilo: Rumba}, {energia: 3}, {estado: lista}.
 // Salen del texto y van a la ficha
-const DIRECTIVA = /^\s*\{\s*(tono|key|capo|cejilla|canta|voz|grupo|grupos|proyecto|proyectos|estilo|energia|energía|estado)\s*:\s*([^}]*)\}\s*$/i;
+const DIRECTIVA = /^\s*\{\s*(tono|key|capo|cejilla|canta|voz|grupo|grupos|proyecto|proyectos|estilo|energia|energía|estado|etiquetas?|apto(?: para)?|enlace|url|link)\s*:\s*([^}]*)\}\s*$/i;
 
 function leerEstado(v: string): EstadoCancion | undefined {
     const t = norm(v);
@@ -163,6 +165,8 @@ export function sacarFicha(texto: string): { ficha?: FichaCancion; texto: string
         else if (k === 'estilo') ficha.estilo = v.slice(0, 40);
         else if (k.startsWith('energ')) { const n = Math.round(+v.replace(/[^\d]/g, '')); if (n >= 1 && n <= 4) ficha.energia = n as 1 | 2 | 3 | 4; }
         else if (k === 'estado') ficha.estado = leerEstado(v);
+        else if (k.startsWith('etiqueta') || k.startsWith('apto')) ficha.etiquetas = v.split(/\s*[,·]\s*/).filter(Boolean).slice(0, 20).map(x => x.slice(0, 40));
+        else if (/^https?:\/\//i.test(v)) ficha.enlace = v.slice(0, 500);
         return false;
     });
     return hay ? { ficha, texto: resto.join('\n').replace(/^\n+/, '') } : { texto };
@@ -174,6 +178,12 @@ export function unirFichas(antes: FichaCancion | undefined, nueva: FichaCancion 
     const unida: FichaCancion = { ...antes };
     for (const [k, v] of Object.entries(nueva) as [keyof FichaCancion, FichaCancion[keyof FichaCancion]][]) {
         if (v === undefined || v === '' || (Array.isArray(v) && !v.length)) continue;
+        // Las etiquetas se suman a las que ya tenía (no se reemplazan)
+        if (k === 'etiquetas' && Array.isArray(v)) {
+            const ya = unida.etiquetas ?? [];
+            unida.etiquetas = [...ya, ...v.filter(x => !ya.some(y => norm(y) === norm(x)))].slice(0, 30);
+            continue;
+        }
         (unida as Record<string, unknown>)[k] = v;
     }
     return unida;

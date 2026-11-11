@@ -19,7 +19,7 @@ import { esperaDeIntro, velocidadAlDesplazar } from '../../lib/cantar';
 import { buscarEncaje, columnasPosibles, type Encaje } from '../../components/cancionero/medir';
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
 import { cn as unir } from '../../lib/utils';
-import { pastelCanta, estiloBloque } from '../../components/cancionero/estilo';
+import { pastelCanta, pastelDe, estiloBloque } from '../../components/cancionero/estilo';
 import { ENERGIAS, ESTADOS } from '../../lib/biblioteca';
 import { NotasRicas } from '../../components/notas/NotasRicas';
 import { notasVacias } from '../../lib/notas';
@@ -448,10 +448,14 @@ function FichaLectura({ cancion }: { cancion: Cancion }) {
     for (const g of f.proyectos ?? []) piezas.push({ texto: g, clase: 'bg-fill-strong text-foreground' });
     if (f.estilo) { const p = estiloBloque(f.estilo).pastel; piezas.push({ texto: f.estilo, clase: unir(p.fondo, p.tinta) }); }
     if (f.energia) piezas.push({ texto: ENERGIAS[f.energia], clase: 'bg-fill-strong text-foreground' });
+    for (const e of f.etiquetas ?? []) { const p = pastelDe(`etiqueta:${e.toLowerCase()}`); piezas.push({ texto: e, clase: unir(p.fondo, p.tinta) }); }
     if (f.estado && f.estado !== 'lista') piezas.push({ texto: ESTADOS[f.estado], clase: 'bg-pastel-mantequilla text-pastel-mantequilla-ink' });
     return (
         <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
             {piezas.map(p => <span key={p.texto} className={unir('h-7 px-2.5 rounded-full text-[13px] font-semibold flex items-center', p.clase)}>{p.texto}</span>)}
+            {f.enlace && /^https?:\/\//i.test(f.enlace) && (
+                <a href={f.enlace} target="_blank" rel="noopener noreferrer" className="h-7 px-2.5 rounded-full bg-fill-strong text-[13px] font-semibold text-foreground flex items-center active:opacity-60">Sus acordes ↗</a>
+            )}
             <Link to={`/cancionero/${cancion.id}/editar#ficha`} className="h-7 px-2.5 rounded-full border border-hairline-strong text-[13px] font-semibold text-foreground flex items-center active:opacity-60">
                 {piezas.length ? 'Editar ficha' : '+ Ficha: tono, quién canta…'}
             </Link>
