@@ -13,6 +13,9 @@ import { ResultadosCatalogo } from '../../components/cancionero/ResultadosCatalo
 import { norm, pedirPantallaCompleta, tonoDe } from '../../components/cancionero/utilidades';
 import type { Cancion } from '../../types/cancionero';
 import { FilaCancion } from '../../components/cancionero/FilaCancion';
+import { SelectorVista } from '../../components/cancionero/SelectorVista';
+import { CifradoEnDirecto, HojaSet } from '../../components/cancionero/VistaCifrado';
+import { temaDe } from '../../lib/compartir';
 import { BarraFiltros } from '../../components/cancionero/Filtros';
 import { useFiltrosGuardados } from '../../hooks/useFiltrosGuardados';
 import { AnadirARepertorio } from '../../components/cancionero/AnadirARepertorio';
@@ -65,6 +68,26 @@ export default function Cancionero() {
         const base = agrupar === 'nada' ? filtradas : [...filtradas].sort((a, b) => a.titulo.localeCompare(b.titulo, 'es'));
         return agruparCanciones(base, agrupar, tonoDeCancion);
     }, [filtradas, agrupar, tonoDeCancion]);
+    // Vista Cifrado: las canciones filtradas, en el orden de la lista, seguidas con sus acordes
+    const vista = params.get('vista') === 'cifrado' ? 'cifrado' : 'lista';
+    const directo = params.get('directo') === '1';
+    const ordenadas = useMemo(() => grupos.flatMap(g => g.canciones).filter((c, i, l) => l.indexOf(c) === i), [grupos]);
+    const temasCifrado = useMemo(() => (vista === 'cifrado' || directo ? ordenadas.map(c => temaDe(c, false)) : []), [vista, directo, ordenadas]);
+    const cambiarParam = (k: string, v: string | null) => {
+        const p = new URLSearchParams(params);
+        if (v) p.set(k, v); else p.delete(k);
+        setParams(p, { replace: true });
+    };
+    const abrirDesdeCifrado = (i: number) => {
+        try { sessionStorage.setItem('musikeeo-cifrado-scroll:biblioteca', String(window.scrollY)); } catch { /* */ }
+        navigate(`/cancionero/${ordenadas[i].id}`);
+    };
+    useEffect(() => {
+        if (vista !== 'cifrado' || directo) return;
+        let y = 0;
+        try { y = Number(sessionStorage.getItem('musikeeo-cifrado-scroll:biblioteca')) || 0; sessionStorage.removeItem('musikeeo-cifrado-scroll:biblioteca'); } catch { /* */ }
+        if (y) requestAnimationFrame(() => window.scrollTo({ top: y }));
+    }, [vista, directo]);
     const alternarElegida = (id: string) => setElegidas(e => (e ?? []).includes(id) ? (e ?? []).filter(x => x !== id) : [...(e ?? []), id]);
     // El bolo que viene (el más cercano desde hoy) o, si no hay, el último
     const hoy = new Date().toLocaleDateString('sv-SE');
@@ -228,8 +251,18 @@ export default function Cancionero() {
                             {!elegidas && !hayFiltros(filtros) && (
                                 <div className="mb-3 flex flex-wrap gap-2 empty:hidden"><PonerPortadas /><PonerTempo /></div>
                             )}
+                            {!elegidas && filtradas.length > 0 && (
+                                <div className="mb-3 flex items-center gap-2">
+                                    <SelectorVista valor={vista} onCambio={v => cambiarParam('vista', v === 'lista' ? null : v)} opciones={['lista', 'cifrado']} />
+                                    {vista === 'cifrado' && (
+                                        <button onClick={() => cambiarParam('directo', '1')} className="pulsable ml-auto h-9 px-3.5 rounded-full bg-foreground text-background text-[14px] font-semibold">En directo</button>
+                                    )}
+                                </div>
+                            )}
                             {filtradas.length === 0 ? (
                                 <p className="rounded-2xl bg-fill px-4 py-6 text-center text-[15px] text-muted-foreground">Ninguna canción con estos filtros.</p>
+                            ) : vista === 'cifrado' && !elegidas ? (
+                                <HojaSet temas={temasCifrado} tamano={17} onAbrir={abrirDesdeCifrado} />
                             ) : grupos.map(g => (
                                 <section key={g.titulo || 'todas'} className={g.titulo ? 'mt-4 first:mt-0' : ''}>
                                     {g.titulo && (
@@ -248,6 +281,8 @@ export default function Cancionero() {
                 </>
             )}
 
+            <CifradoEnDirecto abierta={directo} onCerrar={() => cambiarParam('directo', null)} titulo="Tus canciones" temas={temasCifrado}
+                onAbrir={i => navigate(`/cancionero/${ordenadas[i].id}`)} />
             {listo && (
                 <p className="mt-6 flex items-start gap-2 text-[13px] text-muted-foreground">
                     {conCuenta && nube === 'nube' ? <Cloud className="h-4 w-4 shrink-0 mt-px" /> : <Smartphone className="h-4 w-4 shrink-0 mt-px" />}
