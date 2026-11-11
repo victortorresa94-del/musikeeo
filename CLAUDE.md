@@ -138,6 +138,20 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 
 ## SESSION LOG
 
+### 2026-11-11 (Cancionero: editor con formato y enlace para los músicos, a `main`)
+
+**✅ Hecho (segunda sesión del día, en paralelo a la de importar/ajustes/teleprompter):**
+- **Letra con formato ligero** (lo respeta `lib/acordes.ts`): `**negrita**`, `==resaltado==` (también partidos por un acorde: `formatearTrozos`), `# Título` (sale como sección) y `> Aviso` (baldosa melocotón, `nota` con `aviso`). Botones encima del texto en el editor (`components/cancionero/FormatoLetra.tsx`). La letra sigue siendo texto plano: tono, cejilla, «que quepa», Tocar y sin red, igual.
+- **Notas con formato** (Tiptap 3, `components/notas/EditorNotas.tsx`, extensiones `Aviso` y `Tinta` en `extensiones.ts`): títulos, negrita/cursiva/subrayado/tachado, resaltado y color de texto con los pastel, listas, casillas, avisos, enlaces, deshacer; «/» abre el menú de bloques; en el móvil la barra va encima del teclado (visualViewport, en un portal). Se guarda el JSON del documento en texto: `Cancion.notas` (Notas de la canción) y `Repertorio.notas` (Hoja del bolo). Se pintan con `NotasRicas` (React, sin innerHTML, sin cargar Tiptap). Salen en el lector, el escenario, Tocar y el enlace del grupo. Reglas: `notas` string ≤ 30 000 en canciones y repertorios. El editor (~135 kB gz) va en su trozo y entra en el precache.
+- **Compartir con el grupo** (`lib/compartir.ts`, `components/cancionero/CompartirGrupo.tsx`, página `/grupo` en `pages/cancionero/Grupo.tsx`, fuera de MainLayout, sin cookies ni Rodrigo): el repertorio entero comprimido (fflate, base64url) tras `#` → no viaja al servidor, funciona sin reglas desplegadas y sin red una vez abierto. Cifrado por defecto (`soloCifrado`: partes, avisos y acordes; filas iguales seguidas → «(x2)»); letra si se elige. Lleva `s` = semitonos para que suene en su tono. Página oscura: lista (tono, capo, canta, estilo, bpm, duración, total, hoja del bolo) y escenario deslizando con tono ± y tamaño ± (se recuerda), pedal/flechas.
+- Probado con Playwright en iPhone 13 simulado (editor, «/», lector, Tocar, enlace en otro navegador sin datos) y sin red (enlace y editor abren). Sin errores en consola.
+
+**❌ Pendiente:**
+- Víctor: desplegar reglas (ahora también `notas`).
+- No se pudo añadir el repo de Aura a la sesión (permiso denegado): el editor está hecho desde cero con la misma base (Tiptap 3).
+- Enlace corto que se actualice solo (documento público `compartidos/{id}`: get público, list solo del dueño) cuando haya reglas; hoy hay que reenviar el enlace si cambia el set.
+- Con formato en la letra, el acorde se coloca sobre el texto sin marcas: puede correrse un par de letras. No se soñó en Aura Studio (prisa por el bolo del 14).
+
 ### 2026-11-11 (Cancionero: ficha, biblioteca con filtros y repertorios, a `main`)
 
 **✅ Hecho:**
