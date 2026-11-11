@@ -9,6 +9,7 @@ import { datosDelPegado, detectarTono, leerCancion, limpiarTexto, nombreTono, re
 import { LIMITE_TEXTO } from '../../services/cancioneroService';
 import { HojaCancion } from '../../components/cancionero/HojaCancion';
 import { Segmentado } from '../../components/cancionero/Controles';
+import { AcordesRapidos } from '../../components/cancionero/AcordesRapidos';
 import { EditorFicha } from '../../components/cancionero/EditorFicha';
 import { ICONO, PASTEL, type Pastel } from '../../components/cancionero/estilo';
 import type { Cancion, FichaCancion } from '../../types/cancionero';
@@ -203,7 +204,7 @@ function Formulario({ existente }: { existente?: Cancion }) {
             </div>
 
             <div className="mt-3 grid gap-4 md:grid-cols-2">
-                <div className={cn(pestana !== 'texto' && 'hidden md:block')}>
+                <div className={cn('min-w-0', pestana !== 'texto' && 'hidden md:block')}>
                     <textarea
                         value={texto}
                         onChange={e => setTexto(e.target.value)}
@@ -216,7 +217,7 @@ function Formulario({ existente }: { existente?: Cancion }) {
                         wrap="off"
                         spellCheck={false}
                         aria-label="Letra y acordes"
-                        className="w-full min-h-[50dvh] md:min-h-[60vh] rounded-2xl bg-fill p-4 font-mono text-[14px] leading-[1.45] text-foreground placeholder:text-muted-foreground resize-y focus:outline-none focus:ring-2 focus:ring-foreground/10"
+                        className={cn('w-full md:min-h-[60vh] rounded-2xl', texto.trim() ? 'min-h-[50dvh]' : 'min-h-[28dvh]', 'bg-fill p-4 font-mono text-[14px] leading-[1.45] text-foreground placeholder:text-muted-foreground resize-y focus:outline-none focus:ring-2 focus:ring-foreground/10')}
                     />
                     <p className={cn('mt-1.5 text-[13px]', demasiado ? 'text-destructive' : 'text-muted-foreground')}>
                         {demasiado
@@ -226,6 +227,7 @@ function Formulario({ existente }: { existente?: Cancion }) {
                                 : !texto.trim() && titulo.trim() ? 'Puedes guardarla ya solo con el título y su ficha, y pegar la letra luego.'
                                 : texto.trim() ? 'Aún no vemos acordes: tienen que ir en su línea, encima de la letra, o entre corchetes como [Am].' : 'Lo que no sea la canción (anuncios, botones) lo puedes borrar aquí.'}
                     </p>
+                    <AcordesRapidos texto={texto} onCambio={setTexto} />
                 </div>
                 <div className={cn(pestana !== 'previa' && 'hidden md:block')}>{previa}</div>
             </div>
