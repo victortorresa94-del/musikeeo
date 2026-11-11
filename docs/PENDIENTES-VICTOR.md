@@ -54,4 +54,6 @@
 12. **El Firebase de pruebas `musikeeo-pruebas`** y sus secretos (`docs/AGENTES.md` §3), para que los agentes prueben sin tocar nada tuyo.
 13. **Las claves `LLM_API_KEY` (Kimi) y `ZEP_API_KEY` (gratis)** como variables del entorno de Claude: para los comentarios con IA de los agentes y para lanzar MiroFish.
 
+14. **Decidir «Rodrigo con cerebro»** para el lanzamiento: plan en `docs/PLAN-RODRIGO-CEREBRO.md` (si va en el plan Pro y si se conecta Spotify).
+
 Nunca pegues claves en el chat: van directas a Vercel o a la configuración del entorno.
