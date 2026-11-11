@@ -9,6 +9,8 @@ import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { leerCancion, lineasDeLetra, separarCanciones } from '../../lib/acordes';
 import { leerSetlist, type CancionImportada } from '../../lib/setlist';
+import { leerCopia, mismoTitulo, sacarFicha, unirFichas, type Copia } from '../../lib/biblioteca';
+import { claveTitulo } from '../../lib/buscarCanciones';
 import { norm } from './utilidades';
 import type { Cancion } from '../../types/cancionero';
 
@@ -28,12 +30,20 @@ const ACEPTA = [
     '.docx', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     '.pdf', 'application/pdf',
     '.txt', 'text/plain', '.cho', '.chopro', '.chordpro', '.crd', '.pro',
+    '.json', 'application/json',
 ].join(',');
 
 // Con qué canción del cancionero se junta lo que llega: si ya está, se reutiliza; una ficha
 // del setlist (sin artista) o una chuleta de acordes sin letra se rellena con la canción entera
-function emparejar(canciones: Cancion[], t: CancionImportada): { ya?: Cancion; rellena?: Cancion } {
-    const c = canciones.find(c => norm(c.titulo) === norm(t.titulo) && (t.ficha || !c.artista || !t.artista || norm(c.artista) === norm(t.artista)));
+// Si el título exacto no está, vale el mismo sin lo de entre paréntesis («Hace calor (Mucho
+// mejor)» = «Hace calor»), pero solo si es inequívoco: dos versiones no se juntan en una
+function emparejar(canciones: Cancion[], t: CancionImportada, unica: boolean): { ya?: Cancion; rellena?: Cancion } {
+    const casa = (c: Cancion) => t.ficha || !c.artista || !t.artista || norm(c.artista) === norm(t.artista);
+    let c = canciones.find(c => norm(c.titulo) === norm(t.titulo) && casa(c));
+    if (!c && unica) {
+        const parecidas = canciones.filter(x => mismoTitulo(x.titulo, t.titulo) && casa(x));
+        if (parecidas.length === 1) c = parecidas[0];
+    }
     if (!c) return {};
     if (!t.ficha && c.texto.trim() !== t.texto.trim() && (!c.artista || (letra(t.texto) >= 8 && letra(c.texto) < 8))) return { rellena: c };
     return { ya: c };
@@ -42,18 +52,39 @@ function emparejar(canciones: Cancion[], t: CancionImportada): { ya?: Cancion; r
 // Un repertorio entero de golpe: el setlist (una ficha por tema) o canciones enteras, pegado o
 // en archivos (Word, PDF, .txt, ChordPro). Lo que ya está en el cancionero no se duplica: una
 // ficha se une a la canción del mismo título (que ya trae sus acordes).
-export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onCerrar: () => void }) {
+// Con repertorioId (desde un repertorio) todo lo importado entra al final de ese repertorio.
+// Una copia del cancionero (.json) trae canciones con su ficha y sus repertorios
+export function ImportarCanciones({ abierto, onCerrar, repertorioId }: { abierto: boolean; onCerrar: () => void; repertorioId?: string }) {
     const navigate = useNavigate();
-    const { canciones, repertorios, nuevaCancion, guardarVarias, crearRepertorio } = useCancionero();
+    const { canciones, repertorios, nuevaCancion, guardarVarias, crearRepertorio, guardarRepertorio } = useCancionero();
+    const destino = repertorios.find(r => r.id === repertorioId);
     const [texto, setTexto] = useState('');
     const [conRepertorio, setConRepertorio] = useState(true);
     const [nombre, setNombre] = useState('');
     const [leyendo, setLeyendo] = useState(false);
     const archivoRef = useRef<HTMLInputElement>(null);
 
-    const encontradas: CancionImportada[] = useMemo(() => leerSetlist(texto) ?? separarCanciones(texto), [texto]);
+    const copia: Copia | null = useMemo(() => leerCopia(texto), [texto]);
+    const encontradas: CancionImportada[] = useMemo(() => {
+        if (copia) return copia.canciones.map(c => ({
+            // Una chuleta (acordes y notas, sin letra) cuenta como ficha: nunca pisa la letra que ya tengas
+            titulo: c.titulo.slice(0, 120), artista: (c.artista ?? '').slice(0, 120), texto: c.texto ?? '', ficha: letra(c.texto ?? '') < 8,
+            datos: c.ficha, bpm: c.bpm, duracion: c.duracion, portada: c.portada,
+        }));
+        // {tono: …} {canta: …} {grupo: …}: a la ficha del tema
+        return (leerSetlist(texto) ?? separarCanciones(texto)).map(t => {
+            const { ficha, texto: resto } = sacarFicha(t.texto);
+            return ficha ? { ...t, texto: resto, datos: ficha } : t;
+        });
+    }, [texto, copia]);
     const esSetlist = encontradas.some(t => t.ficha);
-    const parejas = useMemo(() => encontradas.map(t => emparejar(canciones, t)), [encontradas, canciones]);
+    const parejas = useMemo(() => {
+        const veces = new Map<string, number>();
+        for (const t of encontradas) { const k = claveTitulo(t.titulo); veces.set(k, (veces.get(k) ?? 0) + 1); }
+        return encontradas.map(t => emparejar(canciones, t, veces.get(claveTitulo(t.titulo)) === 1));
+    }, [encontradas, canciones]);
+    // Una biblioteca entera no es un repertorio: con muchas, el interruptor empieza apagado
+    const muchas = encontradas.length > 40;
 
     const pegar = async () => {
         try {
@@ -92,6 +123,7 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
         if (textos.length) {
             setTexto(t => [t.trim(), ...textos].filter(Boolean).join('\n---\n'));
             if (!nombre && archivos.length === 1) setNombre(archivos[0].name.replace(/\.[^.]+$/, '').replace(/[_-]+/g, ' ').trim());
+            if (textos.join('\n').split('\n---\n').length > 40) setConRepertorio(false);
         }
         if (fallos.length === 1) toast.error(`No se pudo abrir ${fallos[0]}`);
         else if (fallos.length > 1) toast.error(`No se pudieron abrir ${fallos.length} archivos`, { description: fallos.join('\n') });
@@ -99,37 +131,74 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
 
     const importar = () => {
         const corta = (t: CancionImportada) => t.ficha || t.texto.split('\n').length <= 25;
-        let nuevas = 0, rellenas = 0;
+        let nuevas = 0, rellenas = 0, conFicha = 0;
         const aGuardar: Cancion[] = [];
         let ids: string[];
+        // Lo que se sabe de la grabación solo rellena lo que falta
+        const extra = (c: Cancion, t: CancionImportada): Cancion => ({
+            ...c, ficha: unirFichas(c.ficha, t.datos),
+            bpm: c.bpm ?? t.bpm, duracion: c.duracion ?? t.duracion, portada: c.portada ?? t.portada,
+        });
         try {
             ids = encontradas.map((t, i) => {
                 const { ya, rellena } = parejas[i];
-                if (ya) return ya.id;
+                if (ya) {
+                    // Ya estaba: se queda su letra, y la ficha que llega se suma a la suya
+                    const sinTexto = !ya.texto.trim() && t.texto.trim();
+                    if (t.datos || sinTexto || t.bpm || t.duracion) {
+                        conFicha++;
+                        aGuardar.push(extra(sinTexto ? { ...ya, texto: t.texto, artista: ya.artista || t.artista } : ya, t));
+                    }
+                    return ya.id;
+                }
                 if (rellena) {
                     rellenas++;
-                    aGuardar.push({ ...rellena, artista: t.artista || rellena.artista, texto: t.texto, ajustes: { ...rellena.ajustes, ajustar: corta(t) } });
+                    aGuardar.push(extra({ ...rellena, artista: t.artista || rellena.artista, texto: t.texto, ajustes: { ...rellena.ajustes, ajustar: corta(t) } }, t));
                     return rellena.id;
                 }
                 nuevas++;
                 // Lo corto (fichas y chuletas de acordes) se ve entero y grande: «que quepa»
-                const nueva = nuevaCancion(t, corta(t) ? { ajustar: true } : {});
+                const nueva = extra(nuevaCancion(t, corta(t) ? { ajustar: true } : {}), t);
                 aGuardar.push(nueva);
                 return nueva.id;
             });
-            guardarVarias(aGuardar);
+            // La misma canción dos veces en lo importado: se guarda una vez (la última versión)
+            const unicas = [...new Map(aGuardar.map(c => [c.id, c])).values()];
+            guardarVarias(unicas);
         } catch (e) {
             toast.error(`No se pudo importar: ${e instanceof Error ? e.message : 'error desconocido'}`);
             return;
         }
         setTexto('');
         onCerrar();
-        const aviso = [nuevas && `${nuevas} nuevas`, rellenas && `${rellenas} fichas completadas`].filter(Boolean).join(' y ') || 'Ya las tenías';
+        const aviso = [nuevas && `${nuevas} nuevas`, rellenas && `${rellenas} fichas completadas`, conFicha && `${conFicha} actualizadas`].filter(Boolean).join(', ') || 'Ya las tenías';
+        // Desde un repertorio: todo al final de ese, sin repetir
+        if (destino) {
+            const faltan = [...new Set(ids)].filter(id => !destino.canciones.includes(id));
+            guardarRepertorio({ ...destino, canciones: [...destino.canciones, ...faltan] });
+            toast.success(`${aviso} · ${faltan.length} en «${destino.nombre}»`);
+            return;
+        }
+        // Una copia trae sus repertorios: el que ya existe con ese nombre se pone al día
+        if (copia?.repertorios.length) {
+            for (const r of copia.repertorios) {
+                const lista = [...new Set(r.canciones.map(i => ids[i]).filter(Boolean))];
+                const ya = repertorios.find(x => norm(x.nombre) === norm(r.nombre));
+                if (ya) guardarRepertorio({ ...ya, canciones: lista, fecha: r.fecha || ya.fecha });
+                else {
+                    const nuevo = crearRepertorio(r.nombre, lista);
+                    if (r.fecha && r.fecha !== nuevo.fecha) guardarRepertorio({ ...nuevo, fecha: r.fecha });
+                }
+            }
+            toast.success(`${aviso} · ${copia.repertorios.length} ${copia.repertorios.length === 1 ? 'repertorio' : 'repertorios'}`);
+            navigate('/cancionero?ver=repertorios');
+            return;
+        }
         // Si ya hay un repertorio con estas mismas canciones (se rellenaron sus fichas), se abre ese
         const mismo = repertorios.find(r => r.canciones.length === ids.length && r.canciones.every((c, i) => c === ids[i]));
         // Si solo se completaron fichas, no hace falta otro repertorio: se abre el que ya las tiene
         const contiene = nuevas ? undefined : repertorios.find(r => ids.every(id => r.canciones.includes(id)));
-        if (conRepertorio && ids.length > 1) {
+        if (conRepertorio && !muchas && ids.length > 1) {
             const r = mismo ?? contiene ?? crearRepertorio(nombre.trim() || `Bolo ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`, ids);
             toast.success(aviso);
             navigate(`/cancionero/repertorio/${r.id}`);
@@ -183,12 +252,18 @@ export function ImportarCanciones({ abierto, onCerrar }: { abierto: boolean; onC
                                                 <span className="flex-1 min-w-0 truncate text-[15px] text-foreground">
                                                     {t.titulo}{t.artista && <span className="text-muted-foreground"> · {t.artista}</span>}
                                                 </span>
-                                                {parejas[i]?.ya ? <span className="text-[12px] text-muted-foreground">ya la tienes</span>
+                                                {parejas[i]?.ya ? <span className="text-[12px] text-muted-foreground">{t.datos ? 'suma la ficha' : 'ya la tienes'}</span>
                                                     : parejas[i]?.rellena && <span className="text-[12px] text-muted-foreground">rellena la ficha</span>}
                                             </li>
                                         ))}
                                     </ol>
-                                    {encontradas.length > 1 && (
+                                    {(copia || destino) && (
+                                        <p className="mt-3 px-1 text-[14px] text-muted-foreground">
+                                            {destino ? `Entran al final de «${destino.nombre}».`
+                                                : `Copia del cancionero${copia!.repertorios.length ? ` con ${copia!.repertorios.length} ${copia!.repertorios.length === 1 ? 'repertorio' : 'repertorios'}` : ''}. Lo que ya tienes no se duplica: se le suma la ficha.`}
+                                        </p>
+                                    )}
+                                    {!copia && !destino && encontradas.length > 1 && !muchas && (
                                         <div className="mt-3 rounded-2xl bg-fill px-4 py-3">
                                             <div className="flex items-center justify-between gap-3">
                                                 <p className="text-[15px] font-semibold text-foreground">Hacer un repertorio con ellas</p>

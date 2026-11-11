@@ -182,7 +182,7 @@ const siHay = <T extends object>(o: T) => Object.fromEntries(Object.entries(o).f
 
 export const almacenCanciones = crearAlmacen<Cancion>('musikeeo-cancionero-v1', 'canciones', c => ({
     titulo: c.titulo, artista: c.artista, texto: c.texto, ajustes: c.ajustes, creadaEn: c.creadaEn, actualizadaEn: c.actualizadaEn,
-    ...siHay({ portada: c.portada, duracion: c.duracion, muestra: c.muestra, bpm: c.bpm }),
+    ...siHay({ portada: c.portada, duracion: c.duracion, muestra: c.muestra, bpm: c.bpm, ficha: c.ficha && siHay(c.ficha) }),
 }));
 
 export const almacenRepertorios = crearAlmacen<Repertorio>('musikeeo-repertorios-v1', 'repertorios', r => ({

@@ -17,6 +17,9 @@ import { AjustesCantante, BotonClaqueta, DameElTono } from '../../components/can
 import { esperaDeIntro, velocidadAlDesplazar } from '../../lib/cantar';
 import { buscarEncaje, columnasPosibles, type Encaje } from '../../components/cancionero/medir';
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
+import { cn as unir } from '../../lib/utils';
+import { pastelCanta, estiloBloque } from '../../components/cancionero/estilo';
+import { ENERGIAS, ESTADOS } from '../../lib/biblioteca';
 
 export default function LeerCancion() {
     const { id } = useParams();
@@ -305,6 +308,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                         </p>
                     </div>
                 </div>
+                <FichaLectura cancion={cancion} />
                 {/* Lo de quien canta, antes de entrar: el tono y la cuenta */}
                 {(!sinAcordes || !!cancion.bpm) && (
                     <div className="mt-3 flex items-center gap-2">
@@ -416,6 +420,27 @@ function Lector({ cancion }: { cancion: Cancion }) {
                 onBorrar={borrarCancion}
                 duracion={duracion} cantante={<AjustesCantante cancion={cancion} ajustes={ajustes} leida={leida} />}
             />
+        </div>
+    );
+}
+
+// La ficha del tema a la vista (tono, capo, quién canta, grupo, estilo…), y para editarla
+function FichaLectura({ cancion }: { cancion: Cancion }) {
+    const f = cancion.ficha ?? {};
+    const piezas: { texto: string; clase: string }[] = [];
+    if (f.tono) piezas.push({ texto: `Tono ${f.tono}`, clase: 'bg-foreground text-background' });
+    if (f.capo) piezas.push({ texto: f.capo, clase: 'bg-fill-strong text-foreground' });
+    if (f.canta) { const p = pastelCanta(f.canta); piezas.push({ texto: `Canta ${f.canta}`, clase: unir(p.fondo, p.tinta) }); }
+    for (const g of f.proyectos ?? []) piezas.push({ texto: g, clase: 'bg-fill-strong text-foreground' });
+    if (f.estilo) { const p = estiloBloque(f.estilo).pastel; piezas.push({ texto: f.estilo, clase: unir(p.fondo, p.tinta) }); }
+    if (f.energia) piezas.push({ texto: ENERGIAS[f.energia], clase: 'bg-fill-strong text-foreground' });
+    if (f.estado && f.estado !== 'lista') piezas.push({ texto: ESTADOS[f.estado], clase: 'bg-pastel-mantequilla text-pastel-mantequilla-ink' });
+    return (
+        <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+            {piezas.map(p => <span key={p.texto} className={unir('h-7 px-2.5 rounded-full text-[13px] font-semibold flex items-center', p.clase)}>{p.texto}</span>)}
+            <Link to={`/cancionero/${cancion.id}/editar#ficha`} className="h-7 px-2.5 rounded-full border border-hairline-strong text-[13px] font-semibold text-foreground flex items-center active:opacity-60">
+                {piezas.length ? 'Editar ficha' : '+ Ficha: tono, quién canta…'}
+            </Link>
         </div>
     );
 }

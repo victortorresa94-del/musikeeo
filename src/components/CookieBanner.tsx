@@ -1,10 +1,13 @@
-import { Link } from 'react-router-dom';
+import { Link, useLocation } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Cookie } from 'lucide-react';
 import { useCookieConsent } from '../lib/cookieConsent';
 
 export default function CookieBanner() {
     const { hasDecided, accept, reject } = useCookieConsent();
+    // En el bolo (Tocar, a pantalla completa) no puede tapar la canción: se pregunta en otra pantalla
+    const { pathname } = useLocation();
+    if (/^\/cancionero\/repertorio\/[^/]+\/tocar/.test(pathname)) return null;
 
     return (
         <AnimatePresence>

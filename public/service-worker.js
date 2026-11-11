@@ -1,7 +1,7 @@
 // La app tiene que abrir sin cobertura (el cancionero se usa en el bolo, en sótanos y salas):
 // - Páginas: primero la red (para coger lo último tras publicar); sin red, la última que se vio.
 // - /assets (JS y CSS con huella en el nombre, no cambian nunca): de la caché, y lo que falte se guarda al bajarlo.
-// - Fuentes, iconos y logo: igual que /assets.
+// - Fuentes, iconos, logo y las imágenes (los objetos 3D del Cancionero): igual que /assets.
 // - Lo demás: la red y, si no hay, lo que haya guardado.
 // Firebase, la API y cualquier otro dominio no pasan por aquí.
 // Al publicar (vite.config.ts) se rellenan la versión y la lista de todo el código y las fuentes
@@ -81,7 +81,7 @@ self.addEventListener("fetch", (event) => {
 
     // Ficheros que no cambian: caché primero. Sin mirar Vary: los módulos se piden con Origin y,
     // si el servidor contestó con «Vary: Origin», no casarían con lo guardado y sin red no arrancaría
-    if (/^\/(assets|fonts|icons)\//.test(url.pathname) || url.pathname.startsWith("/logo-musikeeo")) {
+    if (/^\/(assets|fonts|icons|images)\//.test(url.pathname) || url.pathname.startsWith("/logo-musikeeo")) {
         event.respondWith(caches.match(req, { ignoreVary: true }).then((r) => r || fetch(req).then((res) => guardar(req, res))));
         return;
     }

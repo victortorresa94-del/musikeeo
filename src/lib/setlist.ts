@@ -4,7 +4,13 @@
 // cejilla, quién canta…) para tocarlas en orden. La letra y los acordes se pegan luego.
 import { leerAcorde } from './acordes';
 
-export interface CancionImportada { titulo: string; artista: string; texto: string; ficha?: boolean }
+import type { FichaCancion } from '../types/cancionero';
+
+// ficha: es una ficha de setlist (sin letra). datos: la ficha del tema (tono, quién canta…) si llega
+export interface CancionImportada {
+    titulo: string; artista: string; texto: string; ficha?: boolean;
+    datos?: FichaCancion; bpm?: number; duracion?: number; portada?: string;
+}
 
 interface Tema { titulo: string; seccion?: string; tono?: string; cejilla?: number; notas: string[] }
 

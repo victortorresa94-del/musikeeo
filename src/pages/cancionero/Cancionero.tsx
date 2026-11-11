@@ -1,17 +1,21 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { ChevronRight, Cloud, Loader2, Plus, Search, Smartphone, X } from 'lucide-react';
+import { CheckSquare, ChevronRight, Cloud, Download, Loader2, Plus, Search, Smartphone, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { CANCION_EJEMPLO } from '../../components/cancionero/ejemplo';
 import { Baldosa, TarjetaBolo, TarjetaEscuchar } from '../../components/cancionero/Baldosas';
 import { ICONO, PASTEL, iconoRepertorio, pastelDe } from '../../components/cancionero/estilo';
 import { ImportarCanciones } from '../../components/cancionero/ImportarCanciones';
-import { Portada } from '../../components/cancionero/Portada';
 import { PonerPortadas } from '../../components/cancionero/PonerPortadas';
 import { ResultadosCatalogo } from '../../components/cancionero/ResultadosCatalogo';
 import { norm, pedirPantallaCompleta, tonoDe } from '../../components/cancionero/utilidades';
 import type { Cancion } from '../../types/cancionero';
+import { FilaCancion } from '../../components/cancionero/FilaCancion';
+import { BarraFiltros } from '../../components/cancionero/Filtros';
+import { useFiltrosGuardados } from '../../hooks/useFiltrosGuardados';
+import { AnadirARepertorio } from '../../components/cancionero/AnadirARepertorio';
+import { agrupar as agruparCanciones, crearCopia, descargarCopia, filtrar, hayFiltros, tonoMostrado } from '../../lib/biblioteca';
 
 const fechaCorta = (f: string) => {
     const [a, m, d] = f.split('-').map(Number);
@@ -30,6 +34,10 @@ export default function Cancionero() {
     const [q, setQ] = useState('');
     const [importar, setImportar] = useState(false);
     const buscadorRef = useRef<HTMLInputElement>(null);
+    // La biblioteca: filtros por la ficha, grupos y elegir varias para un repertorio
+    const [filtros, setFiltros, agrupar, setAgrupar] = useFiltrosGuardados('musikeeo-cancionero-biblioteca');
+    const [elegidas, setElegidas] = useState<string[] | null>(null);
+    const [aRepertorio, setARepertorio] = useState(false);
 
     // Para el bolo sin cobertura: se bajan ya las pantallas de leer y tocar
     useEffect(() => {
@@ -39,11 +47,22 @@ export default function Cancionero() {
         void import('./TocarRepertorio');
     }, []);
 
-    const tonos = useMemo(() => new Map(canciones.map(c => [c.id, tonoDe(c)])), [canciones]);
+    const tonos = useMemo(() => new Map(canciones.map(c => [c.id, tonoMostrado(c, tonoDe(c))])), [canciones]);
+    const tonoDeCancion = useCallback((c: Cancion) => tonos.get(c.id) ?? null, [tonos]);
+    // Busca en el título, el artista, el tono y la ficha (quién canta, estilo, grupo)
     const lista = useMemo(() => {
         const t = norm(q.trim());
-        return t ? canciones.filter(c => norm(`${c.titulo} ${c.artista}`).includes(t) || norm(tonos.get(c.id) ?? '') === t) : canciones;
+        if (!t) return canciones;
+        return canciones.filter(c => norm(`${c.titulo} ${c.artista} ${c.ficha?.canta ?? ''} ${c.ficha?.estilo ?? ''} ${(c.ficha?.proyectos ?? []).join(' ')}`).includes(t)
+            || norm(tonos.get(c.id) ?? '') === t);
     }, [canciones, q, tonos]);
+    // Sin buscar: filtradas por la ficha, en orden alfabético si se agrupan
+    const filtradas = useMemo(() => filtrar(canciones, filtros, tonoDeCancion), [canciones, filtros, tonoDeCancion]);
+    const grupos = useMemo(() => {
+        const base = agrupar === 'nada' ? filtradas : [...filtradas].sort((a, b) => a.titulo.localeCompare(b.titulo, 'es'));
+        return agruparCanciones(base, agrupar, tonoDeCancion);
+    }, [filtradas, agrupar, tonoDeCancion]);
+    const alternarElegida = (id: string) => setElegidas(e => (e ?? []).includes(id) ? (e ?? []).filter(x => x !== id) : [...(e ?? []), id]);
     // El bolo que viene (el más cercano desde hoy) o, si no hay, el último
     const hoy = new Date().toLocaleDateString('sv-SE');
     const proximo = useMemo(() => {
@@ -64,19 +83,8 @@ export default function Cancionero() {
     const filas = (l: Cancion[]) => (
         <div className="rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
             {l.map(c => (
-                <Link key={c.id} to={`/cancionero/${c.id}`} className="flex items-center gap-3 px-4 min-h-[64px] py-2.5 active:bg-fill">
-                    <Portada src={c.portada} titulo={c.titulo} />
-                    <span className="flex-1 min-w-0">
-                        <span className="block truncate text-[16px] font-semibold text-foreground">{c.titulo}</span>
-                        {c.artista && <span className="block truncate text-[14px] text-muted-foreground">{c.artista}</span>}
-                    </span>
-                    {tonos.get(c.id) && (
-                        <span className="shrink-0 h-7 px-2.5 rounded-full bg-fill-strong text-[13px] font-semibold text-foreground flex items-center">
-                            {tonos.get(c.id)}
-                        </span>
-                    )}
-                    <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
-                </Link>
+                <FilaCancion key={c.id} cancion={c} tono={tonos.get(c.id) ?? null}
+                    elegida={elegidas?.includes(c.id)} onElegir={elegidas ? () => alternarElegida(c.id) : undefined} />
             ))}
         </div>
     );
@@ -93,7 +101,7 @@ export default function Cancionero() {
     };
 
     return (
-        <div className="max-w-3xl mx-auto px-4 md:px-0 pt-3 md:pt-6 pb-16">
+        <div className={cn('max-w-3xl mx-auto px-4 md:px-0 pt-3 md:pt-6', elegidas?.length ? 'pb-40' : 'pb-16')}>
             <h1 className="font-heading text-[28px] font-bold leading-tight text-foreground">Cancionero</h1>
             <p className="mt-0.5 text-[17px] text-muted-foreground">¿Qué tocamos hoy?</p>
 
@@ -142,7 +150,7 @@ export default function Cancionero() {
                     <TarjetaEscuchar />
 
                     <div className="mt-6 mb-2 flex items-center justify-between gap-3">
-                        <h2 className="font-heading text-[20px] font-bold text-foreground">
+                        <h2 className="font-heading text-[20px] font-bold text-foreground whitespace-nowrap">
                             {ver === 'repertorios' ? 'Repertorios' : 'Tus canciones'}
                             <span className="ml-1.5 text-[15px] font-semibold text-muted-foreground">{ver === 'repertorios' ? reps.length || '' : canciones.length || ''}</span>
                         </h2>
@@ -151,9 +159,17 @@ export default function Cancionero() {
                                 <Plus className="h-4 w-4" /> Nuevo
                             </button>
                         ) : canciones.length > 0 && (
-                            <Link to="/cancionero/nueva" className="pulsable h-9 pl-3 pr-4 rounded-full bg-primary text-primary-foreground text-[14px] font-semibold flex items-center gap-1">
-                                <Plus className="h-4 w-4" /> Añadir
-                            </Link>
+                            <span className="flex items-center gap-2">
+                                <button onClick={() => setElegidas(e => e ? null : [])} aria-pressed={!!elegidas}
+                                    className={cn('pulsable h-9 px-3.5 rounded-full text-[14px] font-semibold flex items-center gap-1.5', elegidas ? 'bg-foreground text-background' : 'bg-fill text-foreground')}>
+                                    {elegidas ? 'Cancelar' : <><CheckSquare className="h-4 w-4" /> Elegir</>}
+                                </button>
+                                {!elegidas && (
+                                    <Link to="/cancionero/nueva" className="pulsable h-9 pl-3 pr-4 rounded-full bg-primary text-primary-foreground text-[14px] font-semibold flex items-center gap-1">
+                                        <Plus className="h-4 w-4" /> Añadir
+                                    </Link>
+                                )}
+                            </span>
                         )}
                     </div>
 
@@ -201,8 +217,27 @@ export default function Cancionero() {
                         </div>
                     ) : (
                         <>
-                            <PonerPortadas className="mb-3" />
-                            {filas(lista)}
+                            <BarraFiltros className="mb-3" canciones={canciones} tonoDe={tonoDeCancion} filtros={filtros} onCambio={setFiltros}
+                                agrupar={agrupar} onAgrupar={setAgrupar} />
+                            {elegidas && (
+                                <p className="mb-2 px-1 text-[14px] text-muted-foreground">Toca las canciones que quieras llevar a un repertorio.</p>
+                            )}
+                            {!elegidas && !hayFiltros(filtros) && <PonerPortadas className="mb-3" />}
+                            {filtradas.length === 0 ? (
+                                <p className="rounded-2xl bg-fill px-4 py-6 text-center text-[15px] text-muted-foreground">Ninguna canción con estos filtros.</p>
+                            ) : grupos.map(g => (
+                                <section key={g.titulo || 'todas'} className={g.titulo ? 'mt-4 first:mt-0' : ''}>
+                                    {g.titulo && (
+                                        <h3 className="mb-1.5 px-1 flex items-baseline gap-2 text-[15px] font-bold text-foreground">
+                                            {g.titulo}<span className="text-[13px] font-semibold text-muted-foreground">{g.canciones.length}</span>
+                                        </h3>
+                                    )}
+                                    {filas(g.canciones)}
+                                </section>
+                            ))}
+                            {hayFiltros(filtros) && filtradas.length > 0 && (
+                                <p className="mt-2 px-1 text-[13px] text-muted-foreground">{filtradas.length} de {canciones.length} canciones</p>
+                            )}
                         </>
                     )}
                 </>
@@ -223,6 +258,28 @@ export default function Cancionero() {
                     </span>
                 </p>
             )}
+
+            {listo && canciones.length > 0 && (
+                <button onClick={() => descargarCopia(crearCopia(canciones, repertorios))}
+                    className="mt-3 h-11 flex items-center gap-2 text-[14px] font-semibold text-foreground active:opacity-60">
+                    <Download className="h-4 w-4" /> Guardar una copia del cancionero
+                </button>
+            )}
+
+            {/* Elegir varias: la barra de abajo las lleva a un repertorio */}
+            {elegidas && elegidas.length > 0 && (
+                <div className="fixed inset-x-0 bottom-[calc(52px+env(safe-area-inset-bottom))] md:bottom-0 z-[45] px-4 py-3 bg-chrome backdrop-blur-2xl border-t border-hairline">
+                    <div className="max-w-3xl mx-auto flex items-center gap-3">
+                        <button onClick={() => setElegidas([])} aria-label="Quitar la selección" className="h-11 w-11 shrink-0 rounded-full bg-fill flex items-center justify-center text-foreground">
+                            <X className="h-5 w-5" />
+                        </button>
+                        <button onClick={() => setARepertorio(true)} className="pulsable flex-1 h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px]">
+                            Añadir {elegidas.length} al repertorio
+                        </button>
+                    </div>
+                </div>
+            )}
+            <AnadirARepertorio abierta={aRepertorio} onCerrar={() => setARepertorio(false)} ids={elegidas ?? []} onHecho={() => setElegidas(null)} />
 
             <ImportarCanciones abierto={importar} onCerrar={() => setImportar(false)} />
         </div>

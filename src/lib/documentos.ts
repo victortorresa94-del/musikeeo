@@ -687,6 +687,8 @@ export async function textoDeArchivo(archivo: File, esSetlist?: EsSetlist): Prom
     const raros = [...texto.slice(0, 4000)].filter(c => (c < ' ' && !'\t\n\r\f'.includes(c)) || c === '\ufffd').length;
     if (raros > 8) throw new Error('No es un Word, un PDF ni un texto.');
     texto = texto.replace(/^\ufeff/, '');
+    // Una copia del cancionero (.json): tal cual, la lee la pantalla de importar
+    if (/^\s*\{/.test(texto) && texto.includes('"musikeeo-cancionero"')) return texto;
     // Sin título en la primera línea, el del nombre del archivo
     const canciones = separarCanciones(texto);
     if (canciones.length === 1 && canciones[0].titulo === 'Sin título') return aTexto([{ titulo: tituloDeArchivo(archivo.name), artista: '', texto: texto.trim() }]);

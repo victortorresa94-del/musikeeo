@@ -1,0 +1,250 @@
+// La biblioteca del repertorio (sin React): filtrar y agrupar canciones por su ficha (tono,
+// quién canta, grupo, estilo, energía, estado), lo que dura un repertorio, las directivas de
+// ficha que llegan al importar y la copia de seguridad del cancionero entero.
+import { claveTitulo } from './buscarCanciones';
+import type { AjustesCancion, Cancion, EstadoCancion, FichaCancion, Repertorio } from '../types/cancionero';
+
+export const ESTADOS: Record<EstadoCancion, string> = { lista: 'Lista', ensayar: 'Por ensayar', aprender: 'Para aprender' };
+export const ENERGIAS: Record<1 | 2 | 3 | 4, string> = { 1: 'Suave', 2: 'Media', 3: 'Media-alta', 4: 'Arriba' };
+
+const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
+
+// El tono que se enseña: el de la ficha si lo escribiste; si no, el que se saca de los acordes
+export const tonoMostrado = (c: Cancion, deLosAcordes: string | null | undefined) => c.ficha?.tono?.trim() || deLosAcordes || null;
+
+export interface Filtros {
+    proyectos: string[];
+    canta: string[];
+    estilos: string[];
+    tonos: string[];
+    energias: string[];
+    estados: string[];
+}
+export type CampoFiltro = keyof Filtros;
+export const SIN_FILTROS: Filtros = { proyectos: [], canta: [], estilos: [], tonos: [], energias: [], estados: [] };
+export const hayFiltros = (f: Filtros) => Object.values(f).some(v => v.length > 0);
+
+export const NOMBRE_CAMPO: Record<CampoFiltro, string> = {
+    proyectos: 'Grupo', canta: 'Canta', estilos: 'Estilo', tonos: 'Tono', energias: 'Energía', estados: 'Estado',
+};
+
+// Lo que vale una canción en cada campo (puede tener varios grupos)
+export function valoresDe(c: Cancion, campo: CampoFiltro, tono: string | null): string[] {
+    const f = c.ficha ?? {};
+    switch (campo) {
+        case 'proyectos': return (f.proyectos ?? []).filter(Boolean);
+        case 'canta': return f.canta ? [f.canta] : [];
+        case 'estilos': return f.estilo ? [f.estilo] : [];
+        case 'tonos': return tono ? [tono] : [];
+        case 'energias': return f.energia ? [String(f.energia)] : [];
+        case 'estados': return f.estado ? [f.estado] : [];
+    }
+}
+
+// Cómo se lee un valor en pantalla
+export function etiquetaValor(campo: CampoFiltro, valor: string): string {
+    if (campo === 'energias') return ENERGIAS[+valor as 1 | 2 | 3 | 4] ?? valor;
+    if (campo === 'estados') return ESTADOS[valor as EstadoCancion] ?? valor;
+    return valor;
+}
+
+// Dentro de un campo vale cualquiera de lo elegido; entre campos, todos a la vez
+export function filtrar(canciones: Cancion[], filtros: Filtros, tonoDe: (c: Cancion) => string | null): Cancion[] {
+    const activos = (Object.keys(filtros) as CampoFiltro[]).filter(k => filtros[k].length);
+    if (!activos.length) return canciones;
+    const elegidos = new Map(activos.map(k => [k, new Set(filtros[k].map(norm))]));
+    return canciones.filter(c => activos.every(k => valoresDe(c, k, tonoDe(c)).some(v => elegidos.get(k)!.has(norm(v)))));
+}
+
+// El orden de los tonos: por la nota (C, C#, D…) y los mayores antes que los menores
+const NOTAS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
+const BEMOL: Record<string, string> = { Db: 'C#', Eb: 'D#', Gb: 'F#', Ab: 'G#', Bb: 'A#' };
+function ordenTono(t: string): number {
+    const m = /^([A-G])([#b])?(m)?/.exec(t.trim());
+    if (!m) return 999;
+    const raiz = BEMOL[m[1] + (m[2] ?? '')] ?? m[1] + (m[2] === '#' ? '#' : '');
+    return NOTAS.indexOf(raiz) * 2 + (m[3] ? 1 : 0);
+}
+
+export interface Opcion { valor: string; n: number }
+
+// Los valores que existen en un campo, con cuántas canciones tiene cada uno
+export function opcionesDe(canciones: Cancion[], campo: CampoFiltro, tonoDe: (c: Cancion) => string | null): Opcion[] {
+    const cuenta = new Map<string, { valor: string; n: number }>();
+    for (const c of canciones) {
+        for (const v of valoresDe(c, campo, tonoDe(c))) {
+            const k = norm(v);
+            const x = cuenta.get(k);
+            if (x) x.n++; else cuenta.set(k, { valor: v, n: 1 });
+        }
+    }
+    const lista = [...cuenta.values()];
+    if (campo === 'tonos') return lista.sort((a, b) => ordenTono(a.valor) - ordenTono(b.valor) || a.valor.localeCompare(b.valor));
+    if (campo === 'energias') return lista.sort((a, b) => +a.valor - +b.valor);
+    if (campo === 'estados') return lista.sort((a, b) => Object.keys(ESTADOS).indexOf(a.valor) - Object.keys(ESTADOS).indexOf(b.valor));
+    return lista.sort((a, b) => b.n - a.n || a.valor.localeCompare(b.valor, 'es'));
+}
+
+export type Agrupar = 'nada' | 'tonos' | 'canta' | 'estilos' | 'proyectos' | 'energias' | 'estados';
+export const NOMBRE_AGRUPAR: Record<Agrupar, string> = {
+    nada: 'Sin agrupar', tonos: 'Por tono', canta: 'Por quién canta', estilos: 'Por estilo', proyectos: 'Por grupo', energias: 'Por energía', estados: 'Por estado',
+};
+
+export interface Grupo { titulo: string; canciones: Cancion[] }
+
+// En grupos (una canción de dos grupos sale en los dos); lo que no tiene ficha, al final
+export function agrupar(canciones: Cancion[], por: Agrupar, tonoDe: (c: Cancion) => string | null): Grupo[] {
+    if (por === 'nada') return [{ titulo: '', canciones }];
+    const opciones = opcionesDe(canciones, por, tonoDe);
+    const grupos = opciones.map(o => ({
+        titulo: etiquetaValor(por, o.valor),
+        canciones: canciones.filter(c => valoresDe(c, por, tonoDe(c)).some(v => norm(v) === norm(o.valor))),
+    }));
+    const sueltas = canciones.filter(c => !valoresDe(c, por, tonoDe(c)).length);
+    if (sueltas.length) grupos.push({ titulo: por === 'tonos' ? 'Sin tono' : 'Sin ficha', canciones: sueltas });
+    return grupos;
+}
+
+// Lo que dura: lo que se sabe de cada canción y, de las que no, una media de 3 min 30 s
+export const DURACION_MEDIA = 210;
+export function duracionDe(canciones: Cancion[]): { segundos: number; estimada: boolean } {
+    let segundos = 0, estimada = false;
+    for (const c of canciones) {
+        if (c.duracion) segundos += c.duracion;
+        else { segundos += DURACION_MEDIA; estimada = true; }
+    }
+    return { segundos, estimada };
+}
+export function textoDuracion(segundos: number): string {
+    const min = Math.round(segundos / 60);
+    return min >= 60 ? `${Math.floor(min / 60)} h ${min % 60} min` : `${min} min`;
+}
+
+// Quién canta cuántas: «Mafe 8 · Ambos 5 · Víctor 2»
+export function reparto(canciones: Cancion[]): Opcion[] {
+    return opcionesDe(canciones, 'canta', () => null);
+}
+
+// Dos temas seguidos en el mismo tono (para avisar al ordenar el repertorio)
+export function mismoTonoSeguido(tonos: (string | null)[]): Set<number> {
+    const avisos = new Set<number>();
+    tonos.forEach((t, i) => { if (i > 0 && t && tonos[i - 1] && norm(t) === norm(tonos[i - 1]!)) avisos.add(i); });
+    return avisos;
+}
+
+// ——— Directivas de ficha al importar ———
+// En un texto ChordPro: {tono: Bm} o {key: Bm}, {capo: 2 · formas de Am}, {canta: Mafe},
+// {grupo: Lady Jarana, Cataleya} (o {proyecto: …}), {estilo: Rumba}, {energia: 3}, {estado: lista}.
+// Salen del texto y van a la ficha
+const DIRECTIVA = /^\s*\{\s*(tono|key|capo|cejilla|canta|voz|grupo|grupos|proyecto|proyectos|estilo|energia|energía|estado)\s*:\s*([^}]*)\}\s*$/i;
+
+function leerEstado(v: string): EstadoCancion | undefined {
+    const t = norm(v);
+    if (/^(lista|listo|ok|si)/.test(t)) return 'lista';
+    if (/ensay|ma o meno|repas/.test(t)) return 'ensayar';
+    if (/aprend|nueva|idea|sacar/.test(t)) return 'aprender';
+    return undefined;
+}
+
+export function sacarFicha(texto: string): { ficha?: FichaCancion; texto: string } {
+    const ficha: FichaCancion = {};
+    let hay = false;
+    const resto = texto.split('\n').filter(linea => {
+        const m = DIRECTIVA.exec(linea);
+        if (!m) return true;
+        const k = norm(m[1]);
+        const v = m[2].trim();
+        if (!v) return false;
+        hay = true;
+        if (k === 'tono' || k === 'key') ficha.tono = v.slice(0, 12);
+        else if (k === 'capo' || k === 'cejilla') ficha.capo = /^\d+$/.test(v) ? `Capo ${v}` : v.slice(0, 60);
+        else if (k === 'canta' || k === 'voz') ficha.canta = v.slice(0, 40);
+        else if (k.startsWith('grupo') || k.startsWith('proyecto')) ficha.proyectos = v.split(/\s*[,·]\s*/).filter(Boolean).slice(0, 6).map(x => x.slice(0, 40));
+        else if (k === 'estilo') ficha.estilo = v.slice(0, 40);
+        else if (k.startsWith('energ')) { const n = Math.round(+v.replace(/[^\d]/g, '')); if (n >= 1 && n <= 4) ficha.energia = n as 1 | 2 | 3 | 4; }
+        else if (k === 'estado') ficha.estado = leerEstado(v);
+        return false;
+    });
+    return hay ? { ficha, texto: resto.join('\n').replace(/^\n+/, '') } : { texto };
+}
+
+// La ficha que llega se suma a la que había: lo que trae manda, lo que no trae se queda
+export function unirFichas(antes: FichaCancion | undefined, nueva: FichaCancion | undefined): FichaCancion | undefined {
+    if (!nueva) return antes;
+    const unida: FichaCancion = { ...antes };
+    for (const [k, v] of Object.entries(nueva) as [keyof FichaCancion, FichaCancion[keyof FichaCancion]][]) {
+        if (v === undefined || v === '' || (Array.isArray(v) && !v.length)) continue;
+        (unida as Record<string, unknown>)[k] = v;
+    }
+    return unida;
+}
+
+// ¿Es la misma canción por el título? Igual, o igual sin lo de entre paréntesis
+// («Hace calor (Mucho mejor)» = «Hace calor»)
+export function mismoTitulo(a: string, b: string): boolean {
+    if (norm(a) === norm(b)) return true;
+    const ka = claveTitulo(a), kb = claveTitulo(b);
+    return !!ka && ka === kb;
+}
+
+// ——— Copia de seguridad ———
+// Todo el cancionero en un archivo: para no perderlo si se borra el móvil, pasarlo a otro
+// sitio o cargar un repertorio preparado. Los repertorios apuntan a las canciones por su
+// posición en la lista (dos versiones pueden llamarse igual)
+export interface CancionCopia {
+    titulo: string;
+    artista?: string;
+    texto?: string;
+    ficha?: FichaCancion;
+    ajustes?: Partial<AjustesCancion>;
+    portada?: string;
+    duracion?: number;
+    bpm?: number;
+}
+export interface RepertorioCopia { nombre: string; fecha?: string; canciones: number[] }
+export interface Copia { app: 'musikeeo-cancionero'; version: 1; creada: string; canciones: CancionCopia[]; repertorios: RepertorioCopia[] }
+
+export function crearCopia(canciones: Cancion[], repertorios: Repertorio[]): Copia {
+    const indice = new Map(canciones.map((c, i) => [c.id, i]));
+    return {
+        app: 'musikeeo-cancionero',
+        version: 1,
+        creada: new Date().toISOString(),
+        canciones: canciones.map(c => ({
+            titulo: c.titulo, artista: c.artista || undefined, texto: c.texto || undefined, ficha: c.ficha, ajustes: c.ajustes,
+            portada: c.portada, duracion: c.duracion, bpm: c.bpm,
+        })),
+        repertorios: repertorios.map(r => ({
+            nombre: r.nombre, fecha: r.fecha, canciones: r.canciones.map(id => indice.get(id)).filter((i): i is number => i !== undefined),
+        })),
+    };
+}
+
+export function leerCopia(texto: string): Copia | null {
+    const t = texto.trim();
+    if (!t.startsWith('{') || !t.includes('musikeeo-cancionero')) return null;
+    try {
+        const c = JSON.parse(t) as Partial<Copia>;
+        if (c.app !== 'musikeeo-cancionero' || !Array.isArray(c.canciones)) return null;
+        const canciones = c.canciones.filter(x => x && typeof x.titulo === 'string' && x.titulo.trim()).slice(0, 2000);
+        const repertorios = (Array.isArray(c.repertorios) ? c.repertorios : [])
+            .filter(r => r && typeof r.nombre === 'string' && Array.isArray(r.canciones))
+            .map(r => ({ ...r, canciones: r.canciones.filter(i => Number.isInteger(i) && i >= 0 && i < canciones.length) }));
+        return { app: 'musikeeo-cancionero', version: 1, creada: c.creada ?? '', canciones, repertorios };
+    } catch {
+        return null;
+    }
+}
+
+// Descargar la copia como archivo (.json)
+export function descargarCopia(copia: Copia) {
+    const blob = new Blob([JSON.stringify(copia, null, 1)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `cancionero-${new Date().toLocaleDateString('sv-SE')}.json`;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(url), 5000);
+}

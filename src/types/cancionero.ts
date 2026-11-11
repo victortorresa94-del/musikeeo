@@ -15,6 +15,21 @@ export interface AjustesCancion {
     intro?: number;             // segundos de intro que no cuentan para bajar (10 si no se dice)
 }
 
+// En qué punto está para el repertorio
+export type EstadoCancion = 'lista' | 'ensayar' | 'aprender';
+
+// La ficha del tema, como en una base de datos de repertorio: para buscar, filtrar y elegir
+// canciones para el bolo de un vistazo. Todo opcional y escrito a mano por su dueño
+export interface FichaCancion {
+    tono?: string;              // el tono en que SUENA (G, Bm, F#m…), aunque se toque con cejilla
+    capo?: string;              // «Capo 2 · formas de Am»: cómo se toca
+    canta?: string;             // quién lleva la voz: «Víctor», «Mafe», «Ambos»…
+    proyectos?: string[];       // con qué grupo o formación se toca: «Lady Jarana», «Cataleya»
+    estilo?: string;            // «Rumba», «Pop-rock», «Latino»…
+    energia?: 1 | 2 | 3 | 4;    // 1 suave · 2 media · 3 media-alta · 4 arriba
+    estado?: EstadoCancion;
+}
+
 // Privada: solo la ve su dueño (en su móvil, y en su cuenta si tiene)
 export interface Cancion {
     id: string;
@@ -30,6 +45,7 @@ export interface Cancion {
     duracion?: number;          // segundos (para que el desplazamiento dure lo que la canción)
     muestra?: string;           // URL de 30 s para escucharla y coger el tono
     bpm?: number;               // tempo, para la claqueta
+    ficha?: FichaCancion;
 }
 
 // Un repertorio (setlist) para un bolo: canciones del cancionero en el orden en que se tocan

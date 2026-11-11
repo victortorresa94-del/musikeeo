@@ -27,7 +27,8 @@ const ESPERA_OTRA_VEZ = 8000;   // si Apple pide una pausa, se vuelve a probar s
 
 // Debajo de tus canciones, las del catálogo de Apple: portada, título, artista y duración, la
 // muestra de 30 s, «Añadir» y dónde buscar los acordes. Sin cobertura se queda en tus canciones
-export function ResultadosCatalogo({ q }: { q: string }) {
+// Con onElegida (desde un repertorio) la canción no se abre: se le da a quien la pidió
+export function ResultadosCatalogo({ q, onElegida }: { q: string; onElegida?: (c: Cancion) => void }) {
     const navigate = useNavigate();
     const { canciones, nuevaCancion, guardar } = useCancionero();
     const termino = q.trim().replace(/\s+/g, ' ');
@@ -101,6 +102,7 @@ export function ResultadosCatalogo({ q }: { q: string }) {
             const x = ya.cancion;
             destino = x.portada ? x : guardar({ ...x, ...grabacion, duracion: x.duracion ?? c.duracion, muestra: x.muestra ?? c.muestra });
         }
+        if (onElegida) { onElegida(destino); return; }
         seguirSonando.current = destino.muestra ?? null;
         navigate(`/cancionero/${destino.id}`);
     };

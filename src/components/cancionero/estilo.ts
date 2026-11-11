@@ -135,3 +135,29 @@ export function estiloSeccion(nombre: string): EstiloSeccion | null {
     if (/·/.test(nombre)) { const { pastel } = estiloBloque(nombre); return { etiqueta: cn(pastel.fondo, pastel.tinta) }; }
     return null;
 }
+
+// ——— La ficha del tema (tono, quién canta, estilo, estado) en píldoras ———
+const ESTADO_PILDORA: Record<string, Etiqueta> = {
+    ensayar: { texto: 'Por ensayar', pastel: PASTEL.mantequilla },
+    aprender: { texto: 'Para aprender', pastel: PASTEL.cielo },
+};
+
+// El color de quien canta: siempre el mismo para la misma persona
+export const pastelCanta = (quien: string): Pastel => pastelDe(`canta:${quien.trim().toLowerCase()}`);
+
+// Las píldoras de un tema en una lista: quién canta, el estilo y si falta ensayarla. Lo que
+// diga la ficha manda sobre lo que se lee de su cabecera (no sale «Canta Mafe» dos veces)
+export function etiquetasTema(c: Cancion): Etiqueta[] {
+    const f = c.ficha ?? {};
+    const salida: Etiqueta[] = [];
+    if (f.canta) salida.push({ texto: f.canta, pastel: pastelCanta(f.canta), icono: ICONO.canciones });
+    if (f.estilo) salida.push({ texto: f.estilo, pastel: estiloBloque(f.estilo).pastel });
+    if (f.estado && ESTADO_PILDORA[f.estado]) salida.push(ESTADO_PILDORA[f.estado]);
+    for (const e of etiquetasDe(c)) {
+        if (f.canta && /^canta /i.test(e.texto)) continue;
+        if (/^cejilla/i.test(e.texto) && f.capo) continue;
+        salida.push(e);
+    }
+    if (f.capo && !/^capo 0\b/i.test(f.capo)) salida.push({ texto: f.capo.replace(/\s*·.*$/, ''), pastel: null });
+    return salida;
+}
