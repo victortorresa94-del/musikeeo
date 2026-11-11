@@ -13,6 +13,7 @@ export interface AjustesCancion {
     velocidad: number;          // desplazamiento automático, px por segundo
     alRitmo?: boolean;          // con la duración de la canción: la hoja baja entera en lo que dura
     intro?: number;             // segundos de intro que no cuentan para bajar (10 si no se dice)
+    ritmo?: number;             // modo auto de Tocar: 1,2 = la hoja baja un 20 % más rápido en esta canción
 }
 
 // En qué punto está para el repertorio

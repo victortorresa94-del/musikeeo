@@ -8,6 +8,7 @@ import { Baldosa, TarjetaBolo, TarjetaEscuchar } from '../../components/cancione
 import { ICONO, PASTEL, iconoRepertorio, pastelDe } from '../../components/cancionero/estilo';
 import { ImportarCanciones } from '../../components/cancionero/ImportarCanciones';
 import { PonerPortadas } from '../../components/cancionero/PonerPortadas';
+import { PonerTempo } from '../../components/cancionero/PonerTempo';
 import { ResultadosCatalogo } from '../../components/cancionero/ResultadosCatalogo';
 import { norm, pedirPantallaCompleta, tonoDe } from '../../components/cancionero/utilidades';
 import type { Cancion } from '../../types/cancionero';
@@ -222,7 +223,9 @@ export default function Cancionero() {
                             {elegidas && (
                                 <p className="mb-2 px-1 text-[14px] text-muted-foreground">Toca las canciones que quieras llevar a un repertorio.</p>
                             )}
-                            {!elegidas && !hayFiltros(filtros) && <PonerPortadas className="mb-3" />}
+                            {!elegidas && !hayFiltros(filtros) && (
+                                <div className="mb-3 flex flex-wrap gap-2 empty:hidden"><PonerPortadas /><PonerTempo /></div>
+                            )}
                             {filtradas.length === 0 ? (
                                 <p className="rounded-2xl bg-fill px-4 py-6 text-center text-[15px] text-muted-foreground">Ninguna canción con estos filtros.</p>
                             ) : grupos.map(g => (

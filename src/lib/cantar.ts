@@ -2,7 +2,7 @@
 // el tempo marcado a toques y la velocidad para que la hoja baje lo que dura la canción.
 // Sin React: solo cuentas sobre el motor de acordes.
 
-import { detectarTono, nombreAcorde, nombreTono, usaBemoles, type Acorde, type CancionLeida } from './acordes';
+import { detectarTono, leerCancion, nombreAcorde, nombreTono, usaBemoles, type Acorde, type CancionLeida } from './acordes';
 import { octavaDeCantar } from './sonido';
 import type { AjustesCancion } from '../types/cancionero';
 
@@ -106,20 +106,45 @@ export function segundosAlRitmo(duracion: number | undefined, ajustes: AjustesCa
 export const velocidadAlRitmo = (recorrido: number, segundos: number) =>
     Math.min(200, Math.max(1, recorrido / segundos));
 
-// La velocidad del desplazamiento automático: la de los ajustes o, al ritmo de la canción, la que
-// baja todo lo que se puede bajar en lo que dura (menos la intro)
-export function velocidadAlDesplazar(cancion: { duracion?: number; ajustes: AjustesCancion }, el: HTMLElement | null): number {
-    const segundos = segundosAlRitmo(cancion.duracion, cancion.ajustes);
-    if (!segundos || !el) return cancion.ajustes.velocidad;
-    return velocidadAlRitmo(el.scrollHeight - el.clientHeight, segundos);
+// ---------- Modo auto (Tocar): la hoja baja sola al ritmo de cada canción ----------
+
+export const PULSOS_POR_VERSO = 8;   // un verso suele durar dos compases de 4/4
+export const RITMO_MIN = 0.5, RITMO_MAX = 2;
+
+// Los versos que se cantan (las líneas de acordes sueltas solo cuentan si no hay letra)
+export function versosDe(texto: string): number {
+    const lineas = leerCancion(texto).lineas;
+    const letra = lineas.filter(l => l.tipo === 'letra' || l.tipo === 'mixta').length;
+    return letra || lineas.filter(l => l.tipo === 'acordes').length;
+}
+
+// Segundos en que la hoja baja entera en modo auto: lo que dura la canción (menos la intro) o, si
+// no se sabe, lo que se tarda en cantar sus versos a su tempo (más rápido cuanto más bpm). null:
+// no hay con qué calcularlo. El ajuste a mano de esa canción (ritmo: 1,2 = un 20 % más rápido) va aparte
+export function segundosAuto(c: { duracion?: number; bpm?: number; ajustes: AjustesCancion }, versos: number): number | null {
+    if (c.duracion && c.duracion > 0) return Math.max(15, c.duracion - (c.ajustes.intro ?? INTRO));
+    if (c.bpm && c.bpm > 0 && versos > 0) return Math.max(15, (versos * PULSOS_POR_VERSO * 60) / c.bpm);
+    return null;
+}
+
+export interface OpcionesAuto { versos: number }
+
+// La velocidad del desplazamiento automático: la de los ajustes o, al ritmo de la canción (o en
+// modo auto), la que baja todo lo que se puede bajar en lo que dura (menos la intro)
+export function velocidadAlDesplazar(cancion: { duracion?: number; bpm?: number; ajustes: AjustesCancion }, el: HTMLElement | null, auto?: OpcionesAuto): number {
+    const segundos = auto ? segundosAuto(cancion, auto.versos) : segundosAlRitmo(cancion.duracion, cancion.ajustes);
+    const factor = auto ? cancion.ajustes.ritmo ?? 1 : 1;
+    if (!segundos || !el) return cancion.ajustes.velocidad * factor;
+    return velocidadAlRitmo(el.scrollHeight - el.clientHeight, segundos) * factor;
 }
 
 // Al ritmo de la canción y desde el principio de la hoja, se espera la intro antes de bajar
 // (como el retardo de OnSong): se le da a ▶ cuando empieza a sonar y la hoja arranca cuando
 // se canta. Si ya se había bajado (se para y se sigue), arranca en el momento.
 // Segundos de espera (0: sin espera)
-export function esperaDeIntro(cancion: { duracion?: number; ajustes: AjustesCancion }, el: HTMLElement | null): number {
-    if (!el || segundosAlRitmo(cancion.duracion, cancion.ajustes) === null) return 0;
+export function esperaDeIntro(cancion: { duracion?: number; bpm?: number; ajustes: AjustesCancion }, el: HTMLElement | null, auto?: OpcionesAuto): number {
+    const segundos = auto ? segundosAuto(cancion, auto.versos) : segundosAlRitmo(cancion.duracion, cancion.ajustes);
+    if (!el || segundos === null) return 0;
     if (el.scrollTop > el.clientHeight * 0.25) return 0;
     return Math.max(0, cancion.ajustes.intro ?? INTRO);
 }

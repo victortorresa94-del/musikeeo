@@ -9,8 +9,8 @@ const SR = 22050;
 
 export class ErrorDeAudio extends Error {}
 
-export async function descodificar(archivo: File): Promise<{ muestras: Float32Array; sr: number; duracion: number }> {
-    const datos = await archivo.arrayBuffer();
+export async function descodificar(archivo: File | ArrayBuffer): Promise<{ muestras: Float32Array; sr: number; duracion: number }> {
+    const datos = archivo instanceof ArrayBuffer ? archivo : await archivo.arrayBuffer();
     const Contexto = window.OfflineAudioContext
         ?? (window as unknown as { webkitOfflineAudioContext?: typeof OfflineAudioContext }).webkitOfflineAudioContext;
     if (!Contexto) throw new ErrorDeAudio('Este navegador no sabe leer audio.');

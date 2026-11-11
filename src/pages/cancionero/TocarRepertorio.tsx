@@ -13,7 +13,7 @@ import { Portada } from '../../components/cancionero/Portada';
 import { Pildora } from '../../components/cancionero/Baldosas';
 import { bloqueDe, estiloBloque, etiquetasDe, ICONO, pastelCanta, sinLoDeLasPildoras } from '../../components/cancionero/estilo';
 import { tonoDe } from '../../components/cancionero/utilidades';
-import { esperaDeIntro, velocidadAlDesplazar } from '../../lib/cantar';
+import { esperaDeIntro, minutos, RITMO_MAX, RITMO_MIN, segundosAuto, velocidadAlDesplazar, versosDe } from '../../lib/cantar';
 import { buscarEncaje, columnasPosibles, type Encaje } from '../../components/cancionero/medir';
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
 
@@ -53,8 +53,17 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
     const [controles, setControles] = useState(true);
     const [rodando, setRodando] = useState(false);
     const [indice, setIndice] = useState(false);
+    // Modo auto: la hoja de cada canción baja sola a su ritmo (duración o tempo). Se recuerda en el móvil
+    const [auto, setAuto] = useState(() => { try { return localStorage.getItem(CLAVE_AUTO) === '1'; } catch { return false; } });
+    const alternarAuto = () => setAuto(a => {
+        try { localStorage.setItem(CLAVE_AUTO, a ? '0' : '1'); } catch { /* sin almacenamiento */ }
+        toast(a ? 'Modo auto apagado' : 'Modo auto: dale a ▶ y la hoja baja sola al ritmo de cada canción', { id: 'auto', duration: 2500 });
+        return !a;
+    });
     const actualRef = useRef(inicio);
     useEffect(() => { actualRef.current = actual; }, [actual]);
+    const autoRef = useRef(auto), rodandoRef = useRef(rodando);
+    useEffect(() => { autoRef.current = auto; rodandoRef.current = rodando; }, [auto, rodando]);
     // Montadas: la que suena y sus vecinas. Las vecinas cambian cuando el carrusel se para:
     // montar una canción larga a mitad del deslizamiento se comía fotogramas y retrasaba el título.
     // Al abrir, primero sale la que suena y las vecinas llegan justo después de pintarla
@@ -110,19 +119,27 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
         navigate(`/cancionero/repertorio/${repertorioId}`);
     }, [navigate, repertorioId]);
 
-    // Desplazamiento automático de la canción que suena
+    // Desplazamiento automático de la canción que suena. La velocidad se lee en cada fotograma:
+    // cambiarla con − / + en directo no vuelve a esperar la intro
+    const velocidadRef = useRef(18);
+    const versos = useMemo(() => (cancion ? versosDe(cancion.texto) : 0), [cancion]);
+    const introRef = useRef(0);
+    // Va antes que el efecto que baja la hoja: al darle a ▶ ya están la velocidad y la intro
+    useEffect(() => {
+        const el = diapositivas.current[actual], opciones = auto ? { versos } : undefined;
+        velocidadRef.current = cancion ? velocidadAlDesplazar(cancion, el, opciones) : 18;
+        introRef.current = cancion ? esperaDeIntro(cancion, el, opciones) : 0;
+    }, [cancion, actual, auto, versos, rodando]);
     useEffect(() => {
         if (!rodando) return;
         let raf = 0, ultimo = performance.now(), resto = 0;
-        // La de la canción o, al ritmo de la canción, la que la baja entera en lo que dura
-        const velocidad = canciones[actual] ? velocidadAlDesplazar(canciones[actual], diapositivas.current[actual]) : 18;
-        // Al ritmo y desde el principio, espera la intro
-        const intro = canciones[actual] ? esperaDeIntro(canciones[actual], diapositivas.current[actual]) : 0;
+        // Al ritmo (o en auto) y desde el principio, espera la intro
+        const intro = introRef.current;
         if (intro) toast(`La hoja baja tras ${intro} s de intro`, { id: 'intro-hoja', duration: 2500 });
         const paso = (t: number) => {
             const el = diapositivas.current[actualRef.current];
             if (!el) return;
-            resto += (velocidad * Math.min(100, t - ultimo)) / 1000;
+            resto += (velocidadRef.current * Math.min(100, t - ultimo)) / 1000;
             ultimo = t;
             const px = Math.floor(resto);
             if (px >= 1) { resto -= px; el.scrollTop += px; }
@@ -131,7 +148,7 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
         };
         const empezar = setTimeout(() => { ultimo = performance.now(); raf = requestAnimationFrame(paso); }, intro * 1000);
         return () => { clearTimeout(empezar); cancelAnimationFrame(raf); if (intro) toast.dismiss('intro-hoja'); };
-    }, [rodando, actual, canciones]);
+    }, [rodando, actual]);
 
     useEffect(() => {
         if (!rodando || !controles) return;
@@ -148,6 +165,7 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
             const atras = ['PageUp', 'ArrowLeft', 'ArrowUp'].includes(e.key);
             if (e.key === ' ' && !(e.target as HTMLElement).closest('button')) { e.preventDefault(); setRodando(r => !r); }
             else if (e.key === 'Escape') salir();
+            else if (adelante && el && autoRef.current && !rodandoRef.current && el.scrollTop < 4) { e.preventDefault(); setRodando(true); }
             else if (adelante && el) {
                 e.preventDefault();
                 if (el.scrollTop + el.clientHeight < el.scrollHeight - 4) el.scrollBy({ top: el.clientHeight * 0.8, behavior: 'smooth' });
@@ -167,7 +185,7 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
             <div ref={carruselRef} onScroll={alDeslizar}
                 className="h-full w-full flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar overscroll-x-contain">
                 {canciones.map((c, i) => (
-                    <div key={c.id} ref={el => { diapositivas.current[i] = el; }} onClick={() => setControles(v => !v)} data-diapositiva
+                    <div key={c.id} ref={el => { diapositivas.current[i] = el; }} onClick={() => { if (auto && rodando) { setRodando(false); setControles(true); } else setControles(v => !v); }} data-diapositiva
                         className="relative h-full w-full shrink-0 snap-start snap-always overflow-y-auto overscroll-contain touch-pan-x touch-pan-y">
                         {i === actual || (cerca !== null && Math.abs(i - cerca) <= 1)
                             ? <Diapositiva cancion={c} n={i + 1} total={canciones.length} siguiente={canciones[i + 1]}
@@ -186,12 +204,13 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
                         <span className="truncate"><span className="tabular-nums">{actual + 1} de {canciones.length}</span> · {nombre}</span>
                         <ChevronDown className={cn('h-4 w-4 shrink-0 text-muted-foreground transition-transform', indice && 'rotate-180')} />
                     </button>
+                    <BotonBarra etiqueta={auto ? 'Apagar el modo auto' : 'Modo auto: la hoja baja sola'} activo={auto} onClick={alternarAuto}>Auto</BotonBarra>
                     <BotonBarra etiqueta="Lista de canciones" activo={indice} onClick={() => setIndice(v => !v)}><ListMusic className="h-[18px] w-[18px]" /></BotonBarra>
                 </div>
             </div>
 
             {/* Abajo: tono, tamaño, que quepa y desplazar; y «Dame el tono», la cuenta, anterior y siguiente */}
-            <ControlesCancion cancion={cancion} visibles={controles} rodando={rodando}
+            <ControlesCancion cancion={cancion} visibles={controles} rodando={rodando} auto={auto} versos={versos}
                 onRodar={() => setRodando(r => !r)} cambiar={cambio => cambiar(cancion, cambio)}
                 onAnterior={actual > 0 ? () => ir(actual - 1) : undefined}
                 onSiguiente={actual < canciones.length - 1 ? () => ir(actual + 1) : undefined} />
@@ -215,8 +234,8 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
     );
 }
 
-function ControlesCancion({ cancion, visibles, rodando, onRodar, cambiar, onAnterior, onSiguiente }: {
-    cancion: Cancion; visibles: boolean; rodando: boolean; onRodar: () => void;
+function ControlesCancion({ cancion, visibles, rodando, auto, versos, onRodar, cambiar, onAnterior, onSiguiente }: {
+    cancion: Cancion; visibles: boolean; rodando: boolean; auto: boolean; versos: number; onRodar: () => void;
     cambiar: (c: Partial<AjustesCancion>) => void; onAnterior?: () => void; onSiguiente?: () => void;
 }) {
     const { leida, tonoSuena, sinAcordes } = useMusicaCancion(cancion.texto, cancion.ajustes);
@@ -228,6 +247,7 @@ function ControlesCancion({ cancion, visibles, rodando, onRodar, cambiar, onAnte
         <div className={cn('fixed inset-x-0 bottom-0 z-10 pb-[calc(env(safe-area-inset-bottom)+8px)] pt-2 px-3 bg-chrome backdrop-blur-2xl border-t border-hairline transition-all duration-200',
             visibles ? 'opacity-100' : 'opacity-0 translate-y-2 pointer-events-none')}>
             <div className="max-w-xl mx-auto">
+                {auto && <FilaAuto cancion={cancion} versos={versos} cambiar={cambiar} />}
                 <div className="flex items-center justify-center gap-1.5 overflow-x-auto hide-scrollbar">
                     <Paso compacto etiqueta="Tono" onMenos={() => cambiarTono(-1)} onMas={() => cambiarTono(1)} menosDesactivado={sinAcordes} masDesactivado={sinAcordes}
                         valor={<>{tonoSuena || 'Tono'}{a.semitonos !== 0 && <span className="ml-1 text-[12px] text-muted-foreground">{a.semitonos > 0 ? '+' : ''}{a.semitonos}</span>}</>} />
@@ -357,6 +377,27 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
                     <ChevronRight className="h-5 w-5 text-muted-foreground" />
                 </button>
             )}
+        </div>
+    );
+}
+
+const CLAVE_AUTO = 'musikeeo-tocar-auto';
+
+// Modo auto: a qué ritmo baja esta canción y el ajuste a mano (se guarda con la canción)
+function FilaAuto({ cancion, versos, cambiar }: { cancion: Cancion; versos: number; cambiar: (c: Partial<AjustesCancion>) => void }) {
+    const ritmo = cancion.ajustes.ritmo ?? 1;
+    const segundos = segundosAuto(cancion, versos);
+    const mover = (d: number) => cambiar({ ritmo: Math.round(Math.min(RITMO_MAX, Math.max(RITMO_MIN, ritmo + d)) * 10) / 10 });
+    const fuente = cancion.duracion ? `dura ${minutos(cancion.duracion)}` : cancion.bpm ? `${cancion.bpm} bpm` : null;
+    return (
+        <div className="mb-2 flex items-center gap-2">
+            <p className="flex-1 min-w-0 truncate text-[13px] text-muted-foreground">
+                {segundos
+                    ? <>Auto · {fuente}{cancion.duracion && cancion.bpm ? ` · ${cancion.bpm} bpm` : ''} · baja en <b className="font-semibold text-foreground">{minutos(segundos / ritmo)}</b></>
+                    : 'Auto · sin duración ni tempo: baja a velocidad fija'}
+            </p>
+            <Paso compacto etiqueta="Velocidad del modo auto" valor={`${Math.round(ritmo * 100)} %`}
+                onMenos={() => mover(-0.1)} onMas={() => mover(0.1)} menosDesactivado={ritmo <= RITMO_MIN} masDesactivado={ritmo >= RITMO_MAX} />
         </div>
     );
 }
