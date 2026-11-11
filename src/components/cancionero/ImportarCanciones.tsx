@@ -87,6 +87,10 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId }: { abierto
     }, [encontradas, canciones]);
     // Una biblioteca entera no es un repertorio: con muchas, el interruptor empieza apagado
     const muchas = encontradas.length > 40;
+    // Desde un repertorio: una copia del cancionero NUNCA entra en él (va a Canciones con sus
+    // propios repertorios); muchas canciones (una biblioteca) solo si se pide
+    const [meterEnDestino, setMeterEnDestino] = useState(false);
+    const aDestino = !!destino && !copia && (!muchas || meterEnDestino);
 
     const pegar = async () => {
         try {
@@ -175,7 +179,7 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId }: { abierto
         onCerrar();
         const aviso = [nuevas && `${nuevas} nuevas`, rellenas && `${rellenas} fichas completadas`, conFicha && `${conFicha} actualizadas`].filter(Boolean).join(', ') || 'Ya las tenías';
         // Desde un repertorio: todo al final de ese, sin repetir
-        if (destino) {
+        if (destino && aDestino) {
             const faltan = [...new Set(ids)].filter(id => !destino.canciones.includes(id));
             guardarRepertorio({ ...destino, canciones: [...destino.canciones, ...faltan] });
             toast.success(`${aviso} · ${faltan.length} en «${destino.nombre}»`);
@@ -192,7 +196,8 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId }: { abierto
                     if (r.fecha && r.fecha !== nuevo.fecha) guardarRepertorio({ ...nuevo, fecha: r.fecha });
                 }
             }
-            toast.success(`${aviso} · ${copia.repertorios.length} ${copia.repertorios.length === 1 ? 'repertorio' : 'repertorios'}`);
+            const total = new Set(ids).size;
+            toast.success(`${total} ${total === 1 ? 'canción' : 'canciones'} en tu cancionero · ${copia.repertorios.length} ${copia.repertorios.length === 1 ? 'repertorio' : 'repertorios'}`, { description: aviso });
             navigate('/cancionero?ver=repertorios');
             return;
         }
@@ -200,6 +205,12 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId }: { abierto
         const mismo = repertorios.find(r => r.canciones.length === ids.length && r.canciones.every((c, i) => c === ids[i]));
         // Si solo se completaron fichas, no hace falta otro repertorio: se abre el que ya las tiene
         const contiene = nuevas ? undefined : repertorios.find(r => ids.every(id => r.canciones.includes(id)));
+        if (destino || copia) {
+            // Desde un repertorio sin meterlas en él, o una copia sin repertorios: a Canciones
+            toast.success(`${aviso} · en Canciones`);
+            if (destino) navigate('/cancionero');
+            return;
+        }
         if (conRepertorio && !muchas && ids.length > 1) {
             const r = mismo ?? contiene ?? crearRepertorio(nombre.trim() || `Bolo ${new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'short' })}`, ids);
             toast.success(aviso);
@@ -259,11 +270,20 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId }: { abierto
                                             </li>
                                         ))}
                                     </ol>
-                                    {(copia || destino) && (
+                                    {(copia || aDestino) && (
                                         <p className="mt-3 px-1 text-[14px] text-muted-foreground">
-                                            {destino ? `Entran al final de «${destino.nombre}».`
+                                            {destino && aDestino ? `Entran al final de «${destino.nombre}».`
                                                 : `Copia del cancionero${copia!.repertorios.length ? ` con ${copia!.repertorios.length} ${copia!.repertorios.length === 1 ? 'repertorio' : 'repertorios'}` : ''}. Lo que ya tienes no se duplica: se le suma la ficha.`}
                                         </p>
+                                    )}
+                                    {destino && !copia && muchas && (
+                                        <div className="mt-3 rounded-2xl bg-fill px-4 py-3">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <p className="text-[15px] font-semibold text-foreground">Meterlas también en «{destino.nombre}»</p>
+                                                <Switch checked={meterEnDestino} onCheckedChange={setMeterEnDestino} aria-label={`Meterlas también en ${destino.nombre}`} />
+                                            </div>
+                                            <p className="mt-1 text-[13px] text-muted-foreground">Apagado: van a tu cancionero (Canciones) y el repertorio no cambia.</p>
+                                        </div>
                                     )}
                                     {!copia && !destino && encontradas.length > 1 && !muchas && (
                                         <div className="mt-3 rounded-2xl bg-fill px-4 py-3">
