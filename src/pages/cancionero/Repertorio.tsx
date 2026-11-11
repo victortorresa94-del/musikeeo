@@ -1,8 +1,8 @@
-import { useCallback, useMemo, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams } from 'react-router-dom';
 import { Reorder, useDragControls } from 'framer-motion';
 import { toast } from 'sonner';
-import { ChevronLeft, GripVertical, Loader2, Play, Plus, Search, Trash2, X } from 'lucide-react';
+import { ChevronLeft, GripVertical, Loader2, Play, Plus, Search, Share2, Trash2, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { norm, pedirPantallaCompleta, tonoDe } from '../../components/cancionero/utilidades';
@@ -17,6 +17,12 @@ import { ResultadosCatalogo } from '../../components/cancionero/ResultadosCatalo
 import { minutos } from '../../lib/cantar';
 import { duracionDe, filtrar, mismoTitulo, mismoTonoSeguido, reparto, textoDuracion, tonoMostrado } from '../../lib/biblioteca';
 import type { Cancion, Repertorio as TipoRepertorio } from '../../types/cancionero';
+import { CompartirGrupo } from '../../components/cancionero/CompartirGrupo';
+import { NotasRicas } from '../../components/notas/NotasRicas';
+import { notasVacias } from '../../lib/notas';
+
+// El editor de notas (Tiptap) va en su trozo: solo se baja al escribir la hoja del bolo
+const EditorNotas = lazy(() => import('../../components/notas/EditorNotas'));
 
 export default function Repertorio() {
     const { id } = useParams();
@@ -31,6 +37,12 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     const { canciones, guardarRepertorio, borrarRepertorio } = useCancionero();
     const [nombre, setNombre] = useState(repertorio.nombre);
     const [anadir, setAnadir] = useState(false);
+    const [compartir, setCompartir] = useState(false);
+    const [editandoHoja, setEditandoHoja] = useState(false);
+    // La hoja del bolo se guarda sola mientras escribes (al parar)
+    const ultimo = useRef(repertorio);
+    useEffect(() => { ultimo.current = repertorio; }, [repertorio]);
+    const guardarHoja = (notas: string | undefined) => guardarRepertorio({ ...ultimo.current, notas }, { esperar: true });
 
     const porId = useMemo(() => new Map(canciones.map(c => [c.id, c])), [canciones]);
     const ids = repertorio.canciones.filter(c => porId.has(c));
@@ -92,6 +104,36 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                 <Play className="h-5 w-5 fill-current" /> Tocar el repertorio
             </button>
             <p className="mt-2 text-center text-[13px] text-muted-foreground">Desliza de lado para pasar de canción. Toca un número para empezar desde ese tema.</p>
+            <button onClick={() => setCompartir(true)} disabled={!ids.length}
+                className="pulsable mt-3 mx-auto h-9 px-4 rounded-full bg-fill text-foreground text-[14px] font-semibold flex items-center gap-1.5 disabled:opacity-40">
+                <Share2 className="h-4 w-4" /> Compartir con el grupo
+            </button>
+
+            {/* La hoja del bolo: lo que el grupo tiene que saber (horarios, cables, quién trae qué…), con formato */}
+            <section className="mt-6" aria-labelledby="hoja-bolo">
+                <div className="flex items-center justify-between gap-2">
+                    <h2 id="hoja-bolo" className="text-[17px] font-bold text-foreground">Hoja del bolo</h2>
+                    <button onClick={() => setEditandoHoja(e => !e)} className="h-9 px-3.5 rounded-full text-[14px] font-semibold text-foreground active:bg-fill">
+                        {editandoHoja ? 'Listo' : notasVacias(repertorio.notas) ? 'Escribir' : 'Editar'}
+                    </button>
+                </div>
+                {editandoHoja ? (
+                    <div className="mt-2 rounded-2xl border border-hairline p-3 md:p-4">
+                        <Suspense fallback={<div className="min-h-32" />}>
+                            <EditorNotas valor={repertorio.notas} onCambio={guardarHoja} autoFocus
+                                placeholder="Horarios, prueba de sonido, quién trae qué, el orden de los bises… Pulsa «/» para títulos, avisos y casillas." />
+                        </Suspense>
+                    </div>
+                ) : notasVacias(repertorio.notas) ? (
+                    <button onClick={() => setEditandoHoja(true)} className="mt-2 w-full rounded-2xl bg-fill px-4 py-4 text-left text-[15px] text-muted-foreground">
+                        Horarios, prueba de sonido, quién trae qué… Sale en el enlace del grupo.
+                    </button>
+                ) : (
+                    <button onClick={() => setEditandoHoja(true)} className="mt-2 w-full rounded-2xl bg-fill px-4 py-3 text-left">
+                        <NotasRicas json={repertorio.notas} className="text-[15px]" />
+                    </button>
+                )}
+            </section>
 
             {ids.length > 0 ? (
                 <Reorder.Group axis="y" values={ids} onReorder={orden => guardarRepertorio({ ...repertorio, canciones: orden }, { esperar: true })}
@@ -123,6 +165,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                 <Trash2 className="h-4 w-4" /> Borrar repertorio
             </button>
 
+            <CompartirGrupo abierta={compartir} onCerrar={() => setCompartir(false)} repertorio={repertorio} canciones={canciones} />
             <ElegirCanciones abierto={anadir} onCerrar={() => setAnadir(false)} canciones={canciones}
                 elegidas={repertorio.canciones} onAlternar={alternar} repertorio={repertorio} />
         </div>
