@@ -1,3 +1,4 @@
+import { toast } from 'sonner';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckSquare, ChevronRight, Cloud, Download, FileText, Loader2, Plus, Search, Smartphone, X } from 'lucide-react';
@@ -17,6 +18,8 @@ import type { Cancion } from '../../types/cancionero';
 import { FilaCancion } from '../../components/cancionero/FilaCancion';
 import { SelectorVista } from '../../components/cancionero/SelectorVista';
 import { CifradoEnDirecto, HojaSet } from '../../components/cancionero/VistaCifrado';
+import { TableroBloques } from '../../components/cancionero/TableroBloques';
+import { mover as moverEnTablero, type CampoTablero } from '../../lib/tablero';
 import { temaDe } from '../../lib/compartir';
 import { BarraFiltros } from '../../components/cancionero/Filtros';
 import { useFiltrosGuardados } from '../../hooks/useFiltrosGuardados';
@@ -32,7 +35,7 @@ const fechaCorta = (f: string) => {
 // repertorios para tocarlo en el bolo. Un solo buscador: tus canciones y, debajo, las del
 // catálogo (con portada y muestra) para añadirlas
 export default function Cancionero() {
-    const { canciones, repertorios, listo, nube, conCuenta, crear, crearRepertorio } = useCancionero();
+    const { canciones, repertorios, listo, nube, conCuenta, crear, crearRepertorio, guardar } = useCancionero();
     const navigate = useNavigate();
     const location = useLocation();
     const [params, setParams] = useSearchParams();
@@ -74,7 +77,8 @@ export default function Cancionero() {
         return agruparCanciones(base, agrupar, tonoDeCancion);
     }, [filtradas, agrupar, tonoDeCancion]);
     // Vista Cifrado: las canciones filtradas, en el orden de la lista, seguidas con sus acordes
-    const vista = params.get('vista') === 'cifrado' ? 'cifrado' : 'lista';
+    const vista = params.get('vista') === 'cifrado' ? 'cifrado' : params.get('vista') === 'bloques' ? 'bloques' : 'lista';
+    const [campoTablero, setCampoTablero] = useState<CampoTablero>(() => { try { return (localStorage.getItem('musikeeo-tablero-biblioteca') as CampoTablero) || 'estilos'; } catch { return 'estilos'; } });
     const directo = params.get('directo') === '1';
     const ordenadas = useMemo(() => grupos.flatMap(g => g.canciones).filter((c, i, l) => l.indexOf(c) === i), [grupos]);
     const temasCifrado = useMemo(() => (vista === 'cifrado' || directo ? ordenadas.map(c => temaDe(c, false)) : []), [vista, directo, ordenadas]);
@@ -265,7 +269,7 @@ export default function Cancionero() {
                             )}
                             {!elegidas && filtradas.length > 0 && (
                                 <div className="mb-3 flex items-center gap-2">
-                                    <SelectorVista valor={vista} onCambio={v => cambiarParam('vista', v === 'lista' ? null : v)} opciones={['lista', 'cifrado']} />
+                                    <SelectorVista valor={vista} onCambio={v => cambiarParam('vista', v === 'lista' ? null : v)} />
                                     {vista === 'cifrado' && (
                                         <button onClick={() => cambiarParam('directo', '1')} className="pulsable ml-auto h-9 px-3.5 rounded-full bg-foreground text-background text-[14px] font-semibold">En directo</button>
                                     )}
@@ -273,6 +277,16 @@ export default function Cancionero() {
                             )}
                             {filtradas.length === 0 ? (
                                 <p className="rounded-2xl bg-fill px-4 py-6 text-center text-[15px] text-muted-foreground">Ninguna canción con estos filtros.</p>
+                            ) : vista === 'bloques' && !elegidas ? (
+                                <TableroBloques canciones={ordenadas} campo={campoTablero} tonoDe={tonoDeCancion}
+                                    onCampo={c => { setCampoTablero(c); try { localStorage.setItem('musikeeo-tablero-biblioteca', c); } catch { /* */ } }}
+                                    campos={['estilos', 'proyectos', 'canta', 'tonos', 'energias', 'estados', 'etiquetas']}
+                                    onMover={(c, desde, hacia) => {
+                                        guardar(moverEnTablero(c, campoTablero, desde, hacia));
+                                        toast.success(`«${c.titulo}» → ${hacia || 'sin dato'}`, { action: { label: 'Deshacer', onClick: () => guardar(c) } });
+                                    }}
+                                    onAbrir={c => navigate(`/cancionero/${c.id}`)}
+                                    onAnadir={col => navigate(`/cancionero/nueva${col.clave ? `?campo=${campoTablero}&valor=${encodeURIComponent(col.clave)}` : ''}`)} />
                             ) : vista === 'cifrado' && !elegidas ? (
                                 <HojaSet temas={temasCifrado} tamano={17} onAbrir={abrirDesdeCifrado} />
                             ) : grupos.map(g => (

@@ -20,6 +20,8 @@ import type { Cancion, Repertorio as TipoRepertorio } from '../../types/cancione
 import { CompartirGrupo } from '../../components/cancionero/CompartirGrupo';
 import { SelectorVista, type Vista } from '../../components/cancionero/SelectorVista';
 import { CifradoEnDirecto, HojaSet } from '../../components/cancionero/VistaCifrado';
+import { TableroBloques } from '../../components/cancionero/TableroBloques';
+import { mover as moverEnTablero, type CampoTablero } from '../../lib/tablero';
 import { temaDe } from '../../lib/compartir';
 import { NotasRicas } from '../../components/notas/NotasRicas';
 import { notasVacias } from '../../lib/notas';
@@ -38,9 +40,10 @@ export default function Repertorio() {
 function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     const navigate = useNavigate();
     const [params, setParams] = useSearchParams();
-    const { canciones, guardarRepertorio, borrarRepertorio } = useCancionero();
+    const { canciones, guardar, guardarRepertorio, borrarRepertorio } = useCancionero();
+    const [campoTablero, setCampoTablero] = useState<CampoTablero>(() => { try { return (localStorage.getItem('musikeeo-tablero-set') as CampoTablero) || 'bloque'; } catch { return 'bloque'; } });
     // La vista va en la dirección: al volver de una canción se queda donde estaba
-    const vista: Vista = params.get('vista') === 'cifrado' ? 'cifrado' : 'lista';
+    const vista: Vista = params.get('vista') === 'cifrado' ? 'cifrado' : params.get('vista') === 'bloques' ? 'bloques' : 'lista';
     const directo = params.get('directo') === '1';
     const cambiarParams = (cambio: Record<string, string | null>) => {
         const p = new URLSearchParams(params);
@@ -68,6 +71,20 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     const repetidos = mismoTonoSeguido(tonos);
     const voces = reparto(temas);
     const temasCifrado = useMemo(() => (vista === 'cifrado' || directo ? temas.map(c => temaDe(c, false)) : []), [vista, directo, temas]);
+    // Bloques: pasar un tema a otro bloque del set le cambia el bloque y lo lleva detrás del
+    // último de ese bloque; con otro campo, cambia ese dato de su ficha
+    const moverTema = (c: Cancion, desde: string, hacia: string) => {
+        const nueva = moverEnTablero(c, campoTablero, desde, hacia);
+        guardar(nueva);
+        if (campoTablero === 'bloque') {
+            const orden = repertorio.canciones.filter(x => x !== c.id);
+            const ultimo = hacia ? [...orden].reverse().find(x => porId.get(x) && bloqueDe(porId.get(x)!) === hacia) : undefined;
+            const pos = ultimo ? orden.indexOf(ultimo) + 1 : orden.length;
+            orden.splice(pos, 0, c.id);
+            guardarRepertorio({ ...repertorio, canciones: orden });
+        }
+        toast.success(`«${c.titulo}» → ${hacia || 'sin ' + (campoTablero === 'bloque' ? 'bloque' : 'dato')}`, { action: { label: 'Deshacer', onClick: () => { guardar(c); guardarRepertorio(repertorio); } } });
+    };
     const abrirDesdeCifrado = (i: number, enDirecto: boolean) => {
         if (!enDirecto) { try { sessionStorage.setItem(claveScroll, String(window.scrollY)); } catch { /* */ } }
         navigate(`/cancionero/${ids[i]}`);
@@ -163,7 +180,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
 
             {ids.length > 0 && (
                 <div className="mt-6 flex items-center gap-2">
-                    <SelectorVista valor={vista} onCambio={v => cambiarParams({ vista: v === 'lista' ? null : v })} opciones={['lista', 'cifrado']} />
+                    <SelectorVista valor={vista} onCambio={v => cambiarParams({ vista: v === 'lista' ? null : v })} />
                     {vista === 'cifrado' && (
                         <button onClick={() => cambiarParams({ directo: '1' })} className="pulsable ml-auto h-9 px-3.5 rounded-full bg-foreground text-background text-[14px] font-semibold">
                             En directo
@@ -171,7 +188,14 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                     )}
                 </div>
             )}
-            {ids.length > 0 && vista === 'cifrado' ? (
+            {ids.length > 0 && vista === 'bloques' ? (
+                <div className="mt-3">
+                    <TableroBloques canciones={temas} campo={campoTablero} tonoDe={c => tonos[temas.indexOf(c)] ?? null}
+                        onCampo={c => { setCampoTablero(c); try { localStorage.setItem('musikeeo-tablero-set', c); } catch { /* */ } }}
+                        campos={['bloque', 'canta', 'estilos', 'tonos', 'energias', 'etiquetas']}
+                        onMover={moverTema} onAbrir={c => navigate(`/cancionero/${c.id}`)} />
+                </div>
+            ) : ids.length > 0 && vista === 'cifrado' ? (
                 <HojaSet temas={temasCifrado} tamano={17} onAbrir={i => abrirDesdeCifrado(i, false)} className="mt-2" />
             ) : ids.length > 0 ? (
                 <Reorder.Group axis="y" values={ids} onReorder={orden => guardarRepertorio({ ...repertorio, canciones: orden }, { esperar: true })}

@@ -17,6 +17,7 @@ import { FormatoLetra } from '../../components/cancionero/FormatoLetra';
 const EditorNotas = lazy(() => import('../../components/notas/EditorNotas'));
 import { ICONO, PASTEL, type Pastel } from '../../components/cancionero/estilo';
 import type { Cancion, FichaCancion } from '../../types/cancionero';
+import { mover as moverEnTablero, type CampoTablero } from '../../lib/tablero';
 
 const EJEMPLO = `Pega aquí la canción tal cual, con los acordes encima de la letra:
 
@@ -74,7 +75,14 @@ function Formulario({ existente }: { existente?: Cancion }) {
     const [artista, setArtista] = useState(existente?.artista ?? '');
     const [texto, setTexto] = useState(existente?.texto ?? '');
     const [pestana, setPestana] = useState<'texto' | 'previa'>('texto');
-    const [ficha, setFicha] = useState<FichaCancion>(existente?.ficha ?? {});
+    // Desde «Añadir aquí» de una columna de Bloques: la ficha ya trae ese dato
+    const [ficha, setFicha] = useState<FichaCancion>(() => {
+        if (existente) return existente.ficha ?? {};
+        const v = params.get('valor')?.slice(0, 40);
+        if (!v) return {};
+        const campo = params.get('campo') as CampoTablero | null;
+        return campo && campo !== 'bloque' ? moverEnTablero({ ficha: {} } as Cancion, campo, '', v).ficha ?? {} : {};
+    });
     const [bpm, setBpm] = useState<number | undefined>(existente?.bpm);
     const [duracion, setDuracion] = useState<number | undefined>(existente?.duracion);
     const [notas, setNotas] = useState<string | undefined>(existente?.notas);
