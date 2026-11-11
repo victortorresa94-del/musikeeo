@@ -198,19 +198,22 @@ export async function portadaDe(titulo: string, artista: string, { signal }: { s
 // ---- Dónde buscar los acordes y la letra (se abre aparte; luego se copia y se pega) ----
 // LaCuerda no va: pone `user-select: none` en la canción y en el móvil no deja copiarla
 
-export interface EnlaceBusqueda { nombre: string; url: string }
+export interface EnlaceBusqueda { nombre: string; url: string; logo?: string }
 
 const google = (q: string) => `https://www.google.com/search?q=${encodeURIComponent(q)}`;
 
 export function enlacesAcordes(titulo: string, artista: string): EnlaceBusqueda[] {
     const q = `${titulo} ${artista}`.replace(/\s+/g, ' ').trim();
     return [
-        { nombre: 'Ultimate Guitar', url: `https://www.ultimate-guitar.com/search.php?search_type=title&value=${encodeURIComponent(q)}` },
-        { nombre: 'Cifra Club', url: google(`${q} site:cifraclub.com`) },
-        { nombre: 'Google', url: google(`${q} acordes`) },
+        // LaCuerda pone la canción sin dejar seleccionarla en el móvil: el modo lector de Safari
+        // («Aa» → «Mostrar lector») sí deja (lo explica AnadirLetra al tocarla)
+        { nombre: 'LaCuerda', url: google(`${q} site:lacuerda.net`), logo: '/images/marcas/lacuerda.png' },
+        { nombre: 'Ultimate Guitar', url: `https://www.ultimate-guitar.com/search.php?search_type=title&value=${encodeURIComponent(q)}`, logo: '/images/marcas/ultimate-guitar.png' },
+        { nombre: 'Cifra Club', url: google(`${q} site:cifraclub.com`), logo: '/images/marcas/cifraclub.png' },
+        { nombre: 'Google', url: google(`${q} acordes`), logo: '/images/marcas/google.png' },
         // Saca los acordes de la grabación (no son texto para copiar: se miran tocando). Con su
         // app instalada, el enlace la abre
-        { nombre: 'Chordify', url: google(`${q} site:chordify.net`) },
+        { nombre: 'Chordify', url: google(`${q} site:chordify.net`), logo: '/images/marcas/chordify.png' },
     ];
 }
 

@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { CheckSquare, ChevronRight, Cloud, Download, Loader2, Plus, Search, Smartphone, X } from 'lucide-react';
+import { CheckSquare, ChevronRight, Cloud, Download, FileText, Loader2, Plus, Search, Smartphone, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { CANCION_EJEMPLO } from '../../components/cancionero/ejemplo';
@@ -9,6 +9,8 @@ import { ICONO, PASTEL, iconoRepertorio, pastelDe } from '../../components/canci
 import { ImportarCanciones } from '../../components/cancionero/ImportarCanciones';
 import { PonerPortadas } from '../../components/cancionero/PonerPortadas';
 import { PonerTempo } from '../../components/cancionero/PonerTempo';
+import { CompletarLetras } from '../../components/cancionero/CompletarLetras';
+import { leerCancion, lineasDeLetra } from '../../lib/acordes';
 import { ResultadosCatalogo } from '../../components/cancionero/ResultadosCatalogo';
 import { norm, pedirPantallaCompleta, tonoDe } from '../../components/cancionero/utilidades';
 import type { Cancion } from '../../types/cancionero';
@@ -42,6 +44,7 @@ export default function Cancionero() {
     const [filtros, setFiltros, agrupar, setAgrupar] = useFiltrosGuardados('musikeeo-cancionero-biblioteca');
     const [elegidas, setElegidas] = useState<string[] | null>(null);
     const [aRepertorio, setARepertorio] = useState(false);
+    const [completar, setCompletar] = useState(false);
 
     // Para el bolo sin cobertura: se bajan ya las pantallas de leer y tocar
     useEffect(() => {
@@ -51,6 +54,8 @@ export default function Cancionero() {
         void import('./TocarRepertorio');
     }, []);
 
+    // Canciones sin letra todavía (fichas del setlist, chuletas de acordes): para «Completar letras»
+    const faltanLetra = useMemo(() => canciones.filter(c => lineasDeLetra(leerCancion(c.texto)) < 8).length, [canciones]);
     const tonos = useMemo(() => new Map(canciones.map(c => [c.id, tonoMostrado(c, tonoDe(c))])), [canciones]);
     const tonoDeCancion = useCallback((c: Cancion) => tonos.get(c.id) ?? null, [tonos]);
     // Busca en el título, el artista, el tono y la ficha (quién canta, estilo, grupo)
@@ -249,7 +254,14 @@ export default function Cancionero() {
                                 <p className="mb-2 px-1 text-[14px] text-muted-foreground">Toca las canciones que quieras llevar a un repertorio.</p>
                             )}
                             {!elegidas && !hayFiltros(filtros) && (
-                                <div className="mb-3 flex flex-wrap gap-2 empty:hidden"><PonerPortadas /><PonerTempo /></div>
+                                <div className="mb-3 flex flex-wrap gap-2 empty:hidden">
+                                    {faltanLetra > 0 && (
+                                        <button type="button" onClick={() => setCompletar(true)} className="pulsable h-9 pl-3 pr-3.5 shrink-0 rounded-full bg-fill text-[14px] font-semibold text-foreground flex items-center gap-1.5">
+                                            <FileText className="h-4 w-4" /> Completar letras · {faltanLetra}
+                                        </button>
+                                    )}
+                                    <PonerPortadas /><PonerTempo />
+                                </div>
                             )}
                             {!elegidas && filtradas.length > 0 && (
                                 <div className="mb-3 flex items-center gap-2">
@@ -322,6 +334,7 @@ export default function Cancionero() {
             <AnadirARepertorio abierta={aRepertorio} onCerrar={() => setARepertorio(false)} ids={elegidas ?? []} onHecho={() => setElegidas(null)} />
 
             <ImportarCanciones abierto={importar} onCerrar={() => setImportar(false)} />
+            <CompletarLetras abierta={completar} onCerrar={() => setCompletar(false)} />
         </div>
     );
 }

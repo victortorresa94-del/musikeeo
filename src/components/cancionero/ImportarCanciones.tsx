@@ -13,6 +13,7 @@ import { leerSetlist, type CancionImportada } from '../../lib/setlist';
 import { leerCopia, mismoTitulo, sacarFicha, unirFichas, type Copia } from '../../lib/biblioteca';
 import { claveTitulo } from '../../lib/buscarCanciones';
 import { cancionDelPapel, partesDeMix, tituloDePapel } from '../../lib/papeles';
+import { leerPortapapeles } from '../../lib/pegado';
 import { norm } from './utilidades';
 import type { Cancion } from '../../types/cancionero';
 
@@ -114,7 +115,7 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId }: { abierto
 
     const pegar = async () => {
         try {
-            const t = await navigator.clipboard.readText();
+            const t = await leerPortapapeles();
             if (t.trim()) setTexto(t); else toast('No hay nada copiado.');
         } catch {
             toast('Mantén pulsado el recuadro y elige «Pegar».');
