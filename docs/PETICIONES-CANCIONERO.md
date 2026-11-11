@@ -119,7 +119,7 @@ En Tocar:
 
 Tempo de 25 de los 32 temas de los sets, sacado de la muestra de Apple.
 
-## 10. Teleprompter 🔧 (sesión 1)
+## 10. Teleprompter 🔧 (sesión 1; decidido: negrita por tiempo + «Escuchar» opcional en Safari con red)
 
 *«Y si te pudiera escuchar, ya sería la polla, para que fuera interpretando la canción y se fuera poniendo en negrita
 mientras cantas cada parte, para que sea rollo teleprompter.»*
@@ -175,7 +175,7 @@ Plan, ordenado por momentos del músico:
 - **Cabecera de Canciones**: filtros con iconos, grupos con su icono y el mantenimiento («Poner portadas», «Poner tempo…») fuera del primer plano.
 - **Objetivo**: 1-2 toques para tono, Auto o pasar de canción.
 
-Antes de construir se sueñan 3 conceptos en Aura Studio para que elija.
+Antes de construir se sueñan 3 conceptos en Aura Studio para que elija. Gasto aprobado: *«sí, o más, las que hagan falta»*.
 
 ## 15. Editor rico «con la potencia de Aura notas» 🔧 (sesión 2)
 
@@ -240,6 +240,20 @@ Sin papel: La Morocha, La Marina, Coti x Coti, Marcha, La tortura, Si antes te h
 **Pegar el enlace**: el servidor trae la página con las protecciones de `api/_descargar.ts`.
 - Solo para su cancionero privado.
 - Antes hay que revisar las condiciones de uso de esas webs y decirle el riesgo.
+
+**Decisión de Víctor (11-nov):** no se baja nada de esas webs.
+- *«De momento, pues eso: tocará copiar y pegar, y que se pueda pegar bien el formato al menos. Hay que revisar si eso es legal.»*
+- Se copia y se pega con formato perfecto, y el enlace se guarda en `ficha.enlace`.
+- Revisión legal en marcha: va a `docs/LEGAL-CANCIONERO.md`.
+
+### 19b. Buscador propio de canciones escrito por la comunidad ⏳ (plan, sin construir)
+
+*«Tendremos que hacer que la gente pueda usarlo como LaCuerda: necesitamos un buscador propio de canciones donde la gente las vaya escribiendo, como en Cifra Club.»*
+
+Antes de diseñarlo hace falta el informe legal:
+- licencias de letras (SGAE, editoras, LyricFind/Musixmatch);
+- el art. 17 de la Directiva 2019/790;
+- publicar solo acordes frente a letra completa.
 
 ## 20. Diagramas de acordes 🔧 (sesión 2)
 
