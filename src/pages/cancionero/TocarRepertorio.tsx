@@ -11,7 +11,7 @@ import { BotonBarra, Paso } from '../../components/cancionero/Controles';
 import { BotonClaqueta, DameElTono } from '../../components/cancionero/Cantante';
 import { Portada } from '../../components/cancionero/Portada';
 import { Pildora } from '../../components/cancionero/Baldosas';
-import { bloqueDe, estiloBloque, etiquetasDe, sinLoDeLasPildoras } from '../../components/cancionero/estilo';
+import { bloqueDe, estiloBloque, etiquetasDe, ICONO, pastelCanta, sinLoDeLasPildoras } from '../../components/cancionero/estilo';
 import { tonoDe } from '../../components/cancionero/utilidades';
 import { esperaDeIntro, velocidadAlDesplazar } from '../../lib/cantar';
 import { buscarEncaje, columnasPosibles, type Encaje } from '../../components/cancionero/medir';
@@ -262,7 +262,13 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
     const { leida, opciones } = useMusicaCancion(cancion.texto, a);
     const bloque = bloqueDe(cancion);
     const estiloDelBloque = bloque ? estiloBloque(bloque) : null;
-    const etiquetas = etiquetasDe(cancion);
+    // Quién canta: lo que diga la ficha, si el texto no lo dice ya
+    const etiquetas = useMemo(() => {
+        const e = etiquetasDe(cancion);
+        const canta = cancion.ficha?.canta?.trim();
+        if (canta && !e.some(x => /^canta /i.test(x.texto))) e.unshift({ texto: `Canta ${canta}`, pastel: pastelCanta(canta), icono: ICONO.canciones });
+        return e;
+    }, [cancion]);
     const tonoSiguiente = siguiente ? tonoDe(siguiente) : null;
     const lineas = useMemo(() => sinLoDeLasPildoras(leida.lineas, bloque), [leida.lineas, bloque]);
 
