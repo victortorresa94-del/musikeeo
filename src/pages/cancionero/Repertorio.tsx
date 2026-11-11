@@ -156,7 +156,7 @@ function Fila({ id, n, cancion, tono, bloque, mismoTono, onQuitar, onTocar }: {
                 <Portada src={cancion.portada} titulo={cancion.titulo} tamano="fila" />
                 <span className="flex-1 min-w-0">
                     <span className="block truncate text-[16px] font-semibold text-foreground">{cancion.titulo}</span>
-                    {cancion.artista && <span className="block truncate text-[13px] text-muted-foreground">{cancion.artista}</span>}
+                    {(cancion.version || cancion.artista) && <span className="block truncate text-[13px] text-muted-foreground">{[cancion.version && `Versión ${cancion.version}`, cancion.artista].filter(Boolean).join(' · ')}</span>}
                     {etiquetas.length > 0 && (
                         <span className="mt-1 flex flex-wrap gap-1">
                             {etiquetas.map(e => (
@@ -197,8 +197,9 @@ function ElegirCanciones({ abierto, onCerrar, canciones, elegidas, onAlternar, r
     const lista = useMemo(() => {
         const t = norm(termino);
         const base = filtrar(canciones, filtros, tonoDeCancion);
-        const l = t ? base.filter(c => norm(`${c.titulo} ${c.artista} ${c.ficha?.canta ?? ''} ${c.ficha?.estilo ?? ''}`).includes(t) || norm(tonos.get(c.id) ?? '') === t) : base;
-        return [...l].sort((a, b) => a.titulo.localeCompare(b.titulo, 'es'));
+        const l = t ? base.filter(c => norm(`${c.titulo} ${c.version ?? ''} ${c.artista} ${c.ficha?.canta ?? ''} ${c.ficha?.estilo ?? ''}`).includes(t) || norm(tonos.get(c.id) ?? '') === t) : base;
+        // Por título y, con el mismo título, tus versiones antes que la original
+        return [...l].sort((a, b) => a.titulo.localeCompare(b.titulo, 'es') || Number(!!b.version) - Number(!!a.version));
     }, [canciones, termino, filtros, tonoDeCancion, tonos]);
     // ¿Ya está con ese título? Entonces no se ofrece crearla otra vez
     const yaEsta = !!termino && canciones.some(c => mismoTitulo(c.titulo, termino));

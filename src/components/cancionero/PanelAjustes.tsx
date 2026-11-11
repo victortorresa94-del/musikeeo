@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Pencil, Play, Printer, RotateCcw, Trash2 } from 'lucide-react';
+import { Pencil, Play, Printer, RotateCcw, Trash2, CopyPlus } from 'lucide-react';
 import { Switch } from '../ui/switch';
 import { Paso, Segmentado } from './Controles';
 import { INTRO, minutos, segundosAlRitmo } from '../../lib/cantar';
@@ -19,6 +19,7 @@ interface Props {
     onImprimir: () => void;
     onEditar: () => void;
     onBorrar: () => void;
+    onVersion?: () => void;
     duracion?: number;                  // segundos de la canción: para bajar la hoja a su ritmo
     cantante?: React.ReactNode;         // dar el tono y el tempo (Cantante.tsx)
 }
@@ -33,7 +34,7 @@ const Fila = ({ titulo, children, nota }: { titulo: string; children: React.Reac
     </div>
 );
 
-export function PanelAjustes({ abierto, onCerrar, ajustes: a, cambiar, tonoSuena, posturas, recomendada, formasRecomendadas, dificilesAhora, onImprimir, onEditar, onBorrar, duracion, cantante }: Props) {
+export function PanelAjustes({ abierto, onCerrar, ajustes: a, cambiar, tonoSuena, posturas, recomendada, formasRecomendadas, dificilesAhora, onImprimir, onEditar, onBorrar, onVersion, duracion, cantante }: Props) {
     const sugerir = recomendada && recomendada.cejilla !== a.cejilla && recomendada.dificiles < dificilesAhora;
     const ritmo = segundosAlRitmo(duracion, a);
     const intro = a.intro ?? INTRO;
@@ -142,6 +143,7 @@ export function PanelAjustes({ abierto, onCerrar, ajustes: a, cambiar, tonoSuena
                         <div className="mx-4 mt-2 rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
                             <Accion icono={Printer} texto="Imprimir o guardar en PDF" onClick={onImprimir} />
                             <Accion icono={Pencil} texto="Editar el texto" onClick={onEditar} />
+                            {onVersion && <Accion icono={CopyPlus} texto="Hacer mi versión" onClick={onVersion} />}
                             <Accion icono={Trash2} texto="Borrar la canción" onClick={onBorrar} peligro />
                         </div>
                     </motion.div>

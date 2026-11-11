@@ -10,6 +10,7 @@ import type { FichaCancion } from '../types/cancionero';
 export interface CancionImportada {
     titulo: string; artista: string; texto: string; ficha?: boolean;
     datos?: FichaCancion; bpm?: number; duracion?: number; portada?: string;
+    version?: string;           // de una copia del cancionero: tu versión de la canción
 }
 
 interface Tema { titulo: string; seccion?: string; tono?: string; cejilla?: number; notas: string[] }

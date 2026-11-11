@@ -47,6 +47,10 @@ export interface Cancion {
     muestra?: string;           // URL de 30 s para escucharla y coger el tono
     bpm?: number;               // tempo, para la claqueta
     ficha?: FichaCancion;
+    // Tu versión de una canción (la mitad, en otro tono, con otra cejilla…): su nombre («Víctor»,
+    // «Cataleya») y de cuál salió. Es una canción aparte, con su texto, ajustes y duración
+    version?: string;
+    original?: string;          // id de la canción de la que se hizo
 }
 
 // Un repertorio (setlist) para un bolo: canciones del cancionero en el orden en que se tocan

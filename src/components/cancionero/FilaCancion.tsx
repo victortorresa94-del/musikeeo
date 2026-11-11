@@ -20,7 +20,7 @@ export function FilaCancion({ cancion, tono, elegida, onElegir, href, derecha, c
 }) {
     const etiquetas = etiquetasTema(cancion);
     const grupos = cancion.ficha?.proyectos?.join(' · ');
-    const sub = [cancion.artista, grupos].filter(Boolean).join(' · ');
+    const sub = [cancion.version && `Versión ${cancion.version}`, cancion.artista, grupos].filter(Boolean).join(' · ');
     const contenido = (
         <>
             <Portada src={cancion.portada} titulo={cancion.titulo} tamano={compacta ? 'fila' : undefined} />

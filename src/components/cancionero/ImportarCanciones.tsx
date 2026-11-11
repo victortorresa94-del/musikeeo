@@ -38,7 +38,9 @@ const ACEPTA = [
 // Si el título exacto no está, vale el mismo sin lo de entre paréntesis («Hace calor (Mucho
 // mejor)» = «Hace calor»), pero solo si es inequívoco: dos versiones no se juntan en una
 function emparejar(canciones: Cancion[], t: CancionImportada, unica: boolean): { ya?: Cancion; rellena?: Cancion } {
-    const casa = (c: Cancion) => t.ficha || !c.artista || !t.artista || norm(c.artista) === norm(t.artista);
+    // Una versión solo se junta con la misma versión (Bamboléo de Víctor no rellena el de Cataleya)
+    const casa = (c: Cancion) => norm(c.version ?? '') === norm(t.version ?? '')
+        && (t.ficha || !c.artista || !t.artista || norm(c.artista) === norm(t.artista));
     let c = canciones.find(c => norm(c.titulo) === norm(t.titulo) && casa(c));
     if (!c && unica) {
         const parecidas = canciones.filter(x => mismoTitulo(x.titulo, t.titulo) && casa(x));
@@ -69,7 +71,7 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId }: { abierto
         if (copia) return copia.canciones.map(c => ({
             // Una chuleta (acordes y notas, sin letra) cuenta como ficha: nunca pisa la letra que ya tengas
             titulo: c.titulo.slice(0, 120), artista: (c.artista ?? '').slice(0, 120), texto: c.texto ?? '', ficha: letra(c.texto ?? '') < 8,
-            datos: c.ficha, bpm: c.bpm, duracion: c.duracion, portada: c.portada,
+            datos: c.ficha, bpm: c.bpm, duracion: c.duracion, portada: c.portada, version: c.version?.slice(0, 40),
         }));
         // {tono: …} {canta: …} {grupo: …}: a la ficha del tema
         return (leerSetlist(texto) ?? separarCanciones(texto)).map(t => {
@@ -158,7 +160,7 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId }: { abierto
                 }
                 nuevas++;
                 // Lo corto (fichas y chuletas de acordes) se ve entero y grande: «que quepa»
-                const nueva = extra(nuevaCancion(t, corta(t) ? { ajustar: true } : {}), t);
+                const nueva = extra({ ...nuevaCancion(t, corta(t) ? { ajustar: true } : {}), ...(t.version ? { version: t.version } : {}) }, t);
                 aGuardar.push(nueva);
                 return nueva.id;
             });

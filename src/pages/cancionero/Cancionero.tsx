@@ -54,8 +54,10 @@ export default function Cancionero() {
     const lista = useMemo(() => {
         const t = norm(q.trim());
         if (!t) return canciones;
-        return canciones.filter(c => norm(`${c.titulo} ${c.artista} ${c.ficha?.canta ?? ''} ${c.ficha?.estilo ?? ''} ${(c.ficha?.proyectos ?? []).join(' ')}`).includes(t)
-            || norm(tonos.get(c.id) ?? '') === t);
+        // Tus versiones primero: al buscar «Bamboléo» sale la tuya antes que la original
+        return canciones.filter(c => norm(`${c.titulo} ${c.version ?? ''} ${c.artista} ${c.ficha?.canta ?? ''} ${c.ficha?.estilo ?? ''} ${(c.ficha?.proyectos ?? []).join(' ')}`).includes(t)
+            || norm(tonos.get(c.id) ?? '') === t)
+            .sort((a, b) => Number(!!b.version) - Number(!!a.version));
     }, [canciones, q, tonos]);
     // Sin buscar: filtradas por la ficha, en orden alfabético si se agrupan
     const filtradas = useMemo(() => filtrar(canciones, filtros, tonoDeCancion), [canciones, filtros, tonoDeCancion]);

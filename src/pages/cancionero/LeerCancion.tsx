@@ -11,6 +11,7 @@ import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
 import { HojaCancion } from '../../components/cancionero/HojaCancion';
 import { PanelAjustes } from '../../components/cancionero/PanelAjustes';
 import { AnadirLetra } from '../../components/cancionero/AnadirLetra';
+import { HacerVersion } from '../../components/cancionero/HacerVersion';
 import { PortadaMuestra } from '../../components/cancionero/Portada';
 import { BotonBarra, Paso } from '../../components/cancionero/Controles';
 import { AjustesCantante, BotonClaqueta, DameElTono } from '../../components/cancionero/Cantante';
@@ -54,6 +55,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
     const { guardar, borrar } = useCancionero();
     const [ajustes, setAjustes] = useState<AjustesCancion>(cancion.ajustes);
     const [panel, setPanel] = useState(false);
+    const [versionando, setVersionando] = useState(false);
     const [rodando, setRodando] = useState(false);
     const [escenario, setEscenario] = useState(false);
     const [controles, setControles] = useState(true);
@@ -304,6 +306,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                     <div className="flex-1 min-w-0">
                         <h1 className="font-heading text-[28px] font-bold leading-tight text-foreground">{cancion.titulo}</h1>
                         <p className="mt-0.5 text-[15px] text-muted-foreground">
+                            {cancion.version && <span className="font-semibold text-foreground">Versión {cancion.version}{(cancion.artista || datosTono) && ' · '}</span>}
                             {cancion.artista}{cancion.artista && datosTono && ' · '}{datosTono}
                         </p>
                     </div>
@@ -411,6 +414,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                 document.body,
             )}
 
+            <HacerVersion cancion={cancion} abierta={versionando} onCerrar={() => setVersionando(false)} />
             <PanelAjustes
                 abierto={panel} onCerrar={() => setPanel(false)}
                 ajustes={ajustes} cambiar={cambiar}
@@ -418,6 +422,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                 onImprimir={() => { setPanel(false); setImprimiendo(true); }}
                 onEditar={() => navigate(`/cancionero/${cancion.id}/editar`)}
                 onBorrar={borrarCancion}
+                onVersion={() => { setPanel(false); setVersionando(true); }}
                 duracion={duracion} cantante={<AjustesCantante cancion={cancion} ajustes={ajustes} leida={leida} />}
             />
         </div>
