@@ -131,6 +131,17 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 
 ## SESSION LOG
 
+### 2026-11-11 (Cancionero: ficha, biblioteca con filtros y repertorios, a `main`)
+
+**✅ Hecho:**
+- Rama `claude/brave-johnson-n6gnpi` revisada (build, eslint) y pasada a `main` en avance directo (a95361b).
+- Probado con Playwright en un iPhone 13 simulado: biblioteca → filtro por grupo → «Elegir» → repertorio nuevo → Tocar, y luego con la red cortada (inicio, repertorio, Tocar y canción abren). Sin errores en consola.
+- Arreglo: en Tocar sale «Canta X» según la ficha (antes solo si venía escrito en el texto).
+
+**❌ Pendiente:**
+- Víctor: desplegar reglas (`git pull origin main` + `firebase deploy --only firestore --project musikeeo-8e766`); sin eso el mapa da «No se ha podido guardar» y el cancionero no sube a la cuenta. Propuesta: GitHub Action con cuenta de servicio (no creada hasta que diga).
+- Ideas de Víctor (11-nov), planteadas sin construir: versiones propias de una canción, duración real (Apple `trackTimeMillis`) con total del set, escribir progresiones por partes; BPM y «modo auto»; teleprompter; enlace del repertorio para los músicos.
+
 ### 2026-10-26 (Dossier v3, mapa de musikeers y rellenar el perfil con tu web)
 
 **✅ Hecho:**

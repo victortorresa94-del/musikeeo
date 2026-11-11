@@ -1,7 +1,7 @@
 # Pendientes de Víctor
 
-> 26 de octubre de 2026. Lo que solo puedes hacer tú, ordenado por urgencia. Lo demás lo puede hacer Claude.
-> Todo el trabajo hasta hoy está en `main` y en musikeeo.com.
+> Actualizado el 11 de noviembre de 2026. Lo que solo puedes hacer tú, ordenado por urgencia. Lo demás lo puede hacer Claude.
+> Todo el trabajo hasta hoy está en `main` y en musikeeo.com (el Cancionero nuevo, con ficha, filtros y repertorios, desde el 11-nov).
 
 ## 1. Esta semana (sin esto, musikeeo.com va a medias)
 
@@ -15,12 +15,9 @@
      - las publicaciones del Feed (dan «permiso denegado»), los me gusta y los comentarios;
      - el Cancionero guardado en la cuenta;
      - el mapa de musikeers.
-2. **Crear la clave gratuita de CARTO**, el fondo del mapa:
-   - créala en carto.com/basemaps/apikey, con una cuenta gratis (hasta 1 millón de teselas al mes);
-   - ponla en Vercel → Settings → Environment Variables como `VITE_CARTO_KEY` (Production y Preview);
-   - vuelve a desplegar.
-
-   Sin ella, el mapa sale con la marca de agua «API key required».
+   - Mientras tanto el mapa dice «No se ha podido guardar» y el Cancionero solo se guarda en el móvil (funciona igual, pero no pasa al ordenador).
+2. **Antes del bolo del sábado 14:** importar tu copia `.json` del cancionero en el móvil (Cancionero → Importar) y repasar tonos y orden del repertorio. Tus canciones no van al repo.
+   - Clave de CARTO: ✅ hecha (`CARTO_API_KEY` en Vercel, solo Production; si quieres el mapa limpio en las vistas previas, añádela también a Preview).
 3. **Dossier, lámina «Equipo»:** el papel de Adrián y de David, en una línea cada uno, y el apellido de David.
 4. **Probar en tu iPhone:**
    - **Mapa:** actívalo en tu zona y prueba «Estoy aquí ahora» en un bolo.
