@@ -7,10 +7,12 @@ import { ClipboardPaste, FileUp, Loader2 } from 'lucide-react';
 import { Switch } from '../ui/switch';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
+import { almacenCanciones } from '../../services/cancioneroService';
 import { leerCancion, lineasDeLetra, separarCanciones } from '../../lib/acordes';
 import { leerSetlist, type CancionImportada } from '../../lib/setlist';
 import { leerCopia, mismoTitulo, sacarFicha, unirFichas, type Copia } from '../../lib/biblioteca';
 import { claveTitulo } from '../../lib/buscarCanciones';
+import { cancionDelPapel, partesDeMix, tituloDePapel } from '../../lib/papeles';
 import { norm } from './utilidades';
 import type { Cancion } from '../../types/cancionero';
 
@@ -24,6 +26,17 @@ Cada tema sale como una ficha con su tono (y luego le pegas los acordes).
 O canciones enteras con sus acordes, separadas por una línea con ---`;
 
 const letra = (texto: string) => lineasDeLetra(leerCancion(texto));
+
+// El nombre con el que entra un papel: sin el número de la carpeta y, si es un mix de canciones
+// que ya tienes, «Mix: Tu Calorro + Por la raja de tu falda» (con sus nombres de verdad)
+function nombreDePapel(titulo: string, canciones: Cancion[]): string {
+    const partes = partesDeMix(titulo);
+    if (partes.length > 1) {
+        const suyas = partes.map(p => cancionDelPapel(p, canciones));
+        if (suyas.every(Boolean)) return `Mix: ${suyas.map(c => c!.titulo).join(' + ')}`.slice(0, 120);
+    }
+    return tituloDePapel(titulo);
+}
 
 // Word (.docx, también un Google Docs descargado como Word), PDF, texto y ChordPro
 const ACEPTA = [
@@ -46,6 +59,9 @@ function emparejar(canciones: Cancion[], t: CancionImportada, unica: boolean): {
         const parecidas = canciones.filter(x => mismoTitulo(x.titulo, t.titulo) && casa(x));
         if (parecidas.length === 1) c = parecidas[0];
     }
+    // Un papel de tu Drive: «1 - MUCHO MEJOR» = «Hace Calor (Mucho mejor)», «Orgulli» = «Orgullo»,
+    // «LA MADRE» = «La madre de José». Un mix («TU CALORRO + LA RAJA») no rellena las fichas sueltas
+    if (!c && unica && !t.version && partesDeMix(t.titulo).length === 1) c = cancionDelPapel(t.titulo, canciones.filter(casa)) ?? undefined;
     if (!c) return {};
     if (!t.ficha && c.texto.trim() !== t.texto.trim() && (!c.artista || (letra(t.texto) >= 8 && letra(c.texto) < 8))) return { rellena: c };
     return { ya: c };
@@ -61,7 +77,9 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId }: { abierto
     const { canciones, repertorios, nuevaCancion, guardarVarias, crearRepertorio, guardarRepertorio } = useCancionero();
     const destino = repertorios.find(r => r.id === repertorioId);
     const [texto, setTexto] = useState('');
-    const [conRepertorio, setConRepertorio] = useState(true);
+    // Hacer un repertorio con lo importado: de entrada solo con un setlist; canciones o papeles
+    // sueltos van a Canciones (rellenar una ficha nunca la mete en un repertorio)
+    const [conRepertorioElegido, setConRepertorio] = useState<boolean | null>(null);
     const [nombre, setNombre] = useState('');
     const [leyendo, setLeyendo] = useState(false);
     const archivoRef = useRef<HTMLInputElement>(null);
@@ -76,10 +94,12 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId }: { abierto
         // {tono: …} {canta: …} {grupo: …}: a la ficha del tema
         return (leerSetlist(texto) ?? separarCanciones(texto)).map(t => {
             const { ficha, texto: resto } = sacarFicha(t.texto);
-            return ficha ? { ...t, texto: resto, datos: ficha } : t;
+            const limpio = { ...t, titulo: 'ficha' in t && t.ficha ? t.titulo : nombreDePapel(t.titulo, canciones) };
+            return ficha ? { ...limpio, texto: resto, datos: ficha } : limpio;
         });
-    }, [texto, copia]);
+    }, [texto, copia, canciones]);
     const esSetlist = encontradas.some(t => t.ficha);
+    const conRepertorio = conRepertorioElegido ?? esSetlist;
     const parejas = useMemo(() => {
         const veces = new Map<string, number>();
         for (const t of encontradas) { const k = claveTitulo(t.titulo); veces.set(k, (veces.get(k) ?? 0) + 1); }
@@ -178,6 +198,13 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId }: { abierto
         setTexto('');
         onCerrar();
         const aviso = [nuevas && `${nuevas} nuevas`, rellenas && `${rellenas} fichas completadas`, conFicha && `${conFicha} actualizadas`].filter(Boolean).join(', ') || 'Ya las tenías';
+        // Las que siguen sin letra (para completarlas luego): al rellenar fichas, se dice cuáles
+        const sinLetra = rellenas ? almacenCanciones.estado().items.filter(c => !c.version && letra(c.texto) < 8) : [];
+        if (sinLetra.length) {
+            toast(`${sinLetra.length} ${sinLetra.length === 1 ? 'canción sigue' : 'canciones siguen'} sin letra`, {
+                description: sinLetra.slice(0, 6).map(c => c.titulo).join(' · ') + (sinLetra.length > 6 ? '…' : ''), duration: 9000,
+            });
+        }
         // Desde un repertorio: todo al final de ese, sin repetir
         if (destino && aDestino) {
             const faltan = [...new Set(ids)].filter(id => !destino.canciones.includes(id));
