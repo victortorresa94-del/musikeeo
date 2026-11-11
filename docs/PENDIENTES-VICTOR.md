@@ -17,6 +17,9 @@
      - el mapa de musikeers.
    - Mientras tanto el mapa dice «No se ha podido guardar» y el Cancionero solo se guarda en el móvil (funciona igual, pero no pasa al ordenador).
 2. **Antes del bolo del sábado 14:** importar tu copia `.json` del cancionero en el móvil (Cancionero → Importar) y repasar tonos y orden del repertorio. Tus canciones no van al repo.
+   - Pulsa «Poner tempo y duración» en el Cancionero y prueba el botón «Auto» de Tocar con una canción.
+   - Las «versión Víctor / Cataleya / Mafe»: «Hacer mi versión» y ponle tu duración.
+   - Dime qué versión tocáis de «El toro y la luna» y «La Marina està morena», y si «Marcha» es de Rosario.
    - Clave de CARTO: ✅ hecha (`CARTO_API_KEY` en Vercel, solo Production; si quieres el mapa limpio en las vistas previas, añádela también a Preview).
 3. **Dossier, lámina «Equipo»:** el papel de Adrián y de David, en una línea cada uno, y el apellido de David.
 4. **Probar en tu iPhone:**
@@ -55,5 +58,7 @@
 13. **Las claves `LLM_API_KEY` (Kimi) y `ZEP_API_KEY` (gratis)** como variables del entorno de Claude: para los comentarios con IA de los agentes y para lanzar MiroFish.
 
 14. **Decidir «Rodrigo con cerebro»** para el lanzamiento: plan en `docs/PLAN-RODRIGO-CEREBRO.md` (si va en el plan Pro y si se conecta Spotify).
+
+15. **Rodrigo con Claude:** dices que la clave de Anthropic ya está en Vercel. Cuando toque, Claude comprueba el nombre de la variable y cambia Rodrigo de Kimi a Claude.
 
 Nunca pegues claves en el chat: van directas a Vercel o a la configuración del entorno.
