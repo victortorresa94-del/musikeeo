@@ -21,7 +21,7 @@ export interface Trozo { marca?: Marca; texto: string }
 export type Linea =
     | { tipo: 'vacia' }
     | { tipo: 'seccion'; texto: string }
-    | { tipo: 'nota'; texto: string }
+    | { tipo: 'nota'; texto: string; aviso?: boolean }
     | { tipo: 'letra'; texto: string }
     | { tipo: 'acordes'; etiqueta?: string; marcas: Marca[] }
     | { tipo: 'mixta'; trozos: Trozo[] }
@@ -131,8 +131,15 @@ function marca(token: string): Marca | null {
     return null;
 }
 
+// Formato ligero escrito a mano en la letra: «# Título» (un título suyo, como una sección)
+// y «> Entra la batería» (un aviso). Negrita **así** y resaltado ==así== van dentro de la línea
+const RE_TITULO = /^#{1,3}\s+(\S.{0,58})$/;
+export const RE_AVISO = /^>\s*(\S.*)$/;
+
 export function esSeccion(linea: string): string | null {
     const s = linea.trim();
+    const t = RE_TITULO.exec(s);
+    if (t) return t[1].trim();
     const b = /^\[([^\]]{1,40})\]$/.exec(s);
     if (b && !leerAcorde(b[1])) return b[1].trim();
     if (s.length <= 40 && RE_SECCION.test(s)) return s.replace(/\s*:$/, '');
@@ -333,7 +340,7 @@ function leerCancionSinRecordar(texto: string): CancionLeida {
         const l = crudas[i];
         if (deLetra[i] === undefined) {
             deLetra[i] = l !== undefined && l.trim() !== ''
-                && !esTab(l) && !esSeccion(l) && !esDirectiva(l) && !acordesEn(i) && !llevaChordPro(l);
+                && !esTab(l) && !esSeccion(l) && !esDirectiva(l) && !RE_AVISO.test(l.trim()) && !acordesEn(i) && !llevaChordPro(l);
         }
         return deLetra[i];
     };
@@ -368,6 +375,9 @@ function leerCancionSinRecordar(texto: string): CancionLeida {
         }
 
         if (enTab || esTab(l)) { meter({ tipo: 'tab', texto: l }); continue; }
+
+        const aviso = RE_AVISO.exec(l.trim());
+        if (aviso && !acordesEn(i)) { meter({ tipo: 'nota', texto: aviso[1], aviso: true }); continue; }
 
         // «Cejilla 2» va a los controles, no al texto (si no, se contradice al cambiarla)
         const capo = RE_CEJILLA.exec(l.trim());
@@ -681,3 +691,54 @@ export function unirConFicha(actual: string, pegado: string, semitonos: number):
         semitonos: semitonos + s,
     };
 }
+
+// ---------- Negrita y resaltado en la letra ----------
+
+// **negrita** y ==resaltado== se pueden partir entre trozos (el acorde cae a mitad de la palabra):
+// se recorre la línea entera llevando el estado de un trozo al siguiente
+export interface Pedazo { texto: string; negrita: boolean; resaltado: boolean }
+export interface EstadoFormato { negrita: boolean; resaltado: boolean }
+
+export function formatear(texto: string, estado: EstadoFormato): Pedazo[] {
+    const salida: Pedazo[] = [];
+    let actual = '';
+    const cortar = () => { if (actual) salida.push({ texto: actual, ...estado }); actual = ''; };
+    for (let i = 0; i < texto.length; i++) {
+        const dos = texto.slice(i, i + 2);
+        if (dos === '**' || dos === '==') {
+            cortar();
+            if (dos === '**') estado.negrita = !estado.negrita; else estado.resaltado = !estado.resaltado;
+            i++;
+            continue;
+        }
+        actual += texto[i];
+    }
+    cortar();
+    return salida;
+}
+
+// Lo mismo para una línea partida en trozos (un acorde puede caer en medio de «**»): las marcas
+// se buscan en la línea entera y a cada trozo le toca lo suyo, ya sin marcas
+export function formatearTrozos(textos: string[]): Pedazo[][] {
+    const entera = textos.join('');
+    const dueno: number[] = [];
+    textos.forEach((t, i) => { for (let k = 0; k < t.length; k++) dueno.push(i); });
+    const salida: Pedazo[][] = textos.map(() => []);
+    const estado = { negrita: false, resaltado: false };
+    for (let i = 0; i < entera.length; i++) {
+        const dos = entera.slice(i, i + 2);
+        if (dos === '**' || dos === '==') {
+            if (dos === '**') estado.negrita = !estado.negrita; else estado.resaltado = !estado.resaltado;
+            i++;
+            continue;
+        }
+        const lista = salida[dueno[i]];
+        const ultimo = lista[lista.length - 1];
+        if (ultimo && ultimo.negrita === estado.negrita && ultimo.resaltado === estado.resaltado) ultimo.texto += entera[i];
+        else lista.push({ texto: entera[i], ...estado });
+    }
+    return salida;
+}
+
+export const sinFormato = (texto: string) => texto.replace(/\*\*|==/g, '');
+export const llevaFormato = (texto: string) => /\*\*|==/.test(texto);

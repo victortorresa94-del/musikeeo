@@ -21,6 +21,8 @@ import type { AjustesCancion, Cancion } from '../../types/cancionero';
 import { cn as unir } from '../../lib/utils';
 import { pastelCanta, estiloBloque } from '../../components/cancionero/estilo';
 import { ENERGIAS, ESTADOS } from '../../lib/biblioteca';
+import { NotasRicas } from '../../components/notas/NotasRicas';
+import { notasVacias } from '../../lib/notas';
 
 export default function LeerCancion() {
     const { id } = useParams();
@@ -312,6 +314,12 @@ function Lector({ cancion }: { cancion: Cancion }) {
                     </div>
                 </div>
                 <FichaLectura cancion={cancion} />
+                {/* Las notas con formato de la canción */}
+                {!notasVacias(cancion.notas) && (
+                    <div className="mt-3 rounded-2xl bg-fill px-4 py-3">
+                        <NotasRicas json={cancion.notas} className="text-[15px]" />
+                    </div>
+                )}
                 {/* Lo de quien canta, antes de entrar: el tono y la cuenta */}
                 {(!sinAcordes || !!cancion.bpm) && (
                     <div className="mt-3 flex items-center gap-2">
@@ -382,6 +390,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                         <p className="text-[13px] font-semibold text-muted-foreground truncate">
                             {cancion.titulo}{tonoSuena && <> · {tonoSuena}</>}{ajustes.cejilla > 0 && <> · Cejilla {ajustes.cejilla}</>}
                         </p>
+                        {!notasVacias(cancion.notas) && <NotasRicas json={cancion.notas} className="mt-2 text-[15px]" />}
                         <div ref={zonaEscenarioRef} className="mt-2">{hoja()}</div>
                     </div>
                     <div className={cn(

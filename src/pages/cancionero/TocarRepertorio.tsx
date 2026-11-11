@@ -7,6 +7,8 @@ import { useCancionero } from '../../hooks/useCancionero';
 import { useMusicaCancion } from '../../hooks/useMusicaCancion';
 import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
 import { HojaCancion } from '../../components/cancionero/HojaCancion';
+import { NotasRicas } from '../../components/notas/NotasRicas';
+import { notasVacias } from '../../lib/notas';
 import { BotonBarra, Paso } from '../../components/cancionero/Controles';
 import { BotonClaqueta, DameElTono } from '../../components/cancionero/Cantante';
 import { Portada } from '../../components/cancionero/Portada';
@@ -357,6 +359,8 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
                     {etiquetas.map(e => <Pildora key={e.texto} texto={e.texto} pastel={e.pastel} icono={e.icono} />)}
                 </div>
             )}
+            {/* Las notas con formato de la canción (avisos, entradas…), encima de la hoja */}
+            {!notasVacias(cancion.notas) && <NotasRicas json={cancion.notas} className="mt-3 text-[15px]" />}
             <div ref={zonaRef} className="mt-3">
                 <HojaCancion lineas={lineas} opciones={opciones} vista={a.vista} tamano={tamano} columnas={columnas} />
             </div>

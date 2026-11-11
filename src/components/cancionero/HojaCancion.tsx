@@ -1,6 +1,6 @@
 import { forwardRef, useMemo } from 'react';
 import { cn } from '../../lib/utils';
-import { enEstrofas, enPalabras, nombreMarca, type Linea, type Marca, type OpcionesNombre, type Trozo } from '../../lib/acordes';
+import { enEstrofas, enPalabras, formatear, formatearTrozos, llevaFormato, nombreMarca, type EstadoFormato, type Pedazo, type Linea, type Marca, type OpcionesNombre, type Trozo } from '../../lib/acordes';
 import type { AjustesCancion } from '../../types/cancionero';
 import { estiloSeccion, type EstiloSeccion } from './estilo';
 
@@ -79,9 +79,17 @@ function LineaCancion({ linea: l, opciones, estilo }: { linea: Linea; opciones: 
             }
             return <p className="pb-[0.3em] text-[0.7em] font-bold uppercase tracking-[0.08em] text-muted-foreground">{l.texto}</p>;
         case 'nota':
+            // «> Entra la batería»: un aviso a la vista, en su baldosa
+            if (l.aviso) {
+                return (
+                    <p className="mb-[0.35em] rounded-[0.6em] bg-pastel-melocoton px-[0.6em] py-[0.3em] text-[0.88em] font-semibold leading-snug text-pastel-melocoton-ink">
+                        {conFormato(l.texto, { negrita: false, resaltado: false })}
+                    </p>
+                );
+            }
             return <p className="pb-[0.2em] text-[0.85em] italic text-muted-foreground">{l.texto}</p>;
         case 'letra':
-            return <p className="whitespace-pre-wrap leading-[1.4]">{l.texto.trimStart()}</p>;
+            return <p className="whitespace-pre-wrap leading-[1.4]">{conFormato(l.texto.trimStart(), { negrita: false, resaltado: false })}</p>;
         case 'tab':
             return <pre className="font-mono text-[0.78em] leading-[1.3] overflow-x-auto hide-scrollbar">{l.texto}</pre>;
         case 'acordes':
@@ -91,19 +99,25 @@ function LineaCancion({ linea: l, opciones, estilo }: { linea: Linea; opciones: 
                     {l.marcas.map((m, k) => <NombreMarca key={k} marca={m} opciones={opciones} />)}
                 </p>
             );
-        case 'mixta':
-            // Una palabra de una sola sílaba va sin envoltorio: se pinta igual con la mitad de nodos
+        case 'mixta': {
+            // Una palabra de una sola sílaba va sin envoltorio: se pinta igual con la mitad de nodos.
+            // Con **negrita** o ==resaltado==, las marcas se buscan en la línea entera
+            const palabras = enPalabras(l.trozos);
+            const formato = l.trozos.some(t => llevaFormato(t.texto)) ? formatearTrozos(palabras.flat().map(t => t.texto)) : null;
+            let n = 0;
+            const de = () => (formato ? formato[n++] : null);
             return (
                 <div className="flex flex-wrap items-end pb-[0.25em]">
-                    {enPalabras(l.trozos).map((palabra, k) => (palabra.length === 1
-                        ? silaba(palabra[0], opciones, k)
+                    {palabras.map((palabra, k) => (palabra.length === 1
+                        ? silaba(palabra[0], opciones, k, de())
                         : (
                             <span key={k} className="inline-flex items-end">
-                                {palabra.map((t, n) => silaba(t, opciones, n))}
+                                {palabra.map((t, j) => silaba(t, opciones, j, de()))}
                             </span>
                         )))}
                 </div>
             );
+        }
         default:
             return null;
     }
@@ -119,14 +133,29 @@ function NombreMarca({ marca, opciones }: { marca: Marca; opciones: OpcionesNomb
 // Sin acorde, la sílaba es solo su texto; con acorde, el nombre va en el mismo renglón que lo
 // coloca (antes, un nodo más por acorde). Es una función y no un componente: una canción larga
 // tiene más de mil sílabas y cada componente es trabajo de más para React al montarla
-function silaba(trozo: Trozo, opciones: OpcionesNombre, key: number) {
-    if (!trozo.marca) return <span key={key} className="whitespace-pre leading-[1.35]">{trozo.texto || '\u00a0'}</span>;
+function silaba(trozo: Trozo, opciones: OpcionesNombre, key: number, pedazos: Pedazo[] | null = null) {
+    const texto = pedazos ? (pedazos.length ? pintar(pedazos) : '\u00a0') : trozo.texto || '\u00a0';
+    if (!trozo.marca) return <span key={key} className="whitespace-pre leading-[1.35]">{texto}</span>;
     return (
         <span key={key} className="inline-flex flex-col">
             <span className={`whitespace-pre pr-[0.4em] text-[0.92em] leading-[1.25] ${claseMarca(trozo.marca)}`}>
                 {nombreMarca(trozo.marca, opciones)}
             </span>
-            <span className="whitespace-pre leading-[1.35]">{trozo.texto || '\u00a0'}</span>
+            <span className="whitespace-pre leading-[1.35]">{texto}</span>
         </span>
     );
+}
+
+// Negrita y resaltado escritos a mano (**así**, ==así==). Sin marcas, el texto tal cual
+function conFormato(texto: string, estado: EstadoFormato) {
+    if (!estado.negrita && !estado.resaltado && !llevaFormato(texto)) return texto;
+    const pedazos = formatear(texto, estado);
+    if (!pedazos.length) return null;
+    return pintar(pedazos);
+}
+
+function pintar(pedazos: Pedazo[]) {
+    return pedazos.map((p, i) => (p.negrita || p.resaltado
+        ? <span key={i} className={cn(p.negrita && 'font-bold', p.resaltado && 'rounded-[0.2em] bg-pastel-mantequilla text-pastel-mantequilla-ink')}>{p.texto}</span>
+        : p.texto));
 }

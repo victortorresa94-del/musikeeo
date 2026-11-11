@@ -51,6 +51,8 @@ export interface Cancion {
     // «Cataleya») y de cuál salió. Es una canción aparte, con su texto, ajustes y duración
     version?: string;
     original?: string;          // id de la canción de la que se hizo
+    // Notas con formato (títulos, negrita, colores, avisos, casillas): el JSON del editor, en texto
+    notas?: string;
 }
 
 // Un repertorio (setlist) para un bolo: canciones del cancionero en el orden en que se tocan
@@ -59,6 +61,7 @@ export interface Repertorio {
     nombre: string;
     fecha: string;              // AAAA-MM-DD
     canciones: string[];        // ids de Cancion, en orden
+    notas?: string;             // la hoja del bolo, con formato (JSON del editor, en texto)
     creadaEn: string;
     actualizadaEn: string;
     sincronizada?: boolean;

@@ -364,3 +364,39 @@
   .hoja-impresion { position: static !important; visibility: visible !important; left: auto !important; }
   .hoja-impresion, .hoja-impresion * { color: #000 !important; }
 }
+
+/* Editor de notas (Tiptap): lo mismo que pinta NotasRicas, con los tokens de color */
+@layer components {
+    .editor-notas .ProseMirror { outline: none; min-height: 8rem; line-height: 1.5; word-break: break-word; }
+    .editor-notas .ProseMirror > * + * { margin-top: 0.35em; }
+    .editor-notas .ProseMirror h1 { font-size: 1.45em; font-weight: 750; line-height: 1.2; margin-top: 0.6em; }
+    .editor-notas .ProseMirror h2 { font-size: 1.2em; font-weight: 750; line-height: 1.25; margin-top: 0.5em; }
+    .editor-notas .ProseMirror h3 { font-size: 0.8em; font-weight: 750; text-transform: uppercase; letter-spacing: 0.08em; color: hsl(var(--muted-foreground)); margin-top: 0.4em; }
+    .editor-notas .ProseMirror ul:not([data-type="taskList"]) { list-style: disc; padding-left: 1.3em; }
+    .editor-notas .ProseMirror ol { list-style: decimal; padding-left: 1.4em; }
+    .editor-notas .ProseMirror blockquote { border-left: 3px solid var(--hairline-strong, rgba(127,127,127,.4)); padding-left: 0.8em; color: hsl(var(--muted-foreground)); }
+    .editor-notas .ProseMirror hr { margin: 0.6em 0; border-color: rgba(127,127,127,.35); }
+    .editor-notas .ProseMirror ul[data-type="taskList"] li { display: flex; gap: 0.5em; align-items: flex-start; }
+    .editor-notas .ProseMirror ul[data-type="taskList"] li > label { margin-top: 0.2em; flex-shrink: 0; }
+    .editor-notas .ProseMirror ul[data-type="taskList"] li > label input { width: 1.05em; height: 1.05em; accent-color: hsl(var(--foreground)); }
+    .editor-notas .ProseMirror ul[data-type="taskList"] li > div { flex: 1; min-width: 0; }
+    .editor-notas .ProseMirror ul[data-type="taskList"] li[data-checked="true"] > div { text-decoration: line-through; color: hsl(var(--muted-foreground)); }
+    .editor-notas .ProseMirror div[data-aviso] { border-radius: 0.7em; padding: 0.5em 0.8em; font-weight: 600; }
+    .editor-notas .ProseMirror mark { border-radius: 0.2em; padding: 0 0.1em; }
+    .editor-notas .ProseMirror [data-color="mantequilla"], .editor-notas .ProseMirror mark:not([data-color]) { background: var(--pastel-mantequilla); color: var(--pastel-mantequilla-ink); }
+    .editor-notas .ProseMirror [data-color="cielo"] { background: var(--pastel-cielo); color: var(--pastel-cielo-ink); }
+    .editor-notas .ProseMirror [data-color="menta"] { background: var(--pastel-menta); color: var(--pastel-menta-ink); }
+    .editor-notas .ProseMirror [data-color="lavanda"] { background: var(--pastel-lavanda); color: var(--pastel-lavanda-ink); }
+    .editor-notas .ProseMirror [data-color="melocoton"] { background: var(--pastel-melocoton); color: var(--pastel-melocoton-ink); }
+    .editor-notas .ProseMirror [data-color="rosa"] { background: var(--pastel-rosa); color: var(--pastel-rosa-ink); }
+    .editor-notas .ProseMirror [data-tinta] { font-weight: 600; }
+    .editor-notas .ProseMirror [data-tinta="mantequilla"] { color: var(--pastel-mantequilla-ink); }
+    .editor-notas .ProseMirror [data-tinta="cielo"] { color: var(--pastel-cielo-ink); }
+    .editor-notas .ProseMirror [data-tinta="menta"] { color: var(--pastel-menta-ink); }
+    .editor-notas .ProseMirror [data-tinta="lavanda"] { color: var(--pastel-lavanda-ink); }
+    .editor-notas .ProseMirror [data-tinta="melocoton"] { color: var(--pastel-melocoton-ink); }
+    .editor-notas .ProseMirror [data-tinta="rosa"] { color: var(--pastel-rosa-ink); }
+    .editor-notas .ProseMirror a { text-decoration: underline; text-underline-offset: 2px; }
+    .editor-notas .ProseMirror p.is-editor-empty:first-child::before,
+    .editor-notas .ProseMirror .is-empty::before { content: attr(data-placeholder); color: hsl(var(--muted-foreground)); float: left; height: 0; pointer-events: none; }
+}

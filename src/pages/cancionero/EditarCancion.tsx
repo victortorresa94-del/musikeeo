@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -11,6 +11,10 @@ import { HojaCancion } from '../../components/cancionero/HojaCancion';
 import { Segmentado } from '../../components/cancionero/Controles';
 import { AcordesRapidos } from '../../components/cancionero/AcordesRapidos';
 import { EditorFicha } from '../../components/cancionero/EditorFicha';
+import { FormatoLetra } from '../../components/cancionero/FormatoLetra';
+
+// El editor de notas (Tiptap) va en su trozo: solo se baja al editar
+const EditorNotas = lazy(() => import('../../components/notas/EditorNotas'));
 import { ICONO, PASTEL, type Pastel } from '../../components/cancionero/estilo';
 import type { Cancion, FichaCancion } from '../../types/cancionero';
 
@@ -73,7 +77,9 @@ function Formulario({ existente }: { existente?: Cancion }) {
     const [ficha, setFicha] = useState<FichaCancion>(existente?.ficha ?? {});
     const [bpm, setBpm] = useState<number | undefined>(existente?.bpm);
     const [duracion, setDuracion] = useState<number | undefined>(existente?.duracion);
+    const [notas, setNotas] = useState<string | undefined>(existente?.notas);
     const [leyendo, setLeyendo] = useState(false);
+    const areaRef = useRef<HTMLTextAreaElement>(null);
     const archivoRef = useRef<HTMLInputElement>(null);
     // Desde «Editar ficha» se baja directo a la ficha
     useEffect(() => {
@@ -133,10 +139,10 @@ function Formulario({ existente }: { existente?: Cancion }) {
         const datos = { titulo: titulo.trim(), artista: artista.trim(), texto: limpiarTexto(texto) };
         const fichaLimpia = Object.keys(ficha).length ? ficha : undefined;
         if (existente) {
-            guardar({ ...existente, ...datos, titulo: datos.titulo || existente.titulo, ficha: fichaLimpia, bpm, duracion });
+            guardar({ ...existente, ...datos, titulo: datos.titulo || existente.titulo, ficha: fichaLimpia, bpm, duracion, notas });
             navigate(`/cancionero/${existente.id}`, { replace: true });
         } else {
-            const c = guardar({ ...crear(datos), ficha: fichaLimpia, bpm, duracion });
+            const c = guardar({ ...crear(datos), ficha: fichaLimpia, bpm, duracion, notas });
             if (repertorio) {
                 guardarRepertorio({ ...repertorio, canciones: [...repertorio.canciones, c.id] });
                 toast.success(`Añadida a «${repertorio.nombre}»`);
@@ -205,7 +211,9 @@ function Formulario({ existente }: { existente?: Cancion }) {
 
             <div className="mt-3 grid gap-4 md:grid-cols-2">
                 <div className={cn('min-w-0', pestana !== 'texto' && 'hidden md:block')}>
+                    <FormatoLetra areaRef={areaRef} texto={texto} onCambio={setTexto} />
                     <textarea
+                        ref={areaRef}
                         value={texto}
                         onChange={e => setTexto(e.target.value)}
                         onPaste={e => {
@@ -231,6 +239,17 @@ function Formulario({ existente }: { existente?: Cancion }) {
                 </div>
                 <div className={cn(pestana !== 'previa' && 'hidden md:block')}>{previa}</div>
             </div>
+
+            {/* Notas con formato: lo que quieras apuntar de la canción, a tu manera */}
+            <section className="mt-6" aria-labelledby="titulo-notas">
+                <h2 id="titulo-notas" className="text-[17px] font-bold text-foreground">Notas de la canción</h2>
+                <p className="mt-0.5 mb-2 text-[13px] text-muted-foreground">Títulos, negritas, colores, avisos y casillas. Salen en la canción, en Tocar y en el enlace para el grupo. Pulsa «/» para meter un bloque.</p>
+                <div className="rounded-2xl border border-hairline p-3 md:p-4">
+                    <Suspense fallback={<div className="min-h-32" />}>
+                        <EditorNotas valor={notas} onCambio={setNotas} placeholder="Ej.: Entra la batería en el segundo estribillo. Final: parón y «¡Olé!»…" />
+                    </Suspense>
+                </div>
+            </section>
 
             <div className="mt-5 md:max-w-xl">
                 <EditorFicha ficha={ficha} onCambio={setFicha} canciones={canciones} tonoDetectado={tonoTexto} bpm={bpm} onBpm={setBpm} duracion={duracion} onDuracion={setDuracion} />
