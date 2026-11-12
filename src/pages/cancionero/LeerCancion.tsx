@@ -21,7 +21,7 @@ import { buscarEncaje, columnasPosibles, type Encaje } from '../../components/ca
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
 import { cn as unir } from '../../lib/utils';
 import { pastelCanta, pastelDe, estiloBloque } from '../../components/cancionero/estilo';
-import { ENERGIAS, ESTADOS } from '../../lib/biblioteca';
+import { ENERGIAS, ESTADOS, cejillaDeFicha, versionesDe } from '../../lib/biblioteca';
 import { NotasRicas } from '../../components/notas/NotasRicas';
 import { notasVacias } from '../../lib/notas';
 
@@ -85,6 +85,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
     // Acordes por un lado y letra por otro: se pueden poner los acordes encima, como en LaCuerda
     const juntada = useMemo(() => juntarAcordesYLetra(cancion.texto), [cancion.texto]);
 
+    const cejillaFormas = ajustes.cejilla || ajustes.cejillaGuardada || cejillaDeFicha(cancion);
     const cambiarTono = (d: number) => {
         const s = ajustes.semitonos + d;
         cambiar({ semitonos: Math.abs(s) >= 12 ? 0 : s });
@@ -315,6 +316,16 @@ function Lector({ cancion }: { cancion: Cancion }) {
                     </div>
                 </div>
                 <FichaLectura cancion={cancion} />
+                <Versiones cancion={cancion} />
+                {/* Las dos vistas de la cejilla: como suena o con las formas que se tocan */}
+                {cejillaFormas > 0 && tonoSuena && !sinAcordes && (
+                    <div className="mt-2.5 inline-flex p-1 rounded-full bg-fill gap-0.5" role="radiogroup" aria-label="Ver los acordes">
+                        <button role="radio" aria-checked={ajustes.cejilla === 0} onClick={() => ajustes.cejilla !== 0 && cambiar({ cejilla: 0, cejillaGuardada: ajustes.cejilla })}
+                            className={cn('h-8 px-3 rounded-full text-[13.5px] font-semibold', ajustes.cejilla === 0 ? 'bg-foreground text-background' : 'text-foreground')}>Suena en {tonoSuena}</button>
+                        <button role="radio" aria-checked={ajustes.cejilla > 0} onClick={() => ajustes.cejilla === 0 && cambiar({ cejilla: cejillaFormas })}
+                            className={cn('h-8 px-3 rounded-full text-[13.5px] font-semibold', ajustes.cejilla > 0 ? 'bg-foreground text-background' : 'text-foreground')}>Formas (cejilla {cejillaFormas})</button>
+                    </div>
+                )}
                 {/* Las notas con formato de la canción */}
                 {!notasVacias(cancion.notas) && (
                     <div className="mt-3 rounded-2xl bg-fill px-4 py-3">
@@ -447,7 +458,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
 function FichaLectura({ cancion }: { cancion: Cancion }) {
     const f = cancion.ficha ?? {};
     const piezas: { texto: string; clase: string }[] = [];
-    if (f.tono) piezas.push({ texto: `Tono ${f.tono}`, clase: 'bg-foreground text-background' });
+    if (f.tono) piezas.push({ texto: `Tono ${f.tono}${f.tonoAlt ? ` · también ${f.tonoAlt}` : ''}`, clase: 'bg-foreground text-background' });
     if (f.capo) piezas.push({ texto: f.capo, clase: 'bg-fill-strong text-foreground' });
     if (f.canta) { const p = pastelCanta(f.canta); piezas.push({ texto: `Canta ${f.canta}`, clase: unir(p.fondo, p.tinta) }); }
     for (const g of f.proyectos ?? []) piezas.push({ texto: g, clase: 'bg-fill-strong text-foreground' });
@@ -464,6 +475,33 @@ function FichaLectura({ cancion }: { cancion: Cancion }) {
             <Link to={`/cancionero/${cancion.id}/editar#ficha`} className="h-7 px-2.5 rounded-full border border-hairline-strong text-[13px] font-semibold text-foreground flex items-center active:opacity-60">
                 {piezas.length ? 'Editar ficha' : '+ Ficha: tono, quién canta…'}
             </Link>
+        </div>
+    );
+}
+
+// Las versiones de la misma canción (la tuya, la de Cataleya…) y cuál es la ⭐ favorita:
+// la que sale primero al buscar y al añadir a un repertorio
+function Versiones({ cancion }: { cancion: Cancion }) {
+    const { canciones, guardarVarias } = useCancionero();
+    const familia = versionesDe(cancion, canciones);
+    if (familia.length < 2) return null;
+    const marcar = () => {
+        const yaLoEra = !!cancion.favorita;
+        guardarVarias(familia.filter(c => (c.id === cancion.id ? true : c.favorita)).map(c => ({ ...c, favorita: c.id === cancion.id ? !yaLoEra || undefined : undefined })));
+        toast.success(yaLoEra ? 'Ya no es la favorita' : '⭐ Esta versión sale primero');
+    };
+    return (
+        <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+            <span className="text-[13px] font-semibold text-muted-foreground">Versiones</span>
+            {familia.map(c => (
+                <Link key={c.id} to={`/cancionero/${c.id}`} replace aria-current={c.id === cancion.id ? 'page' : undefined}
+                    className={unir('h-7 px-2.5 rounded-full text-[13px] font-semibold flex items-center', c.id === cancion.id ? 'bg-foreground text-background' : 'bg-fill-strong text-foreground')}>
+                    {c.favorita && '⭐ '}{c.version || 'Original'}
+                </Link>
+            ))}
+            <button onClick={marcar} className="h-7 px-2.5 rounded-full border border-hairline-strong text-[13px] font-semibold text-foreground active:opacity-60">
+                {cancion.favorita ? 'Quitar ⭐' : '⭐ Favorita'}
+            </button>
         </div>
     );
 }

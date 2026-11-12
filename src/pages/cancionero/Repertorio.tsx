@@ -15,12 +15,13 @@ import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
 import { ImportarCanciones } from '../../components/cancionero/ImportarCanciones';
 import { ResultadosCatalogo } from '../../components/cancionero/ResultadosCatalogo';
 import { minutos } from '../../lib/cantar';
-import { duracionDe, filtrar, mismoTitulo, mismoTonoSeguido, reparto, textoDuracion, tonoMostrado } from '../../lib/biblioteca';
+import { pesoVersion, duracionDe, filtrar, mismoTitulo, mismoTonoSeguido, reparto, textoDuracion, tonoMostrado } from '../../lib/biblioteca';
 import type { Cancion, Repertorio as TipoRepertorio } from '../../types/cancionero';
 import { CompartirGrupo } from '../../components/cancionero/CompartirGrupo';
 import { BotonDesplegar, PanelAcordes } from '../../components/cancionero/FilaDesplegable';
 import { SelectorVista, type Vista } from '../../components/cancionero/SelectorVista';
-import { CifradoEnDirecto, HojaSet } from '../../components/cancionero/VistaCifrado';
+import { CifradoEnDirecto, HojaSet, SuenaFormas } from '../../components/cancionero/VistaCifrado';
+import { useFormas } from '../../hooks/useFormas';
 import { TableroBloques } from '../../components/cancionero/TableroBloques';
 import { TablaCanciones } from '../../components/cancionero/TablaCanciones';
 import { mover as moverEnTablero, type CampoTablero } from '../../lib/tablero';
@@ -53,6 +54,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
         setParams(p, { replace: true });
     };
     const claveScroll = `musikeeo-cifrado-scroll:${repertorio.id}`;
+    const [formas, setFormas] = useFormas();
     const [nombre, setNombre] = useState(repertorio.nombre);
     const [anadir, setAnadir] = useState(false);
     const [compartir, setCompartir] = useState(false);
@@ -183,6 +185,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
             {ids.length > 0 && (
                 <div className="mt-6 flex items-center gap-2">
                     <SelectorVista valor={vista} onCambio={v => cambiarParams({ vista: v === 'lista' ? null : v })} />
+                    {vista === 'cifrado' && temasCifrado.some(t => t.m) && <SuenaFormas formas={formas} onCambio={setFormas} />}
                     {vista === 'cifrado' && (
                         <button onClick={() => cambiarParams({ directo: '1' })} className="pulsable ml-auto h-9 px-3.5 rounded-full bg-foreground text-background text-[14px] font-semibold">
                             En directo
@@ -203,7 +206,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                         onMover={moverTema} onAbrir={c => navigate(`/cancionero/${c.id}`)} />
                 </div>
             ) : ids.length > 0 && vista === 'cifrado' ? (
-                <HojaSet temas={temasCifrado} tamano={17} onAbrir={i => abrirDesdeCifrado(i, false)} className="mt-2" />
+                <HojaSet temas={temasCifrado} tamano={17} formas={formas} onAbrir={i => abrirDesdeCifrado(i, false)} className="mt-2" />
             ) : ids.length > 0 ? (
                 <Reorder.Group axis="y" values={ids} onReorder={orden => guardarRepertorio({ ...repertorio, canciones: orden }, { esperar: true })}
                     className="mt-2">
@@ -234,7 +237,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                 <Trash2 className="h-4 w-4" /> Borrar repertorio
             </button>
 
-            <CifradoEnDirecto abierta={directo} onCerrar={() => cambiarParams({ directo: null })} titulo={repertorio.nombre} temas={temasCifrado}
+            <CifradoEnDirecto abierta={directo} onCerrar={() => cambiarParams({ directo: null })} titulo={repertorio.nombre} temas={temasCifrado} formas={formas} onFormas={setFormas}
                 onAbrir={i => abrirDesdeCifrado(i, true)}
                 scrollInicial={(() => { try { return Number(sessionStorage.getItem(`${claveScroll}:directo`)) || 0; } catch { return 0; } })()}
                 onScroll={y => { try { sessionStorage.setItem(`${claveScroll}:directo`, String(Math.round(y))); } catch { /* */ } }} />
@@ -308,7 +311,7 @@ function Fila({ id, n, cancion, tono, bloque, mismoTono, onQuitar, onTocar }: {
                 <Portada src={cancion.portada} titulo={cancion.titulo} tamano="fila" />
                 <span className="flex-1 min-w-0">
                     <span className="block truncate text-[16px] font-semibold text-foreground">{cancion.titulo}</span>
-                    {(cancion.version || cancion.artista) && <span className="block truncate text-[13px] text-muted-foreground">{[cancion.version && `Versión ${cancion.version}`, cancion.artista].filter(Boolean).join(' · ')}</span>}
+                    {(cancion.version || cancion.artista) && <span className="block truncate text-[13px] text-muted-foreground">{[cancion.version && `${cancion.favorita ? '⭐ ' : ''}Versión ${cancion.version}`, cancion.artista].filter(Boolean).join(' · ')}</span>}
                     {etiquetas.length > 0 && (
                         <span className="mt-1 flex flex-wrap gap-1">
                             {etiquetas.map(e => (
@@ -353,7 +356,7 @@ function ElegirCanciones({ abierto, onCerrar, canciones, elegidas, onAlternar, r
         const base = filtrar(canciones, filtros, tonoDeCancion);
         const l = t ? base.filter(c => norm(`${c.titulo} ${c.version ?? ''} ${c.artista} ${c.ficha?.canta ?? ''} ${c.ficha?.estilo ?? ''}`).includes(t) || norm(tonos.get(c.id) ?? '') === t) : base;
         // Por título y, con el mismo título, tus versiones antes que la original
-        return [...l].sort((a, b) => a.titulo.localeCompare(b.titulo, 'es') || Number(!!b.version) - Number(!!a.version));
+        return [...l].sort((a, b) => a.titulo.localeCompare(b.titulo, 'es') || pesoVersion(a) - pesoVersion(b));
     }, [canciones, termino, filtros, tonoDeCancion, tonos]);
     // ¿Ya está con ese título? Entonces no se ofrece crearla otra vez
     const yaEsta = !!termino && canciones.some(c => mismoTitulo(c.titulo, termino));

@@ -11,6 +11,8 @@ const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCa
 
 // El tono que se enseña: el de la ficha si lo escribiste; si no, el que se saca de los acordes
 export const tonoMostrado = (c: Cancion, deLosAcordes: string | null | undefined) => c.ficha?.tono?.trim() || deLosAcordes || null;
+// «G · también A»
+export const tonoConAlternativo = (c: Cancion, tono: string | null) => (tono && c.ficha?.tonoAlt ? `${tono} · también ${c.ficha.tonoAlt}` : tono);
 
 export interface Filtros {
     proyectos: string[];
@@ -258,4 +260,21 @@ export function descargarCopia(copia: Copia) {
     a.click();
     a.remove();
     setTimeout(() => URL.revokeObjectURL(url), 5000);
+}
+
+// ——— Versiones de una misma canción ———
+// La familia: la original y las versiones que salieron de ella (por «original» o, si no, por título)
+export const familiaDe = (c: Cancion) => c.original ?? c.id;
+export function versionesDe(c: Cancion, todas: Cancion[]): Cancion[] {
+    const raiz = familiaDe(c);
+    return todas.filter(x => x.id === raiz || x.original === raiz || x.id === c.id);
+}
+// Para ordenar: la ⭐ favorita primero; luego tus versiones; luego la original
+export const pesoVersion = (c: Cancion) => (c.favorita ? 0 : c.version ? 1 : 2);
+
+// La cejilla que dice la ficha («Capo 3 · formas de E» → 3)
+export function cejillaDeFicha(c: Cancion): number {
+    const m = /(\d{1,2})/.exec(c.ficha?.capo ?? '');
+    const n = m ? +m[1] : 0;
+    return n >= 1 && n <= 11 ? n : 0;
 }

@@ -15,13 +15,14 @@ import { estiloBloque, sinLoDeLasPildoras } from './estilo';
 // debajo sus acordes por partes y sus avisos (sin letra). Para tocar en directo sin entrar en
 // cada canción. La misma hoja sale en el repertorio, en la biblioteca y en el enlace del grupo
 
-export const TemaCifrado = memo(function Tema({ tema, n, tamano, onAbrir, sinBorde, sinCabecera }: { tema: TemaCompartido; n: number; tamano: number; onAbrir?: () => void; sinBorde?: boolean; sinCabecera?: boolean }) {
+export const TemaCifrado = memo(function Tema({ tema, n, tamano, onAbrir, sinBorde, sinCabecera, formas }: { tema: TemaCompartido; n: number; tamano: number; onAbrir?: () => void; sinBorde?: boolean; sinCabecera?: boolean; formas?: boolean }) {
     const leida = useMemo(() => leerCancion(tema.x), [tema.x]);
     const lineas = useMemo(() => sinLoDeLasPildoras(leida.lineas, tema.g ?? null), [leida.lineas, tema.g]);
     const opciones: OpcionesNombre = useMemo(() => {
-        const semitonos = tema.s ?? 0;
+        // «Formas»: con la cejilla puesta, los acordes que se tocan; si no, los que suenan
+        const semitonos = (tema.s ?? 0) - (formas ? tema.m ?? 0 : 0);
         return { semitonos, notacion: 'original', bemoles: semitonos === 0 ? null : usaBemoles(detectarTono(leida.acordes), semitonos, 'auto') };
-    }, [tema.s, leida.acordes]);
+    }, [tema.s, tema.m, formas, leida.acordes]);
     const titulo = (
         <>
             <span className="text-muted-foreground tabular-nums mr-2 text-[0.8em]">{n}</span>
@@ -39,8 +40,9 @@ export const TemaCifrado = memo(function Tema({ tema, n, tamano, onAbrir, sinBor
                 </div>
                 {tema.k && <span className="shrink-0 min-w-[2.6em] h-[1.9em] px-[0.6em] rounded-full bg-foreground text-background text-[1.05em] font-bold flex items-center justify-center">{tema.k}</span>}
             </div>}
-            {!sinCabecera && datosTema(tema).length > 0 && (
+            {!sinCabecera && (datosTema(tema).length > 0 || (formas && !!tema.m)) && (
                 <div className="mt-[0.4em] flex flex-wrap gap-1">
+                    {formas && !!tema.m && <span className="h-[1.6em] px-[0.6em] rounded-full text-[0.7em] font-semibold flex items-center bg-pastel-mantequilla text-pastel-mantequilla-ink">Cejilla {tema.m}</span>}
                     {datosTema(tema).map(p => <span key={p.texto} className={cn('h-[1.6em] px-[0.6em] rounded-full text-[0.7em] font-semibold flex items-center', p.clase)}>{p.texto}</span>)}
                 </div>
             )}
@@ -54,8 +56,8 @@ export const TemaCifrado = memo(function Tema({ tema, n, tamano, onAbrir, sinBor
     );
 });
 
-export function HojaSet({ temas, tamano = 17, onAbrir, className }: {
-    temas: TemaCompartido[]; tamano?: number; onAbrir?: (i: number) => void; className?: string;
+export function HojaSet({ temas, tamano = 17, onAbrir, className, formas }: {
+    temas: TemaCompartido[]; tamano?: number; onAbrir?: (i: number) => void; className?: string; formas?: boolean;
 }) {
     return (
         <div className={cn('text-foreground', className)} style={{ fontSize: tamano }}>
@@ -70,7 +72,7 @@ export function HojaSet({ temas, tamano = 17, onAbrir, className }: {
                                 <img src={estilo.icono} alt="" aria-hidden className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-[52px] w-[72px] object-contain" />
                             </div>
                         )}
-                        <TemaCifrado tema={t} n={i + 1} tamano={tamano} onAbrir={onAbrir ? () => onAbrir(i) : undefined} />
+                        <TemaCifrado tema={t} n={i + 1} tamano={tamano} formas={formas} onAbrir={onAbrir ? () => onAbrir(i) : undefined} />
                     </div>
                 );
             })}
@@ -89,16 +91,17 @@ function leerPrefs(): { tamano: number; velocidad: number; oscuro: boolean } {
 
 // En directo: la hoja del set a pantalla completa, oscura, sin barras. Baja sola (Auto) o con
 // el pedal (AvPág/flechas); la pantalla no se apaga. Tocar un título abre la canción entera
-export function CifradoEnDirecto({ abierta, onCerrar, titulo, temas, onAbrir, scrollInicial, onScroll }: {
+export function CifradoEnDirecto({ abierta, onCerrar, titulo, temas, onAbrir, scrollInicial, onScroll, formas, onFormas }: {
     abierta: boolean; onCerrar: () => void; titulo: string; temas: TemaCompartido[];
-    onAbrir?: (i: number) => void; scrollInicial?: number; onScroll?: (y: number) => void;
+    onAbrir?: (i: number) => void; scrollInicial?: number; onScroll?: (y: number) => void; formas?: boolean; onFormas?: (f: boolean) => void;
 }) {
     if (!abierta) return null;
-    return createPortal(<Directo onCerrar={onCerrar} titulo={titulo} temas={temas} onAbrir={onAbrir} scrollInicial={scrollInicial} onScroll={onScroll} />, document.body);
+    return createPortal(<Directo onCerrar={onCerrar} titulo={titulo} temas={temas} onAbrir={onAbrir} scrollInicial={scrollInicial} onScroll={onScroll} formas={formas} onFormas={onFormas} />, document.body);
 }
 
-function Directo({ onCerrar, titulo, temas, onAbrir, scrollInicial, onScroll }: {
+function Directo({ onCerrar, titulo, temas, onAbrir, scrollInicial, onScroll, formas, onFormas }: {
     onCerrar: () => void; titulo: string; temas: TemaCompartido[]; onAbrir?: (i: number) => void; scrollInicial?: number; onScroll?: (y: number) => void;
+    formas?: boolean; onFormas?: (f: boolean) => void;
 }) {
     const [prefs, setPrefs] = useState(leerPrefs);
     const [rodando, setRodando] = useState(false);
@@ -165,7 +168,7 @@ function Directo({ onCerrar, titulo, temas, onAbrir, scrollInicial, onScroll }: 
                     className="h-full overflow-y-auto overscroll-contain px-4 md:px-10 pt-[calc(env(safe-area-inset-top)+56px)] pb-[calc(env(safe-area-inset-bottom)+120px)]">
                     <div className="max-w-3xl mx-auto">
                         <p className="text-[13px] font-semibold text-muted-foreground truncate">{titulo} · {temas.length} temas</p>
-                        <HojaSet temas={temas} tamano={prefs.tamano} onAbrir={onAbrir ? i => { onScroll?.(zonaRef.current?.scrollTop ?? 0); onAbrir(i); } : undefined} />
+                        <HojaSet temas={temas} tamano={prefs.tamano} formas={formas} onAbrir={onAbrir ? i => { onScroll?.(zonaRef.current?.scrollTop ?? 0); onAbrir(i); } : undefined} />
                     </div>
                 </div>
                 <button onClick={salir} aria-label="Salir del cifrado en directo"
@@ -186,12 +189,30 @@ function Directo({ onCerrar, titulo, temas, onAbrir, scrollInicial, onScroll }: 
                     <button onClick={() => cambiar({ tamano: Math.max(12, prefs.tamano - 2) })} aria-label="Letra más pequeña" className={cn(boton, 'text-[13px] font-bold')}>A</button>
                     <button onClick={() => cambiar({ tamano: Math.min(40, prefs.tamano + 2) })} aria-label="Letra más grande" className={cn(boton, 'text-[19px] font-bold')}>A</button>
                     <span className="mx-0.5 h-6 w-px shrink-0 bg-hairline-strong" aria-hidden />
+                    {onFormas && temas.some(t => t.m) && (
+                        <button onClick={() => onFormas(!formas)} aria-pressed={!!formas}
+                            className={cn('pulsable h-10 px-3 rounded-full text-[13px] font-semibold shrink-0', formas ? 'bg-foreground text-background' : 'text-foreground')}>
+                            Formas
+                        </button>
+                    )}
                     <button onClick={() => cambiar({ oscuro: !prefs.oscuro })} aria-pressed={prefs.oscuro}
                         className={cn('pulsable h-10 px-3 rounded-full text-[13px] font-semibold', prefs.oscuro ? 'bg-foreground text-background' : 'text-foreground')}>
                         Oscuro
                     </button>
                 </div>
             </div>
+        </div>
+    );
+}
+
+// «Suena | Formas»: el cifrado como suena o con las formas de la cejilla de cada tema
+export function SuenaFormas({ formas, onCambio, className }: { formas: boolean; onCambio: (f: boolean) => void; className?: string }) {
+    return (
+        <div className={cn('inline-flex p-1 rounded-full bg-fill gap-0.5 shrink-0', className)} role="radiogroup" aria-label="Ver los acordes">
+            {([[false, 'Suena'], [true, 'Formas']] as const).map(([v, t]) => (
+                <button key={t} role="radio" aria-checked={formas === v} onClick={() => onCambio(v)}
+                    className={cn('h-8 px-3 rounded-full text-[13.5px] font-semibold', formas === v ? 'bg-foreground text-background' : 'text-foreground')}>{t}</button>
+            ))}
         </div>
     );
 }

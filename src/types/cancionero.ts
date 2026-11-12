@@ -13,6 +13,7 @@ export interface AjustesCancion {
     velocidad: number;          // desplazamiento automático, px por segundo
     alRitmo?: boolean;          // con la duración de la canción: la hoja baja entera en lo que dura
     intro?: number;             // segundos de intro que no cuentan para bajar (10 si no se dice)
+    cejillaGuardada?: number;   // la cejilla de «Formas» mientras se ve como suena
     ritmo?: number;             // modo auto de Tocar: 1,2 = la hoja baja un 20 % más rápido en esta canción
 }
 
@@ -29,6 +30,7 @@ export interface FichaCancion {
     estilo?: string;            // «Rumba», «Pop-rock», «Latino»…
     energia?: 1 | 2 | 3 | 4;    // 1 suave · 2 media · 3 media-alta · 4 arriba
     estado?: EstadoCancion;
+    tonoAlt?: string;           // otro tono en que también la tocáis («G · también A»)
     etiquetas?: string[];       // categorías propias, libres: «Bodas», «Tardeo», «Flamencas»…
     enlace?: string;            // su página de acordes (LaCuerda u otra web)
 }
@@ -53,6 +55,7 @@ export interface Cancion {
     // «Cataleya») y de cuál salió. Es una canción aparte, con su texto, ajustes y duración
     version?: string;
     original?: string;          // id de la canción de la que se hizo
+    favorita?: boolean;         // ⭐ la versión que sale por defecto (al buscar y al añadir a un repertorio)
     // Notas con formato (títulos, negrita, colores, avisos, casillas): el JSON del editor, en texto
     notas?: string;
 }

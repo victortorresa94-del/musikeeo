@@ -18,7 +18,8 @@ import type { Cancion } from '../../types/cancionero';
 import { FilaCancion } from '../../components/cancionero/FilaCancion';
 import { FilaConAcordes } from '../../components/cancionero/FilaDesplegable';
 import { SelectorVista } from '../../components/cancionero/SelectorVista';
-import { CifradoEnDirecto, HojaSet } from '../../components/cancionero/VistaCifrado';
+import { CifradoEnDirecto, HojaSet, SuenaFormas } from '../../components/cancionero/VistaCifrado';
+import { useFormas } from '../../hooks/useFormas';
 import { TableroBloques } from '../../components/cancionero/TableroBloques';
 import { TablaCanciones } from '../../components/cancionero/TablaCanciones';
 import { mover as moverEnTablero, type CampoTablero } from '../../lib/tablero';
@@ -26,7 +27,7 @@ import { temaDe } from '../../lib/compartir';
 import { BarraFiltros } from '../../components/cancionero/Filtros';
 import { useFiltrosGuardados } from '../../hooks/useFiltrosGuardados';
 import { AnadirARepertorio } from '../../components/cancionero/AnadirARepertorio';
-import { agrupar as agruparCanciones, crearCopia, descargarCopia, filtrar, hayFiltros, tonoMostrado } from '../../lib/biblioteca';
+import { pesoVersion, agrupar as agruparCanciones, crearCopia, descargarCopia, filtrar, hayFiltros, tonoMostrado } from '../../lib/biblioteca';
 
 const fechaCorta = (f: string) => {
     const [a, m, d] = f.split('-').map(Number);
@@ -70,7 +71,7 @@ export default function Cancionero() {
         // Tus versiones primero: al buscar «Bamboléo» sale la tuya antes que la original
         return canciones.filter(c => norm(`${c.titulo} ${c.version ?? ''} ${c.artista} ${c.ficha?.canta ?? ''} ${c.ficha?.estilo ?? ''} ${(c.ficha?.proyectos ?? []).join(' ')}`).includes(t)
             || norm(tonos.get(c.id) ?? '') === t)
-            .sort((a, b) => Number(!!b.version) - Number(!!a.version));
+            .sort((a, b) => pesoVersion(a) - pesoVersion(b));
     }, [canciones, q, tonos]);
     // Sin buscar: filtradas por la ficha, en orden alfabético si se agrupan
     const filtradas = useMemo(() => filtrar(canciones, filtros, tonoDeCancion), [canciones, filtros, tonoDeCancion]);
@@ -82,6 +83,7 @@ export default function Cancionero() {
     const vista = params.get('vista') === 'cifrado' ? 'cifrado' : params.get('vista') === 'bloques' ? 'bloques' : params.get('vista') === 'tabla' ? 'tabla' : 'lista';
     const [campoTablero, setCampoTablero] = useState<CampoTablero>(() => { try { return (localStorage.getItem('musikeeo-tablero-biblioteca') as CampoTablero) || 'estilos'; } catch { return 'estilos'; } });
     const directo = params.get('directo') === '1';
+    const [formas, setFormas] = useFormas();
     const ordenadas = useMemo(() => grupos.flatMap(g => g.canciones).filter((c, i, l) => l.indexOf(c) === i), [grupos]);
     const temasCifrado = useMemo(() => (vista === 'cifrado' || directo ? ordenadas.map(c => temaDe(c, false)) : []), [vista, directo, ordenadas]);
     const cambiarParam = (k: string, v: string | null) => {
@@ -275,6 +277,7 @@ export default function Cancionero() {
                             {!elegidas && filtradas.length > 0 && (
                                 <div className="mb-3 flex items-center gap-2">
                                     <SelectorVista valor={vista} onCambio={v => cambiarParam('vista', v === 'lista' ? null : v)} />
+                                    {vista === 'cifrado' && temasCifrado.some(t => t.m) && <SuenaFormas formas={formas} onCambio={setFormas} />}
                                     {vista === 'cifrado' && (
                                         <button onClick={() => cambiarParam('directo', '1')} className="pulsable ml-auto h-9 px-3.5 rounded-full bg-foreground text-background text-[14px] font-semibold">En directo</button>
                                     )}
@@ -296,7 +299,7 @@ export default function Cancionero() {
                                     onAbrir={c => navigate(`/cancionero/${c.id}`)}
                                     onAnadir={col => navigate(`/cancionero/nueva${col.clave ? `?campo=${campoTablero}&valor=${encodeURIComponent(col.clave)}` : ''}`)} />
                             ) : vista === 'cifrado' && !elegidas ? (
-                                <HojaSet temas={temasCifrado} tamano={17} onAbrir={abrirDesdeCifrado} />
+                                <HojaSet temas={temasCifrado} tamano={17} formas={formas} onAbrir={abrirDesdeCifrado} />
                             ) : grupos.map(g => (
                                 <section key={g.titulo || 'todas'} className={g.titulo ? 'mt-4 first:mt-0' : ''}>
                                     {g.titulo && (
@@ -315,7 +318,7 @@ export default function Cancionero() {
                 </>
             )}
 
-            <CifradoEnDirecto abierta={directo} onCerrar={() => cambiarParam('directo', null)} titulo="Tus canciones" temas={temasCifrado}
+            <CifradoEnDirecto abierta={directo} onCerrar={() => cambiarParam('directo', null)} titulo="Tus canciones" temas={temasCifrado} formas={formas} onFormas={setFormas}
                 onAbrir={i => navigate(`/cancionero/${ordenadas[i].id}`)} />
             {listo && (
                 <p className="mt-6 flex items-start gap-2 text-[13px] text-muted-foreground">

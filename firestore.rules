@@ -30,16 +30,17 @@ service cloud.firestore {
       match /canciones/{cancionId} {
         allow read, delete: if isOwner(userId);
         allow create, update: if isOwner(userId)
-          && request.resource.data.keys().hasOnly(['titulo', 'artista', 'texto', 'ajustes', 'creadaEn', 'actualizadaEn', 'portada', 'duracion', 'muestra', 'bpm', 'ficha', 'version', 'original', 'notas'])
+          && request.resource.data.keys().hasOnly(['titulo', 'artista', 'texto', 'ajustes', 'creadaEn', 'actualizadaEn', 'portada', 'duracion', 'muestra', 'bpm', 'ficha', 'version', 'original', 'notas', 'favorita'])
           && (!('ficha' in request.resource.data) || (request.resource.data.ficha is map
-            && request.resource.data.ficha.keys().hasOnly(['tono', 'capo', 'canta', 'proyectos', 'estilo', 'energia', 'estado', 'etiquetas', 'enlace'])))
+            && request.resource.data.ficha.keys().hasOnly(['tono', 'capo', 'canta', 'proyectos', 'estilo', 'energia', 'estado', 'etiquetas', 'enlace', 'tonoAlt'])))
           && request.resource.data.titulo is string && request.resource.data.titulo.size() <= 120
           && request.resource.data.artista is string && request.resource.data.artista.size() <= 120
           && request.resource.data.texto is string && request.resource.data.texto.size() <= 50000
           && request.resource.data.ajustes is map
           && (!('version' in request.resource.data) || (request.resource.data.version is string && request.resource.data.version.size() <= 40))
           && (!('original' in request.resource.data) || (request.resource.data.original is string && request.resource.data.original.size() <= 64))
-          && (!('notas' in request.resource.data) || (request.resource.data.notas is string && request.resource.data.notas.size() <= 30000));
+          && (!('notas' in request.resource.data) || (request.resource.data.notas is string && request.resource.data.notas.size() <= 30000))
+          && (!('favorita' in request.resource.data) || request.resource.data.favorita is bool);
       }
 
       // Gustos que aprende el Feed (src/lib/recomendador.ts). Privados, solo su dueño.

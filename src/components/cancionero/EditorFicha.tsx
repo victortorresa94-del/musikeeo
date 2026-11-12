@@ -103,6 +103,11 @@ export function EditorFicha({ ficha, onCambio, canciones, tonoDetectado, bpm, on
                 </button>
             )}
 
+            <Campo titulo="También la tocáis en (otro tono)">
+                <input value={ficha.tonoAlt ?? ''} onChange={e => poner({ tonoAlt: e.target.value.replace(/\s+/g, '').slice(0, 12) || undefined })}
+                    placeholder="A" aria-label="Otro tono en que también la tocáis" autoCapitalize="characters"
+                    className="w-full h-11 rounded-xl bg-sheet px-3 text-[16px] font-bold text-foreground placeholder:text-muted-foreground placeholder:font-medium focus:outline-none focus:ring-2 focus:ring-foreground/10" />
+            </Campo>
             <Campo titulo="Canta">
                 <Elegir valores={valores.canta} elegidos={ficha.canta ? [ficha.canta] : []} nuevo="Quién canta"
                     onAlternar={v => poner({ canta: unico(ficha.canta, v) })} />

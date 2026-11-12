@@ -4,7 +4,7 @@
 // tonos, se manda otro enlace. Sin React: lo usa la hoja de compartir y la página del músico.
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
 import { leerCancion, type Linea } from './acordes';
-import { tonoMostrado } from './biblioteca';
+import { cejillaDeFicha, tonoMostrado } from './biblioteca';
 import { notasVacias } from './notas';
 import { bloqueDe, etiquetasDe } from '../components/cancionero/estilo';
 import { tonoDe } from '../components/cancionero/utilidades';
@@ -97,7 +97,7 @@ export function temaDe(c: Cancion, conLetra: boolean): TemaCompartido {
         ...quitarVacios({
             a: c.artista, s, k: tonoMostrado(c, tonoDe(c)) ?? undefined, p: c.ficha?.capo, c: canta, e: c.ficha?.estilo,
             b: c.bpm, d: c.duracion, o: notasVacias(c.notas) ? undefined : c.notas, g: bloqueDe(c) ?? undefined, v: c.version,
-            m: c.ajustes.cejilla,
+            m: c.ajustes.cejilla || c.ajustes.cejillaGuardada || cejillaDeFicha(c),
         }),
     };
 }

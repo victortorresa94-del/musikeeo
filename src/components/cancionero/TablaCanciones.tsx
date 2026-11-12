@@ -12,10 +12,11 @@ import { estiloBloque, pastelCanta, pastelDe } from './estilo';
 // (con cuántas y lo que duran) y se eligen las columnas que se ven. El título queda fijo al
 // deslizar de lado en el móvil.
 
-type Col = 'version' | 'tono' | 'capo' | 'canta' | 'proyectos' | 'estilo' | 'energia' | 'estado' | 'etiquetas' | 'duracion' | 'bpm' | 'enlace';
+type Col = 'version' | 'tono' | 'tonoAlt' | 'capo' | 'canta' | 'proyectos' | 'estilo' | 'energia' | 'estado' | 'etiquetas' | 'duracion' | 'bpm' | 'enlace';
 const COLUMNAS: { id: Col; nombre: string; ancho: string }[] = [
     { id: 'version', nombre: 'Versión', ancho: 'w-[110px]' },
     { id: 'tono', nombre: 'Tono', ancho: 'w-[76px]' },
+    { id: 'tonoAlt', nombre: 'También en', ancho: 'w-[90px]' },
     { id: 'capo', nombre: 'Capo / formas', ancho: 'w-[150px]' },
     { id: 'canta', nombre: 'Canta', ancho: 'w-[110px]' },
     { id: 'proyectos', nombre: 'Grupo', ancho: 'w-[150px]' },
@@ -47,6 +48,7 @@ function valorOrden(c: Cancion, col: Orden['col'], tono: string | null, i: numbe
         case 'titulo': return norm(c.titulo);
         case 'version': return norm(c.version ?? '');
         case 'tono': return tono ?? '';
+        case 'tonoAlt': return f.tonoAlt ?? '';
         case 'capo': return norm(f.capo ?? '');
         case 'canta': return norm(f.canta ?? '');
         case 'proyectos': return norm((f.proyectos ?? []).join(' '));
@@ -109,6 +111,7 @@ export function TablaCanciones({ canciones, tonoDe, guardar, onAbrir, clave, enS
         let nueva: Cancion = c;
         if (col === 'version') nueva = { ...c, version: t.slice(0, 40) || undefined };
         else if (col === 'tono') { f.tono = t.replace(/\s+/g, '').slice(0, 12) || undefined; nueva = { ...c, ficha: f }; }
+        else if (col === 'tonoAlt') { f.tonoAlt = t.replace(/\s+/g, '').slice(0, 12) || undefined; nueva = { ...c, ficha: f }; }
         else if (col === 'capo') { f.capo = t.slice(0, 60) || undefined; nueva = { ...c, ficha: f }; }
         else if (col === 'enlace') { f.enlace = /^https?:\/\//i.test(t) ? t.slice(0, 500) : undefined; nueva = { ...c, ficha: f }; }
         else if (col === 'duracion') nueva = { ...c, duracion: leerDuracion(t) ?? undefined };
@@ -235,8 +238,9 @@ function Celda({ cancion: c, col, tono, onEscribir, onElegir }: { cancion: Canci
         </button>
     );
     switch (col) {
-        case 'version': return texto(c.version ?? '', 'Original');
+        case 'version': return texto(c.version ?? '', 'Original', c.favorita ? 'font-semibold' : undefined);
         case 'tono': return texto(f.tono ?? '', tono ?? '—', 'font-bold');
+        case 'tonoAlt': return texto(f.tonoAlt ?? '', '—');
         case 'capo': return texto(f.capo ?? '', '—');
         case 'duracion': return texto(c.duracion ? minutos(c.duracion) : '', '3:30', 'tabular-nums');
         case 'bpm': return texto(c.bpm ? String(c.bpm) : '', '—', 'tabular-nums');
