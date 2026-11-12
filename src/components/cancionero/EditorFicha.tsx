@@ -76,7 +76,7 @@ export function EditorFicha({ ficha, onCambio, canciones, tonoDetectado, bpm, on
     const unico = (actual: string | undefined, v: string) => (actual === v ? undefined : v);
 
     return (
-        <div id="ficha" className="rounded-[22px] bg-fill p-4 space-y-4">
+        <div id="ficha" className="scroll-mt-[calc(env(safe-area-inset-top)+4.5rem)] rounded-[22px] bg-fill p-4 space-y-4">
             <div className="flex items-center gap-2">
                 <img src={ICONO.repertorios} alt="" aria-hidden className="h-10 w-10 object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.14)]" />
                 <div>

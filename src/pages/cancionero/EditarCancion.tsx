@@ -259,7 +259,7 @@ function Formulario({ existente }: { existente?: Cancion }) {
 
             {/* Notas con formato: lo que quieras apuntar de la canción, a tu manera */}
             <section className="mt-6" aria-labelledby="titulo-notas">
-                <h2 id="titulo-notas" className="text-[17px] font-bold text-foreground">Notas de la canción</h2>
+                <h2 id="titulo-notas" className="scroll-mt-[calc(env(safe-area-inset-top)+4.5rem)] text-[17px] font-bold text-foreground">Notas de la canción</h2>
                 <p className="mt-0.5 mb-2 text-[13px] text-muted-foreground">Títulos, negritas, colores, avisos y casillas. Salen en la canción, en Tocar y en el enlace para el grupo. Pulsa «/» para meter un bloque.</p>
                 <div className="rounded-2xl border border-hairline p-3 md:p-4">
                     <Suspense fallback={<div className="min-h-32" />}>
