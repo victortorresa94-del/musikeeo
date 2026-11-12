@@ -2,7 +2,7 @@ import { toast } from 'sonner';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { antesQue } from '../../lib/bolos';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { CheckSquare, ChevronRight, Cloud, Download, FileText, FileUp, Loader2, MoreHorizontal, Plus, Search, Smartphone, X } from 'lucide-react';
+import { CheckSquare, ChevronRight, Cloud, Download, FileText, FileUp, ListPlus, Loader2, MoreHorizontal, Pencil, Plus, Search, Smartphone, Table2, Trash2, X } from 'lucide-react';
 import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
@@ -28,8 +28,11 @@ import { mover as moverEnTablero, type CampoTablero } from '../../lib/tablero';
 import { temaDe } from '../../lib/compartir';
 import { BarraFiltros } from '../../components/cancionero/Filtros';
 import { useFiltrosGuardados } from '../../hooks/useFiltrosGuardados';
+import { AnadirALista, BotonListas, EditorLista, MenuListas } from '../../components/cancionero/Listas';
+import { cancionesDeLista, nombreDeLista } from '../../lib/listas';
+import type { Lista, ReglaLista } from '../../types/cancionero';
 import { AnadirARepertorio } from '../../components/cancionero/AnadirARepertorio';
-import { pesoVersion, agrupar as agruparCanciones, crearCopia, descargarCopia, filtrar, hayFiltros, tonoMostrado } from '../../lib/biblioteca';
+import { pesoVersion, agrupar as agruparCanciones, crearCopia, descargarCopia, filtrar, hayFiltros, SIN_FILTROS, tonoMostrado } from '../../lib/biblioteca';
 
 const fechaCorta = (f: string) => {
     const [a, m, d] = f.split('-').map(Number);
@@ -40,7 +43,7 @@ const fechaCorta = (f: string) => {
 // repertorios para tocarlo en el bolo. Un solo buscador: tus canciones y, debajo, las del
 // catálogo (con portada y muestra) para añadirlas
 export default function Cancionero() {
-    const { canciones, repertorios, listo, nube, conCuenta, crear, crearRepertorio, guardar } = useCancionero();
+    const { canciones, repertorios, listas, listo, nube, conCuenta, crear, crearRepertorio, guardar, guardarLista, borrarLista } = useCancionero();
     const navigate = useNavigate();
     const location = useLocation();
     const [params, setParams] = useSearchParams();
@@ -54,6 +57,12 @@ export default function Cancionero() {
     const [aRepertorio, setARepertorio] = useState(false);
     const [completar, setCompletar] = useState(false);
     const [mantenimiento, setMantenimiento] = useState(false);
+    // Listas: la de ahora va en la dirección (?lista=), y en el ordenador el menú de la izquierda las enseña todas
+    const [hojaListas, setHojaListas] = useState(false);
+    const [editorLista, setEditorLista] = useState<{ lista: Lista | null } | null>(null);
+    const [opcionesLista, setOpcionesLista] = useState<Lista | null>(null);
+    const [aLista, setALista] = useState(false);
+    const [ancho] = useState(() => typeof window !== 'undefined' && window.matchMedia?.('(min-width: 1024px)').matches);
 
     // Para el bolo sin cobertura: se bajan ya las pantallas de leer y tocar
     useEffect(() => {
@@ -77,13 +86,25 @@ export default function Cancionero() {
             .sort((a, b) => pesoVersion(a) - pesoVersion(b));
     }, [canciones, q, tonos]);
     // Sin buscar: filtradas por la ficha, en orden alfabético si se agrupan
-    const filtradas = useMemo(() => filtrar(canciones, filtros, tonoDeCancion), [canciones, filtros, tonoDeCancion]);
+    const listaId = params.get('lista') || 'todas';
+    const listaPropia = listas.find(l => l.id === listaId) ?? null;
+    const enLista = useMemo(() => cancionesDeLista(listaId, canciones, listas, tonoDeCancion), [listaId, canciones, listas, tonoDeCancion]);
+    const cuantas = useCallback((id: string) => cancionesDeLista(id, canciones, listas, tonoDeCancion).length, [canciones, listas, tonoDeCancion]);
+    const filtradas = useMemo(() => filtrar(enLista, filtros, tonoDeCancion), [enLista, filtros, tonoDeCancion]);
+    // Lo que se guardaría como lista inteligente: los filtros puestos y lo que hay en el buscador
+    const reglaDeAhora = useMemo<ReglaLista | null>(() => {
+        const f = Object.fromEntries(Object.entries(filtros).filter(([, v]) => v.length));
+        const texto = q.trim();
+        return Object.keys(f).length || texto ? { ...(Object.keys(f).length ? { filtros: f } : {}), ...(texto ? { texto } : {}) } : null;
+    }, [filtros, q]);
     const grupos = useMemo(() => {
         const base = agrupar === 'nada' ? filtradas : [...filtradas].sort((a, b) => a.titulo.localeCompare(b.titulo, 'es'));
         return agruparCanciones(base, agrupar, tonoDeCancion);
     }, [filtradas, agrupar, tonoDeCancion]);
     // Vista Cifrado: las canciones filtradas, en el orden de la lista, seguidas con sus acordes
-    const vista = params.get('vista') === 'cifrado' ? 'cifrado' : params.get('vista') === 'bloques' ? 'bloques' : params.get('vista') === 'tabla' ? 'tabla' : 'lista';
+    // En el ordenador, la Tabla por defecto (hay sitio); en el móvil, la Lista
+    const vistaParam = params.get('vista') ?? (ancho ? 'tabla' : 'lista');
+    const vista = vistaParam === 'cifrado' ? 'cifrado' : vistaParam === 'bloques' ? 'bloques' : vistaParam === 'tabla' ? 'tabla' : 'lista';
     const [campoTablero, setCampoTablero] = useState<CampoTablero>(() => { try { return (localStorage.getItem('musikeeo-tablero-biblioteca') as CampoTablero) || 'estilos'; } catch { return 'estilos'; } });
     const directo = params.get('directo') === '1';
     const [formas, setFormas] = useFormas();
@@ -146,8 +167,48 @@ export default function Cancionero() {
         navigate(`/cancionero/repertorio/${id}/tocar`);
     };
 
+    const elegirLista = (id: string, vistaNueva?: string) => {
+        const p = new URLSearchParams(params);
+        p.delete('ver');
+        if (id === 'todas') p.delete('lista'); else p.set('lista', id);
+        if (vistaNueva) p.set('vista', vistaNueva);
+        setParams(p, { replace: true });
+        setHojaListas(false);
+        setQ('');
+    };
+    const menuListas = (compacto: boolean) => (
+        <MenuListas actual={ver === 'canciones' ? listaId : ''} onElegir={elegirLista} canciones={canciones} listas={listas} cuantas={cuantas} compacto={compacto}
+            onNueva={() => setEditorLista({ lista: null })} onOpciones={l => setOpcionesLista(l)} />
+    );
+
     return (
-        <div className={cn('max-w-3xl mx-auto px-4 md:px-0 pt-3 md:pt-6', elegidas?.length ? 'pb-40' : 'pb-16')}>
+        <div className="lg:flex lg:items-start lg:gap-8 lg:max-w-[1360px] lg:mx-auto lg:px-6">
+        {/* En el ordenador: el menú del Cancionero a la izquierda, como un gestor de música */}
+        {listo && (
+            <aside aria-label="Menú del cancionero" className="hidden lg:block w-[240px] shrink-0 sticky top-20 pt-6 pb-10 max-h-[calc(100vh-5rem)] overflow-y-auto hide-scrollbar">
+                <nav className="space-y-0.5">
+                    {([
+                        [ICONO.canciones, 'Canciones', () => elegirLista('todas'), ver === 'canciones' && listaId === 'todas'],
+                        [ICONO.repertorios, 'Repertorios', () => cambiarVer('repertorios'), ver === 'repertorios'],
+                        [ICONO.importar, 'Importar', () => setImportar(true), false],
+                        [ICONO.escuchar, 'Sacar de un audio', () => navigate('/cancionero/escuchar'), false],
+                    ] as const).map(([icono, t, f, activo]) => (
+                        <button key={t} onClick={f} className={cn('w-full h-10 px-2 rounded-xl flex items-center gap-2.5 text-left text-[15px] font-semibold text-foreground', activo ? 'bg-fill-strong' : 'hover:bg-fill')}>
+                            <img src={icono} alt="" className="h-7 w-7 object-contain" /> {t}
+                        </button>
+                    ))}
+                    {faltanLetra > 0 && (
+                        <button onClick={() => setCompletar(true)} className="w-full h-10 px-2 rounded-xl flex items-center gap-2.5 text-left text-[15px] font-semibold text-foreground hover:bg-fill">
+                            <span className="h-7 w-7 flex items-center justify-center"><FileText className="h-[18px] w-[18px]" /></span>
+                            <span className="flex-1">Completar letras</span><span className="text-[13px] text-muted-foreground">{faltanLetra}</span>
+                        </button>
+                    )}
+                </nav>
+                <p className="mt-5 mb-1 px-2 text-[12px] font-bold uppercase tracking-[0.08em] text-muted-foreground">Listas</p>
+                {menuListas(true)}
+            </aside>
+        )}
+        <div className={cn('max-w-3xl mx-auto lg:max-w-none lg:mx-0 lg:flex-1 lg:min-w-0 px-4 md:px-0 pt-3 md:pt-6', elegidas?.length ? 'pb-40' : 'pb-16')}>
             <h1 className="font-heading text-[28px] font-bold leading-tight text-foreground">Cancionero</h1>
             <p className="mt-0.5 text-[17px] text-muted-foreground">¿Qué tocamos hoy?</p>
 
@@ -171,7 +232,10 @@ export default function Cancionero() {
                 <>
                     {canciones.length > 0 && (lista.length > 0 ? (
                         <>
-                            <p className="mt-4 mb-1.5 px-1 text-[13px] font-semibold text-muted-foreground">Tu cancionero</p>
+                            <p className="mt-4 mb-1.5 px-1 flex items-center justify-between gap-2 text-[13px] font-semibold text-muted-foreground">
+                                Tu cancionero
+                                <button onClick={() => setEditorLista({ lista: null })} className="text-foreground underline underline-offset-2">Guardar como lista</button>
+                            </p>
                             {filas(lista)}
                         </>
                     ) : (
@@ -181,7 +245,7 @@ export default function Cancionero() {
                 </>
             ) : (
                 <>
-                    <div className="mt-4 grid grid-cols-4 gap-3">
+                    <div className="mt-4 grid grid-cols-4 gap-3 lg:hidden">
                         <Baldosa icono={ICONO.canciones} etiqueta="Canciones" pastel={PASTEL.cielo} activa={ver === 'canciones'} onClick={() => cambiarVer('canciones')} />
                         <Baldosa icono={ICONO.repertorios} etiqueta="Repertorios" pastel={PASTEL.lavanda} activa={ver === 'repertorios'} onClick={() => cambiarVer('repertorios')} />
                         <Baldosa icono={ICONO.buscar} etiqueta="Buscar" pastel={PASTEL.menta} onClick={() => buscadorRef.current?.focus()} />
@@ -197,8 +261,8 @@ export default function Cancionero() {
 
                     <div className="mt-6 mb-2 flex items-center justify-between gap-3">
                         <h2 className="font-heading text-[20px] font-bold text-foreground whitespace-nowrap">
-                            {ver === 'repertorios' ? 'Repertorios' : 'Tus canciones'}
-                            <span className="ml-1.5 text-[15px] font-semibold text-muted-foreground">{ver === 'repertorios' ? reps.length || '' : canciones.length || ''}</span>
+                            {ver === 'repertorios' ? 'Repertorios' : listaId === 'todas' ? 'Tus canciones' : nombreDeLista(listaId, listas)}
+                            <span className="ml-1.5 text-[15px] font-semibold text-muted-foreground">{ver === 'repertorios' ? reps.length || '' : enLista.length || ''}</span>
                         </h2>
                         {ver === 'repertorios' ? (
                             <button onClick={nuevoRepertorio} className="pulsable h-9 pl-3 pr-4 rounded-full bg-primary text-primary-foreground text-[14px] font-semibold flex items-center gap-1">
@@ -278,6 +342,14 @@ export default function Cancionero() {
                         </div>
                     ) : (
                         <>
+                            {/* En el móvil, la lista de ahora en un botón; en el ordenador están a la izquierda */}
+                            <div className="mb-2 flex items-center gap-2 lg:hidden">
+                                <BotonListas nombre={nombreDeLista(listaId, listas)} n={enLista.length} onClick={() => setHojaListas(true)} />
+                                {listaPropia && (
+                                    <button onClick={() => setOpcionesLista(listaPropia)} aria-label={`Opciones de ${listaPropia.nombre}`}
+                                        className="pulsable h-9 w-9 shrink-0 rounded-full bg-fill flex items-center justify-center text-foreground"><MoreHorizontal className="h-4 w-4" /></button>
+                                )}
+                            </div>
                             <BarraFiltros className="mb-3" canciones={canciones} tonoDe={tonoDeCancion} filtros={filtros} onCambio={setFiltros}
                                 agrupar={agrupar} onAgrupar={setAgrupar} />
                             {elegidas && (
@@ -285,7 +357,7 @@ export default function Cancionero() {
                             )}
                             {!elegidas && filtradas.length > 0 && (
                                 <div className="mb-3 flex items-center gap-2">
-                                    <SelectorVista valor={vista} onCambio={v => cambiarParam('vista', v === 'lista' ? null : v)} />
+                                    <SelectorVista valor={vista} onCambio={v => cambiarParam('vista', v === (ancho ? 'tabla' : 'lista') ? null : v)} />
                                     {vista === 'cifrado' && temasCifrado.some(t => t.m) && <SuenaFormas formas={formas} onCambio={setFormas} />}
                                     {vista === 'cifrado' && (
                                         <button onClick={() => cambiarParam('directo', '1')} className="pulsable ml-auto h-9 px-3.5 rounded-full bg-foreground text-background text-[14px] font-semibold">En directo</button>
@@ -293,12 +365,15 @@ export default function Cancionero() {
                                 </div>
                             )}
                             {filtradas.length === 0 ? (
-                                <p className="rounded-2xl bg-fill px-4 py-6 text-center text-[15px] text-muted-foreground">Ninguna canción con estos filtros.</p>
+                                <p className="rounded-2xl bg-fill px-4 py-6 text-center text-[15px] text-muted-foreground">
+                                    {enLista.length === 0 && listaPropia && !listaPropia.regla ? 'Lista vacía: toca «Elegir», marca canciones y «A una lista».'
+                                        : enLista.length === 0 ? 'Ninguna canción en esta lista todavía.' : 'Ninguna canción con estos filtros.'}
+                                </p>
                             ) : vista === 'tabla' && !elegidas ? (
-                                <div className="xl:-mx-24 min-[1400px]:-mx-40 2xl:-mx-44"><TablaCanciones canciones={ordenadas} tonoDe={tonoDeCancion} guardar={c => guardar(c)} onAbrir={c => navigate(`/cancionero/${c.id}`)}
+                                <div><TablaCanciones canciones={ordenadas} tonoDe={tonoDeCancion} guardar={c => guardar(c)} onAbrir={c => navigate(`/cancionero/${c.id}`)}
                                     clave="musikeeo-tabla-biblioteca" todas={canciones} /></div>
                             ) : vista === 'bloques' && !elegidas ? (
-                                <div className="xl:-mx-24 min-[1400px]:-mx-40 2xl:-mx-44"><TableroBloques canciones={ordenadas} campo={campoTablero} tonoDe={tonoDeCancion}
+                                <div><TableroBloques canciones={ordenadas} campo={campoTablero} tonoDe={tonoDeCancion}
                                     onCampo={c => { setCampoTablero(c); try { localStorage.setItem('musikeeo-tablero-biblioteca', c); } catch { /* */ } }}
                                     campos={['estilos', 'proyectos', 'canta', 'tonos', 'energias', 'estados', 'etiquetas']}
                                     onMover={(c, desde, hacia) => {
@@ -308,7 +383,7 @@ export default function Cancionero() {
                                     onAbrir={c => navigate(`/cancionero/${c.id}`)}
                                     onAnadir={col => navigate(`/cancionero/nueva${col.clave ? `?campo=${campoTablero}&valor=${encodeURIComponent(col.clave)}` : ''}`)} /></div>
                             ) : vista === 'cifrado' && !elegidas ? (
-                                <HojaSet temas={temasCifrado} tamano={17} formas={formas} ancho onAbrir={abrirDesdeCifrado} className="xl:-mx-24 min-[1400px]:-mx-40 2xl:-mx-44" />
+                                <HojaSet temas={temasCifrado} tamano={17} formas={formas} ancho onAbrir={abrirDesdeCifrado} />
                             ) : grupos.map(g => (
                                 <section key={g.titulo || 'todas'} className={g.titulo ? 'mt-4 first:mt-0' : ''}>
                                     {g.titulo && (
@@ -320,7 +395,10 @@ export default function Cancionero() {
                                 </section>
                             ))}
                             {hayFiltros(filtros) && filtradas.length > 0 && (
-                                <p className="mt-2 px-1 text-[13px] text-muted-foreground">{filtradas.length} de {canciones.length} canciones</p>
+                                <p className="mt-2 px-1 flex flex-wrap items-center gap-x-3 text-[13px] text-muted-foreground">
+                                    {filtradas.length} de {enLista.length} canciones
+                                    {!elegidas && <button onClick={() => setEditorLista({ lista: null })} className="font-semibold text-foreground underline underline-offset-2">Guardar como lista</button>}
+                                </p>
                             )}
                         </>
                     )}
@@ -359,12 +437,68 @@ export default function Cancionero() {
                         <button onClick={() => setElegidas([])} aria-label="Quitar la selección" className="h-11 w-11 shrink-0 rounded-full bg-fill flex items-center justify-center text-foreground">
                             <X className="h-5 w-5" />
                         </button>
-                        <button onClick={() => setARepertorio(true)} className="pulsable flex-1 h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px]">
-                            Añadir {elegidas.length} al repertorio
+                        {listaPropia && !listaPropia.regla ? (
+                            <button onClick={() => {
+                                const antes = listaPropia;
+                                guardarLista({ ...listaPropia, canciones: listaPropia.canciones.filter(id => !elegidas.includes(id)) });
+                                toast(`${elegidas.length} fuera de «${antes.nombre}»`, { action: { label: 'Deshacer', onClick: () => guardarLista(antes) } });
+                                setElegidas(null);
+                            }} className="pulsable h-[52px] px-4 shrink-0 rounded-[14px] bg-fill text-foreground font-semibold text-[15px]">Quitar de la lista</button>
+                        ) : (
+                            <button onClick={() => setALista(true)} className="pulsable h-[52px] px-4 shrink-0 rounded-[14px] bg-fill text-foreground font-semibold text-[15px] flex items-center gap-1.5">
+                                <ListPlus className="h-5 w-5" /> A una lista
+                            </button>
+                        )}
+                        <button onClick={() => setARepertorio(true)} className="pulsable flex-1 min-w-0 h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] truncate px-3">
+                            {elegidas.length} al repertorio
                         </button>
                     </div>
                 </div>
             )}
+            <AnadirALista abierta={aLista} onCerrar={() => setALista(false)} ids={elegidas ?? []} listas={listas} onHecho={() => setElegidas(null)}
+                onNueva={() => { setALista(false); setEditorLista({ lista: null }); }} />
+            <Hoja abierta={hojaListas} onCerrar={() => setHojaListas(false)} titulo="Listas" alta derecha={<BotonHoja fuerte onClick={() => setHojaListas(false)}>Listo</BotonHoja>}>
+                <div className="px-3 pb-5">{menuListas(false)}</div>
+            </Hoja>
+            <EditorLista abierta={!!editorLista} onCerrar={() => setEditorLista(null)} lista={editorLista?.lista}
+                reglaDeAhora={editorLista?.lista ? null : reglaDeAhora}
+                onCreada={l => {
+                    // Con canciones elegidas, la lista nueva se lleva esas
+                    if (elegidas?.length && !l.regla) { guardarLista({ ...l, canciones: elegidas }); setElegidas(null); }
+                    elegirLista(l.id);
+                    if (l.regla) setFiltros(SIN_FILTROS);
+                }} />
+            <Hoja abierta={!!opcionesLista} onCerrar={() => setOpcionesLista(null)} titulo={opcionesLista?.nombre ?? ''} derecha={<BotonHoja fuerte onClick={() => setOpcionesLista(null)}>Listo</BotonHoja>}>
+                {opcionesLista && (
+                    <div className="px-4 pb-5">
+                        <div className="rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
+                            {([
+                                [Pencil, 'Nombre y color', () => { setEditorLista({ lista: opcionesLista }); setOpcionesLista(null); }],
+                                [Plus, 'Hacer un repertorio con esta lista', () => {
+                                    const ids = cancionesDeLista(opcionesLista.id, canciones, listas, tonoDeCancion).map(c => c.id);
+                                    const r = crearRepertorio(opcionesLista.nombre, ids);
+                                    setOpcionesLista(null);
+                                    navigate(`/cancionero/repertorio/${r.id}`);
+                                }],
+                                [Table2, 'Verla en Cifrado', () => { elegirLista(opcionesLista.id, 'cifrado'); setOpcionesLista(null); }],
+                            ] as const).map(([Icono, t, f]) => (
+                                <button key={t} onClick={f} className="w-full h-12 px-4 flex items-center gap-2.5 text-left text-[15px] text-foreground active:bg-fill-strong">
+                                    <Icono className="h-[18px] w-[18px]" /> {t}
+                                </button>
+                            ))}
+                            <button onClick={() => {
+                                const l = opcionesLista;
+                                void borrarLista(l.id);
+                                if (listaId === l.id) elegirLista('todas');
+                                setOpcionesLista(null);
+                                toast(`Lista «${l.nombre}» borrada (las canciones siguen)`, { action: { label: 'Deshacer', onClick: () => guardarLista(l) } });
+                            }} className="w-full h-12 px-4 flex items-center gap-2.5 text-left text-[15px] text-destructive active:bg-fill-strong">
+                                <Trash2 className="h-[18px] w-[18px]" /> Borrar la lista
+                            </button>
+                        </div>
+                    </div>
+                )}
+            </Hoja>
             <AnadirARepertorio abierta={aRepertorio} onCerrar={() => setARepertorio(false)} ids={elegidas ?? []} onHecho={() => setElegidas(null)} />
 
             <ImportarCanciones abierto={importar} onCerrar={() => setImportar(false)} />
@@ -389,6 +523,7 @@ export default function Cancionero() {
                     </div>
                 </div>
             </Hoja>
+        </div>
         </div>
     );
 }

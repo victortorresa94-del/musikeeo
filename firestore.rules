@@ -64,6 +64,18 @@ service cloud.firestore {
           && (!('notas' in request.resource.data) || (request.resource.data.notas is string && request.resource.data.notas.size() <= 30000))
           && (!('hueco' in request.resource.data) || (request.resource.data.hueco is number && request.resource.data.hueco > 0 && request.resource.data.hueco <= 1440));
       }
+
+      // Listas propias dentro de Canciones (manuales o con un filtro guardado)
+      match /listas/{listaId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && request.resource.data.keys().hasOnly(['nombre', 'canciones', 'creadaEn', 'actualizadaEn', 'color', 'regla', 'orden'])
+          && request.resource.data.nombre is string && request.resource.data.nombre.size() <= 80
+          && request.resource.data.canciones is list && request.resource.data.canciones.size() <= 2000
+          && (!('color' in request.resource.data) || (request.resource.data.color is string && request.resource.data.color.size() <= 20))
+          && (!('regla' in request.resource.data) || request.resource.data.regla is map)
+          && (!('orden' in request.resource.data) || request.resource.data.orden is number);
+      }
     }
 
     // Perfil público (sin email). Lectura abierta; el dueño solo escribe campos permitidos.

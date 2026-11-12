@@ -1,7 +1,7 @@
 import { collection, deleteDoc, doc, getDocs, limit, query, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { datosDelPegado, leerCancion } from '../lib/acordes';
-import type { AjustesCancion, Cancion, Repertorio } from '../types/cancionero';
+import type { AjustesCancion, Cancion, Lista, Repertorio } from '../types/cancionero';
 
 // El cancionero vive primero en el móvil (funciona sin cuenta y sin cobertura, en el bolo)
 // y, con cuenta, se copia a users/{uid}/canciones y users/{uid}/repertorios para tenerlo
@@ -190,6 +190,11 @@ export const almacenRepertorios = crearAlmacen<Repertorio>('musikeeo-repertorios
     ...siHay({ notas: r.notas, hueco: r.hueco }),
 }));
 
+export const almacenListas = crearAlmacen<Lista>('musikeeo-listas-v1', 'listas', l => ({
+    nombre: l.nombre, canciones: l.canciones, creadaEn: l.creadaEn, actualizadaEn: l.actualizadaEn,
+    ...siHay({ color: l.color, regla: l.regla && siHay({ filtros: l.regla.filtros && siHay(l.regla.filtros), texto: l.regla.texto }), orden: l.orden }),
+}));
+
 export const AJUSTES_INICIALES: AjustesCancion = {
     semitonos: 0,
     cejilla: 0,
@@ -240,6 +245,9 @@ async function borrarCancion(id: string) {
     for (const r of almacenRepertorios.estado().items) {
         if (r.canciones.includes(id)) almacenRepertorios.guardar({ ...r, canciones: r.canciones.filter(c => c !== id) });
     }
+    for (const l of almacenListas.estado().items) {
+        if (l.canciones.includes(id)) almacenListas.guardar({ ...l, canciones: l.canciones.filter(c => c !== id), actualizadaEn: new Date().toISOString() });
+    }
     await almacenCanciones.borrar(id);
 }
 
@@ -250,6 +258,7 @@ const CLAVE_ULTIMO = 'musikeeo-cancionero-ultimo';
 function cargar(uid: string | null) {
     almacenCanciones.cargar(uid);
     almacenRepertorios.cargar(uid);
+    almacenListas.cargar(uid);
     try { localStorage.setItem(CLAVE_ULTIMO, uid || INVITADO); } catch { /* sin almacenamiento */ }
 }
 
@@ -260,6 +269,7 @@ function cargarPrevio() {
     if (!ultimo) return;
     almacenCanciones.cargarPrevio(ultimo);
     almacenRepertorios.cargarPrevio(ultimo);
+    almacenListas.cargarPrevio(ultimo);
 }
 if (typeof window !== 'undefined') cargarPrevio();
 
@@ -273,4 +283,6 @@ export const cancioneroService = {
     crearRepertorio,
     guardarRepertorio: almacenRepertorios.guardar,
     borrarRepertorio: almacenRepertorios.borrar,
+    guardarLista: almacenListas.guardar,
+    borrarLista: almacenListas.borrar,
 };

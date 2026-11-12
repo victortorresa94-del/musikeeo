@@ -444,7 +444,7 @@ Un agente prepara `actualizar-tonos.json` con estos datos y las fuentes reciente
 - ✅ **Cejilla**: «Suena en G | Formas (cejilla 3)» en la canción, recordado por canción (también en Tocar). En el Cifrado, «En directo» y el enlace del grupo, «Suena | Formas».
 - ⏳ **Títulos «X (versión Mafe)»**: entenderlos como versión de X. Queda para después del bolo (lo decide la sesión 1 en `emparejar()`).
 
-## 21c. Listas personalizadas y el Cancionero a lo ancho en PC 🔧 (sesión 1, 12-nov)
+## 21c. Listas personalizadas y el Cancionero a lo ancho en PC ✅ primera vuelta (sesión 1, 12-nov, en main)
 
 *«Eso de aprender es muy importante, porque quiero poder hacerme mis listados dentro de canciones. Debo poder crear mis
 listas personalizadas, como esa, la de aprender, o la de X artista… debe ser un auténtico menú súper bien pensado.»*
@@ -460,6 +460,16 @@ móvil. Pero en PC podemos sacarle más partido al ancho… y hacer un menú aqu
 **PC a lo ancho:** menú propio del Cancionero a la izquierda, contenido ancho (Tabla por defecto) y panel de la canción a la derecha.
 
 **Móvil:** se queda como está.
+
+✅ **Hecho la noche del 12-nov** (probado en iPhone 13 simulado, en PC a 1440 px y sin red):
+- **Listas** (`lib/listas.ts`, `components/cancionero/Listas.tsx`, almacén `musikeeo-listas-v1` y `users/{uid}/listas`, con su regla en `firestore.rules`):
+  - fijas: Todas · Para aprender · Por ensayar · Favoritas (salen del estado y de la ⭐ de la ficha);
+  - una por grupo (de la ficha: Lady Jarana, Cataleya…);
+  - «Mis listas»: manuales («Elegir» → «A una lista», o «Quitar de la lista» dentro de una) o inteligentes (filtros y/o búsqueda → «Guardar como lista»: se llenan solas);
+  - en cada lista suya, ⋯: nombre y color, hacer un repertorio con ella, verla en Cifrado, borrarla (con Deshacer). Una canción puede estar en varias.
+- **Móvil**: botón «Todas ▾» encima de los filtros, que abre la hoja de listas.
+- **PC (≥ 1024 px)**: menú del Cancionero a la izquierda (Canciones, Repertorios, Importar, Sacar de un audio, Completar letras y todas las listas), contenido ancho y la Tabla por defecto.
+- Falta: el panel de la derecha con la canción sin cambiar de página, reordenar las listas arrastrando, y poner un icono a cada lista (ahora llevan color).
 
 ### Decisión pendiente: los botones de webs en «Falta la letra»
 

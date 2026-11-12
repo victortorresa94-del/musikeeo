@@ -61,6 +61,24 @@ export interface Cancion {
 }
 
 // Un repertorio (setlist) para un bolo: canciones del cancionero en el orden en que se tocan
+// Una lista tuya dentro de Canciones («Para la boda», «Estopa»…). Manual: las canciones que metes.
+// Inteligente: se guarda un filtro (los de la biblioteca y/o un texto) y se llena sola
+export interface ReglaLista {
+    filtros?: Partial<Record<string, string[]>>;
+    texto?: string;
+}
+export interface Lista {
+    id: string;
+    nombre: string;
+    color?: string;             // nombre de un pastel (mantequilla, cielo, menta, lavanda, melocoton, rosa)
+    canciones: string[];        // manual: ids de Cancion
+    regla?: ReglaLista;         // inteligente
+    orden?: number;
+    creadaEn: string;
+    actualizadaEn: string;
+    sincronizada?: boolean;
+}
+
 export interface Repertorio {
     id: string;
     nombre: string;

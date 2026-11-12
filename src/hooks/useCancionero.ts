@@ -1,6 +1,6 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { almacenCanciones, almacenRepertorios, cancioneroService } from '../services/cancioneroService';
+import { almacenCanciones, almacenListas, almacenRepertorios, cancioneroService } from '../services/cancioneroService';
 
 // El cancionero y los repertorios de quien está (o del móvil, sin cuenta), siempre al día
 export function useCancionero() {
@@ -13,7 +13,9 @@ export function useCancionero() {
 
     const canciones = useSyncExternalStore(almacenCanciones.suscribir, almacenCanciones.estado);
     const repertorios = useSyncExternalStore(almacenRepertorios.suscribir, almacenRepertorios.estado);
+    const listas = useSyncExternalStore(almacenListas.suscribir, almacenListas.estado);
     return {
+        listas: listas.items,
         canciones: canciones.items,
         repertorios: repertorios.items,
         nube: canciones.nube,
