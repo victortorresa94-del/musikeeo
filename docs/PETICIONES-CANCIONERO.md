@@ -497,6 +497,17 @@ El informe legal (`docs/LEGAL-CANCIONERO.md`) recomienda no mandar a copiar de w
 
 Víctor aún no ha elegido; mientras tanto se queda como está.
 
+## 21d. Grupos mal puestos y la canción en el móvil (12-nov, tarde) 🔧
+
+*«En móvil aún no puedo editar una canción. Tampoco puedo cambiarle las características: por ejemplo, esta canción no es de Lady Jarana. Me has puesto un montón de Lady Jarana que NO SON. Además, la UI en móvil deja bastante que desear: todo apelotonado ahí, ocupando toda la página.»*
+
+- **Grupos** ✅ (ficheros v2):
+  - **Qué pasó:** «Lady Jarana / Cataleya» de la BBDD de Drive decía de quién es la versión (la de Víctor o la de Mafe), no el grupo. Se tradujo mal al campo Grupo, y Let it be venía además así de Notion.
+  - **Regla nueva:** Lady Jarana = la base «Todos los temas Jaraneros» de Notion (32) + el set de Pallejà, en total 33 canciones. Cataleya = la «BBDD Canciones» de Cataleya en Notion (119) + su set de Pallejà, en total 116. El resto queda sin grupo (258). Las «(versión Mafe/Cataleya)» no son de Lady Jarana; las «(versión Víctor)» no son de Cataleya.
+  - **Cómo se aplica:** borrar todo y subir los v2. Importar encima no basta, porque una ficha sin grupo no quita el grupo que ya hay.
+  - **Probado:** en producción, 397 canciones, 2 repertorios y nada duplicado.
+- **Editar en el móvil y la cabecera de la canción** 🔧 (sesión 1): «Editar» a la vista, que «Editar ficha» funcione en el iPhone, las píldoras en una línea y «Falta la letra» plegado.
+
 ## 22. Datos de la BBDD a corregir ⏳
 
 Artistas mal en la BBDD:
