@@ -146,8 +146,17 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 - **Compartir con el grupo** (`lib/compartir.ts`, `components/cancionero/CompartirGrupo.tsx`, página `/grupo` en `pages/cancionero/Grupo.tsx`, fuera de MainLayout, sin cookies ni Rodrigo): el repertorio entero comprimido (fflate, base64url) tras `#` → no viaja al servidor, funciona sin reglas desplegadas y sin red una vez abierto. Cifrado por defecto (`soloCifrado`: partes, avisos y acordes; filas iguales seguidas → «(x2)»); letra si se elige. Lleva `s` = semitonos para que suene en su tono. Página oscura: lista (tono, capo, canta, estilo, bpm, duración, total, hoja del bolo) y escenario deslizando con tono ± y tamaño ± (se recuerda), pedal/flechas.
 - Probado con Playwright en iPhone 13 simulado (editor, «/», lector, Tocar, enlace en otro navegador sin datos) y sin red (enlace y editor abren). Sin errores en consola.
 
+- **Después, la misma noche (peticiones nuevas de Víctor):**
+  - `ficha.etiquetas: string[]` y `ficha.enlace?: string` (editor de la ficha, lector, filtros y agrupar en `biblioteca.ts`, reglas; al importar, las etiquetas se SUMAN en `unirFichas`; directivas `{etiquetas:}`, `{apto para:}`, `{enlace:}`).
+  - Vistas con `components/cancionero/SelectorVista.tsx` (Lista · Cifrado · Bloques), en el repertorio (`?vista=`) y en Canciones. **Cifrado** = `HojaSet` (`VistaCifrado.tsx`): el set seguido con tono grande, ficha, notas, partes y avisos, sin letra (`temaDe`/`soloCifrado` en `lib/compartir.ts`: un dibujo de 1-4 filas que se repite → «(xN)»). Tocar un título abre la canción y al volver la hoja sigue donde estaba (sessionStorage). «En directo» (`CifradoEnDirecto`): pantalla completa, oscura, Auto con velocidad, tamaño, pedal y pantalla encendida. El enlace del grupo usa el mismo componente.
+  - **Hueco del bolo** (`repertorio.hueco`, minutos, en reglas): «Te pasas 4 min» / «Te sobran X» / «Clavado al hueco».
+  - **Diagramas de acordes** (`lib/diagramas.ts`): posturas calculadas (máx. 4 dedos, cejilla, abertura de 4 trastes, bajo correcto) y las de siempre primero; SVG en `Diagrama.tsx`. Tocar un acorde en cualquier `HojaCancion` (data-acorde, el nombre que se ve: con tono y cejilla) abre `VisorDiagramas` (montado una vez en `App.tsx`, avisado por `lib/verAcorde.ts`) con «Cambiar»; «Ver acordes» en la canción los enseña todos.
+  - **Bloques** (`TableroBloques.tsx`, `lib/tablero.ts`): columnas por Estilo · Grupo · Canta · Tono · Energía · Estado · Etiquetas (en el repertorio también por bloque del set). Arrastrar por el asa (pointer events, sirve en el táctil) cambia ese dato de la ficha, con Deshacer; en el set, cambia el «[Bloque]» de la primera línea y lo coloca tras el último tema de ese bloque. «Añadir aquí» abre Nueva canción con `?campo=&valor=`.
+
 **❌ Pendiente:**
-- Víctor: desplegar reglas (ahora también `notas`).
+- Víctor: desplegar reglas (ahora también `notas`, `hueco` y `ficha.etiquetas`/`ficha.enlace`).
+- Desplegar una fila de la Lista del repertorio para ver sus acordes sin salir (no hecho).
+- Diagramas: solo guitarra (no ukelele ni piano).
 - No se pudo añadir el repo de Aura a la sesión (permiso denegado): el editor está hecho desde cero con la misma base (Tiptap 3).
 - Enlace corto que se actualice solo (documento público `compartidos/{id}`: get público, list solo del dueño) cuando haya reglas; hoy hay que reenviar el enlace si cambia el set.
 - Con formato en la letra, el acorde se coloca sobre el texto sin marcas: puede correrse un par de letras. No se soñó en Aura Studio (prisa por el bolo del 14).
