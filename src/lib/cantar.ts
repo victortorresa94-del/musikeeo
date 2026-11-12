@@ -2,7 +2,7 @@
 // el tempo marcado a toques y la velocidad para que la hoja baje lo que dura la canción.
 // Sin React: solo cuentas sobre el motor de acordes.
 
-import { detectarTono, leerCancion, nombreAcorde, nombreTono, usaBemoles, type Acorde, type CancionLeida } from './acordes';
+import { leerCancion, tonoDeLeida, nombreAcorde, nombreTono, usaBemoles, type Acorde, type CancionLeida } from './acordes';
 import { octavaDeCantar } from './sonido';
 import type { AjustesCancion } from '../types/cancionero';
 
@@ -45,10 +45,10 @@ export function intervalosDe(calidad: string): number[] {
 // tonoSuena en useMusicaCancion, de donde sale «leida» (la misma lectura que se ve en la hoja).
 // Los nombres siguen las mismas reglas: el del tono es exactamente tonoSuena.
 export function tonoQueSuena(leida: CancionLeida, ajustes: AjustesCancion): TonoQueSuena | null {
-    const tono = detectarTono(leida.acordes);
+    const tono = tonoDeLeida(leida);
     const primero: Acorde | undefined = leida.acordes[0];
     if (!tono || !primero) return null;
-    const suena = (leida.meta.cejilla ?? 0) + ajustes.semitonos;
+    const suena = (leida.meta.cejilla ?? 0) + ajustes.semitonos + (leida.meta.sonido ?? 0);
     const latino = ajustes.notacion === 'latina'
         || (ajustes.notacion === 'original' && leida.acordes.filter(a => a.latina).length > leida.acordes.length / 2);
     const sinMover = ajustes.alteraciones === 'auto' && suena === 0;

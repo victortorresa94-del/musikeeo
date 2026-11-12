@@ -284,7 +284,7 @@ function ControlesCancion({ cancion, visibles, rodando, auto, versos, linea, onL
     cancion: Cancion; visibles: boolean; rodando: boolean; auto: boolean; versos: number; linea: boolean; onLinea: () => void; onAuto: () => void; onRodar: () => void;
     cambiar: (c: Partial<AjustesCancion>) => void; onAnterior?: () => void; onSiguiente?: () => void;
 }) {
-    const { leida, tonoSuena, sinAcordes } = useMusicaCancion(cancion.texto, cancion.ajustes);
+    const { leida, tonoSuena, sinAcordes } = useMusicaCancion(cancion.texto, cancion.ajustes, cancion.ficha?.tono, cancion.ficha?.capo);
     const [mas, setMas] = useState(false);
     const a = cancion.ajustes;
     const cambiarTono = (d: number) => { const s = a.semitonos + d; cambiar({ semitonos: Math.abs(s) >= 12 ? 0 : s }); };
@@ -358,7 +358,7 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
     cambiar: (c: Partial<AjustesCancion>) => void;
 }) {
     const a = cancion.ajustes;
-    const { leida, opciones } = useMusicaCancion(cancion.texto, a);
+    const { leida, opciones } = useMusicaCancion(cancion.texto, a, cancion.ficha?.tono, cancion.ficha?.capo);
     const bloque = bloqueDe(cancion);
     const estiloDelBloque = bloque ? estiloBloque(bloque) : null;
     // Quién canta: lo que diga la ficha, si el texto no lo dice ya

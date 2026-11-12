@@ -32,7 +32,9 @@ export interface Tono { raiz: number; menor: boolean }
 export interface CancionLeida {
     lineas: Linea[];
     acordes: Acorde[];     // todos, en orden de aparición (para el tono y la cejilla)
-    meta: { titulo?: string; artista?: string; cejilla?: number };
+    // tono: el de la ficha (manda sobre la detección). sonido: semitonos que suena por encima de lo
+    // escrito sin cambiar los acordes que se ven (la cejilla de la ficha: «Capo 4 · formas de G»)
+    meta: { titulo?: string; artista?: string; cejilla?: number; tono?: Tono; sonido?: number };
 }
 
 const SOSTENIDOS = ['C', 'C#', 'D', 'D#', 'E', 'F', 'F#', 'G', 'G#', 'A', 'A#', 'B'];
@@ -557,6 +559,31 @@ type Clase = 'M' | 'm' | 'd';
 const GRADOS_MAYOR: [number, Clase][] = [[0, 'M'], [2, 'm'], [4, 'm'], [5, 'M'], [7, 'M'], [9, 'm'], [11, 'd']];
 const GRADOS_MENOR: [number, Clase][] = [[0, 'm'], [2, 'd'], [3, 'M'], [5, 'm'], [7, 'm'], [7, 'M'], [8, 'M'], [10, 'M']];
 const clase = (a: Acorde): Clase => (esDisminuido(a) ? 'd' : esMenor(a) ? 'm' : 'M');
+
+// El tono de la canción: el de su ficha si se le ha puesto (conTonoDeFicha), si no, el que dicen
+// sus acordes. Así «Marcha», una rueda A – D7 – G – F – E en E frigio, no sale en A
+export const tonoDeLeida = (leida: CancionLeida): Tono | null => leida.meta.tono ?? detectarTono(leida.acordes);
+
+// La ficha manda sobre la detección («Tono: E»). Su tónica tiene que estar entre los acordes: o
+// la ficha ya cuenta lo que se ha movido (el papel puesto en su tono) o es el tono tal cual está
+// escrito. Si no aparece (otra cejilla, una ficha de otra versión), se queda la detección
+export function conTonoDeFicha(leida: CancionLeida, tonoFicha: string | undefined, suena: number, capoFicha?: string): CancionLeida {
+    const f = tonoFicha ? leerAcorde(tonoFicha.trim().split(/[\s(·,]+/)[0]) : null;
+    if (!f || !leida.acordes.length) return leida;
+    const menor = /^m(?!aj)/.test(f.calidad);
+    const mod = (n: number) => ((n % 12) + 12) % 12;
+    const raices = new Set(leida.acordes.map(a => a.raiz));
+    const escrita = [mod(f.raiz - suena), f.raiz].find(r => raices.has(r));
+    if (escrita !== undefined) return { ...leida, meta: { ...leida.meta, tono: { raiz: escrita, menor } } };
+    // Escrita en formas con cejilla («Capo 4 · formas de G», ficha en B): si los acordes más la
+    // cejilla de la ficha dan su tono, suena esa cejilla por encima; los acordes se siguen viendo en sus formas
+    const capo = Number(/\d+/.exec(capoFicha ?? '')?.[0] ?? 0);
+    const det = detectarTono(leida.acordes);
+    if (capo > 0 && capo < 12 && det && det.menor === menor && mod(det.raiz + suena + capo) === f.raiz) {
+        return { ...leida, meta: { ...leida.meta, sonido: capo, tono: det } };
+    }
+    return leida;
+}
 
 export function detectarTono(acordes: Acorde[]): Tono | null {
     if (!acordes.length) return null;

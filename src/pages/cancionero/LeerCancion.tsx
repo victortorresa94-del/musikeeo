@@ -84,7 +84,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
     };
 
     // ---- La música: tono, cejilla y nombres de los acordes ----
-    const { leida, opciones, tonoSuena, posturas, recomendada, dificilesAhora, formasRecomendadas, sinAcordes } = useMusicaCancion(cancion.texto, ajustes);
+    const { leida, opciones, tonoSuena, posturas, recomendada, dificilesAhora, formasRecomendadas, sinAcordes } = useMusicaCancion(cancion.texto, ajustes, cancion.ficha?.tono, cancion.ficha?.capo);
     // Acordes por un lado y letra por otro: se pueden poner los acordes encima, como en LaCuerda
     const juntada = useMemo(() => juntarAcordesYLetra(cancion.texto), [cancion.texto]);
 
