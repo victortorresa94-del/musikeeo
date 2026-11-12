@@ -2,7 +2,7 @@ import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } fr
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronLeft, Loader2, Maximize, Pause, Play, Shrink, SlidersHorizontal, X } from 'lucide-react';
+import { ChevronLeft, Eye, Guitar, Loader2, Maximize, MoreHorizontal, Pause, Play, Shrink, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { juntarAcordesYLetra, lineasDeLetra, nombreAcorde } from '../../lib/acordes';
 import { verAcordes } from '../../lib/verAcorde';
@@ -10,7 +10,7 @@ import { useCancionero } from '../../hooks/useCancionero';
 import { useMusicaCancion } from '../../hooks/useMusicaCancion';
 import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
 import { HojaCancion } from '../../components/cancionero/HojaCancion';
-import { PanelAjustes } from '../../components/cancionero/PanelAjustes';
+import { PanelAjustes, type SeccionAjustes } from '../../components/cancionero/PanelAjustes';
 import { AnadirLetra } from '../../components/cancionero/AnadirLetra';
 import { HacerVersion } from '../../components/cancionero/HacerVersion';
 import { PortadaMuestra } from '../../components/cancionero/Portada';
@@ -57,7 +57,9 @@ function Lector({ cancion }: { cancion: Cancion }) {
     const navigate = useNavigate();
     const { guardar, borrar } = useCancionero();
     const [ajustes, setAjustes] = useState<AjustesCancion>(cancion.ajustes);
-    const [panel, setPanel] = useState(false);
+    // La hoja abierta de la barra de abajo (una sola cosa cada vez), o ninguna
+    const [panel, setPanelSeccion] = useState<SeccionAjustes | null>(null);
+    const setPanel = (v: false) => { if (!v) setPanelSeccion(null); };
     const [versionando, setVersionando] = useState(false);
     const [rodando, setRodando] = useState(false);
     const [escenario, setEscenario] = useState(false);
@@ -107,9 +109,9 @@ function Lector({ cancion }: { cancion: Cancion }) {
         }
         const zona = zonaRef.current, barra = barraRef.current;
         if (!zona || !barra) return null;
-        const arriba = (parseFloat(getComputedStyle(barra).top) || 0) + barra.offsetHeight + 12;
-        const barraInferior = document.querySelector<HTMLElement>('nav[aria-label="Navegación principal"]');
-        const abajo = (barraInferior?.offsetHeight || 0) + 16;
+        // Arriba, la cabecera de la app; abajo, la barra de la canción (y la de navegación debajo)
+        const arriba = arribaLibre();
+        const abajo = window.innerHeight - barra.getBoundingClientRect().top + 12;
         return { ancho: zona.clientWidth, alto: window.innerHeight - arriba - abajo };
     }, [escenario]);
 
@@ -128,9 +130,9 @@ function Lector({ cancion }: { cancion: Cancion }) {
     // el recuadro para pegarla (las fichas del setlist llegan con «que quepa»)
     useEffect(() => {
         if (!ajustes.ajustar || escenario || faltaLetra) return;
-        const zona = zonaRef.current, barra = barraRef.current;
-        if (!zona || !barra) return;
-        const arriba = (parseFloat(getComputedStyle(barra).top) || 0) + barra.offsetHeight + 12;
+        const zona = zonaRef.current;
+        if (!zona) return;
+        const arriba = arribaLibre();
         window.scrollTo({ top: Math.max(0, zona.getBoundingClientRect().top + window.scrollY - arriba), behavior: 'smooth' });
     }, [ajustes.ajustar, escenario, faltaLetra]);
 
@@ -345,19 +347,6 @@ function Lector({ cancion }: { cancion: Cancion }) {
                 )}
             </div>
 
-            {/* Controles */}
-            <div ref={barraRef} className="sticky top-[calc(env(safe-area-inset-top)+3.5rem)] md:top-14 z-20 mt-3 bg-chrome backdrop-blur-2xl backdrop-saturate-150 border-b border-hairline">
-                <div className="max-w-5xl mx-auto px-4 md:px-0 h-[52px] flex items-center gap-1.5 overflow-x-auto hide-scrollbar">
-                    {pasoTono}
-                    {pasoTamano}
-                    {botonAjustar}
-                    {botonRodar}
-                    <BotonBarra etiqueta="Ajustes" onClick={() => setPanel(true)} className="ml-auto">
-                        <SlidersHorizontal className="h-[18px] w-[18px]" /><span className="hidden md:inline">Ajustes</span>
-                    </BotonBarra>
-                </div>
-            </div>
-
             {/* La hoja */}
             <div className="max-w-5xl mx-auto px-4 md:px-0 mt-4">
                 {/* Ficha o chuleta sin letra: buscarla, copiarla y pegarla, y entra en el tono del setlist */}
@@ -439,9 +428,34 @@ function Lector({ cancion }: { cancion: Cancion }) {
                 document.body,
             )}
 
+            {/* La barra de la canción, abajo y al alcance del pulgar: cada botón abre UNA cosa */}
+            {!escenario && (
+                <div ref={barraRef} className="sticky bottom-[calc(52px+env(safe-area-inset-bottom))] md:bottom-0 z-20 mt-6 bg-sheet border-t border-hairline">
+                    <div className="max-w-xl mx-auto grid grid-cols-5 h-[60px]">
+                        <BotonDeBarra etiqueta="Tono" activo={ajustes.semitonos !== 0} onClick={() => setPanelSeccion('tono')} desactivado={sinAcordes}>
+                            <span className="text-[17px] font-bold leading-none">{tonoSuena || '—'}</span>
+                        </BotonDeBarra>
+                        <BotonDeBarra etiqueta={ajustes.cejilla ? `Cejilla ${ajustes.cejilla}` : 'Cejilla'} activo={ajustes.cejilla > 0} onClick={() => setPanelSeccion('cejilla')} desactivado={sinAcordes}>
+                            <Guitar className="h-5 w-5" />
+                        </BotonDeBarra>
+                        <BotonDeBarra etiqueta="Ver" activo={ajustes.ajustar || ajustes.vista !== 'completa'} onClick={() => setPanelSeccion('ver')}>
+                            <Eye className="h-5 w-5" />
+                        </BotonDeBarra>
+                        <BotonDeBarra etiqueta={rodando ? 'Parar' : 'Bajar'} activo={rodando} onClick={() => setRodando(r => !r)}>
+                            {rodando ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+                        </BotonDeBarra>
+                        <BotonDeBarra etiqueta="Más" onClick={() => setPanelSeccion('mas')}>
+                            <MoreHorizontal className="h-5 w-5" />
+                        </BotonDeBarra>
+                    </div>
+                </div>
+            )}
+
             <HacerVersion cancion={cancion} abierta={versionando} onCerrar={() => setVersionando(false)} />
             <PanelAjustes
-                abierto={panel} onCerrar={() => setPanel(false)}
+                seccion={panel ?? undefined} abierto={panel !== null} onCerrar={() => setPanel(false)}
+                onEscenario={() => { setPanel(false); entrarEscenario(); }}
+                tamano={<div className="py-3 flex items-center justify-between gap-3"><p className="text-[15px] font-semibold text-foreground">Tamaño de la letra</p>{pasoTamano}</div>}
                 ajustes={ajustes} cambiar={cambiar}
                 tonoSuena={tonoSuena} posturas={posturas} recomendada={recomendada} formasRecomendadas={formasRecomendadas} dificilesAhora={dificilesAhora}
                 onImprimir={() => { setPanel(false); setImprimiendo(true); }}
@@ -504,4 +518,23 @@ function Versiones({ cancion }: { cancion: Cancion }) {
             </button>
         </div>
     );
+}
+
+// Un botón de la barra de la canción: icono (o el tono) y su nombre debajo, como la barra de iOS
+function BotonDeBarra({ etiqueta, activo, desactivado, onClick, children }: {
+    etiqueta: string; activo?: boolean; desactivado?: boolean; onClick: () => void; children: React.ReactNode;
+}) {
+    return (
+        <button type="button" onClick={onClick} disabled={desactivado} aria-label={etiqueta} aria-pressed={activo}
+            className={cn('pulsable flex flex-col items-center justify-center gap-1 text-[11px] font-semibold disabled:opacity-30', activo ? 'text-foreground' : 'text-muted-foreground')}>
+            <span className={cn('h-8 min-w-8 px-2 rounded-full flex items-center justify-center', activo ? 'bg-foreground text-background' : 'text-foreground')}>{children}</span>
+            {etiqueta}
+        </button>
+    );
+}
+
+// Lo que tapa la cabecera de la app por arriba (en el móvil y en el ordenador)
+function arribaLibre(): number {
+    const cabecera = document.querySelector<HTMLElement>('header');
+    return Math.max(0, cabecera?.getBoundingClientRect().bottom ?? 0) + 12;
 }

@@ -1,12 +1,18 @@
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { Pencil, Play, Printer, RotateCcw, Trash2, CopyPlus } from 'lucide-react';
+import { CopyPlus, Maximize, Pencil, Play, Printer, RotateCcw, Trash2 } from 'lucide-react';
 import { Switch } from '../ui/switch';
 import { Paso, Segmentado } from './Controles';
 import { INTRO, minutos, segundosAlRitmo } from '../../lib/cantar';
 import type { AjustesCancion } from '../../types/cancionero';
 
+// Qué parte enseña: cada botón de la barra de la canción abre solo la suya (una hoja corta)
+export type SeccionAjustes = 'tono' | 'cejilla' | 'ver' | 'mas';
+const TITULOS: Record<SeccionAjustes, string> = { tono: 'Tono', cejilla: 'Cejilla', ver: 'Cómo se ve', mas: 'Más' };
+
 interface Props {
+    seccion?: SeccionAjustes;           // sin ella, todo (como antes)
+    onEscenario?: () => void;
     abierto: boolean;
     onCerrar: () => void;
     ajustes: AjustesCancion;
@@ -22,6 +28,7 @@ interface Props {
     onVersion?: () => void;
     duracion?: number;                  // segundos de la canción: para bajar la hoja a su ritmo
     cantante?: React.ReactNode;         // dar el tono y el tempo (Cantante.tsx)
+    tamano?: React.ReactNode;           // el tamaño de la letra (± que vive en la pantalla)
 }
 
 const Fila = ({ titulo, children, nota }: { titulo: string; children: React.ReactNode; nota?: React.ReactNode }) => (
@@ -34,10 +41,11 @@ const Fila = ({ titulo, children, nota }: { titulo: string; children: React.Reac
     </div>
 );
 
-export function PanelAjustes({ abierto, onCerrar, ajustes: a, cambiar, tonoSuena, posturas, recomendada, formasRecomendadas, dificilesAhora, onImprimir, onEditar, onBorrar, onVersion, duracion, cantante }: Props) {
+export function PanelAjustes({ seccion, onEscenario, abierto, onCerrar, ajustes: a, cambiar, tonoSuena, posturas, recomendada, formasRecomendadas, dificilesAhora, onImprimir, onEditar, onBorrar, onVersion, duracion, cantante, tamano }: Props) {
     const sugerir = recomendada && recomendada.cejilla !== a.cejilla && recomendada.dificiles < dificilesAhora;
     const ritmo = segundosAlRitmo(duracion, a);
     const intro = a.intro ?? INTRO;
+    const ve = (x: SeccionAjustes) => !seccion || seccion === x;
     return createPortal(
         <AnimatePresence>
             {abierto && (
@@ -52,13 +60,13 @@ export function PanelAjustes({ abierto, onCerrar, ajustes: a, cambiar, tonoSuena
                             <div className="mx-auto h-1 w-9 rounded-full bg-fill-strong md:hidden" />
                             <div className="mt-2 flex items-center justify-between">
                                 <span className="w-[62px]" />
-                                <p className="font-semibold text-[16px] text-foreground">Ajustes</p>
+                                <p className="font-semibold text-[16px] text-foreground">{seccion ? TITULOS[seccion] : 'Ajustes'}</p>
                                 <button onClick={onCerrar} className="w-[62px] text-right text-[15px] font-semibold text-foreground active:opacity-60">Listo</button>
                             </div>
                         </div>
 
                         <div className="px-4 divide-y divide-hairline">
-                            <Fila titulo="Tono" nota={tonoSuena && <>Suena en <b className="text-foreground">{tonoSuena}</b>{a.semitonos !== 0 && ` (${a.semitonos > 0 ? '+' : ''}${a.semitonos} semitonos)`}</>}>
+                            {ve('tono') && <Fila titulo="Tono" nota={tonoSuena && <>Suena en <b className="text-foreground">{tonoSuena}</b>{a.semitonos !== 0 && ` (${a.semitonos > 0 ? '+' : ''}${a.semitonos} semitonos)`}</>}>
                                 <div className="flex items-center gap-2">
                                     {a.semitonos !== 0 && (
                                         <button onClick={() => cambiar({ semitonos: 0 })} aria-label="Volver al tono original" className="pulsable h-9 w-9 rounded-full bg-fill flex items-center justify-center text-foreground">
@@ -69,9 +77,9 @@ export function PanelAjustes({ abierto, onCerrar, ajustes: a, cambiar, tonoSuena
                                         onMenos={() => cambiar({ semitonos: a.semitonos <= -11 ? 0 : a.semitonos - 1 })}
                                         onMas={() => cambiar({ semitonos: a.semitonos >= 11 ? 0 : a.semitonos + 1 })} />
                                 </div>
-                            </Fila>
+                            </Fila>}
 
-                            <Fila titulo="Cejilla" nota={<>
+                            {ve('cejilla') && <Fila titulo="Cejilla" nota={<>
                                 {a.cejilla > 0 && posturas && <p>Con cejilla en el {a.cejilla}, tocas posturas de <b className="text-foreground">{posturas}</b>.</p>}
                                 {sugerir && (
                                     <p className="mt-1">
@@ -83,8 +91,10 @@ export function PanelAjustes({ abierto, onCerrar, ajustes: a, cambiar, tonoSuena
                                 <Paso etiqueta="Cejilla" valor={a.cejilla === 0 ? 'No' : a.cejilla}
                                     onMenos={() => cambiar({ cejilla: a.cejilla - 1 })} menosDesactivado={a.cejilla <= 0}
                                     onMas={() => cambiar({ cejilla: a.cejilla + 1 })} masDesactivado={a.cejilla >= 9} />
-                            </Fila>
+                            </Fila>}
 
+                            {ve('ver') && <>
+                            {tamano}
                             <div className="py-3 space-y-2">
                                 <p className="text-[15px] font-semibold text-foreground">Cifrado</p>
                                 <Segmentado etiqueta="Cifrado" valor={a.notacion} onCambio={notacion => cambiar({ notacion })}
@@ -108,8 +118,9 @@ export function PanelAjustes({ abierto, onCerrar, ajustes: a, cambiar, tonoSuena
                                 <Segmentado etiqueta="Columnas" valor={a.columnas} onCambio={columnas => cambiar({ columnas })} desactivado={a.ajustar}
                                     opciones={[[1, 'Una'], [2, 'Dos'], [3, 'Tres']] as const} />
                             </div>
+                            </>}
 
-                            <div className="py-3">
+                            {ve('mas') && <><div className="py-3">
                                 <div className="flex items-center justify-between gap-3">
                                     <p className="text-[15px] font-semibold text-foreground">Velocidad al desplazar</p>
                                     {ritmo === null && (
@@ -138,14 +149,16 @@ export function PanelAjustes({ abierto, onCerrar, ajustes: a, cambiar, tonoSuena
                             </div>
 
                             {cantante}
+                            </>}
                         </div>
 
-                        <div className="mx-4 mt-2 rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
+                        {ve('mas') && <div className="mx-4 mt-2 rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
+                            {onEscenario && <Accion icono={Maximize} texto="Modo escenario (pantalla completa)" onClick={onEscenario} />}
                             <Accion icono={Printer} texto="Imprimir o guardar en PDF" onClick={onImprimir} />
                             <Accion icono={Pencil} texto="Editar el texto" onClick={onEditar} />
                             {onVersion && <Accion icono={CopyPlus} texto="Hacer mi versión" onClick={onVersion} />}
                             <Accion icono={Trash2} texto="Borrar la canción" onClick={onBorrar} peligro />
-                        </div>
+                        </div>}
                     </motion.div>
                 </motion.div>
             )}
