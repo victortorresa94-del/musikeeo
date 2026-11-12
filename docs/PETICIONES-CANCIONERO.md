@@ -305,6 +305,8 @@ donde tengan la partitura, toda la canción, etc.»* (primero que él corrija to
   - rellenar la ficha sin borrarla.
 - **Asistente «Completar letras»** para las que no tienen papel.
 
+✅ **Los papeles caen en su tono** (sesión 1, b96f65d, 12-nov). Al importarlos, cada papel rellena su ficha y suena en el tono de la ficha: No puedo vivir sin ti de C a G, Sarandonga de C a E… Si el papel ya está en las formas del capo de la ficha, no lo mueve; si hay duda, no lo toca y le pone la etiqueta «Revisar tono». Si el mismo tema llega en varios papeles, se queda el más completo; los mixes con «+» entran como «Mix: …». Al terminar dice cuáles movió, cuáles revisar y cuáles faltan.
+
 Están en estas carpetas de su Drive:
 - «2 / Música & Letras»;
 - las de los números (Calafell y Cataleya);
@@ -473,6 +475,6 @@ Se corrige en la próxima copia y en la BBDD maestra del Drive.
 
 - **Desplegar las reglas de Firestore** desde su PC (ver §5). Sin esto el mapa no guarda y el cancionero no pasa a la cuenta.
 - **Borrar el repertorio** que se llenó con las 166 canciones e importar los dos archivos de los sets desde Cancionero → Importar.
-- **Importar sus papeles del Drive** cuando la sesión 1 avise (§18).
-- **Contestar las dudas de Pallejà** (§12) y elegir uno de los 3 conceptos del rediseño (§14).
+- **Importar sus papeles del Drive** (§18): ya caen en su tono. Se descargan de las carpetas de Drive y se suben por Importar → Abrir archivos (Word/PDF).
+- **Contestar las dudas de Pallejà** (§12) y mirar el rediseño (§14): se construyó la mezcla recomendada mientras dormía; si prefiere otra, se cambia.
 - **Decir sí o no a pegar el enlace** de webs de acordes cuando le expliquen el riesgo (§19).
