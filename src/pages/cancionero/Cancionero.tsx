@@ -1,7 +1,8 @@
 import { toast } from 'sonner';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { CheckSquare, ChevronRight, Cloud, Download, FileText, Loader2, Plus, Search, Smartphone, X } from 'lucide-react';
+import { CheckSquare, ChevronRight, Cloud, Download, FileText, FileUp, Loader2, MoreHorizontal, Plus, Search, Smartphone, X } from 'lucide-react';
+import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { CANCION_EJEMPLO } from '../../components/cancionero/ejemplo';
@@ -51,6 +52,7 @@ export default function Cancionero() {
     const [elegidas, setElegidas] = useState<string[] | null>(null);
     const [aRepertorio, setARepertorio] = useState(false);
     const [completar, setCompletar] = useState(false);
+    const [mantenimiento, setMantenimiento] = useState(false);
 
     // Para el bolo sin cobertura: se bajan ya las pantallas de leer y tocar
     useEffect(() => {
@@ -212,6 +214,13 @@ export default function Cancionero() {
                                         <Plus className="h-4 w-4" /> Añadir
                                     </Link>
                                 )}
+                                {!elegidas && (
+                                    <button onClick={() => setMantenimiento(true)} aria-label="Más: completar letras, portadas, tempo, importar y copia"
+                                        className="pulsable relative h-9 w-9 rounded-full bg-fill flex items-center justify-center text-foreground">
+                                        <MoreHorizontal className="h-5 w-5" />
+                                        {faltanLetra > 0 && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" aria-hidden />}
+                                    </button>
+                                )}
                             </span>
                         )}
                     </div>
@@ -272,16 +281,6 @@ export default function Cancionero() {
                                 agrupar={agrupar} onAgrupar={setAgrupar} />
                             {elegidas && (
                                 <p className="mb-2 px-1 text-[14px] text-muted-foreground">Toca las canciones que quieras llevar a un repertorio.</p>
-                            )}
-                            {!elegidas && !hayFiltros(filtros) && (
-                                <div className="mb-3 flex flex-wrap gap-2 empty:hidden">
-                                    {faltanLetra > 0 && (
-                                        <button type="button" onClick={() => setCompletar(true)} className="pulsable h-9 pl-3 pr-3.5 shrink-0 rounded-full bg-fill text-[14px] font-semibold text-foreground flex items-center gap-1.5">
-                                            <FileText className="h-4 w-4" /> Completar letras · {faltanLetra}
-                                        </button>
-                                    )}
-                                    <PonerPortadas /><PonerTempo />
-                                </div>
                             )}
                             {!elegidas && filtradas.length > 0 && (
                                 <div className="mb-3 flex items-center gap-2">
@@ -369,6 +368,26 @@ export default function Cancionero() {
 
             <ImportarCanciones abierto={importar} onCerrar={() => setImportar(false)} />
             <CompletarLetras abierta={completar} onCerrar={() => setCompletar(false)} />
+            {/* ⋯: lo de poner al día el cancionero, fuera del primer plano */}
+            <Hoja abierta={mantenimiento} onCerrar={() => setMantenimiento(false)} titulo="Tu cancionero" derecha={<BotonHoja fuerte onClick={() => setMantenimiento(false)}>Listo</BotonHoja>}>
+                <div className="px-4 pb-5 space-y-2">
+                    {faltanLetra > 0 && (
+                        <button type="button" onClick={() => { setMantenimiento(false); setCompletar(true); }} className="pulsable w-full h-12 px-4 rounded-2xl bg-fill text-[15px] font-semibold text-foreground flex items-center gap-2.5">
+                            <FileText className="h-[18px] w-[18px]" /> Completar letras <span className="ml-auto text-muted-foreground">{faltanLetra}</span>
+                        </button>
+                    )}
+                    <PonerPortadas className="w-full h-12 px-4 rounded-2xl text-[15px] gap-2.5" />
+                    <PonerTempo className="w-full h-12 px-4 rounded-2xl text-[15px] gap-2.5" />
+                    <div className="rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
+                        <button onClick={() => { setMantenimiento(false); setImportar(true); }} className="w-full h-12 px-4 flex items-center gap-2.5 text-[15px] text-foreground active:bg-fill-strong">
+                            <FileUp className="h-[18px] w-[18px]" /> Importar canciones o una copia
+                        </button>
+                        <button onClick={() => descargarCopia(crearCopia(canciones, repertorios))} className="w-full h-12 px-4 flex items-center gap-2.5 text-[15px] text-foreground active:bg-fill-strong">
+                            <Download className="h-[18px] w-[18px]" /> Guardar una copia del cancionero
+                        </button>
+                    </div>
+                </div>
+            </Hoja>
         </div>
     );
 }
