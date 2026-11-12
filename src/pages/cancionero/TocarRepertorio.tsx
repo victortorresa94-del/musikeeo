@@ -1,7 +1,7 @@
 import { startTransition, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronDown, ChevronLeft, ChevronRight, ListMusic, Loader2, Pause, Play, Shrink, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ListMusic, Loader2, MoreHorizontal, Pause, Play, Shrink, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { useMusicaCancion } from '../../hooks/useMusicaCancion';
@@ -12,6 +12,7 @@ import { notasVacias } from '../../lib/notas';
 import { BotonBarra, Paso } from '../../components/cancionero/Controles';
 import { BotonClaqueta, DameElTono } from '../../components/cancionero/Cantante';
 import { Portada } from '../../components/cancionero/Portada';
+import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
 import { Pildora } from '../../components/cancionero/Baldosas';
 import { bloqueDe, estiloBloque, etiquetasDe, ICONO, pastelCanta, sinLoDeLasPildoras } from '../../components/cancionero/estilo';
 import { tonoDe } from '../../components/cancionero/utilidades';
@@ -241,36 +242,55 @@ function ControlesCancion({ cancion, visibles, rodando, auto, versos, onRodar, c
     cambiar: (c: Partial<AjustesCancion>) => void; onAnterior?: () => void; onSiguiente?: () => void;
 }) {
     const { leida, tonoSuena, sinAcordes } = useMusicaCancion(cancion.texto, cancion.ajustes);
+    const [mas, setMas] = useState(false);
     const a = cancion.ajustes;
     const cambiarTono = (d: number) => { const s = a.semitonos + d; cambiar({ semitonos: Math.abs(s) >= 12 ? 0 : s }); };
     const cambiarTamano = (d: number) => cambiar({ tamano: Math.min(TAMANO_MAX, Math.max(TAMANO_MIN, Math.round(a.tamano) + d)), ajustar: false });
     const flecha = 'pulsable h-[52px] w-[52px] shrink-0 rounded-full bg-fill flex items-center justify-center text-foreground disabled:opacity-25';
+    // En el escenario, a un toque: tono, «Dame el tono», bajar la hoja y pasar de canción. Lo que se
+    // toca una vez antes del bolo (tamaño, que quepa, la cuenta) va detrás de ⋯
     return (
         <div className={cn('fixed inset-x-0 bottom-0 z-10 pb-[calc(env(safe-area-inset-bottom)+8px)] pt-2 px-3 bg-chrome backdrop-blur-2xl border-t border-hairline transition-all duration-200',
             visibles ? 'opacity-100' : 'opacity-0 translate-y-2 pointer-events-none')}>
             <div className="max-w-xl mx-auto">
                 {auto && <FilaAuto cancion={cancion} versos={versos} cambiar={cambiar} />}
-                <div className="flex items-center justify-center gap-1.5 overflow-x-auto hide-scrollbar">
+                <div className="flex items-center gap-2">
                     <Paso compacto etiqueta="Tono" onMenos={() => cambiarTono(-1)} onMas={() => cambiarTono(1)} menosDesactivado={sinAcordes} masDesactivado={sinAcordes}
                         valor={<>{tonoSuena || 'Tono'}{a.semitonos !== 0 && <span className="ml-1 text-[12px] text-muted-foreground">{a.semitonos > 0 ? '+' : ''}{a.semitonos}</span>}</>} />
-                    <Paso compacto etiqueta="Tamaño de la letra" valor="Aa" onMenos={() => cambiarTamano(-1)} onMas={() => cambiarTamano(1)} />
-                    <BotonBarra etiqueta="Que quepa en la pantalla" activo={a.ajustar} onClick={() => cambiar({ ajustar: !a.ajustar })}><Shrink className="h-[18px] w-[18px]" /></BotonBarra>
-                    <BotonBarra etiqueta={rodando ? 'Parar' : 'Desplazar sola'} activo={rodando} onClick={onRodar}>
-                        {rodando ? <Pause className="h-[18px] w-[18px]" /> : <Play className="h-[18px] w-[18px]" />}
-                    </BotonBarra>
-                </div>
-                <div className="mt-2 flex items-center gap-2">
-                    {/* Con la cuenta al lado no cabe el tono en el botón: se ve justo encima */}
                     {sinAcordes ? <div className="flex-1" /> : (
-                        <DameElTono leida={leida} ajustes={a} className="flex-1 min-w-0 h-[52px] pl-2 pr-4 text-[16px]">
-                            Dame el tono{tonoSuena && !cancion.bpm && <> · {tonoSuena}</>}
+                        <DameElTono leida={leida} ajustes={a} className="flex-1 min-w-0 h-9 pl-1.5 pr-3 text-[14px] bg-fill text-foreground">
+                            Dame el tono
                         </DameElTono>
                     )}
-                    <BotonClaqueta bpm={cancion.bpm} className="h-[52px] px-3.5" />
+                    <BotonBarra etiqueta="Más ajustes" activo={mas} onClick={() => setMas(true)}><MoreHorizontal className="h-[18px] w-[18px]" /></BotonBarra>
+                </div>
+                <div className="mt-2 flex items-center gap-2">
                     <button onClick={onAnterior} disabled={!onAnterior} aria-label="Canción anterior" className={flecha}><ChevronLeft className="h-6 w-6" /></button>
+                    <button onClick={onRodar} aria-label={rodando ? 'Parar' : 'Desplazar sola'} aria-pressed={rodando}
+                        className="pulsable flex-1 min-w-0 h-[52px] rounded-[14px] bg-primary text-primary-foreground text-[16px] font-bold flex items-center justify-center gap-2">
+                        {rodando ? <Pause className="h-5 w-5" /> : <Play className="h-5 w-5" />}
+                        {rodando ? 'Parar' : auto ? 'Auto' : 'Bajar sola'}
+                    </button>
                     <button onClick={onSiguiente} disabled={!onSiguiente} aria-label="Canción siguiente" className={flecha}><ChevronRight className="h-6 w-6" /></button>
                 </div>
             </div>
+            <Hoja abierta={mas} onCerrar={() => setMas(false)} titulo={cancion.titulo}
+                derecha={<BotonHoja fuerte onClick={() => setMas(false)}>Listo</BotonHoja>}>
+                <div className="px-4 pb-5 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                        <span className="text-[15px] text-foreground">Tamaño de la letra</span>
+                        <Paso compacto etiqueta="Tamaño de la letra" valor="Aa" onMenos={() => cambiarTamano(-1)} onMas={() => cambiarTamano(1)} />
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                        <span className="text-[15px] text-foreground">Que quepa en la pantalla</span>
+                        <BotonBarra etiqueta="Que quepa en la pantalla" activo={a.ajustar} onClick={() => cambiar({ ajustar: !a.ajustar })}><Shrink className="h-[18px] w-[18px]" /></BotonBarra>
+                    </div>
+                    <div className="flex items-center justify-between gap-3">
+                        <span className="text-[15px] text-foreground">Cuenta 1·2·3·4{cancion.bpm ? '' : ' (sin tempo)'}</span>
+                        <BotonClaqueta bpm={cancion.bpm} />
+                    </div>
+                </div>
+            </Hoja>
         </div>
     );
 }
