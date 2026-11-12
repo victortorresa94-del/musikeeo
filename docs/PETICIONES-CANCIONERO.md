@@ -24,12 +24,14 @@ Las sesiones deciden con criterio; él no contesta hasta mañana. Cada cosa se p
 |---|---|---|---|
 | 1 | Subir .json en PC e iPhone; varios a la vez; pegar una copia | sesión 2 | ✅ d262c84, probado en producción |
 | 2 | Importador de copias: artista, «Otras versiones», tonoAlt, «(versión …)» aparte, notas, ⭐, hueco y hoja del bolo | sesión 2 | ✅ 85498c9, probado en producción con las 166 canciones |
-| 3 | Enlace del grupo de lujo: longitud para WhatsApp, QR, iPhone/Android, oscuro, sin red | sesión 2 | Lo que verán los músicos |
-| 4 | Rediseño (se construye el mejor concepto): cabecera del repertorio, ajustes por momentos, listas personalizadas, PC a lo ancho | sesión 1 | Usabilidad |
-| 5 | Legal: avisos de derechos, cláusula, «solo para tu grupo» | sesión 2 | Antes de abrir |
-| 6 | Teleprompter: negrita por tiempo + «Escuchar» opcional | sesión 1 | Después del rediseño |
-| 7 | Comprobar que la importación encaja con etiquetas, favorita, tonoAlt y notas | sesiones 1 y 2 | Notion y tonos |
+| 3 | Enlace del grupo de lujo: longitud para WhatsApp, QR, iPhone/Android, oscuro, sin red | sesión 2 | ✅ 34bdce4 + 95fcd60 + de31c67. Sin los apuntes de Víctor, con todas las partes y acordes; unos 2.400 caracteres. Probado sin red en producción |
+| 4 | Rediseño (se construye el mejor concepto): cabecera del repertorio, ajustes por momentos, listas personalizadas, PC a lo ancho | sesión 1 | ✅ repertorio (C), canción (A), Canciones (B), Tocar limpio, listas personalizadas y menú del Cancionero en PC (31180ba). 🔧 Repertorio a lo ancho en PC con el panel de la canción |
+| 5 | Legal: avisos de derechos, cláusula, «solo para tu grupo» | sesión 2 | ✅ 7e4be6e |
+| 6 | Teleprompter: negrita por tiempo + «Escuchar» opcional | sesión 1 | ✅ «Línea a línea» (e9d8e3d), sin red ni micro. «Escuchar» queda para más adelante |
+| 7 | Comprobar que la importación encaja con etiquetas, favorita, tonoAlt y notas | sesiones 1 y 2 | ✅ los cuatro ficheros en producción con sus 166 canciones: nada perdido ni duplicado (91c1a67) |
 | 8 | Que la página no se quede en blanco si se abre durante un despliegue (recarga una vez) | chat principal | ✅ 1878c39, probado en local con piezas rotas a propósito |
+| 9 | Apuntes («Fuente:», «Otras versiones:», «Tono sin verificar»…) en pequeño y gris en el lector, Tocar y Cifrado; «Rueda» y las partes con coletilla con los acordes grandes | sesión 1 | ✅ 329e96d + ad2d0a5 |
+| 10 | «Próximo bolo»: el mismo día va primero el de hora más temprana (Lady 12:30 antes que Cataleya 19:00) | sesión 1 | ✅ 329e96d |
 
 ### Guía para Víctor por la mañana (se completa cuando esté probado)
 
@@ -40,6 +42,7 @@ Las sesiones deciden con criterio; él no contesta hasta mañana. Cada cosa se p
    2. `Cataleya-Palleja-19h00.json`;
    3. `actualizar-tonos.json`;
    4. si quieres, `Notion-1-completar-tus-canciones.json`: suma las etiquetas de tu Notion (Reper, Víctor Luna, Tardeo, Samantha…) y añade su «Rueda» al final, sin borrar nada. Probado en producción a las 01:00 después de los otros tres: «134 actualizadas», tus tonos intactos y nada duplicado.
+   5. cuando quieras (no hace falta para el sábado): `Notion-2-canciones-nuevas.json` (230 temas de tu Notion que no estaban) y `Notion-3-repertorios-antiguos.json` (50 repertorios antiguos, van a «Archivados»). Probado en producción encima de todo lo demás: 397 canciones, 52 repertorios, nada duplicado y los tonos de Pallejà intactos.
 4. Abre el repertorio, revisa el orden y los tonos en **Cifrado**, y mira el aviso del hueco (Lady Jarana suma 64 de 60 min).
 5. **Compartir con el grupo** → manda el enlace (por defecto sin letra). Pide a cada músico que lo **abra una vez con cobertura**: luego le funciona sin red, también si lo vuelve a abrir desde WhatsApp. Probado en producción el 12-nov a las 00:50 con los dos sets.
 6. Antes del bolo, abre el repertorio una vez con cobertura: después funciona sin red.
