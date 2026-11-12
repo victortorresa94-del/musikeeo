@@ -13,6 +13,8 @@ import { AcordesRapidos } from '../../components/cancionero/AcordesRapidos';
 import { EditorFicha } from '../../components/cancionero/EditorFicha';
 import { textoPegado } from '../../lib/pegado';
 import { FormatoLetra } from '../../components/cancionero/FormatoLetra';
+import { ImportarCanciones } from '../../components/cancionero/ImportarCanciones';
+import { leerCopia } from '../../lib/biblioteca';
 
 // El editor de notas (Tiptap) va en su trozo: solo se baja al editar
 const EditorNotas = lazy(() => import('../../components/notas/EditorNotas'));
@@ -88,6 +90,7 @@ function Formulario({ existente }: { existente?: Cancion }) {
     const [duracion, setDuracion] = useState<number | undefined>(existente?.duracion);
     const [notas, setNotas] = useState<string | undefined>(existente?.notas);
     const [leyendo, setLeyendo] = useState(false);
+    const [copia, setCopia] = useState<string | null>(null);
     const areaRef = useRef<HTMLTextAreaElement>(null);
     const archivoRef = useRef<HTMLInputElement>(null);
     // Desde «Editar ficha» se baja directo a la ficha
@@ -117,7 +120,8 @@ function Formulario({ existente }: { existente?: Cancion }) {
     const pegar = async () => {
         try {
             const t = await navigator.clipboard.readText();
-            if (t.trim()) meter(t);
+            if (leerCopia(t)) setCopia(t);
+            else if (t.trim()) meter(t);
             else toast('No hay nada copiado. Copia la canción en la web y vuelve.');
         } catch {
             toast('Mantén pulsado el recuadro y elige «Pegar».');
@@ -131,6 +135,8 @@ function Formulario({ existente }: { existente?: Cancion }) {
         try {
             const { textoDeArchivo } = await import('../../lib/documentos');
             const leido = await textoDeArchivo(f);
+            // Una copia del cancionero (.json, aunque llegue como .txt o sin extensión): a Importar
+            if (leerCopia(leido)) { setCopia(leido); return; }
             const varias = separarCanciones(leido);
             const primera = varias[0];
             if (varias.length > 1) toast(`El archivo trae ${varias.length} canciones: aquí va la primera. Para meterlas todas, usa «Importar» en el Cancionero.`);
@@ -195,7 +201,7 @@ function Formulario({ existente }: { existente?: Cancion }) {
                 )}
             </div>
             <input ref={archivoRef} type="file" className="hidden" aria-label="Abrir archivo (PDF, Word o texto)"
-                accept=".txt,.cho,.chopro,.chordpro,.crd,.pro,text/plain,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,application/pdf"
+                accept=".txt,.json,application/json,.cho,.chopro,.chordpro,.crd,.pro,text/plain,.docx,application/vnd.openxmlformats-officedocument.wordprocessingml.document,.pdf,application/pdf"
                 onChange={e => { void abrir(e.target.files?.[0]); e.target.value = ''; }} />
 
             {!existente && (
@@ -228,7 +234,9 @@ function Formulario({ existente }: { existente?: Cancion }) {
                         onPaste={e => {
                             if (texto.trim()) return;
                             e.preventDefault();
-                            meter(textoPegado(e.clipboardData));
+                            const pegado = textoPegado(e.clipboardData);
+                            if (leerCopia(pegado)) { setCopia(pegado); return; }
+                            meter(pegado);
                         }}
                         placeholder={EJEMPLO}
                         wrap="off"
@@ -269,6 +277,7 @@ function Formulario({ existente }: { existente?: Cancion }) {
                 className="hidden md:block pulsable mt-5 px-10 h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] disabled:opacity-40">
                 Guardar canción
             </button>
+            {copia !== null && <ImportarCanciones key={copia.length} abierto onCerrar={() => setCopia(null)} textoInicial={copia} />}
             {createPortal(
                 <div className="md:hidden fixed inset-x-0 bottom-[calc(52px+env(safe-area-inset-bottom))] z-[45] px-4 py-3 bg-chrome backdrop-blur-2xl border-t border-hairline">
                     <button onClick={guardarCancion} disabled={!puedeGuardar}

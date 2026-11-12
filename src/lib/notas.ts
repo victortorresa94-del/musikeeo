@@ -51,3 +51,24 @@ export const NOMBRE_COLOR: Record<ColorNota, string> = {
     mantequilla: 'Amarillo', cielo: 'Azul', menta: 'Verde', lavanda: 'Lila', melocoton: 'Naranja', rosa: 'Rosa',
 };
 export const esColorNota = (c: unknown): c is ColorNota => typeof c === 'string' && (COLORES_NOTA as readonly string[]).includes(c);
+
+// Notas que llegan como texto (de una copia, de Notion…): cada línea, un párrafo
+export function notasDeTexto(texto: string): string | undefined {
+    const lineas = texto.split('\n').map(l => l.trimEnd()).filter((l, i, a) => l || (i > 0 && a[i - 1]));
+    if (!lineas.some(l => l.trim())) return undefined;
+    return JSON.stringify({ type: 'doc', content: lineas.map(l => (l ? { type: 'paragraph', content: [{ type: 'text', text: l }] } : { type: 'paragraph' })) });
+}
+
+// Lo que llega (JSON del editor o texto) a JSON del editor
+export const aNotas = (x?: string | null) => (!x ? undefined : leerNotas(x) ? x : notasDeTexto(x));
+
+// Se suman: a las notas que ya hay se añaden los bloques nuevos cuyo texto no estaba
+export function unirNotas(antes?: string | null, nuevas?: string | null): string | undefined {
+    const a = leerNotas(aNotas(antes)), n = leerNotas(aNotas(nuevas));
+    if (!n) return a ? JSON.stringify(a) : undefined;
+    if (!a) return JSON.stringify(n);
+    const ya = new Set((a.content ?? []).map(b => textoDeNodo(b).trim()).filter(Boolean));
+    const nuevos = (n.content ?? []).filter(b => { const t = textoDeNodo(b).trim(); return t && !ya.has(t); });
+    if (!nuevos.length) return JSON.stringify(a);
+    return JSON.stringify({ ...a, content: [...(a.content ?? []), ...nuevos] });
+}

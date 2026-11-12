@@ -11,6 +11,8 @@ export interface CancionImportada {
     titulo: string; artista: string; texto: string; ficha?: boolean;
     datos?: FichaCancion; bpm?: number; duracion?: number; portada?: string;
     version?: string;           // de una copia del cancionero: tu versión de la canción
+    notas?: string;             // notas con formato (o texto) de una copia
+    favorita?: boolean;         // ⭐ de una copia
 }
 
 interface Tema { titulo: string; seccion?: string; tono?: string; cejilla?: number; notas: string[] }

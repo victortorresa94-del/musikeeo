@@ -236,7 +236,7 @@ export function crearCopia(canciones: Cancion[], repertorios: Repertorio[]): Cop
     };
 }
 
-export function leerCopia(texto: string): Copia | null {
+function leerUnaCopia(texto: string): Copia | null {
     const t = texto.trim();
     if (!t.startsWith('{') || !t.includes('musikeeo-cancionero')) return null;
     try {
@@ -250,6 +250,38 @@ export function leerCopia(texto: string): Copia | null {
     } catch {
         return null;
     }
+}
+
+// Una copia o varias seguidas (al abrir varios .json a la vez llegan separadas por «---»):
+// se juntan en una; la misma canción en dos copias (título, versión y artista) va una vez
+export function leerCopia(texto: string): Copia | null {
+    const una = leerUnaCopia(texto);
+    if (una) return una;
+    const trozos = texto.split(/\n-{3,}\n/).map(x => x.trim()).filter(Boolean);
+    if (trozos.length < 2) return null;
+    const copias = trozos.map(leerUnaCopia);
+    if (copias.some(c => !c)) return null;
+    const canciones: CancionCopia[] = [];
+    const repertorios: RepertorioCopia[] = [];
+    const clave = (c: CancionCopia) => `${norm(c.titulo)}|${norm(c.version ?? '')}|${norm(c.artista ?? '')}`;
+    const indice = new Map<string, number>();
+    for (const copia of copias as Copia[]) {
+        const nuevoIndice = copia.canciones.map(c => {
+            const k = clave(c);
+            const ya = indice.get(k);
+            if (ya !== undefined) {
+                // La segunda trae algo más: se suma la ficha y lo que falte
+                const antes = canciones[ya];
+                canciones[ya] = { ...c, ...antes, ficha: unirFichas(antes.ficha, c.ficha), texto: antes.texto || c.texto, notas: antes.notas || c.notas };
+                return ya;
+            }
+            indice.set(k, canciones.length);
+            canciones.push(c);
+            return canciones.length - 1;
+        });
+        for (const r of copia.repertorios) repertorios.push({ ...r, canciones: r.canciones.map(i => nuevoIndice[i]) });
+    }
+    return { app: 'musikeeo-cancionero', version: 1, creada: (copias[0] as Copia).creada, canciones, repertorios };
 }
 
 // Descargar la copia como archivo (.json)
