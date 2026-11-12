@@ -3,7 +3,7 @@
 // cuenta, sin reglas desplegadas y, una vez abierto, sin cobertura. Si cambian el orden o los
 // tonos, se manda otro enlace. Sin React: lo usa la hoja de compartir y la página del músico.
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
-import { leerCancion, type Linea } from './acordes';
+import { esApunte, leerCancion, type Linea } from './acordes';
 import { cejillaDeFicha, tonoMostrado } from './biblioteca';
 import { notasVacias } from './notas';
 import { bloqueDe, etiquetasDe } from '../components/cancionero/estilo';
@@ -78,6 +78,19 @@ export function soloCifrado(texto: string): string {
     return salida.join('\n').trim();
 }
 
+// Los apuntes de Víctor («Fuente:», «Otras versiones:», «Revisar tono»…) no van al grupo; la
+// «Rueda: …» sí, como una parte más con sus acordes en grande
+export const sinApuntes = (texto: string) => texto
+    .split('\n')
+    .flatMap(l => {
+        if (!esApunte(l)) return [l];
+        const rueda = /^\s*rueda\s*:?\s*(.*)$/i.exec(l);
+        // «G/G7» es «G y luego G7» (no un bajo): se escribe con guion para que se lea como acordes
+        const prog = rueda?.[1].trim().replace(/\/(?=[A-G][#b]?(?:m|maj|dim|aug|sus|add|\d))/g, ' - ');
+        return prog ? ['[Rueda]', prog] : [];
+    })
+    .join('\n');
+
 // Lo que está escrito con «Capo 2» o {capo: 2}: se quita del texto (ya va en «s»)
 const sinCejillaEscrita = (texto: string) => texto
     .split('\n')
@@ -89,7 +102,8 @@ export function temaDe(c: Cancion, conLetra: boolean): TemaCompartido {
     const leida = leerCancion(c.texto);
     const s = (leida.meta.cejilla ?? 0) + c.ajustes.semitonos;
     const canta = c.ficha?.canta?.trim() || etiquetasDe(c).find(e => /^canta /i.test(e.texto))?.texto.replace(/^canta /i, '');
-    const texto = sinCejillaEscrita(conLetra ? c.texto : soloCifrado(c.texto));
+    const limpio = sinApuntes(c.texto);
+    const texto = sinCejillaEscrita(conLetra ? limpio : soloCifrado(limpio));
     const quitarVacios = (o: Partial<TemaCompartido>) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined && v !== null && v !== '' && v !== 0));
     return {
         t: c.titulo,
