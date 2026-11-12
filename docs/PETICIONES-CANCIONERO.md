@@ -34,6 +34,15 @@ Las sesiones deciden con criterio; él no contesta hasta mañana. Cada cosa se p
 | 10 | «Próximo bolo»: el mismo día va primero el de hora más temprana (Lady 12:30 antes que Cataleya 19:00) | sesión 1 | ✅ 329e96d |
 | 11 | Tono de la ficha en Tocar y en «Dame el tono» (Marcha salía en A por leer la rueda; es E), también en canciones sin acordes, y la cejilla de la ficha a la vista en Tocar | sesión 1 | ✅ e96d23f + e669df9. Probado en producción a las 01:30: Marcha E, Tu Calorro E, Sarandonga E, Si antes B, Mi estrella blanca G con «Capo 3 · formas de E», Tusa Bm y 19 días E |
 
+**Cierre (02:30):** el plan de la noche está hecho y probado en producción. Las dos sesiones terminaron y no hay más revisiones programadas. Lo que queda es para después del bolo o necesita a Víctor:
+- reordenar las listas y ponerles icono;
+- la duración de tu versión midiéndola al grabarte (§8b);
+- «Escuchar» en el teleprompter;
+- el enlace corto que se actualiza solo (necesita reglas);
+- mapear «(versión X)» al campo versión.
+
+La nota de la mañana está en Aura («Buenos días: el Cancionero, listo para Pallejà»), y los ficheros están en el chat.
+
 ### Guía para Víctor por la mañana (probada en producción la noche del 12-nov)
 
 1. Abre musikeeo.com → Cancionero. Si no ves lo nuevo, cierra la app del todo y vuelve a abrirla.
