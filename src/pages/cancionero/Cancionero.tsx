@@ -20,6 +20,7 @@ import { FilaConAcordes } from '../../components/cancionero/FilaDesplegable';
 import { SelectorVista } from '../../components/cancionero/SelectorVista';
 import { CifradoEnDirecto, HojaSet } from '../../components/cancionero/VistaCifrado';
 import { TableroBloques } from '../../components/cancionero/TableroBloques';
+import { TablaCanciones } from '../../components/cancionero/TablaCanciones';
 import { mover as moverEnTablero, type CampoTablero } from '../../lib/tablero';
 import { temaDe } from '../../lib/compartir';
 import { BarraFiltros } from '../../components/cancionero/Filtros';
@@ -78,7 +79,7 @@ export default function Cancionero() {
         return agruparCanciones(base, agrupar, tonoDeCancion);
     }, [filtradas, agrupar, tonoDeCancion]);
     // Vista Cifrado: las canciones filtradas, en el orden de la lista, seguidas con sus acordes
-    const vista = params.get('vista') === 'cifrado' ? 'cifrado' : params.get('vista') === 'bloques' ? 'bloques' : 'lista';
+    const vista = params.get('vista') === 'cifrado' ? 'cifrado' : params.get('vista') === 'bloques' ? 'bloques' : params.get('vista') === 'tabla' ? 'tabla' : 'lista';
     const [campoTablero, setCampoTablero] = useState<CampoTablero>(() => { try { return (localStorage.getItem('musikeeo-tablero-biblioteca') as CampoTablero) || 'estilos'; } catch { return 'estilos'; } });
     const directo = params.get('directo') === '1';
     const ordenadas = useMemo(() => grupos.flatMap(g => g.canciones).filter((c, i, l) => l.indexOf(c) === i), [grupos]);
@@ -281,6 +282,9 @@ export default function Cancionero() {
                             )}
                             {filtradas.length === 0 ? (
                                 <p className="rounded-2xl bg-fill px-4 py-6 text-center text-[15px] text-muted-foreground">Ninguna canción con estos filtros.</p>
+                            ) : vista === 'tabla' && !elegidas ? (
+                                <TablaCanciones canciones={ordenadas} tonoDe={tonoDeCancion} guardar={c => guardar(c)} onAbrir={c => navigate(`/cancionero/${c.id}`)}
+                                    clave="musikeeo-tabla-biblioteca" todas={canciones} />
                             ) : vista === 'bloques' && !elegidas ? (
                                 <TableroBloques canciones={ordenadas} campo={campoTablero} tonoDe={tonoDeCancion}
                                     onCampo={c => { setCampoTablero(c); try { localStorage.setItem('musikeeo-tablero-biblioteca', c); } catch { /* */ } }}

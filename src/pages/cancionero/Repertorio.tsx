@@ -22,6 +22,7 @@ import { BotonDesplegar, PanelAcordes } from '../../components/cancionero/FilaDe
 import { SelectorVista, type Vista } from '../../components/cancionero/SelectorVista';
 import { CifradoEnDirecto, HojaSet } from '../../components/cancionero/VistaCifrado';
 import { TableroBloques } from '../../components/cancionero/TableroBloques';
+import { TablaCanciones } from '../../components/cancionero/TablaCanciones';
 import { mover as moverEnTablero, type CampoTablero } from '../../lib/tablero';
 import { temaDe } from '../../lib/compartir';
 import { NotasRicas } from '../../components/notas/NotasRicas';
@@ -44,7 +45,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     const { canciones, guardar, guardarRepertorio, borrarRepertorio } = useCancionero();
     const [campoTablero, setCampoTablero] = useState<CampoTablero>(() => { try { return (localStorage.getItem('musikeeo-tablero-set') as CampoTablero) || 'bloque'; } catch { return 'bloque'; } });
     // La vista va en la dirección: al volver de una canción se queda donde estaba
-    const vista: Vista = params.get('vista') === 'cifrado' ? 'cifrado' : params.get('vista') === 'bloques' ? 'bloques' : 'lista';
+    const vista: Vista = params.get('vista') === 'cifrado' ? 'cifrado' : params.get('vista') === 'bloques' ? 'bloques' : params.get('vista') === 'tabla' ? 'tabla' : 'lista';
     const directo = params.get('directo') === '1';
     const cambiarParams = (cambio: Record<string, string | null>) => {
         const p = new URLSearchParams(params);
@@ -189,7 +190,12 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                     )}
                 </div>
             )}
-            {ids.length > 0 && vista === 'bloques' ? (
+            {ids.length > 0 && vista === 'tabla' ? (
+                <div className="mt-3">
+                    <TablaCanciones canciones={temas} tonoDe={c => tonos[temas.indexOf(c)] ?? null} guardar={c => guardar(c)} onAbrir={c => navigate(`/cancionero/${c.id}`)}
+                        clave="musikeeo-tabla-set" enSet todas={canciones} />
+                </div>
+            ) : ids.length > 0 && vista === 'bloques' ? (
                 <div className="mt-3">
                     <TableroBloques canciones={temas} campo={campoTablero} tonoDe={c => tonos[temas.indexOf(c)] ?? null}
                         onCampo={c => { setCampoTablero(c); try { localStorage.setItem('musikeeo-tablero-set', c); } catch { /* */ } }}
