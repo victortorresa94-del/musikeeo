@@ -43,19 +43,23 @@ Las sesiones deciden con criterio; él no contesta hasta mañana. Cada cosa se p
 
 La nota de la mañana está en Aura («Buenos días: el Cancionero, listo para Pallejà»), y los ficheros están en el chat.
 
-### Guía para Víctor por la mañana (probada en producción la noche del 12-nov)
+### Guía para Víctor por la mañana (al día a las 13:55 del 12-nov)
+
+*«Me has enviado 20 archivos. ¿No me puedes enviar uno solo para todas las canciones y luego los dos repers? Mejor borro todo lo que tenía y subo lo nuevo.»*
 
 1. Abre musikeeo.com → Cancionero. Si no ves lo nuevo, cierra la app del todo y vuelve a abrirla.
-2. Si te quedó un repertorio con las 166 canciones, ábrelo y toca «Borrar repertorio» (las canciones no se borran).
-3. Toca **Importar → Abrir archivos** y sube los tres de golpe o uno a uno, da igual (probado en producción a las 00:50 con tus 166 canciones ya dentro: 2 repertorios, 167 canciones, nada duplicado, «17 actualizadas · 1 nueva», las «Otras versiones» conservadas y los artistas corregidos):
-   1. `Lady-Jarana-Palleja-12h30.json`;
-   2. `Cataleya-Palleja-19h00.json`;
-   3. `actualizar-tonos.json`;
-   4. si quieres, `Notion-1-completar-tus-canciones.json`: suma las etiquetas de tu Notion (Reper, Víctor Luna, Tardeo, Samantha…) y añade su «Rueda» al final, sin borrar nada. Probado en producción a las 01:00 después de los otros tres: «134 actualizadas», tus tonos intactos y nada duplicado.
-   5. cuando quieras (no hace falta para el sábado): `Notion-2-canciones-nuevas.json` (230 temas de tu Notion que no estaban) y `Notion-3-repertorios-antiguos.json` (50 repertorios antiguos, van a «Archivados»). Probado en producción encima de todo lo demás: 397 canciones, 52 repertorios, nada duplicado y los tonos de Pallejà intactos.
-4. Abre el repertorio, revisa el orden y los tonos en **Cifrado**, y mira el aviso del hueco (Lady Jarana suma 64 de 60 min).
-5. **Compartir con el grupo** → manda el enlace (por defecto sin letra). Pide a cada músico que lo **abra una vez con cobertura**: luego le funciona sin red, también si lo vuelve a abrir desde WhatsApp. Probado en producción el 12-nov a las 00:50 con los dos sets.
-6. Antes del bolo, abre el repertorio una vez con cobertura: después funciona sin red.
+2. En «Tus canciones», toca **⋯ → Borrar todo y empezar de cero → Borrar todo**. Antes descarga una copia, vacía canciones, repertorios y listas, y abre Importar (d198395).
+3. **Abrir archivos** con los tres ficheros, uno a uno o de golpe. Con el 2 y el 3 sale «Ya las tenías», pero el repertorio se crea igual.
+   1. `1-Todas-mis-canciones.json`: las 397 canciones (BBDD, tonos actualizados y las dos partes de Notion).
+   2. `2-Repertorio-Lady-Jarana-Palleja.json`: 18 temas, hueco de 60 min.
+   3. `3-Repertorio-Cataleya-Palleja.json`: 17 temas, hueco de 60 min.
+
+   Se generaron con la propia app (sus importaciones de la noche y «Guardar una copia») y se probaron en producción con un móvil con datos viejos, borrando todo y subiéndolos: 397 canciones, 2 repertorios y nada duplicado.
+4. Revisa el orden y los tonos en **Cifrado**. Lady Jarana suma 64 min para 60.
+5. **Compartir** → Enviar (sin letra por defecto). Cada músico lo abre una vez con cobertura y luego le funciona sin red.
+6. Antes del bolo, abre los dos repertorios una vez con cobertura.
+
+Arreglo de paso: en un iPhone de 390 px, el ⋯ de «Tus canciones» se salía de la pantalla (x = 393); ahora «Elegir» va solo con su icono en el móvil.
 
 Estado: ✅ hecho y en musikeeo.com · 🔧 en marcha (quién) · ⏳ pendiente · 👤 lo tiene que hacer Víctor
 
