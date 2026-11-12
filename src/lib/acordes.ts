@@ -23,7 +23,7 @@ export type Linea =
     | { tipo: 'seccion'; texto: string }
     | { tipo: 'nota'; texto: string; aviso?: boolean }
     | { tipo: 'letra'; texto: string }
-    | { tipo: 'acordes'; etiqueta?: string; marcas: Marca[] }
+    | { tipo: 'acordes'; etiqueta?: string; marcas: Marca[]; coletilla?: string }
     | { tipo: 'mixta'; trozos: Trozo[] }
     | { tipo: 'tab'; texto: string };
 
@@ -134,7 +134,7 @@ function marca(token: string): Marca | null {
 // Formato ligero escrito a mano en la letra: «# Título» (un título suyo, como una sección)
 // y «> Entra la batería» (un aviso). Negrita **así** y resaltado ==así== van dentro de la línea
 const RE_TITULO = /^#{1,3}\s+(\S.{0,58})$/;
-const RE_APUNTE = /^(fuente|otras versiones|revisar tono|corregido|tono sin verificar|acordes por verificar|confirmar|rueda)\b/i;
+const RE_APUNTE = /^(fuente|otras versiones|revisar tono|corregido|tono sin verificar|acordes por verificar|confirmar)\b/i;
 export const RE_AVISO = /^>\s*(\S.*)$/;
 
 export function esSeccion(linea: string): string | null {
@@ -175,8 +175,17 @@ export function leerLineaAcordes(linea: string): LineaDeAcordes | null {
     const marcas: LineaDeAcordes['marcas'] = [];
     while (palabra) {
         const m = marca(palabra[0]);
-        if (!m) return null;
-        marcas.push({ col: palabra.index, marca: m });
+        // «G/G7»: uno u otro (en las ruedas de rumba), no un acorde con bajo: cada uno por su lado
+        const partes = !m && palabra[0].includes('/') ? palabra[0].split('/') : null;
+        if (partes && partes.length <= 3 && partes.every(x => x && leerAcorde(x))) {
+            let col = palabra.index;
+            partes.forEach((x, k) => {
+                if (k) { marcas.push({ col, marca: { antes: '', acorde: null, despues: '', texto: '/' } }); col += 1; }
+                marcas.push({ col, marca: { antes: '', acorde: leerAcorde(x), despues: '', texto: x } });
+                col += x.length;
+            });
+        } else if (!m) return null;
+        else marcas.push({ col: palabra.index, marca: m });
         palabra = siguiente;
         siguiente = palabra ? palabras.exec(linea) : null;
     }
@@ -406,6 +415,15 @@ function leerCancionSinRecordar(texto: string): CancionLeida {
             } else {
                 meter({ tipo: 'acordes', etiqueta: enLinea.etiqueta, marcas: enLinea.marcas.map(m => m.marca) });
             }
+            continue;
+        }
+
+        // Una parte con su coletilla: «Estribillo: F – C – D – G ("Dulce como el vino")» o
+        // «Intro G – C – D – G · Final abierto». Los acordes, como parte; lo de detrás, apunte
+        const cola = /^(.*?\S)\s*(\([^()]*\)|[·•]\s*\S.*)$/.exec(l.trim());
+        const parte = cola ? leerLineaAcordes(cola[1]) : null;
+        if (cola && parte?.etiqueta) {
+            meter({ tipo: 'acordes', etiqueta: parte.etiqueta, marcas: parte.marcas.map(m => m.marca), coletilla: cola[2].replace(/^[·•]\s*/, '') });
             continue;
         }
 
