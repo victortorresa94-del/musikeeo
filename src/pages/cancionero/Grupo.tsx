@@ -11,7 +11,8 @@ import { Pildora } from '../../components/cancionero/Baldosas';
 import { ICONO, estiloBloque, sinLoDeLasPildoras } from '../../components/cancionero/estilo';
 import { datosTemaConTono } from '../../components/cancionero/datosTema';
 import { SelectorVista, type Vista } from '../../components/cancionero/SelectorVista';
-import { HojaSet } from '../../components/cancionero/VistaCifrado';
+import { HojaSet, SuenaFormas } from '../../components/cancionero/VistaCifrado';
+import { useFormas } from '../../hooks/useFormas';
 import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
 
 // La página del músico: el repertorio que le ha pasado su compañero, sin cuenta y sin la app
@@ -78,6 +79,7 @@ function ListaSet({ datos, onAbrir }: { datos: Compartido; onAbrir: (i: number) 
     // Cifrado: el set entero seguido (con letra, solo si viene); se recuerda en el móvil
     const [vista, setVista] = useState<Vista>(() => { try { return localStorage.getItem('musikeeo-grupo-vista') === 'cifrado' ? 'cifrado' : 'lista'; } catch { return 'lista'; } });
     const [tamano] = useState(() => leerTamano(false));
+    const [formas, setFormas] = useFormas();
     const cambiarVista = (v: Vista) => { setVista(v); try { localStorage.setItem('musikeeo-grupo-vista', v); } catch { /* */ } };
     const conocida = datos.c.reduce((s, t) => s + (t.d ?? 0), 0);
     const faltan = datos.c.filter(t => !t.d).length;
@@ -104,8 +106,11 @@ function ListaSet({ datos, onAbrir }: { datos: Compartido; onAbrir: (i: number) 
                     </section>
                 )}
 
-                <SelectorVista className="mt-5" valor={vista} onCambio={cambiarVista} opciones={['lista', 'cifrado']} />
-                {vista === 'cifrado' && <HojaSet className="mt-2" temas={datos.c} tamano={Math.min(tamano, 22)} onAbrir={onAbrir} />}
+                <div className="mt-5 flex flex-wrap items-center gap-2">
+                    <SelectorVista valor={vista} onCambio={cambiarVista} opciones={['lista', 'cifrado']} />
+                    {vista === 'cifrado' && datos.c.some(t => t.m) && <SuenaFormas formas={formas} onCambio={setFormas} />}
+                </div>
+                {vista === 'cifrado' && <HojaSet className="mt-2" temas={datos.c} tamano={Math.min(tamano, 22)} formas={formas} onAbrir={onAbrir} />}
                 <ol className={cn('mt-3', vista === 'cifrado' && 'hidden')}>
                     {datos.c.map((t, i) => {
                         const nuevoBloque = t.g && (i === 0 || t.g !== datos.c[i - 1].g) ? t.g : null;
@@ -145,6 +150,8 @@ function Escenario({ datos, inicio, onLista }: { datos: Compartido; inicio: numb
     const conLetra = !!datos.l;
     const [tamano, setTamano] = useState(() => leerTamano(conLetra));
     const [soloAcordes, setSoloAcordes] = useState(false);
+    const [formas, setFormas] = useFormas();
+    const conCejilla = datos.c.some(t => t.m);
     const [tonos, setTonos] = useState<number[]>(() => datos.c.map(() => 0));
     const [actual, setActual] = useState(inicio);
     const carruselRef = useRef<HTMLDivElement>(null);
@@ -215,7 +222,7 @@ function Escenario({ datos, inicio, onLista }: { datos: Compartido; inicio: numb
                 {datos.c.map((t, i) => (
                     <div key={i} data-diapositiva={i} className="relative h-full w-full shrink-0 snap-start snap-always overflow-y-auto overscroll-contain">
                         {Math.abs(i - actual) <= 1
-                            ? <Diapositiva tema={t} n={i + 1} total={datos.c.length} tamano={tamano} delta={tonos[i]} soloAcordes={soloAcordes} siguiente={datos.c[i + 1]} onSiguiente={() => ir(i + 1)} />
+                            ? <Diapositiva tema={t} n={i + 1} total={datos.c.length} tamano={tamano} delta={tonos[i]} formas={formas} soloAcordes={soloAcordes} siguiente={datos.c[i + 1]} onSiguiente={() => ir(i + 1)} />
                             : <div className="h-full" />}
                     </div>
                 ))}
@@ -243,6 +250,12 @@ function Escenario({ datos, inicio, onLista }: { datos: Compartido; inicio: numb
                 <span className="mx-0.5 h-6 w-px shrink-0 bg-hairline-strong" aria-hidden />
                 <button onClick={() => cambiarTamano(-2)} aria-label="Letra más pequeña" className={cn(boton, 'text-[13px] font-bold')}>A</button>
                 <button onClick={() => cambiarTamano(2)} aria-label="Letra más grande" className={cn(boton, 'text-[19px] font-bold')}>A</button>
+                {conCejilla && (
+                    <button onClick={() => setFormas(!formas)} aria-pressed={formas}
+                        className={cn('pulsable h-10 px-3 rounded-full text-[13px] font-semibold shrink-0', formas ? 'bg-foreground text-background' : 'text-foreground')}>
+                        Formas
+                    </button>
+                )}
                 {conLetra && (
                     <button onClick={() => setSoloAcordes(s => !s)} aria-pressed={soloAcordes}
                         className={cn('pulsable h-10 px-3 rounded-full text-[13px] font-semibold shrink-0', soloAcordes ? 'bg-foreground text-background' : 'text-foreground')}>
@@ -257,16 +270,17 @@ function Escenario({ datos, inicio, onLista }: { datos: Compartido; inicio: numb
     );
 }
 
-function Diapositiva({ tema, n, total, tamano, delta, soloAcordes, siguiente, onSiguiente }: {
-    tema: TemaCompartido; n: number; total: number; tamano: number; delta: number; soloAcordes: boolean; siguiente?: TemaCompartido; onSiguiente: () => void;
+function Diapositiva({ tema, n, total, tamano, delta, formas, soloAcordes, siguiente, onSiguiente }: {
+    tema: TemaCompartido; n: number; total: number; tamano: number; delta: number; formas: boolean; soloAcordes: boolean; siguiente?: TemaCompartido; onSiguiente: () => void;
 }) {
     const leida = useMemo(() => leerCancion(tema.x), [tema.x]);
     const lineas = useMemo(() => sinLoDeLasPildoras(leida.lineas, tema.g ?? null), [leida.lineas, tema.g]);
     const opciones: OpcionesNombre = useMemo(() => {
-        const semitonos = (tema.s ?? 0) + delta;
+        // «Formas»: con la cejilla de la ficha, los acordes que se tocan
+        const semitonos = (tema.s ?? 0) + delta - (formas ? tema.m ?? 0 : 0);
         const tono = detectarTono(leida.acordes);
         return { semitonos, notacion: 'original', bemoles: semitonos === 0 ? null : usaBemoles(tono, semitonos, 'auto') };
-    }, [tema.s, delta, leida.acordes]);
+    }, [tema.s, tema.m, formas, delta, leida.acordes]);
     const estiloG = tema.g ? estiloBloque(tema.g) : null;
     return (
         <div className="min-h-full px-5 md:px-10 pt-[calc(env(safe-area-inset-top)+64px)] pb-[calc(env(safe-area-inset-bottom)+120px)] max-w-4xl mx-auto">
@@ -277,6 +291,7 @@ function Diapositiva({ tema, n, total, tamano, delta, soloAcordes, siguiente, on
             <div className="mt-2 flex flex-wrap gap-1.5">
                 {tema.g && estiloG && <Pildora texto={tema.g} pastel={estiloG.pastel} icono={estiloG.icono} />}
                 {datosTemaConTono(tema).map(p => <span key={p.texto} className={cn('h-8 px-3 rounded-full text-[13px] font-semibold flex items-center', p.clase)}>{p.texto}</span>)}
+                {formas && !!tema.m && <span className="h-8 px-3 rounded-full text-[13px] font-semibold flex items-center bg-pastel-mantequilla text-pastel-mantequilla-ink">Formas · cejilla {tema.m}</span>}
                 {delta !== 0 && <span className="h-8 px-3 rounded-full text-[13px] font-semibold flex items-center bg-pastel-mantequilla text-pastel-mantequilla-ink">Transportado {delta > 0 ? '+' : ''}{delta}</span>}
             </div>
             {!notasVacias(tema.o) && <NotasRicas json={tema.o} className="mt-3 text-[16px]" />}

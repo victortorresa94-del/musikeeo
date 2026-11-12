@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
-import { Copy, Eye, Send } from 'lucide-react';
+import { Copy, Eye, QrCode, Send } from 'lucide-react';
+import { CodigoQR } from './CodigoQR';
 import { cn } from '../../lib/utils';
 import { enlaceGrupo, paquete } from '../../lib/compartir';
 import type { Cancion, Repertorio } from '../../types/cancionero';
@@ -12,6 +13,7 @@ export function CompartirGrupo({ abierta, onCerrar, repertorio, canciones }: {
     abierta: boolean; onCerrar: () => void; repertorio: Repertorio; canciones: Cancion[];
 }) {
     const [conLetra, setConLetra] = useState(false);
+    const [qr, setQr] = useState(false);
     const enlace = useMemo(
         () => (abierta ? enlaceGrupo(paquete(repertorio, canciones, conLetra)) : ''),
         [abierta, repertorio, canciones, conLetra],
@@ -69,15 +71,27 @@ export function CompartirGrupo({ abierta, onCerrar, repertorio, canciones }: {
                         <Copy className="h-5 w-5" /> Copiar enlace
                     </button>
                 </div>
+                <div className="mt-2 grid grid-cols-2 gap-2">
+                <button onClick={() => setQr(q => !q)} aria-expanded={qr}
+                    className="pulsable h-11 rounded-[14px] border border-hairline text-[15px] font-semibold text-foreground flex items-center justify-center gap-2">
+                    <QrCode className="h-4 w-4" /> {qr ? 'Ocultar QR' : 'Código QR'}
+                </button>
                 <a href={enlace} target="_blank" rel="noopener noreferrer"
-                    className="pulsable mt-2 h-11 rounded-[14px] border border-hairline text-[15px] font-semibold text-foreground flex items-center justify-center gap-2">
+                    className="pulsable h-11 rounded-[14px] border border-hairline text-[15px] font-semibold text-foreground flex items-center justify-center gap-2">
                     <Eye className="h-4 w-4" /> Ver cómo lo ven
                 </a>
+                </div>
+                {qr && (
+                    <div className="mt-3 flex flex-col items-center gap-2">
+                        <CodigoQR texto={enlace} tamano={240} />
+                        <p className="text-[13px] text-muted-foreground text-center">Para el ensayo: que lo escaneen con la cámara.</p>
+                    </div>
+                )}
 
                 <p className={cn('mt-3 text-[13px]', demasiado ? 'text-destructive' : 'text-muted-foreground')}>
                     {demasiado
                         ? 'Con letra es demasiado largo para WhatsApp. Compártelo cifrado o quita algún tema.'
-                        : 'Si cambias el orden o los tonos, vuelve aquí y manda el enlace otra vez: el que ya tienen no se actualiza solo.'}
+                        : `Si cambias el orden o los tonos, vuelve aquí y manda el enlace otra vez: el que ya tienen no se actualiza solo. (${largo.toLocaleString('es-ES')} caracteres)`}
                 </p>
             </div>
         </Hoja>
