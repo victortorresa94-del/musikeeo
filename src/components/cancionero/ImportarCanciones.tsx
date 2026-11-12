@@ -221,7 +221,8 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId }: { abierto
                 if (ya) guardarRepertorio({ ...ya, canciones: lista, fecha: r.fecha || ya.fecha });
                 else {
                     const nuevo = crearRepertorio(r.nombre, lista);
-                    if (r.fecha && r.fecha !== nuevo.fecha) guardarRepertorio({ ...nuevo, fecha: r.fecha });
+                    // Sin fecha: no es de hoy, es uno antiguo (va a «Archivados», no a «Próximo bolo»)
+                    if ((r.fecha ?? '') !== nuevo.fecha) guardarRepertorio({ ...nuevo, fecha: r.fecha ?? '' });
                 }
             }
             const total = new Set(ids).size;

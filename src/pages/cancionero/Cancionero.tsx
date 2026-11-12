@@ -105,10 +105,11 @@ export default function Cancionero() {
     // El bolo que viene (el más cercano desde hoy) o, si no hay, el último
     const hoy = new Date().toLocaleDateString('sv-SE');
     const proximo = useMemo(() => {
-        const con = repertorios.filter(r => r.canciones.length);
+        const con = repertorios.filter(r => r.canciones.length && r.fecha);
         return con.filter(r => r.fecha >= hoy).sort((a, b) => a.fecha.localeCompare(b.fecha))[0]
             ?? [...con].sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
     }, [repertorios, hoy]);
+    const [verArchivados, setVerArchivados] = useState(false);
     const reps = useMemo(() => [...repertorios].sort((a, b) => b.fecha.localeCompare(a.fecha) || b.actualizadaEn.localeCompare(a.actualizadaEn)), [repertorios]);
 
     const cambiarVer = (v: 'canciones' | 'repertorios') => {
@@ -229,18 +230,26 @@ export default function Cancionero() {
                             </div>
                         ) : (
                             <div className="rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
-                                {reps.map(r => (
+                                {/* Los que no tienen fecha (antiguos, importados) van plegados al final */}
+                                {reps.filter(r => r.fecha || verArchivados).map(r => (
                                     <Link key={r.id} to={`/cancionero/repertorio/${r.id}`} className="flex items-center gap-3 px-4 min-h-[68px] py-2.5 active:bg-fill">
                                         <span className={cn('h-11 w-11 shrink-0 rounded-[12px] flex items-center justify-center', pastelDe(r.id).fondo)}>
                                             <img src={iconoRepertorio(r.nombre)} alt="" loading="lazy" className="h-9 w-9 object-contain" />
                                         </span>
                                         <span className="flex-1 min-w-0">
                                             <span className="block truncate text-[16px] font-semibold text-foreground">{r.nombre}</span>
-                                            <span className="block truncate text-[14px] text-muted-foreground">{fechaCorta(r.fecha)} · {contar(temas(r.canciones), 'canción', 'canciones')}</span>
+                                            <span className="block truncate text-[14px] text-muted-foreground">{fechaCorta(r.fecha) || 'Sin fecha'} · {contar(temas(r.canciones), 'canción', 'canciones')}</span>
                                         </span>
                                         <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
                                     </Link>
                                 ))}
+                                {reps.some(r => !r.fecha) && (
+                                    <button onClick={() => setVerArchivados(v => !v)} aria-expanded={verArchivados}
+                                        className="w-full flex items-center gap-3 px-4 min-h-[56px] text-left active:bg-fill">
+                                        <span className="flex-1 text-[15px] font-semibold text-foreground">Archivados <span className="text-muted-foreground">· sin fecha · {reps.filter(r => !r.fecha).length}</span></span>
+                                        <ChevronRight className={cn('h-4 w-4 shrink-0 text-muted-foreground transition-transform', verArchivados && 'rotate-90')} />
+                                    </button>
+                                )}
                             </div>
                         )
                     ) : canciones.length === 0 ? (
