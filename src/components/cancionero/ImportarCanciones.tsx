@@ -184,17 +184,20 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
                 if (ya && copia) {
                     // De una copia (o de «actualizar tonos»): la ficha que llega manda (las etiquetas se
                     // suman), el artista que llega sustituye, bpm y duración solo si faltan. El texto:
-                    // una chuleta se cambia por la que llega; una canción con letra NO se toca y las
-                    // líneas nuevas que llegan van a sus notas
+                    // a una chuleta se le añaden al final las líneas nuevas; una canción con letra NO se
+                    // toca y las líneas nuevas van a sus notas
                     const llega = t.texto.trim();
                     let base: Cancion = { ...ya, artista: t.artista || ya.artista };
                     let notasExtra: string | undefined;
+                    // Nunca se borra una línea al importar: solo se añaden las que no estaban
+                    // (comparadas sin espacios de más), al final de la chuleta o en las notas
                     if (llega && llega !== ya.texto.trim()) {
-                        if (letra(ya.texto) < 8) base = { ...base, texto: t.texto };
-                        else {
-                            const nuevasLineas = llega.split('\n').map(l => l.trim()).filter(l => l && !ya.texto.includes(l));
-                            if (nuevasLineas.length) notasExtra = notasDeTexto(nuevasLineas.join('\n'));
-                        }
+                        const plano = (l: string) => l.replace(/\s+/g, ' ').trim().toLowerCase();
+                        const ya_ = new Set(ya.texto.split('\n').map(plano).filter(Boolean));
+                        const nuevasLineas = llega.split('\n').map(l => l.trimEnd()).filter(l => l.trim() && !ya_.has(plano(l)));
+                        if (!ya.texto.trim()) base = { ...base, texto: t.texto };
+                        else if (nuevasLineas.length && letra(ya.texto) < 8) base = { ...base, texto: `${ya.texto.trimEnd()}\n${nuevasLineas.join('\n')}` };
+                        else if (nuevasLineas.length) notasExtra = notasDeTexto(nuevasLineas.join('\n'));
                     }
                     const actualizada = extra(base, t);
                     if (notasExtra) {
