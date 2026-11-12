@@ -3,7 +3,7 @@
 // cuenta, sin reglas desplegadas y, una vez abierto, sin cobertura. Si cambian el orden o los
 // tonos, se manda otro enlace. Sin React: lo usa la hoja de compartir y la página del músico.
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
-import { leerCancion, type Linea } from './acordes';
+import { esApunte, leerCancion, type Linea } from './acordes';
 import { cejillaDeFicha, tonoMostrado } from './biblioteca';
 import { notasVacias } from './notas';
 import { bloqueDe, etiquetasDe } from '../components/cancionero/estilo';
@@ -59,14 +59,23 @@ export function soloCifrado(texto: string): string {
         filas = [];
     };
     const fila = (l: Linea): string | null => {
-        if (l.tipo === 'acordes') return [l.etiqueta, ...l.marcas.map(m => m.texto)].filter(Boolean).join('  ');
+        if (l.tipo === 'acordes') {
+            // «Parte:» con dos puntos, para que al volver a leerla sea una parte (también «Rueda:»)
+            const base = [l.etiqueta && `${l.etiqueta}:`, ...l.marcas.map(m => m.texto)].filter(Boolean).join('  ');
+            // La coletilla («(arranca en G)», «· Final abierto») va detrás, pequeña: al músico le sirve
+            if (!l.coletilla) return base;
+            return `${base}  ${l.coletilla.startsWith('(') ? l.coletilla : `· ${l.coletilla}`}`;
+        }
         if (l.tipo === 'mixta') return l.trozos.flatMap(t => (t.marca ? [t.marca.texto] : [])).join('  ');
         return null;
     };
+    const chuleta = leida.lineas.filter(l => l.tipo === 'letra').length < 8;
     for (const l of leida.lineas) {
         const f = fila(l);
         if (f !== null) { if (f.trim()) filas.push(f); continue; }
-        if (l.tipo === 'letra') continue;   // la letra no va (y no corta el dibujo)
+        // La letra no va (y no corta el dibujo). En una chuleta (casi sin letra) esas líneas son
+        // indicaciones («Enganchada con Carnaval», «Con capo 2 formas de Am: …»): van como apunte
+        if (l.tipo === 'letra') { if (chuleta) { cerrar(); salida.push(`{c: ${l.texto.trim()}}`); } continue; }
         if (l.tipo === 'vacia' && filas.length) continue;   // entre estrofas iguales tampoco
         cerrar();
         if (l.tipo === 'seccion') salida.push(`[${l.texto}]`);
@@ -77,6 +86,10 @@ export function soloCifrado(texto: string): string {
     cerrar();
     return salida.join('\n').trim();
 }
+
+// Los apuntes de Víctor («Fuente:», «Otras versiones:», «Revisar tono»…) no van al grupo
+// (la misma regla con la que el lector los pone en gris)
+export const sinApuntes = (texto: string) => texto.split('\n').filter(l => !esApunte(l)).join('\n');
 
 // Lo que está escrito con «Capo 2» o {capo: 2}: se quita del texto (ya va en «s»)
 const sinCejillaEscrita = (texto: string) => texto
@@ -89,7 +102,8 @@ export function temaDe(c: Cancion, conLetra: boolean): TemaCompartido {
     const leida = leerCancion(c.texto);
     const s = (leida.meta.cejilla ?? 0) + c.ajustes.semitonos;
     const canta = c.ficha?.canta?.trim() || etiquetasDe(c).find(e => /^canta /i.test(e.texto))?.texto.replace(/^canta /i, '');
-    const texto = sinCejillaEscrita(conLetra ? c.texto : soloCifrado(c.texto));
+    const limpio = sinApuntes(c.texto);
+    const texto = sinCejillaEscrita(conLetra ? limpio : soloCifrado(limpio));
     const quitarVacios = (o: Partial<TemaCompartido>) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined && v !== null && v !== '' && v !== 0));
     return {
         t: c.titulo,

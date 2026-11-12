@@ -136,6 +136,8 @@ function marca(token: string): Marca | null {
 const RE_TITULO = /^#{1,3}\s+(\S.{0,58})$/;
 const RE_APUNTE = /^(fuente|otras versiones|revisar tono|corregido|tono sin verificar|acordes por verificar|confirmar)\b/i;
 export const RE_AVISO = /^>\s*(\S.*)$/;
+// La misma regla para quien la necesite fuera (el enlace del grupo los quita)
+export const esApunte = (linea: string) => RE_APUNTE.test(linea.trim());
 
 export function esSeccion(linea: string): string | null {
     const s = linea.trim();
