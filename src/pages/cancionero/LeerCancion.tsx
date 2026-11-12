@@ -3,7 +3,7 @@ import { ConMenu } from '../../components/cancionero/ConMenu';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronLeft, Eye, Guitar, Loader2, Maximize, MoreHorizontal, Pause, Play, Shrink, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, Guitar, Loader2, Maximize, MoreHorizontal, Pause, Pencil, Play, Shrink, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { juntarAcordesYLetra, lineasDeLetra, nombreAcorde } from '../../lib/acordes';
 import { verAcordes } from '../../lib/verAcorde';
@@ -126,6 +126,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
 
     // Una ficha o una chuleta sin letra: arriba sale «Falta la letra» para pegarla
     const faltaLetra = !leida.lineas.some(l => l.tipo === 'mixta') && lineasDeLetra(leida) < 8;
+    const [verAnadir, setVerAnadir] = useState(false);
 
     // Al activarlo, la hoja se coloca justo debajo de la barra. Si falta la letra, no: taparía
     // el recuadro para pegarla (las fichas del setlist llegan con «que quepa»)
@@ -302,9 +303,15 @@ function Lector({ cancion }: { cancion: Cancion }) {
                     <Link to="/cancionero" className="inline-flex items-center -ml-1.5 text-[15px] text-muted-foreground active:opacity-60">
                         <ChevronLeft className="h-5 w-5" /> Cancionero
                     </Link>
-                    <BotonBarra etiqueta="Modo escenario: a pantalla completa" onClick={entrarEscenario}>
-                        <Maximize className="h-4 w-4" /> Escenario
-                    </BotonBarra>
+                    <span className="flex items-center gap-2">
+                        <Link to={`/cancionero/${cancion.id}/editar`} aria-label="Editar la canción"
+                            className="pulsable h-9 pl-3 pr-3.5 rounded-full bg-fill text-[14px] font-semibold text-foreground flex items-center gap-1.5">
+                            <Pencil className="h-4 w-4" /> Editar
+                        </Link>
+                        <BotonBarra etiqueta="Modo escenario: a pantalla completa" onClick={entrarEscenario}>
+                            <Maximize className="h-4 w-4" />
+                        </BotonBarra>
+                    </span>
                 </div>
                 <div className="mt-1 flex items-start gap-3">
                     {/* La portada; si hay muestra, al tocarla suenan 30 s de la grabación */}
@@ -352,9 +359,6 @@ function Lector({ cancion }: { cancion: Cancion }) {
             {/* La hoja */}
             <div className="max-w-5xl mx-auto lg:max-w-none px-4 md:px-0 mt-4">
                 {/* Ficha o chuleta sin letra: buscarla, copiarla y pegarla, y entra en el tono del setlist */}
-                {faltaLetra && (
-                    <AnadirLetra cancion={cancion} ajustes={ajustes} onPegar={ponerLetra} />
-                )}
                 {juntada && (
                     <div className="mb-4 rounded-2xl bg-fill px-4 py-3 flex items-center gap-3">
                         <p className="flex-1 text-[14px] text-muted-foreground">Los acordes y la letra están separados.</p>
@@ -376,6 +380,18 @@ function Lector({ cancion }: { cancion: Cancion }) {
                 )}
                 {/* Con «que quepa», la hoja tiene que poder subir hasta la barra aunque la canción sea corta */}
                 <div ref={zonaRef} className={cn(ajustes.ajustar && 'min-h-[100dvh]')}>{!escenario && hoja()}</div>
+                {/* Ficha o chuleta sin letra: primero la canción; buscar y pegar la letra, plegado debajo */}
+                {faltaLetra && (
+                    verAnadir ? (
+                        <div className="mt-4"><AnadirLetra cancion={cancion} ajustes={ajustes} onPegar={ponerLetra} /></div>
+                    ) : (
+                        <button onClick={() => setVerAnadir(true)} className="pulsable mt-4 w-full h-12 px-4 rounded-2xl bg-fill flex items-center gap-2 text-left">
+                            <span className="text-[15px] font-semibold text-foreground">Falta la letra</span>
+                            <span className="flex-1 truncate text-[14px] text-muted-foreground">· Buscarla o pegarla</span>
+                            <ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        </button>
+                    )
+                )}
                 {leida.lineas.length === 0 && (
                     <p className="py-10 text-center text-[15px] text-muted-foreground">Esta canción está vacía.</p>
                 )}
@@ -483,15 +499,19 @@ function FichaLectura({ cancion }: { cancion: Cancion }) {
     if (f.energia) piezas.push({ texto: ENERGIAS[f.energia], clase: 'bg-fill-strong text-foreground' });
     for (const e of f.etiquetas ?? []) { const p = pastelDe(`etiqueta:${e.toLowerCase()}`); piezas.push({ texto: e, clase: unir(p.fondo, p.tinta) }); }
     if (f.estado && f.estado !== 'lista') piezas.push({ texto: ESTADOS[f.estado], clase: 'bg-pastel-mantequilla text-pastel-mantequilla-ink' });
+    const aFicha = `/cancionero/${cancion.id}/editar#ficha`;
+    // En una sola línea que se desliza de lado (en el móvil no se come la pantalla); tocar una
+    // píldora abre la ficha para cambiarla
     return (
-        <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
-            {piezas.map(p => <span key={p.texto} className={unir('h-7 px-2.5 rounded-full text-[13px] font-semibold flex items-center', p.clase)}>{p.texto}</span>)}
-            {f.enlace && /^https?:\/\//i.test(f.enlace) && (
-                <a href={f.enlace} target="_blank" rel="noopener noreferrer" className="h-7 px-2.5 rounded-full bg-fill-strong text-[13px] font-semibold text-foreground flex items-center active:opacity-60">Sus acordes ↗</a>
-            )}
-            <Link to={`/cancionero/${cancion.id}/editar#ficha`} className="h-7 px-2.5 rounded-full border border-hairline-strong text-[13px] font-semibold text-foreground flex items-center active:opacity-60">
-                {piezas.length ? 'Editar ficha' : '+ Ficha: tono, quién canta…'}
+        <div className="mt-2.5 -mx-4 px-4 md:mx-0 md:px-0 flex flex-nowrap md:flex-wrap items-center gap-1.5 overflow-x-auto hide-scrollbar">
+            <Link to={aFicha} aria-label={piezas.length ? 'Editar la ficha' : 'Añadir la ficha: tono, quién canta…'}
+                className="h-7 shrink-0 px-2 rounded-full border border-hairline-strong text-[13px] font-semibold text-foreground flex items-center gap-1 active:opacity-60">
+                <Pencil className="h-3.5 w-3.5" />{!piezas.length && ' Ficha: tono, quién canta…'}
             </Link>
+            {piezas.map(p => <Link key={p.texto} to={aFicha} className={unir('h-7 shrink-0 whitespace-nowrap px-2.5 rounded-full text-[13px] font-semibold flex items-center active:opacity-60', p.clase)}>{p.texto}</Link>)}
+            {f.enlace && /^https?:\/\//i.test(f.enlace) && (
+                <a href={f.enlace} target="_blank" rel="noopener noreferrer" className="h-7 shrink-0 whitespace-nowrap px-2.5 rounded-full bg-fill-strong text-[13px] font-semibold text-foreground flex items-center active:opacity-60">Sus acordes ↗</a>
+            )}
         </div>
     );
 }
@@ -508,7 +528,7 @@ function Versiones({ cancion }: { cancion: Cancion }) {
         toast.success(yaLoEra ? 'Ya no es la favorita' : '⭐ Esta versión sale primero');
     };
     return (
-        <div className="mt-2.5 flex flex-wrap items-center gap-1.5">
+        <div className="mt-2 -mx-4 px-4 md:mx-0 md:px-0 flex flex-nowrap md:flex-wrap items-center gap-1.5 overflow-x-auto hide-scrollbar [&>*]:shrink-0 [&>*]:whitespace-nowrap">
             <span className="text-[13px] font-semibold text-muted-foreground">Versiones</span>
             {familia.map(c => (
                 <Link key={c.id} to={`/cancionero/${c.id}`} replace aria-current={c.id === cancion.id ? 'page' : undefined}

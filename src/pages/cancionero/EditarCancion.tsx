@@ -272,14 +272,14 @@ function Formulario({ existente }: { existente?: Cancion }) {
                 <EditorFicha ficha={ficha} onCambio={setFicha} canciones={canciones} tonoDetectado={tonoTexto} bpm={bpm} onBpm={setBpm} duracion={duracion} onDuracion={setDuracion} />
             </div>
 
-            {/* Ordenador: al final. Móvil: fija encima de la barra de navegación */}
+            {/* Ordenador: al final. Móvil: fija abajo (aquí no va la barra de la app) */}
             <button onClick={guardarCancion} disabled={!puedeGuardar}
                 className="hidden md:block pulsable mt-5 px-10 h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] disabled:opacity-40">
                 Guardar canción
             </button>
             {copia !== null && <ImportarCanciones key={copia.length} abierto onCerrar={() => setCopia(null)} textoInicial={copia} />}
             {createPortal(
-                <div className="md:hidden fixed inset-x-0 bottom-[calc(52px+env(safe-area-inset-bottom))] z-[45] px-4 py-3 bg-chrome backdrop-blur-2xl border-t border-hairline">
+                <div className="md:hidden fixed inset-x-0 bottom-0 z-[45] px-4 pt-3 pb-[calc(12px+env(safe-area-inset-bottom))] bg-chrome backdrop-blur-2xl border-t border-hairline">
                     <button onClick={guardarCancion} disabled={!puedeGuardar}
                         className="pulsable w-full h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] disabled:opacity-40">
                         Guardar canción

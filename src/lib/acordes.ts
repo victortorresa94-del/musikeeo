@@ -117,7 +117,7 @@ export function usaBemoles(tono: Tono | null, semitonos: number, preferencia: Al
 
 const ADORNO = /^(\|+|\|:|:\||[-–—]+|->|=>|\/+|\.+|…|%|\*+|[xX×]\s?\d+|\d+[xX]|\([xX×]?\d+[xX]?\)|N\.?C\.?|n\.c\.|\(|\)|\[|\]|→|>|~|bis|\(bis\)|:|=|\+)$/;
 
-const SECCIONES = 'intro(?:ducci[oó]n)?|verso|estrofa|estribillo|coro|pre-?coro|pre-?estribillo|puente|solo|interludio|instrumental|final|outro|coda|riff|verse|chorus|pre-?chorus|bridge|hook|refr[aã]o|fin';
+const SECCIONES = 'intro(?:ducci[oó]n)?|verso|estrofa|estribillo|coro|pre-?coro|pre-?estribillo|puente|solo|interludio|instrumental|final|outro|coda|riff|verse|chorus|pre-?chorus|bridge|hook|refr[aã]o|fin|rueda|progresi[oó]n';
 const RE_SECCION = new RegExp(`^(?:${SECCIONES})(?:\\s+(?:\\d+|[IVX]+))?(?:\\s+de\\s+\\p{L}+)?\\s*(?:\\(?[xX×]\\s?\\d\\)?)?\\s*:?$`, 'iu');
 
 function marca(token: string): Marca | null {
