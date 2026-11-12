@@ -41,7 +41,7 @@ Las sesiones deciden con criterio; él no contesta hasta mañana. Cada cosa se p
    3. `actualizar-tonos.json`;
    4. si quieres, `Notion-1-completar-tus-canciones.json`.
 4. Abre el repertorio, revisa el orden y los tonos en **Cifrado**, y mira el aviso del hueco (Lady Jarana suma 64 de 60 min).
-5. **Compartir con el grupo** → manda el enlace (por defecto sin letra).
+5. **Compartir con el grupo** → manda el enlace (por defecto sin letra). Pide a cada músico que lo **abra una vez con cobertura**: luego le funciona sin red, también si lo vuelve a abrir desde WhatsApp. Probado en producción el 12-nov a las 00:50 con los dos sets.
 6. Antes del bolo, abre el repertorio una vez con cobertura: después funciona sin red.
 
 Estado: ✅ hecho y en musikeeo.com · 🔧 en marcha (quién) · ⏳ pendiente · 👤 lo tiene que hacer Víctor
