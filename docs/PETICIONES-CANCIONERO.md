@@ -281,6 +281,18 @@ donde tengan la partitura, toda la canción, etc.»* (primero que él corrija to
 - ✅ **Página del músico:** oscura, con Lista o Cifrado. El escenario se pasa deslizando, con tono ± y tamaño ±, pedal y diagramas.
 - ⏳ **Enlace corto que se actualice solo** (documento público con `get` público): queda para cuando estén las reglas. Hoy, si cambia el set, se reenvía el enlace.
 
+
+**Noche del 12-nov:**
+- ✅ **Set real de 18 temas** (cifrado, notas y hoja del bolo): el enlace tiene 1.723 caracteres.
+- ✅ **Producción**: probado en musikeeo.com (redirige a www y conserva el «#»), en iPhone y Android simulados, sin red y en oscuro.
+- ✅ **Nuevo**:
+  - «Código QR» para el ensayo;
+  - longitud del enlace a la vista;
+  - «Formas» en la página del músico;
+  - aviso «Solo para tu grupo; no lo publiques» con letra;
+  - `/grupo` sin indexar.
+- 👤 **Víctor**: probar que WhatsApp lo abre entero, mandándoselo a sí mismo.
+
 ## 18. Letra y acordes de todas las canciones, como en LaCuerda 🔧 (sesión 1)
 
 *«Necesito de todas las canciones poder sacar todo como en LaCuerda, con la letra y acordes de cada parte.»*
@@ -372,7 +384,7 @@ Campos nuevos en la ficha:
 - ✅ **Importar:** las etiquetas se suman a las que ya había. También valen las directivas `{etiquetas:}`, `{apto para:}` y `{enlace:}`.
 - ⏳ **La importación de Notion:** la prepara el chat principal.
 
-## 21b. Vista Tabla, versiones favoritas y las dos vistas de la cejilla 🔧 (sesión 2, 12-nov)
+## 21b. Vista Tabla, versiones favoritas y las dos vistas de la cejilla ✅ (sesión 2, en main)
 
 *«Esa vista completa bien chetada de todas las canciones tipo Notion, que la pueda ordenar por muchas cosas y cambiar
 cada cosa… una vista tipo ClickUp como la que tenemos en Aura Business, con los atributos de cada canción cambiables ahí
@@ -397,6 +409,18 @@ también, ordenables por grupos.»*
 - **Marcha**: E.
 
 Un agente prepara `actualizar-tonos.json` con estos datos y las fuentes recientes: Lloret 24-oct, el popurrí de octubre y Sant Joan.
+
+
+**Estado (12-nov, noche):**
+- ✅ **Vista Tabla**, en Canciones y en el repertorio:
+  - Cada celda se edita en su sitio: lo que se escribe, en la propia celda; lo que se elige, en una hoja con los valores que ya existen o uno nuevo.
+  - Se ordena por cualquier columna, se agrupa (con cuántas y lo que duran) y se eligen las columnas.
+  - El título queda fijo al deslizar de lado.
+  - En el repertorio arranca en el orden del set.
+- ✅ **Versiones favoritas** (`cancion.favorita`): «Versiones: Original · Víctor · Cataleya» con ⭐ en la canción. La favorita sale primero al buscar y al añadir.
+- ✅ **Tono alternativo** (`ficha.tonoAlt`): «Tono G · también A».
+- ✅ **Cejilla**: «Suena en G | Formas (cejilla 3)» en la canción, recordado por canción (también en Tocar). En el Cifrado, «En directo» y el enlace del grupo, «Suena | Formas».
+- ⏳ **Títulos «X (versión Mafe)»**: entenderlos como versión de X. Queda para después del bolo (lo decide la sesión 1 en `emparejar()`).
 
 ## 21c. Listas personalizadas y el Cancionero a lo ancho en PC 🔧 (sesión 1, 12-nov)
 
@@ -433,6 +457,16 @@ Artistas mal en la BBDD:
 - Sabré olvidar: no está claro el artista (Joe Arroyo o Carlos Vives).
 
 Se corrige en la próxima copia y en la BBDD maestra del Drive.
+
+## Legal del Cancionero ✅ (sesión 2, 12-nov)
+
+- ✅ `/avisos-derechos` (art. 16 DSA):
+  - formulario que prepara el correo a hola@musikeeo.com;
+  - compromiso de retirar lo ilícito y responder motivado;
+  - punto de contacto;
+  - enlazada desde el pie, las páginas legales y los términos.
+- ✅ Términos «7 bis. Cancionero»: contenido con derecho a usarlo, responsabilidad del usuario, Musikeeo no revisa ni publica letras, retirada al recibir aviso.
+- ⏳ «Falta la letra»: lo decide Víctor.
 
 ## Pendientes de Víctor 👤
 

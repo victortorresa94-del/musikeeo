@@ -153,8 +153,29 @@ Project is in active development. Architecture is solid, marketplace sprint in p
   - **Diagramas de acordes** (`lib/diagramas.ts`): posturas calculadas (máx. 4 dedos, cejilla, abertura de 4 trastes, bajo correcto) y las de siempre primero; SVG en `Diagrama.tsx`. Tocar un acorde en cualquier `HojaCancion` (data-acorde, el nombre que se ve: con tono y cejilla) abre `VisorDiagramas` (montado una vez en `App.tsx`, avisado por `lib/verAcorde.ts`) con «Cambiar»; «Ver acordes» en la canción los enseña todos.
   - **Bloques** (`TableroBloques.tsx`, `lib/tablero.ts`): columnas por Estilo · Grupo · Canta · Tono · Energía · Estado · Etiquetas (en el repertorio también por bloque del set). Arrastrar por el asa (pointer events, sirve en el táctil) cambia ese dato de la ficha, con Deshacer; en el set, cambia el «[Bloque]» de la primera línea y lo coloca tras el último tema de ese bloque. «Añadir aquí» abre Nueva canción con `?campo=&valor=`.
 
+- **Noche del 11 al 12-nov (Víctor durmiendo; el bolo es el sábado 14):**
+  - **Vista Tabla** (`components/cancionero/TablaCanciones.tsx`), como la de Notion:
+    - celdas editables;
+    - ordenar, agrupar y elegir columnas, que se recuerdan (`musikeeo-tabla-set` / `-biblioteca`);
+    - título fijo al deslizar de lado.
+  - **Versiones ⭐**:
+    - `cancion.favorita`, con `versionesDe`/`pesoVersion` en `biblioteca.ts`;
+    - `ficha.tonoAlt`;
+    - cejilla «Suena | Formas»: `ajustes.cejillaGuardada`, `cejillaDeFicha`, `hooks/useFormas.ts` y `SuenaFormas`.
+  - **Desplegar filas**: `FilaDesplegable.tsx`, en la Lista del repertorio y de Canciones.
+  - **Repertorios sin fecha**: van a «Archivados» y no cuentan como «Próximo bolo».
+  - **Copia .json**: guarda `notas`, `favorita`, `hueco` y la hoja del bolo. Falta que el importador de la sesión 1 los lea; se le pasaron los cambios exactos.
+  - **Enlace del grupo**:
+    - QR (`CodigoQR.tsx`, `qrcode-generator`);
+    - «Formas» en la página del músico;
+    - aviso «Solo para tu grupo» al compartir con letra;
+    - `/grupo` sin indexar (meta robots y `X-Robots-Tag` en `vercel.json`);
+    - probado en producción con 18 temas (1.723 caracteres).
+  - **Legal**: `/avisos-derechos` (`pages/legal/AvisosDerechos.tsx`) y el apartado «7 bis. Cancionero» de los términos.
+  - **Ordenador**: el Cifrado sale en una cuadrícula de 2-3 columnas (`HojaSet ancho`), y Tabla, Bloques y Cifrado van a lo ancho con `xl:-mx-44`.
+
 **❌ Pendiente:**
-- Víctor: desplegar reglas (ahora también `notas`, `hueco` y `ficha.etiquetas`/`ficha.enlace`).
+- Víctor: desplegar reglas (ahora también `notas`, `hueco` y `ficha.etiquetas`/`ficha.enlace`, `favorita`, `ficha.tonoAlt`).
 - Desplegar una fila de la Lista del repertorio para ver sus acordes sin salir (no hecho).
 - Diagramas: solo guitarra (no ukelele ni piano).
 - No se pudo añadir el repo de Aura a la sesión (permiso denegado): el editor está hecho desde cero con la misma base (Tiptap 3).
