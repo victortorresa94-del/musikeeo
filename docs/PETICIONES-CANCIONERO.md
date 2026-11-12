@@ -209,6 +209,23 @@ Plan, ordenado por momentos del músico:
 
 Antes de construir se sueñan 3 conceptos en Aura Studio para que elija. Gasto aprobado: *«sí, o más, las que hagan falta»*.
 
+**Soñado la noche del 12-nov** (Aura Studio, proyecto Musikeeo, lienzo «Cancionero · color», ≈ 0,60 €):
+- [0 · Cabecera del repertorio, tres variantes](https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmwcsub18_i29r.png?alt=media&token=26b9cf01-d3e5-450c-bd47-c681907fb294):
+  1. tarjeta del bolo;
+  2. barra compacta;
+  3. pestañas con un «Tocar» flotante.
+- [A · Barra de herramientas](https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmwcs5oe8_fnio.png?alt=media&token=b873f17e-0b3c-49fa-988b-394017241570): en la canción, 5 iconos (Tono, Cejilla, Ver, Tempo, Más), cada uno con una hoja corta.
+- [B · Mando flotante](https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmwcsakvj_cyi5.png?alt=media&token=d7facf55-a6c3-4f78-8662-1b833f8e8160): Tono ±, Aa, Auto y ⋯, y un panel lateral con «Preparar» y «Gestión». Los filtros son iconos con su número.
+- [C · Por momentos](https://firebasestorage.googleapis.com/v0/b/aether-app-59bd1.firebasestorage.app/o/studio-durable%2Femptuytnlrt3wzuccxgw55gw%2Fmwcsrsc2_gkkt.png?alt=media&token=522f0e35-ffb2-4436-b043-611c587ad0e6): «Tocar» grande; la canción en Ensayar · Tocar · Ficha; Tocar en oscuro.
+
+**Lo que se construye esa noche** (Víctor dormía y ya había dicho «las que haga falta»; si no le gusta, se cambia):
+- **Repertorio = C.** «Tocar» grande con compartir, una línea con la barra de tiempo y quién canta, «Hoja del bolo» y Lista · Cifrado · Bloques fijo al bajar.
+- **Canción = A.**
+- **Canciones = B.** Filtros en iconos con número, grupos como avatares y el mantenimiento detrás de ⋯.
+- **Tocar**: su barra de ahora, más limpia.
+
+Va después del .json y del importador, y sin romper Tocar, el modo sin red ni el enlace del grupo. Si a las 7:00 no está redondo, se queda en una rama.
+
 ## 15. Editor rico «con la potencia de Aura notas» ✅ (sesión 2, en main)
 
 *«NO PUEDO EDITAR esto, debería poder cambiarlo a mi gusto, poner negritas, títulos… ponle la potencia de Aura notas, te paso el repo.»*
