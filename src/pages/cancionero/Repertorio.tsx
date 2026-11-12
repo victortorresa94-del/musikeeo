@@ -2,7 +2,7 @@ import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } fro
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Reorder, useDragControls } from 'framer-motion';
 import { toast } from 'sonner';
-import { ChevronLeft, GripVertical, Loader2, Play, Plus, Search, Share2, Trash2, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, FileText, GripVertical, Loader2, MoreHorizontal, Play, Plus, Search, Share2, Trash2, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { norm, pedirPantallaCompleta, tonoDe } from '../../components/cancionero/utilidades';
@@ -59,6 +59,17 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     const [anadir, setAnadir] = useState(false);
     const [compartir, setCompartir] = useState(false);
     const [editandoHoja, setEditandoHoja] = useState(false);
+    const [menu, setMenu] = useState(false);
+    // ¿Se ve el botón grande de «Tocar»? Si no, sale uno pequeño en la barra fija
+    const tocarRef = useRef<HTMLButtonElement>(null);
+    const [tocarALaVista, setTocarALaVista] = useState(true);
+    useEffect(() => {
+        const el = tocarRef.current;
+        if (!el || typeof IntersectionObserver === 'undefined') return;
+        const o = new IntersectionObserver(([e]) => setTocarALaVista(e.isIntersecting), { rootMargin: '-56px 0px 0px 0px' });
+        o.observe(el);
+        return () => o.disconnect();
+    }, []);
     // La hoja del bolo se guarda sola mientras escribes (al parar)
     const ultimo = useRef(repertorio);
     useEffect(() => { ultimo.current = repertorio; }, [repertorio]);
@@ -74,6 +85,8 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     const tonos = temas.map(c => tonoMostrado(c, tonoDe(c)));
     const repetidos = mismoTonoSeguido(tonos);
     const voces = reparto(temas);
+    // ¿Se pasa del hueco del bolo? (la barra y la duración se ponen en rojo)
+    const pasa = !!repertorio.hueco && ids.length > 0 && segundos / 60 > repertorio.hueco + 1;
     const temasCifrado = useMemo(() => (vista === 'cifrado' || directo ? temas.map(c => temaDe(c, false)) : []), [vista, directo, temas]);
     // Bloques: pasar un tema a otro bloque del set le cambia el bloque y lo lleva detrás del
     // último de ese bloque; con otro campo, cambia ese dato de su ficha
@@ -120,70 +133,118 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
 
     return (
         <div className="max-w-3xl mx-auto px-4 md:px-0 pt-3 md:pt-6 pb-16">
-            <Link to="/cancionero?ver=repertorios" className="inline-flex items-center -ml-1.5 text-[15px] text-muted-foreground active:opacity-60">
-                <ChevronLeft className="h-5 w-5" /> Repertorios
-            </Link>
+            {/* Arriba: volver, el título (se edita tocándolo) y el ⋯ con lo que no es de cada día */}
+            <div className="flex items-center justify-between gap-2">
+                <Link to="/cancionero?ver=repertorios" className="inline-flex items-center -ml-1.5 text-[15px] text-muted-foreground active:opacity-60">
+                    <ChevronLeft className="h-5 w-5" /> Repertorios
+                </Link>
+                <button onClick={() => setMenu(true)} aria-label="Más opciones del repertorio" className="pulsable h-9 w-9 rounded-full bg-fill flex items-center justify-center text-foreground">
+                    <MoreHorizontal className="h-5 w-5" />
+                </button>
+            </div>
             <input value={nombre} onChange={e => setNombre(e.target.value.slice(0, 120))} onBlur={() => nombre.trim() && nombre !== repertorio.nombre && cambiar({ nombre: nombre.trim() })}
                 aria-label="Nombre del repertorio" placeholder="Nombre del repertorio"
                 className="mt-1 w-full bg-transparent font-heading !text-[28px] font-bold leading-tight text-foreground placeholder:text-muted-foreground focus:outline-none" />
-            <div className="mt-1 flex items-center gap-2 text-[15px] text-muted-foreground">
-                <input type="date" value={repertorio.fecha} onChange={e => cambiar({ fecha: e.target.value })} aria-label="Fecha del bolo"
-                    className="bg-transparent text-muted-foreground focus:outline-none" />
-                <span>· {ids.length} {ids.length === 1 ? 'tema' : 'temas'}{duracion && ` · ${duracion}`}</span>
-            </div>
-            <Hueco minutos={repertorio.hueco} segundos={ids.length ? segundos : 0} estimada={estimada} onCambio={h => cambiar({ hueco: h })} />
-            {/* Quién canta cuántas: para repartir la voz */}
+
+            {/* Una línea con lo que hay que saber: cuándo, cuántos, cuánto y si cabe en el hueco */}
+            <button onClick={() => setMenu(true)} className="mt-1 w-full text-left" aria-label="Fecha y hueco del bolo">
+                <span className="flex flex-wrap items-center gap-x-1.5 text-[15px] text-muted-foreground">
+                    <span className="capitalize">{fechaCorta(repertorio.fecha)}</span>
+                    <span>· {ids.length} {ids.length === 1 ? 'tema' : 'temas'}</span>
+                    {duracion && <span>· <b className={cn('font-semibold', pasa ? 'text-destructive' : 'text-foreground')}>{duracion}</b>{repertorio.hueco ? ` de ${repertorio.hueco} min` : ''}</span>}
+                </span>
+                {!!repertorio.hueco && ids.length > 0 && (
+                    <span className="mt-1.5 block h-1.5 rounded-full bg-fill overflow-hidden" aria-hidden>
+                        <span className={cn('block h-full rounded-full', pasa ? 'bg-destructive' : 'bg-foreground')} style={{ width: `${Math.min(100, (segundos / 60 / repertorio.hueco) * 100)}%` }} />
+                    </span>
+                )}
+            </button>
+            {/* Quién canta cuántas, en pequeño */}
             {voces.length > 0 && (
-                <div className="mt-2 flex flex-wrap gap-1.5">
+                <div className="mt-2 flex flex-wrap items-center gap-1">
                     {voces.map(v => {
                         const p = pastelCanta(v.valor);
                         return (
-                            <span key={v.valor} className={cn('h-7 pl-1 pr-2.5 rounded-full flex items-center gap-1 text-[13px] font-semibold', p.fondo, p.tinta)}>
-                                <img src={ICONO.canciones} alt="" aria-hidden className="h-6 w-6 object-contain" />{v.valor} · {v.n}
+                            <span key={v.valor} title={`${v.valor} canta ${v.n}`} className={cn('h-6 pl-0.5 pr-2 rounded-full flex items-center gap-1 text-[12.5px] font-semibold', p.fondo, p.tinta)}>
+                                <span className="h-5 w-5 rounded-full bg-sheet/70 flex items-center justify-center text-[11px]">{v.valor.charAt(0).toUpperCase()}</span>{v.valor} {v.n}
                             </span>
                         );
                     })}
                 </div>
             )}
 
-            <button onClick={() => tocar()} disabled={!ids.length}
-                className="pulsable mt-5 w-full h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] flex items-center justify-center gap-2 disabled:opacity-40">
-                <Play className="h-5 w-5 fill-current" /> Tocar el repertorio
-            </button>
-            <p className="mt-2 text-center text-[13px] text-muted-foreground">Desliza de lado para pasar de canción. Toca un número para empezar desde ese tema.</p>
-            <button onClick={() => setCompartir(true)} disabled={!ids.length}
-                className="pulsable mt-3 mx-auto h-9 px-4 rounded-full bg-fill text-foreground text-[14px] font-semibold flex items-center gap-1.5 disabled:opacity-40">
-                <Share2 className="h-4 w-4" /> Compartir con el grupo
-            </button>
+            {/* Lo principal, grande y solo: tocar. Al lado, mandarlo al grupo */}
+            <div className="mt-4 flex items-center gap-2">
+                <button ref={tocarRef} onClick={() => tocar()} disabled={!ids.length}
+                    className="pulsable relative flex-1 h-[60px] rounded-[18px] bg-primary text-primary-foreground font-bold text-[19px] flex items-center pl-5 gap-2 overflow-hidden disabled:opacity-40">
+                    <Play className="h-5 w-5 fill-current" /> Tocar
+                    <img src={ICONO.canciones} alt="" aria-hidden className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-[54px] w-[54px] object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.18)]" />
+                </button>
+                <button onClick={() => setCompartir(true)} disabled={!ids.length} aria-label="Compartir con el grupo"
+                    className="pulsable h-[60px] w-[60px] shrink-0 rounded-[18px] bg-fill text-foreground flex items-center justify-center disabled:opacity-40">
+                    <Share2 className="h-5 w-5" />
+                </button>
+            </div>
 
-            {/* La hoja del bolo: lo que el grupo tiene que saber (horarios, cables, quién trae qué…), con formato */}
-            <section className="mt-6" aria-labelledby="hoja-bolo">
-                <div className="flex items-center justify-between gap-2">
-                    <h2 id="hoja-bolo" className="text-[17px] font-bold text-foreground">Hoja del bolo</h2>
-                    <button onClick={() => setEditandoHoja(e => !e)} className="h-9 px-3.5 rounded-full text-[14px] font-semibold text-foreground active:bg-fill">
-                        {editandoHoja ? 'Listo' : notasVacias(repertorio.notas) ? 'Escribir' : 'Editar'}
-                    </button>
-                </div>
+            {/* La hoja del bolo: una fila; se abre al tocarla (nunca una caja vacía) */}
+            <section className="mt-3" aria-labelledby="hoja-bolo">
                 {editandoHoja ? (
-                    <div className="mt-2 rounded-2xl border border-hairline p-3 md:p-4">
+                    <div className="rounded-2xl border border-hairline p-3 md:p-4">
+                        <div className="mb-2 flex items-center justify-between">
+                            <h2 id="hoja-bolo" className="text-[16px] font-bold text-foreground">Hoja del bolo</h2>
+                            <button onClick={() => setEditandoHoja(false)} className="h-8 px-3 rounded-full text-[14px] font-semibold text-foreground active:bg-fill">Listo</button>
+                        </div>
                         <Suspense fallback={<div className="min-h-32" />}>
                             <EditorNotas valor={repertorio.notas} onCambio={guardarHoja} autoFocus
                                 placeholder="Horarios, prueba de sonido, quién trae qué, el orden de los bises… Pulsa «/» para títulos, avisos y casillas." />
                         </Suspense>
                     </div>
-                ) : notasVacias(repertorio.notas) ? (
-                    <button onClick={() => setEditandoHoja(true)} className="mt-2 w-full rounded-2xl bg-fill px-4 py-4 text-left text-[15px] text-muted-foreground">
-                        Horarios, prueba de sonido, quién trae qué… Sale en el enlace del grupo.
-                    </button>
                 ) : (
-                    <button onClick={() => setEditandoHoja(true)} className="mt-2 w-full rounded-2xl bg-fill px-4 py-3 text-left">
-                        <NotasRicas json={repertorio.notas} className="text-[15px]" />
+                    <button onClick={() => setEditandoHoja(true)} className="w-full rounded-2xl bg-fill px-4 py-3 text-left flex items-start gap-3 active:bg-fill-strong">
+                        <span className="flex-1 min-w-0">
+                            <span id="hoja-bolo" className="block text-[15px] font-semibold text-foreground">Hoja del bolo</span>
+                            {notasVacias(repertorio.notas)
+                                ? <span className="block text-[13px] text-muted-foreground">Horarios, prueba de sonido, quién trae qué…</span>
+                                : <span className="mt-1 block max-h-[4.5rem] overflow-hidden"><NotasRicas json={repertorio.notas} className="text-[14px]" /></span>}
+                        </span>
+                        <ChevronRight className="mt-0.5 h-4 w-4 shrink-0 text-muted-foreground" />
                     </button>
                 )}
             </section>
 
+            {/* ⋯: fecha, hueco, compartir, hoja del bolo y borrar */}
+            <Hoja abierta={menu} onCerrar={() => setMenu(false)} titulo="El repertorio" derecha={<BotonHoja fuerte onClick={() => setMenu(false)}>Listo</BotonHoja>}>
+                <div className="px-4 pb-5 space-y-3">
+                    <label className="h-12 px-4 rounded-2xl bg-fill flex items-center justify-between gap-3 text-[15px] font-semibold text-foreground">
+                        Fecha del bolo
+                        <input type="date" value={repertorio.fecha} onChange={e => cambiar({ fecha: e.target.value })} aria-label="Fecha del bolo"
+                            className="bg-transparent text-right text-muted-foreground focus:outline-none" />
+                    </label>
+                    <div className="px-1">
+                        <Hueco minutos={repertorio.hueco} segundos={ids.length ? segundos : 0} estimada={estimada} onCambio={h => cambiar({ hueco: h })} />
+                    </div>
+                    <div className="rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
+                        <button onClick={() => { setMenu(false); setCompartir(true); }} disabled={!ids.length} className="w-full h-12 px-4 flex items-center gap-3 text-[15px] text-foreground active:bg-fill-strong disabled:opacity-40">
+                            <Share2 className="h-[18px] w-[18px]" /> Compartir con el grupo
+                        </button>
+                        <button onClick={() => { setMenu(false); setEditandoHoja(true); }} className="w-full h-12 px-4 flex items-center gap-3 text-[15px] text-foreground active:bg-fill-strong">
+                            <FileText className="h-[18px] w-[18px]" /> Hoja del bolo
+                        </button>
+                        <button onClick={() => { setMenu(false); borrar(); }} className="w-full h-12 px-4 flex items-center gap-3 text-[15px] text-destructive active:bg-fill-strong">
+                            <Trash2 className="h-[18px] w-[18px]" /> Borrar repertorio
+                        </button>
+                    </div>
+                </div>
+            </Hoja>
+
             {ids.length > 0 && (
-                <div className="mt-6 flex items-center gap-2">
+                <div className="sticky top-[calc(env(safe-area-inset-top)+3.5rem)] md:top-14 z-10 -mx-4 px-4 md:mx-0 md:px-0 mt-4 py-2 bg-background flex items-center gap-2">
+                    {/* Al bajar, «Tocar» sigue a un toque aquí */}
+                    {!tocarALaVista && (
+                        <button onClick={() => tocar()} aria-label="Tocar el repertorio" className="pulsable order-last ml-auto h-9 w-9 shrink-0 rounded-full bg-primary text-primary-foreground flex items-center justify-center">
+                            <Play className="h-4 w-4 fill-current" />
+                        </button>
+                    )}
                     <SelectorVista valor={vista} onCambio={v => cambiarParams({ vista: v === 'lista' ? null : v })} />
                     {vista === 'cifrado' && temasCifrado.some(t => t.m) && <SuenaFormas formas={formas} onCambio={setFormas} />}
                     {vista === 'cifrado' && (
@@ -441,4 +502,10 @@ function ElegirCanciones({ abierto, onCerrar, canciones, elegidas, onAlternar, r
             <ImportarCanciones abierto={importar} onCerrar={() => setImportar(false)} repertorioId={repertorio.id} />
         </>
     );
+}
+
+// «2026-11-14» → «sáb 14 nov»
+function fechaCorta(f: string): string {
+    const [a, m, d] = f.split('-').map(Number);
+    return a ? new Date(a, m - 1, d).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }) : '';
 }
