@@ -185,7 +185,7 @@ Project is in active development. Architecture is solid, marketplace sprint in p
     - `/grupo` sin indexar (meta robots y `X-Robots-Tag` en `vercel.json`);
     - probado en producción con 18 temas (1.723 caracteres).
   - **Legal**: `/avisos-derechos` (`pages/legal/AvisosDerechos.tsx`) y el apartado «7 bis. Cancionero» de los términos.
-  - **Ordenador**: el Cifrado sale en una cuadrícula de 2-3 columnas (`HojaSet ancho`), y Tabla, Bloques y Cifrado van a lo ancho con `xl:-mx-44`.
+  - **Ordenador**: el Cifrado sale en una cuadrícula de 2-3 columnas (`HojaSet ancho`), y Tabla, Bloques y Cifrado van a lo ancho con `xl:-mx-24 min-[1400px]:-mx-40 2xl:-mx-44` (medido a 1280, 1366, 1400 y 1536 px: ya no se meten bajo la barra lateral). La hoja de Importar se ensancha en el PC (`lg:max-w-2xl`). Importar y abrir sin red, probado el 12-nov.
 
 **❌ Pendiente:**
 - Víctor: desplegar reglas (ahora también `notas`, `hueco` y `ficha.etiquetas`/`ficha.enlace`, `favorita`, `ficha.tonoAlt`).
