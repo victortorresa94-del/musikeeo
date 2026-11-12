@@ -349,6 +349,32 @@ también, ordenables por grupos.»*
 
 Un agente prepara `actualizar-tonos.json` con estos datos y las fuentes recientes: Lloret 24-oct, el popurrí de octubre y Sant Joan.
 
+## 21c. Listas personalizadas y el Cancionero a lo ancho en PC 🔧 (sesión 1, 12-nov)
+
+*«Eso de aprender es muy importante, porque quiero poder hacerme mis listados dentro de canciones. Debo poder crear mis
+listas personalizadas, como esa, la de aprender, o la de X artista… debe ser un auténtico menú súper bien pensado.»*
+
+*«En PC no estamos aprovechando bien el espacio… está optimizado para móvil, y es la regla número uno del UI/UX, para
+móvil. Pero en PC podemos sacarle más partido al ancho… y hacer un menú aquí bien guapo.»*
+
+**Listas:**
+- Fijas: Todas · Para aprender · Por ensayar · ⭐ Favoritas.
+- De grupo.
+- «Mis listas», manuales o inteligentes (con un filtro guardado).
+
+**PC a lo ancho:** menú propio del Cancionero a la izquierda, contenido ancho (Tabla por defecto) y panel de la canción a la derecha.
+
+**Móvil:** se queda como está.
+
+### Decisión pendiente: los botones de webs en «Falta la letra»
+
+El informe legal (`docs/LEGAL-CANCIONERO.md`) recomienda no mandar a copiar de webs concretas. Opciones:
+- dejarlo así hasta lanzar;
+- un buscador neutro;
+- quitarlos.
+
+Víctor aún no ha elegido; mientras tanto se queda como está.
+
 ## 22. Datos de la BBDD a corregir ⏳
 
 Artistas mal en la BBDD:
