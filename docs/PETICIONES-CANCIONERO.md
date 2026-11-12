@@ -11,6 +11,38 @@
 >
 > Contexto: el sábado 14-nov-2026 hay dos bolos en el RTF Pallejà, Lady Jarana a las 12:30 y Cataleya a las 19:00. Todo lo marcado «HOY» es para llegar a ellos.
 
+## 🌙 Plan de la noche del 11 al 12-nov (Víctor duerme)
+
+*«Te dejo por la noche trabajando en todo, estructura bien el plan porque son muchas cosas. Voy a dormir y mañana espero
+poder subir ya los reper y gozar y enviárselo a los músicos, y que flipen en colores.»*
+
+**Objetivo al despertar:** subir los repertorios de Pallejà sin problemas, abrirlos en Cifrado y mandar el enlace al grupo.
+
+Las sesiones deciden con criterio; él no contesta hasta mañana. Cada cosa se prueba en un iPhone simulado y sin red, y se sube a `main`.
+
+| # | Qué | Quién | Por qué ahora |
+|---|---|---|---|
+| 1 | Subir .json en PC e iPhone; varios a la vez; pegar una copia | sesión 1 | **Bloquea todo lo demás** |
+| 2 | Importador de copias: artista, «Otras versiones», tonoAlt, no juntar «(versión …)» | sesión 1 | Para `actualizar-tonos.json` |
+| 3 | Enlace del grupo de lujo: longitud para WhatsApp, QR, iPhone/Android, oscuro, sin red | sesión 2 | Lo que verán los músicos |
+| 4 | Rediseño (se construye el mejor concepto): cabecera del repertorio, ajustes por momentos, listas personalizadas, PC a lo ancho | sesión 1 | Usabilidad |
+| 5 | Legal: avisos de derechos, cláusula, «solo para tu grupo» | sesión 2 | Antes de abrir |
+| 6 | Teleprompter: negrita por tiempo + «Escuchar» opcional | sesión 1 | Después del rediseño |
+| 7 | Comprobar que la importación encaja con etiquetas, favorita, tonoAlt y notas | sesiones 1 y 2 | Notion y tonos |
+
+### Guía para Víctor por la mañana (se completa cuando esté probado)
+
+1. Abre musikeeo.com → Cancionero. Si no ves lo nuevo, cierra la app del todo y vuelve a abrirla.
+2. Si te quedó un repertorio con las 166 canciones, ábrelo y toca «Borrar repertorio» (las canciones no se borran).
+3. Toca **Importar → Abrir archivos** y sube, **uno a uno**:
+   1. `Lady-Jarana-Palleja-12h30.json`;
+   2. `Cataleya-Palleja-19h00.json`;
+   3. `actualizar-tonos.json`;
+   4. si quieres, `Notion-1-completar-tus-canciones.json`.
+4. Abre el repertorio, revisa el orden y los tonos en **Cifrado**, y mira el aviso del hueco (Lady Jarana suma 64 de 60 min).
+5. **Compartir con el grupo** → manda el enlace (por defecto sin letra).
+6. Antes del bolo, abre el repertorio una vez con cobertura: después funciona sin red.
+
 Estado: ✅ hecho y en musikeeo.com · 🔧 en marcha (quién) · ⏳ pendiente · 👤 lo tiene que hacer Víctor
 
 ## 1. El cancionero como lo tenía en Notion, «al siguiente nivel» ✅
