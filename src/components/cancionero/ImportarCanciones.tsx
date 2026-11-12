@@ -318,7 +318,7 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
                     <button aria-label="Cerrar" className="absolute inset-0 bg-black/50" onClick={onCerrar} />
                     <motion.div role="dialog" aria-modal="true" aria-label="Importar canciones"
                         initial={{ y: 40 }} animate={{ y: 0 }} exit={{ y: 40 }} transition={{ type: 'spring', damping: 30, stiffness: 320 }}
-                        className="relative w-full md:max-w-lg max-h-[92dvh] overflow-y-auto overscroll-contain bg-sheet rounded-t-[22px] md:rounded-[22px] border border-hairline shadow-e3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
+                        className="relative w-full md:max-w-lg lg:max-w-2xl max-h-[92dvh] overflow-y-auto overscroll-contain bg-sheet rounded-t-[22px] md:rounded-[22px] border border-hairline shadow-e3 pb-[calc(1rem+env(safe-area-inset-bottom))]">
                         <div className="sticky top-0 z-10 bg-sheet px-4 pt-2 pb-2">
                             <div className="mx-auto h-1 w-9 rounded-full bg-fill-strong md:hidden" />
                             <div className="mt-2 flex items-center justify-between">

@@ -295,10 +295,10 @@ export default function Cancionero() {
                             {filtradas.length === 0 ? (
                                 <p className="rounded-2xl bg-fill px-4 py-6 text-center text-[15px] text-muted-foreground">Ninguna canción con estos filtros.</p>
                             ) : vista === 'tabla' && !elegidas ? (
-                                <div className="xl:-mx-44"><TablaCanciones canciones={ordenadas} tonoDe={tonoDeCancion} guardar={c => guardar(c)} onAbrir={c => navigate(`/cancionero/${c.id}`)}
+                                <div className="xl:-mx-24 min-[1400px]:-mx-40 2xl:-mx-44"><TablaCanciones canciones={ordenadas} tonoDe={tonoDeCancion} guardar={c => guardar(c)} onAbrir={c => navigate(`/cancionero/${c.id}`)}
                                     clave="musikeeo-tabla-biblioteca" todas={canciones} /></div>
                             ) : vista === 'bloques' && !elegidas ? (
-                                <div className="xl:-mx-44"><TableroBloques canciones={ordenadas} campo={campoTablero} tonoDe={tonoDeCancion}
+                                <div className="xl:-mx-24 min-[1400px]:-mx-40 2xl:-mx-44"><TableroBloques canciones={ordenadas} campo={campoTablero} tonoDe={tonoDeCancion}
                                     onCampo={c => { setCampoTablero(c); try { localStorage.setItem('musikeeo-tablero-biblioteca', c); } catch { /* */ } }}
                                     campos={['estilos', 'proyectos', 'canta', 'tonos', 'energias', 'estados', 'etiquetas']}
                                     onMover={(c, desde, hacia) => {
@@ -308,7 +308,7 @@ export default function Cancionero() {
                                     onAbrir={c => navigate(`/cancionero/${c.id}`)}
                                     onAnadir={col => navigate(`/cancionero/nueva${col.clave ? `?campo=${campoTablero}&valor=${encodeURIComponent(col.clave)}` : ''}`)} /></div>
                             ) : vista === 'cifrado' && !elegidas ? (
-                                <HojaSet temas={temasCifrado} tamano={17} formas={formas} ancho onAbrir={abrirDesdeCifrado} className="xl:-mx-44" />
+                                <HojaSet temas={temasCifrado} tamano={17} formas={formas} ancho onAbrir={abrirDesdeCifrado} className="xl:-mx-24 min-[1400px]:-mx-40 2xl:-mx-44" />
                             ) : grupos.map(g => (
                                 <section key={g.titulo || 'todas'} className={g.titulo ? 'mt-4 first:mt-0' : ''}>
                                     {g.titulo && (

@@ -258,19 +258,19 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                 </div>
             )}
             {ids.length > 0 && vista === 'tabla' ? (
-                <div className="mt-3 xl:-mx-44">
+                <div className="mt-3 xl:-mx-24 min-[1400px]:-mx-40 2xl:-mx-44">
                     <TablaCanciones canciones={temas} tonoDe={c => tonos[temas.indexOf(c)] ?? null} guardar={c => guardar(c)} onAbrir={c => navigate(`/cancionero/${c.id}`)}
                         clave="musikeeo-tabla-set" enSet todas={canciones} />
                 </div>
             ) : ids.length > 0 && vista === 'bloques' ? (
-                <div className="mt-3 xl:-mx-44">
+                <div className="mt-3 xl:-mx-24 min-[1400px]:-mx-40 2xl:-mx-44">
                     <TableroBloques canciones={temas} campo={campoTablero} tonoDe={c => tonos[temas.indexOf(c)] ?? null}
                         onCampo={c => { setCampoTablero(c); try { localStorage.setItem('musikeeo-tablero-set', c); } catch { /* */ } }}
                         campos={['bloque', 'canta', 'estilos', 'tonos', 'energias', 'etiquetas']}
                         onMover={moverTema} onAbrir={c => navigate(`/cancionero/${c.id}`)} />
                 </div>
             ) : ids.length > 0 && vista === 'cifrado' ? (
-                <HojaSet temas={temasCifrado} tamano={17} formas={formas} ancho onAbrir={i => abrirDesdeCifrado(i, false)} className="mt-2 xl:-mx-44" />
+                <HojaSet temas={temasCifrado} tamano={17} formas={formas} ancho onAbrir={i => abrirDesdeCifrado(i, false)} className="mt-2 xl:-mx-24 min-[1400px]:-mx-40 2xl:-mx-44" />
             ) : ids.length > 0 ? (
                 <Reorder.Group axis="y" values={ids} onReorder={orden => guardarRepertorio({ ...repertorio, canciones: orden }, { esperar: true })}
                     className="mt-2">
