@@ -3,6 +3,7 @@ import { Outlet, useLocation } from 'react-router-dom';
 import { Sidebar } from '../components/layout/Sidebar';
 import { TopBar } from '../components/layout/TopBar';
 import { BottomNav } from '../components/layout/BottomNav';
+import { conBarraPropia } from '../lib/rutas';
 import { OnboardingGuide } from '../components/onboarding/OnboardingGuide';
 
 export const MainLayout = () => {
@@ -18,7 +19,7 @@ export const MainLayout = () => {
             <Sidebar />
             <div className="flex-1 flex flex-col min-w-0 relative">
                 <TopBar onMenuClick={toggleMobileMenu} />
-                <main className="flex-1 pb-24 md:pb-6 relative z-0">
+                <main className={`flex-1 ${conBarraPropia(pathname) ? 'pb-0' : 'pb-24'} md:pb-6 relative z-0`}>
                     <div className="animate-fade-in-up w-full">
                         <Outlet />
                     </div>

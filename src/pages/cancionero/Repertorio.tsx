@@ -142,14 +142,17 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                     <MoreHorizontal className="h-5 w-5" />
                 </button>
             </div>
-            <input value={nombre} onChange={e => setNombre(e.target.value.slice(0, 120))} onBlur={() => nombre.trim() && nombre !== repertorio.nombre && cambiar({ nombre: nombre.trim() })}
-                aria-label="Nombre del repertorio" placeholder="Nombre del repertorio"
-                className="mt-1 w-full bg-transparent font-heading !text-[28px] font-bold leading-tight text-foreground placeholder:text-muted-foreground focus:outline-none" />
+            {/* Un nombre largo salta a dos líneas, nunca se corta («Cataleya · RTF Pallejà 19:00») */}
+            <textarea value={nombre} onChange={e => setNombre(e.target.value.replace(/\n/g, ' ').slice(0, 120))}
+                onBlur={() => nombre.trim() && nombre !== repertorio.nombre && cambiar({ nombre: nombre.trim() })}
+                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } }}
+                rows={nombre.length > 20 ? 2 : 1} aria-label="Nombre del repertorio" placeholder="Nombre del repertorio"
+                className="mt-1 w-full resize-none overflow-hidden bg-transparent font-heading !text-[28px] font-bold leading-tight text-foreground placeholder:text-muted-foreground focus:outline-none" />
 
             {/* Una línea con lo que hay que saber: cuándo, cuántos, cuánto y si cabe en el hueco */}
             <button onClick={() => setMenu(true)} className="mt-1 w-full text-left" aria-label="Fecha y hueco del bolo">
                 <span className="flex flex-wrap items-center gap-x-1.5 text-[15px] text-muted-foreground">
-                    <span className="capitalize">{fechaCorta(repertorio.fecha)}</span>
+                    <span>{fechaCorta(repertorio.fecha) || 'Sin fecha'}</span>
                     <span>· {ids.length} {ids.length === 1 ? 'tema' : 'temas'}</span>
                     {duracion && <span>· <b className={cn('font-semibold', pasa ? 'text-destructive' : 'text-foreground')}>{duracion}</b>{repertorio.hueco ? ` de ${repertorio.hueco} min` : ''}</span>}
                 </span>
@@ -369,32 +372,44 @@ function Fila({ id, n, cancion, tono, bloque, mismoTono, onQuitar, onTocar }: {
             <button onClick={onTocar} aria-label={`Tocar desde ${cancion.titulo}`}
                 className="h-9 w-7 shrink-0 rounded-full text-[13px] font-semibold text-muted-foreground tabular-nums active:bg-fill">{n}</button>
             <Link to={`/cancionero/${cancion.id}`} className="flex-1 min-w-0 py-2.5 flex items-center gap-3 active:opacity-60">
-                <Portada src={cancion.portada} titulo={cancion.titulo} tamano="fila" />
+                {/* En el móvil sin portada: el número ya dice cuál es y el título necesita el sitio */}
+                <span className="hidden sm:block shrink-0"><Portada src={cancion.portada} titulo={cancion.titulo} tamano="fila" /></span>
                 <span className="flex-1 min-w-0">
-                    <span className="block truncate text-[16px] font-semibold text-foreground">{cancion.titulo}</span>
-                    {(cancion.version || cancion.artista) && <span className="block truncate text-[13px] text-muted-foreground">{[cancion.version && `${cancion.favorita ? '⭐ ' : ''}Versión ${cancion.version}`, cancion.artista].filter(Boolean).join(' · ')}</span>}
+                    <span className="block line-clamp-2 text-[16px] font-semibold leading-snug text-foreground">{cancion.titulo}</span>
+                    {(cancion.version || cancion.artista || cancion.duracion) && (
+                        <span className="block truncate text-[13px] text-muted-foreground">
+                            {[cancion.version && `${cancion.favorita ? '⭐ ' : ''}Versión ${cancion.version}`, cancion.artista, cancion.duracion && minutos(cancion.duracion)].filter(Boolean).join(' · ')}
+                        </span>
+                    )}
                     {etiquetas.length > 0 && (
-                        <span className="mt-1 flex flex-wrap gap-1">
+                        <span className="mt-1 flex flex-nowrap gap-1 overflow-hidden">
                             {etiquetas.map(e => (
-                                <span key={e.texto} className={cn('h-5 px-2 rounded-full text-[11.5px] font-semibold flex items-center',
+                                <span key={e.texto} className={cn('shrink-0 h-5 px-2 rounded-full text-[11.5px] font-semibold flex items-center',
                                     e.pastel ? cn(e.pastel.fondo, e.pastel.tinta) : 'bg-fill-strong text-muted-foreground')}>{e.texto}</span>
                             ))}
                         </span>
                     )}
                 </span>
             </Link>
-            {cancion.duracion ? <span className="shrink-0 pr-1 text-[13px] text-muted-foreground tabular-nums">{minutos(cancion.duracion)}</span> : null}
             {tono && (
                 <span title={mismoTono ? 'Mismo tono que el tema de antes' : undefined}
                     className={cn('shrink-0 min-w-[36px] h-7 px-2.5 rounded-full text-[13px] font-bold flex items-center justify-center',
                         mismoTono ? cn(PASTEL.melocoton.fondo, PASTEL.melocoton.tinta) : 'bg-fill-strong text-foreground')}>{tono}</span>
             )}
             <BotonDesplegar abierta={abierta} onClick={() => setAbierta(a => !a)} titulo={cancion.titulo} />
-            <button onClick={onQuitar} aria-label={`Quitar ${cancion.titulo}`} className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-muted-foreground active:bg-fill">
+            <button onClick={onQuitar} aria-label={`Quitar ${cancion.titulo}`} className="hidden sm:flex h-9 w-9 shrink-0 rounded-full items-center justify-center text-muted-foreground active:bg-fill">
                 <X className="h-4 w-4" />
             </button>
             </div>
-            {abierta && <div className="border-b border-hairline"><PanelAcordes cancion={cancion} /></div>}
+            {abierta && (
+                <div className="border-b border-hairline">
+                    <PanelAcordes cancion={cancion} />
+                    {/* En el móvil, la ✕ vive aquí: siempre a la vista robaba el sitio del título */}
+                    <button onClick={onQuitar} className="sm:hidden mx-3 mb-3 h-9 px-3.5 rounded-full bg-fill text-[14px] font-semibold text-destructive flex items-center gap-1.5">
+                        <X className="h-4 w-4" /> Quitar del repertorio
+                    </button>
+                </div>
+            )}
         </Reorder.Item>
     );
 }
@@ -504,8 +519,10 @@ function ElegirCanciones({ abierto, onCerrar, canciones, elegidas, onAlternar, r
     );
 }
 
-// «2026-11-14» → «sáb 14 nov»
+// «2026-11-14» → «Sábado, 14 de noviembre» (como en la página del grupo)
 function fechaCorta(f: string): string {
-    const [a, m, d] = f.split('-').map(Number);
-    return a ? new Date(a, m - 1, d).toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' }) : '';
+    const [a, m, d] = (f || '').split('-').map(Number);
+    if (!a) return '';
+    const t = new Date(a, m - 1, d).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
+    return t.charAt(0).toUpperCase() + t.slice(1);
 }

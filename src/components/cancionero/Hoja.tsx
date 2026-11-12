@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react';
+import { useEffect, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { cn } from '../../lib/utils';
@@ -16,6 +16,13 @@ export function Hoja({ abierta, onCerrar, titulo, izquierda, derecha, children, 
     encima?: boolean;        // sobre otra hoja ya abierta
     pie?: ReactNode;         // fijo abajo
 }) {
+    // En el ordenador, Escape la cierra (antes que cualquier otro atajo de la página, como salir de Tocar)
+    useEffect(() => {
+        if (!abierta) return;
+        const f = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); onCerrar(); } };
+        window.addEventListener('keydown', f, true);
+        return () => window.removeEventListener('keydown', f, true);
+    }, [abierta, onCerrar]);
     return createPortal(
         <AnimatePresence>
             {abierta && (

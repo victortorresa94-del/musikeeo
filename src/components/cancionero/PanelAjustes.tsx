@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { CopyPlus, Maximize, Pencil, Play, Printer, RotateCcw, Trash2 } from 'lucide-react';
@@ -46,6 +47,13 @@ export function PanelAjustes({ seccion, onEscenario, abierto, onCerrar, ajustes:
     const ritmo = segundosAlRitmo(duracion, a);
     const intro = a.intro ?? INTRO;
     const ve = (x: SeccionAjustes) => !seccion || seccion === x;
+    // En el ordenador, Escape lo cierra (antes que el atajo de la página para salir del escenario)
+    useEffect(() => {
+        if (!abierto) return;
+        const f = (e: KeyboardEvent) => { if (e.key === 'Escape') { e.stopPropagation(); e.preventDefault(); onCerrar(); } };
+        window.addEventListener('keydown', f, true);
+        return () => window.removeEventListener('keydown', f, true);
+    }, [abierto, onCerrar]);
     return createPortal(
         <AnimatePresence>
             {abierto && (

@@ -1,3 +1,4 @@
+import { conBarraPropia } from '../../lib/rutas';
 import { useState } from 'react';
 import { Link, useLocation } from 'react-router-dom';
 import { Home, PlaySquare, Search, CalendarDays } from 'lucide-react';
@@ -33,6 +34,8 @@ export const BottomNav = () => {
   const [photoBroken, setPhotoBroken] = useState(false);
   const photo = photoBroken ? '' : (userProfile?.photoURL || user?.photoURL);
   const initial = (userProfile?.displayName || user?.displayName || 'T').slice(0, 1).toUpperCase();
+
+  if (conBarraPropia(pathname)) return null;
 
   return (
     <nav

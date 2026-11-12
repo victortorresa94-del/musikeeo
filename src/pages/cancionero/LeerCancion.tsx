@@ -430,7 +430,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
 
             {/* La barra de la canción, abajo y al alcance del pulgar: cada botón abre UNA cosa */}
             {!escenario && (
-                <div ref={barraRef} className="sticky bottom-[calc(52px+env(safe-area-inset-bottom))] md:bottom-0 z-20 mt-6 bg-sheet border-t border-hairline">
+                <div ref={barraRef} className="sticky bottom-0 z-20 mt-6 pb-safe bg-sheet border-t border-hairline">
                     <div className="max-w-xl mx-auto grid grid-cols-5 h-[60px]">
                         <BotonDeBarra etiqueta="Tono" activo={ajustes.semitonos !== 0} onClick={() => setPanelSeccion('tono')} desactivado={sinAcordes}>
                             <span className="text-[17px] font-bold leading-none">{tonoSuena || '—'}</span>
