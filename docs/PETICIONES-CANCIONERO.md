@@ -32,9 +32,9 @@ Las sesiones deciden con criterio; él no contesta hasta mañana. Cada cosa se p
 | 8 | Que la página no se quede en blanco si se abre durante un despliegue (recarga una vez) | chat principal | ✅ 1878c39, probado en local con piezas rotas a propósito |
 | 9 | Apuntes («Fuente:», «Otras versiones:», «Tono sin verificar»…) en pequeño y gris en el lector, Tocar y Cifrado; «Rueda» y las partes con coletilla con los acordes grandes | sesión 1 | ✅ 329e96d + ad2d0a5 |
 | 10 | «Próximo bolo»: el mismo día va primero el de hora más temprana (Lady 12:30 antes que Cataleya 19:00) | sesión 1 | ✅ 329e96d |
-| 11 | Tono de la ficha en Tocar y en «Dame el tono» (Marcha salía en A por leer la rueda; es E) | sesión 1 | 🔧 visto en producción a las 01:13 |
+| 11 | Tono de la ficha en Tocar y en «Dame el tono» (Marcha salía en A por leer la rueda; es E), también en canciones sin acordes, y la cejilla de la ficha a la vista en Tocar | sesión 1 | ✅ e96d23f + e669df9. Probado en producción a las 01:30: Marcha E, Tu Calorro E, Sarandonga E, Si antes B, Mi estrella blanca G con «Capo 3 · formas de E», Tusa Bm y 19 días E |
 
-### Guía para Víctor por la mañana (se completa cuando esté probado)
+### Guía para Víctor por la mañana (probada en producción la noche del 12-nov)
 
 1. Abre musikeeo.com → Cancionero. Si no ves lo nuevo, cierra la app del todo y vuelve a abrirla.
 2. Si te quedó un repertorio con las 166 canciones, ábrelo y toca «Borrar repertorio» (las canciones no se borran).
