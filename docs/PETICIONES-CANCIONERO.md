@@ -22,8 +22,8 @@ Las sesiones deciden con criterio; él no contesta hasta mañana. Cada cosa se p
 
 | # | Qué | Quién | Por qué ahora |
 |---|---|---|---|
-| 1 | Subir .json en PC e iPhone; varios a la vez; pegar una copia | sesión 2 (pasa de la 1 a las 00:40) | **Bloquea todo lo demás**. Probado en producción (00:25): uno va; dos a la vez salen «Sin título»; «Cargar documento» no acepta .json |
-| 2 | Importador de copias: artista, «Otras versiones», tonoAlt, no juntar «(versión …)», y notas, ⭐, hueco y hoja del bolo | sesión 2 | Para `actualizar-tonos.json` |
+| 1 | Subir .json en PC e iPhone; varios a la vez; pegar una copia | sesión 2 | ✅ d262c84, probado en producción |
+| 2 | Importador de copias: artista, «Otras versiones», tonoAlt, «(versión …)» aparte, notas, ⭐, hueco y hoja del bolo | sesión 2 | ✅ 85498c9, probado en producción con las 166 canciones |
 | 3 | Enlace del grupo de lujo: longitud para WhatsApp, QR, iPhone/Android, oscuro, sin red | sesión 2 | Lo que verán los músicos |
 | 4 | Rediseño (se construye el mejor concepto): cabecera del repertorio, ajustes por momentos, listas personalizadas, PC a lo ancho | sesión 1 | Usabilidad |
 | 5 | Legal: avisos de derechos, cláusula, «solo para tu grupo» | sesión 2 | Antes de abrir |
@@ -35,11 +35,11 @@ Las sesiones deciden con criterio; él no contesta hasta mañana. Cada cosa se p
 
 1. Abre musikeeo.com → Cancionero. Si no ves lo nuevo, cierra la app del todo y vuelve a abrirla.
 2. Si te quedó un repertorio con las 166 canciones, ábrelo y toca «Borrar repertorio» (las canciones no se borran).
-3. Toca **Importar → Abrir archivos** y sube, **uno a uno** (por «Cargar documento» de Nueva canción no entran: probado el 12-nov a las 00:25):
+3. Toca **Importar → Abrir archivos** y sube los tres de golpe o uno a uno, da igual (probado en producción a las 00:50 con tus 166 canciones ya dentro: 2 repertorios, 167 canciones, nada duplicado, «17 actualizadas · 1 nueva», las «Otras versiones» conservadas y los artistas corregidos):
    1. `Lady-Jarana-Palleja-12h30.json`;
    2. `Cataleya-Palleja-19h00.json`;
    3. `actualizar-tonos.json`;
-   4. si quieres, `Notion-1-completar-tus-canciones.json`.
+   4. si quieres, `Notion-1-completar-tus-canciones.json` (⚠️ todavía no: a las 00:55 sustituía chuletas enteras por una línea de Notion; lo está arreglando la sesión 2 y esta línea se quita cuando esté probado).
 4. Abre el repertorio, revisa el orden y los tonos en **Cifrado**, y mira el aviso del hueco (Lady Jarana suma 64 de 60 min).
 5. **Compartir con el grupo** → manda el enlace (por defecto sin letra). Pide a cada músico que lo **abra una vez con cobertura**: luego le funciona sin red, también si lo vuelve a abrir desde WhatsApp. Probado en producción el 12-nov a las 00:50 con los dos sets.
 6. Antes del bolo, abre el repertorio una vez con cobertura: después funciona sin red.
