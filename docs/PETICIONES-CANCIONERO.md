@@ -22,13 +22,14 @@ Las sesiones deciden con criterio; él no contesta hasta mañana. Cada cosa se p
 
 | # | Qué | Quién | Por qué ahora |
 |---|---|---|---|
-| 1 | Subir .json en PC e iPhone; varios a la vez; pegar una copia | sesión 1 | **Bloquea todo lo demás** |
-| 2 | Importador de copias: artista, «Otras versiones», tonoAlt, no juntar «(versión …)» | sesión 1 | Para `actualizar-tonos.json` |
+| 1 | Subir .json en PC e iPhone; varios a la vez; pegar una copia | sesión 2 (pasa de la 1 a las 00:40) | **Bloquea todo lo demás**. Probado en producción (00:25): uno va; dos a la vez salen «Sin título»; «Cargar documento» no acepta .json |
+| 2 | Importador de copias: artista, «Otras versiones», tonoAlt, no juntar «(versión …)», y notas, ⭐, hueco y hoja del bolo | sesión 2 | Para `actualizar-tonos.json` |
 | 3 | Enlace del grupo de lujo: longitud para WhatsApp, QR, iPhone/Android, oscuro, sin red | sesión 2 | Lo que verán los músicos |
 | 4 | Rediseño (se construye el mejor concepto): cabecera del repertorio, ajustes por momentos, listas personalizadas, PC a lo ancho | sesión 1 | Usabilidad |
 | 5 | Legal: avisos de derechos, cláusula, «solo para tu grupo» | sesión 2 | Antes de abrir |
 | 6 | Teleprompter: negrita por tiempo + «Escuchar» opcional | sesión 1 | Después del rediseño |
 | 7 | Comprobar que la importación encaja con etiquetas, favorita, tonoAlt y notas | sesiones 1 y 2 | Notion y tonos |
+| 8 | Que la página no se quede en blanco si se abre durante un despliegue (recarga una vez) | chat principal | ✅ 1878c39, probado en local con piezas rotas a propósito |
 
 ### Guía para Víctor por la mañana (se completa cuando esté probado)
 
