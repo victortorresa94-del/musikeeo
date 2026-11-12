@@ -50,6 +50,30 @@
       }
     } catch (e) {}
   </script>
+  <!-- Si justo hay un despliegue, el HTML puede apuntar a piezas que ya no existen (llegan como
+       HTML y la página se queda en blanco). Se recarga UNA vez, nunca en bucle. Lo usa también
+       la barrera de errores (ErrorBoundary) cuando falla una pantalla que se carga aparte. -->
+  <script>
+    (function () {
+      window.__mkRecargaUnaVez = function () {
+        try {
+          var clave = 'musikeeo-recarga-' + location.pathname;
+          var antes = Number(sessionStorage.getItem(clave)) || 0;
+          if (Date.now() - antes < 60000) return false;
+          sessionStorage.setItem(clave, String(Date.now()));
+        } catch (e) { return false; }
+        location.reload();
+        return true;
+      };
+      window.addEventListener('error', function (e) {
+        var t = e.target;
+        if (!t || (t.tagName !== 'SCRIPT' && t.tagName !== 'LINK')) return;
+        var url = t.src || t.href || '';
+        if (url.indexOf('/assets/') !== -1) window.__mkRecargaUnaVez();
+      }, true);
+      window.addEventListener('vite:preloadError', function () { window.__mkRecargaUnaVez(); });
+    })();
+  </script>
   <link rel="apple-touch-icon" href="/icons/musikeeo-192.png" />
   <meta name="apple-mobile-web-app-capable" content="yes" />
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />

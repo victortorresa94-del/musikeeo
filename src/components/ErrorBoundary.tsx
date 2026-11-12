@@ -24,6 +24,11 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+        // Una pantalla que se carga aparte y ya no existe (hubo un despliegue): se recarga una vez
+        // en vez de enseñar el error. La regla vive en index.html (__mkRecargaUnaVez)
+        const pieza = /dynamically imported module|Importing a module script failed|error loading dynamically imported|module script/i;
+        const recargar = (window as unknown as { __mkRecargaUnaVez?: () => boolean }).__mkRecargaUnaVez;
+        if (pieza.test(error?.message ?? '') && recargar?.()) return;
         console.error("Uncaught error:", error, errorInfo);
         Sentry.withScope((scope: any) => {
             scope.setExtras({ componentStack: errorInfo.componentStack });

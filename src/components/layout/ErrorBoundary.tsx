@@ -19,6 +19,10 @@ export class ErrorBoundary extends Component<Props, State> {
     }
 
     public componentDidCatch(error: Error, errorInfo: ErrorInfo) {
+        // Pantalla que ya no existe tras un despliegue: una recarga (regla en index.html)
+        const pieza = /dynamically imported module|Importing a module script failed|error loading dynamically imported|module script/i;
+        const recargar = (window as unknown as { __mkRecargaUnaVez?: () => boolean }).__mkRecargaUnaVez;
+        if (pieza.test(error?.message ?? '') && recargar?.()) return;
         console.error('Uncaught error:', error, errorInfo);
     }
 
