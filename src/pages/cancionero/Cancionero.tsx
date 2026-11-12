@@ -29,6 +29,7 @@ import { temaDe } from '../../lib/compartir';
 import { BarraFiltros } from '../../components/cancionero/Filtros';
 import { useFiltrosGuardados } from '../../hooks/useFiltrosGuardados';
 import { AnadirALista, BotonListas, EditorLista, MenuListas } from '../../components/cancionero/Listas';
+import { ConMenu } from '../../components/cancionero/ConMenu';
 import { cancionesDeLista, nombreDeLista } from '../../lib/listas';
 import type { Lista, ReglaLista } from '../../types/cancionero';
 import { AnadirARepertorio } from '../../components/cancionero/AnadirARepertorio';
@@ -182,33 +183,8 @@ export default function Cancionero() {
     );
 
     return (
-        <div className="lg:flex lg:items-start lg:gap-8 lg:max-w-[1360px] lg:mx-auto lg:px-6">
-        {/* En el ordenador: el menú del Cancionero a la izquierda, como un gestor de música */}
-        {listo && (
-            <aside aria-label="Menú del cancionero" className="hidden lg:block w-[240px] shrink-0 sticky top-20 pt-6 pb-10 max-h-[calc(100vh-5rem)] overflow-y-auto hide-scrollbar">
-                <nav className="space-y-0.5">
-                    {([
-                        [ICONO.canciones, 'Canciones', () => elegirLista('todas'), ver === 'canciones' && listaId === 'todas'],
-                        [ICONO.repertorios, 'Repertorios', () => cambiarVer('repertorios'), ver === 'repertorios'],
-                        [ICONO.importar, 'Importar', () => setImportar(true), false],
-                        [ICONO.escuchar, 'Sacar de un audio', () => navigate('/cancionero/escuchar'), false],
-                    ] as const).map(([icono, t, f, activo]) => (
-                        <button key={t} onClick={f} className={cn('w-full h-10 px-2 rounded-xl flex items-center gap-2.5 text-left text-[15px] font-semibold text-foreground', activo ? 'bg-fill-strong' : 'hover:bg-fill')}>
-                            <img src={icono} alt="" className="h-7 w-7 object-contain" /> {t}
-                        </button>
-                    ))}
-                    {faltanLetra > 0 && (
-                        <button onClick={() => setCompletar(true)} className="w-full h-10 px-2 rounded-xl flex items-center gap-2.5 text-left text-[15px] font-semibold text-foreground hover:bg-fill">
-                            <span className="h-7 w-7 flex items-center justify-center"><FileText className="h-[18px] w-[18px]" /></span>
-                            <span className="flex-1">Completar letras</span><span className="text-[13px] text-muted-foreground">{faltanLetra}</span>
-                        </button>
-                    )}
-                </nav>
-                <p className="mt-5 mb-1 px-2 text-[12px] font-bold uppercase tracking-[0.08em] text-muted-foreground">Listas</p>
-                {menuListas(true)}
-            </aside>
-        )}
-        <div className={cn('max-w-3xl mx-auto lg:max-w-none lg:mx-0 lg:flex-1 lg:min-w-0 px-4 md:px-0 pt-3 md:pt-6', elegidas?.length ? 'pb-40' : 'pb-16')}>
+        <ConMenu activo={{ ver, lista: listaId }} onLista={elegirLista} onVer={cambiarVer} onOpcionesLista={l => setOpcionesLista(l)}>
+        <div className={cn('max-w-3xl mx-auto lg:max-w-none lg:mx-0 px-4 md:px-0 pt-3 md:pt-6', elegidas?.length ? 'pb-40' : 'pb-16')}>
             <h1 className="font-heading text-[28px] font-bold leading-tight text-foreground">Cancionero</h1>
             <p className="mt-0.5 text-[17px] text-muted-foreground">¿Qué tocamos hoy?</p>
 
@@ -524,6 +500,6 @@ export default function Cancionero() {
                 </div>
             </Hoja>
         </div>
-        </div>
+        </ConMenu>
     );
 }

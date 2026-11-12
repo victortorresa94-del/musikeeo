@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { ConMenu } from '../../components/cancionero/ConMenu';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -293,9 +294,10 @@ function Lector({ cancion }: { cancion: Cancion }) {
     );
 
     return (
+        <ConMenu activo={null}>
         <div className="pb-10">
             {/* Cabecera */}
-            <div className="max-w-5xl mx-auto px-4 md:px-0 pt-3 md:pt-6">
+            <div className="max-w-5xl mx-auto lg:max-w-none px-4 md:px-0 pt-3 md:pt-6">
                 <div className="flex items-center justify-between gap-3">
                     <Link to="/cancionero" className="inline-flex items-center -ml-1.5 text-[15px] text-muted-foreground active:opacity-60">
                         <ChevronLeft className="h-5 w-5" /> Cancionero
@@ -348,7 +350,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
             </div>
 
             {/* La hoja */}
-            <div className="max-w-5xl mx-auto px-4 md:px-0 mt-4">
+            <div className="max-w-5xl mx-auto lg:max-w-none px-4 md:px-0 mt-4">
                 {/* Ficha o chuleta sin letra: buscarla, copiarla y pegarla, y entra en el tono del setlist */}
                 {faltaLetra && (
                     <AnadirLetra cancion={cancion} ajustes={ajustes} onPegar={ponerLetra} />
@@ -465,6 +467,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                 duracion={duracion} cantante={<AjustesCantante cancion={cancion} ajustes={ajustes} leida={leida} />}
             />
         </div>
+        </ConMenu>
     );
 }
 

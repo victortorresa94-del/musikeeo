@@ -1,4 +1,4 @@
-import { Suspense, lazy, useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Reorder, useDragControls } from 'framer-motion';
 import { toast } from 'sonner';
@@ -19,6 +19,7 @@ import { pesoVersion, duracionDe, filtrar, mismoTitulo, mismoTonoSeguido, repart
 import type { Cancion, Repertorio as TipoRepertorio } from '../../types/cancionero';
 import { CompartirGrupo } from '../../components/cancionero/CompartirGrupo';
 import { BotonDesplegar, PanelAcordes } from '../../components/cancionero/FilaDesplegable';
+import { ConMenu } from '../../components/cancionero/ConMenu';
 import { SelectorVista, type Vista } from '../../components/cancionero/SelectorVista';
 import { CifradoEnDirecto, HojaSet, SuenaFormas } from '../../components/cancionero/VistaCifrado';
 import { useFormas } from '../../hooks/useFormas';
@@ -77,6 +78,19 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
 
     const porId = useMemo(() => new Map(canciones.map(c => [c.id, c])), [canciones]);
     const ids = repertorio.canciones.filter(c => porId.has(c));
+    // La canción del panel de la derecha (en el ordenador ancho): la que se toca en la lista, o la primera
+    const [panel, setPanel] = useState<string | null>(null);
+    // El nombre ocupa las líneas que necesita, ni una más (en el ordenador cabe en una)
+    const tituloRef = useRef<HTMLTextAreaElement>(null);
+    useLayoutEffect(() => {
+        const el = tituloRef.current;
+        if (!el) return;
+        const ajustar = () => { el.style.height = 'auto'; el.style.height = `${el.scrollHeight}px`; };
+        ajustar();
+        window.addEventListener('resize', ajustar);
+        return () => window.removeEventListener('resize', ajustar);
+    }, [nombre]);
+    const enPanel = panel && ids.includes(panel) ? panel : ids[0] ?? '';
     const temas = ids.map(id => porId.get(id)!);
     // Lo que dura: lo que se sabe de cada canción y, de las demás, una media (≈)
     const { segundos, estimada } = duracionDe(temas.filter(c => bloqueDe(c) === null || !/banquillo|bis/i.test(bloqueDe(c) ?? '')));
@@ -132,7 +146,8 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     };
 
     return (
-        <div className="max-w-3xl mx-auto px-4 md:px-0 pt-3 md:pt-6 pb-16">
+        <ConMenu activo={{ ver: 'repertorios' }}>
+        <div className="max-w-3xl mx-auto lg:max-w-none lg:mx-0 px-4 md:px-0 pt-3 md:pt-6 pb-16">
             {/* Arriba: volver, el título (se edita tocándolo) y el ⋯ con lo que no es de cada día */}
             <div className="flex items-center justify-between gap-2">
                 <Link to="/cancionero?ver=repertorios" className="inline-flex items-center -ml-1.5 text-[15px] text-muted-foreground active:opacity-60">
@@ -143,10 +158,10 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                 </button>
             </div>
             {/* Un nombre largo salta a dos líneas, nunca se corta («Cataleya · RTF Pallejà 19:00») */}
-            <textarea value={nombre} onChange={e => setNombre(e.target.value.replace(/\n/g, ' ').slice(0, 120))}
+            <textarea ref={tituloRef} value={nombre} onChange={e => setNombre(e.target.value.replace(/\n/g, ' ').slice(0, 120))}
                 onBlur={() => nombre.trim() && nombre !== repertorio.nombre && cambiar({ nombre: nombre.trim() })}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } }}
-                rows={nombre.length > 20 ? 2 : 1} aria-label="Nombre del repertorio" placeholder="Nombre del repertorio"
+                rows={1} aria-label="Nombre del repertorio" placeholder="Nombre del repertorio"
                 className="mt-1 w-full resize-none overflow-hidden bg-transparent font-heading !text-[28px] font-bold leading-tight text-foreground placeholder:text-muted-foreground focus:outline-none" />
 
             {/* Una línea con lo que hay que saber: cuándo, cuántos, cuánto y si cabe en el hueco */}
@@ -258,20 +273,22 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                 </div>
             )}
             {ids.length > 0 && vista === 'tabla' ? (
-                <div className="mt-3 xl:-mx-24 min-[1400px]:-mx-40 2xl:-mx-44">
+                <div className="mt-3">
                     <TablaCanciones canciones={temas} tonoDe={c => tonos[temas.indexOf(c)] ?? null} guardar={c => guardar(c)} onAbrir={c => navigate(`/cancionero/${c.id}`)}
                         clave="musikeeo-tabla-set" enSet todas={canciones} />
                 </div>
             ) : ids.length > 0 && vista === 'bloques' ? (
-                <div className="mt-3 xl:-mx-24 min-[1400px]:-mx-40 2xl:-mx-44">
+                <div className="mt-3">
                     <TableroBloques canciones={temas} campo={campoTablero} tonoDe={c => tonos[temas.indexOf(c)] ?? null}
                         onCampo={c => { setCampoTablero(c); try { localStorage.setItem('musikeeo-tablero-set', c); } catch { /* */ } }}
                         campos={['bloque', 'canta', 'estilos', 'tonos', 'energias', 'etiquetas']}
                         onMover={moverTema} onAbrir={c => navigate(`/cancionero/${c.id}`)} />
                 </div>
             ) : ids.length > 0 && vista === 'cifrado' ? (
-                <HojaSet temas={temasCifrado} tamano={17} formas={formas} ancho onAbrir={i => abrirDesdeCifrado(i, false)} className="mt-2 xl:-mx-24 min-[1400px]:-mx-40 2xl:-mx-44" />
+                <HojaSet temas={temasCifrado} tamano={17} formas={formas} ancho onAbrir={i => abrirDesdeCifrado(i, false)} className="mt-2" />
             ) : ids.length > 0 ? (
+                // En un ordenador ancho (≥ 1280 px), al lado de la lista va el panel de la canción elegida
+                <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(340px,420px)] xl:gap-6 xl:items-start">
                 <Reorder.Group axis="y" values={ids} onReorder={orden => guardarRepertorio({ ...repertorio, canciones: orden }, { esperar: true })}
                     className="mt-2">
                     {ids.map((id, i) => {
@@ -280,10 +297,16 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                         const nuevoBloque = bloque && (i === 0 || bloque !== bloqueDe(porId.get(ids[i - 1])!)) ? bloque : null;
                         return (
                             <Fila key={id} id={id} n={i + 1} cancion={porId.get(id)!} tono={tonos[i]} bloque={nuevoBloque} mismoTono={repetidos.has(i)}
-                                onQuitar={() => quitar(id)} onTocar={() => tocar(i)} />
+                                onQuitar={() => quitar(id)} onTocar={() => tocar(i)}
+                                elegida={enPanel === id} onElegir={() => setPanel(id)} />
                         );
                     })}
                 </Reorder.Group>
+                {porId.get(enPanel) && (
+                    <PanelCancion cancion={porId.get(enPanel)!} tono={tonos[ids.indexOf(enPanel)] ?? null}
+                        onTocar={() => tocar(Math.max(0, ids.indexOf(enPanel)))} />
+                )}
+                </div>
             ) : (
                 <p className="mt-6 rounded-2xl bg-fill px-4 py-6 text-center text-[15px] text-muted-foreground">Añade las canciones en el orden en que las vas a tocar.</p>
             )}
@@ -309,6 +332,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
             <ElegirCanciones abierto={anadir} onCerrar={() => setAnadir(false)} canciones={canciones}
                 elegidas={repertorio.canciones} onAlternar={alternar} repertorio={repertorio} />
         </div>
+        </ConMenu>
     );
 }
 
@@ -347,8 +371,9 @@ function Hueco({ minutos: hueco, segundos, estimada, onCambio }: { minutos?: num
     );
 }
 
-function Fila({ id, n, cancion, tono, bloque, mismoTono, onQuitar, onTocar }: {
+function Fila({ id, n, cancion, tono, bloque, mismoTono, onQuitar, onTocar, elegida, onElegir }: {
     id: string; n: number; cancion: Cancion; tono: string | null; bloque: string | null; mismoTono?: boolean; onQuitar: () => void; onTocar: () => void;
+    elegida?: boolean; onElegir?: () => void;
 }) {
     const arrastre = useDragControls();
     const [abierta, setAbierta] = useState(false);
@@ -371,7 +396,9 @@ function Fila({ id, n, cancion, tono, bloque, mismoTono, onQuitar, onTocar }: {
             {/* El número arranca el bolo desde este tema */}
             <button onClick={onTocar} aria-label={`Tocar desde ${cancion.titulo}`}
                 className="h-9 w-7 shrink-0 rounded-full text-[13px] font-semibold text-muted-foreground tabular-nums active:bg-fill">{n}</button>
-            <Link to={`/cancionero/${cancion.id}`} className="flex-1 min-w-0 py-2.5 flex items-center gap-3 active:opacity-60">
+            <Link to={`/cancionero/${cancion.id}`}
+                onClick={e => { if (onElegir && window.matchMedia('(min-width: 1280px)').matches) { e.preventDefault(); onElegir(); } }}
+                className={cn('flex-1 min-w-0 py-2.5 flex items-center gap-3 active:opacity-60', elegida && 'xl:rounded-xl xl:bg-fill xl:-my-px xl:px-2')}>
                 {/* En el móvil sin portada: el número ya dice cuál es y el título necesita el sitio */}
                 <span className="hidden sm:block shrink-0"><Portada src={cancion.portada} titulo={cancion.titulo} tamano="fila" /></span>
                 <span className="flex-1 min-w-0">
@@ -525,4 +552,31 @@ function fechaCorta(f: string): string {
     if (!a) return '';
     const t = new Date(a, m - 1, d).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' });
     return t.charAt(0).toUpperCase() + t.slice(1);
+}
+
+// En el ordenador ancho: la canción elegida en la lista, con su ficha y su cifrado, sin cambiar de página
+function PanelCancion({ cancion, tono, onTocar }: { cancion: Cancion; tono: string | null; onTocar: () => void }) {
+    const etiquetas = etiquetasTema(cancion);
+    return (
+        <aside aria-label={`${cancion.titulo}: ficha y acordes`} className="hidden xl:block sticky top-20 mt-2 max-h-[calc(100vh-6rem)] overflow-y-auto rounded-[22px] bg-fill border border-hairline">
+            <div className="px-4 pt-4">
+                <p className="font-heading text-[20px] font-bold leading-snug text-foreground">{cancion.titulo}</p>
+                <p className="text-[14px] text-muted-foreground">{[cancion.artista, tono && `Tono ${tono}`, cancion.duracion && minutos(cancion.duracion), cancion.bpm && `${cancion.bpm} bpm`].filter(Boolean).join(' · ')}</p>
+                {etiquetas.length > 0 && (
+                    <div className="mt-2 flex flex-wrap gap-1">
+                        {etiquetas.map(e => (
+                            <span key={e.texto} className={cn('h-6 px-2.5 rounded-full text-[12.5px] font-semibold flex items-center',
+                                e.pastel ? cn(e.pastel.fondo, e.pastel.tinta) : 'bg-fill-strong text-muted-foreground')}>{e.texto}</span>
+                        ))}
+                    </div>
+                )}
+                <div className="mt-3 flex gap-2">
+                    <button onClick={onTocar} className="pulsable h-9 px-4 rounded-full bg-primary text-primary-foreground text-[14px] font-semibold flex items-center gap-1.5">
+                        <Play className="h-4 w-4" /> Tocar desde aquí
+                    </button>
+                </div>
+            </div>
+            <PanelAcordes cancion={cancion} />
+        </aside>
+    );
 }
