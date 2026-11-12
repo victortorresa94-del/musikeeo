@@ -420,6 +420,24 @@ function leerCancionSinRecordar(texto: string): CancionLeida {
             continue;
         }
 
+        // Varias partes en una línea, separadas por «·»: «Puente Bb – A7 · Solo D#m – C# – B – A#».
+        // Cada trozo que empieza por una parte va como parte; lo que no, apunte de la de antes
+        const trozos = l.trim().split(/\s+[·•]\s+/);
+        if (trozos.length > 1) {
+            const leidas = trozos.map(t => leerLineaAcordes(t));
+            if (leidas[0]?.etiqueta && leidas.slice(1).some(x => x?.etiqueta)) {
+                trozos.forEach((t, k) => {
+                    const x = leidas[k];
+                    if (x?.etiqueta) meter({ tipo: 'acordes', etiqueta: x.etiqueta, marcas: x.marcas.map(m => m.marca) });
+                    else {
+                        const ultima = lineas[lineas.length - 1];
+                        if (ultima?.tipo === 'acordes') ultima.coletilla = ultima.coletilla ? `${ultima.coletilla} · ${t}` : t;
+                    }
+                });
+                continue;
+            }
+        }
+
         // Una parte con su coletilla: «Estribillo: F – C – D – G ("Dulce como el vino")» o
         // «Intro G – C – D – G · Final abierto». Los acordes, como parte; lo de detrás, apunte
         const cola = /^(.*?\S)\s*(\([^()]*\)|[·•]\s*\S.*)$/.exec(l.trim());

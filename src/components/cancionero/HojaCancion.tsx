@@ -96,7 +96,7 @@ function LineaCancion({ linea: l, opciones, estilo }: { linea: Linea; opciones: 
                     </p>
                 );
             }
-            return <p className="pb-[0.3em] text-[0.68em] leading-snug italic text-muted-foreground">{l.texto}</p>;
+            return <p className="pb-[0.3em] text-[min(0.68em,17px)] leading-snug italic text-muted-foreground">{l.texto}</p>;
         case 'letra':
             return <p data-linea="" className="whitespace-pre-wrap leading-[1.4]">{conFormato(l.texto.trimStart(), { negrita: false, resaltado: false })}</p>;
         case 'tab':
@@ -106,7 +106,7 @@ function LineaCancion({ linea: l, opciones, estilo }: { linea: Linea; opciones: 
                 <p className="flex flex-wrap items-baseline gap-x-[0.9em] pb-[0.15em] leading-[1.4]">
                     {l.etiqueta && <span className="text-[0.8em] font-semibold text-muted-foreground">{l.etiqueta}</span>}
                     {l.marcas.map((m, k) => <NombreMarca key={k} marca={m} opciones={opciones} />)}
-                    {l.coletilla && <span className="text-[0.68em] italic text-muted-foreground">{l.coletilla}</span>}
+                    {l.coletilla && <span className="text-[min(0.68em,17px)] italic text-muted-foreground">{l.coletilla}</span>}
                 </p>
             );
         case 'mixta': {
