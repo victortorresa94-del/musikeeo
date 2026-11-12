@@ -39,7 +39,7 @@ Las sesiones deciden con criterio; él no contesta hasta mañana. Cada cosa se p
    1. `Lady-Jarana-Palleja-12h30.json`;
    2. `Cataleya-Palleja-19h00.json`;
    3. `actualizar-tonos.json`;
-   4. si quieres, `Notion-1-completar-tus-canciones.json` (⚠️ todavía no: a las 00:55 sustituía chuletas enteras por una línea de Notion; lo está arreglando la sesión 2 y esta línea se quita cuando esté probado).
+   4. si quieres, `Notion-1-completar-tus-canciones.json`: suma las etiquetas de tu Notion (Reper, Víctor Luna, Tardeo, Samantha…) y añade su «Rueda» al final, sin borrar nada. Probado en producción a las 01:00 después de los otros tres: «134 actualizadas», tus tonos intactos y nada duplicado.
 4. Abre el repertorio, revisa el orden y los tonos en **Cifrado**, y mira el aviso del hueco (Lady Jarana suma 64 de 60 min).
 5. **Compartir con el grupo** → manda el enlace (por defecto sin letra). Pide a cada músico que lo **abra una vez con cobertura**: luego le funciona sin red, también si lo vuelve a abrir desde WhatsApp. Probado en producción el 12-nov a las 00:50 con los dos sets.
 6. Antes del bolo, abre el repertorio una vez con cobertura: después funciona sin red.
