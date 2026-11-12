@@ -59,14 +59,23 @@ export function soloCifrado(texto: string): string {
         filas = [];
     };
     const fila = (l: Linea): string | null => {
-        if (l.tipo === 'acordes') return [l.etiqueta, ...l.marcas.map(m => m.texto)].filter(Boolean).join('  ');
+        if (l.tipo === 'acordes') {
+            // «Parte:» con dos puntos, para que al volver a leerla sea una parte (también «Rueda:»)
+            const base = [l.etiqueta && `${l.etiqueta}:`, ...l.marcas.map(m => m.texto)].filter(Boolean).join('  ');
+            // La coletilla («(arranca en G)», «· Final abierto») va detrás, pequeña: al músico le sirve
+            if (!l.coletilla) return base;
+            return `${base}  ${l.coletilla.startsWith('(') ? l.coletilla : `· ${l.coletilla}`}`;
+        }
         if (l.tipo === 'mixta') return l.trozos.flatMap(t => (t.marca ? [t.marca.texto] : [])).join('  ');
         return null;
     };
+    const chuleta = leida.lineas.filter(l => l.tipo === 'letra').length < 8;
     for (const l of leida.lineas) {
         const f = fila(l);
         if (f !== null) { if (f.trim()) filas.push(f); continue; }
-        if (l.tipo === 'letra') continue;   // la letra no va (y no corta el dibujo)
+        // La letra no va (y no corta el dibujo). En una chuleta (casi sin letra) esas líneas son
+        // indicaciones («Enganchada con Carnaval», «Con capo 2 formas de Am: …»): van como apunte
+        if (l.tipo === 'letra') { if (chuleta) { cerrar(); salida.push(`{c: ${l.texto.trim()}}`); } continue; }
         if (l.tipo === 'vacia' && filas.length) continue;   // entre estrofas iguales tampoco
         cerrar();
         if (l.tipo === 'seccion') salida.push(`[${l.texto}]`);
@@ -78,18 +87,9 @@ export function soloCifrado(texto: string): string {
     return salida.join('\n').trim();
 }
 
-// Los apuntes de Víctor («Fuente:», «Otras versiones:», «Revisar tono»…) no van al grupo; la
-// «Rueda: …» sí, como una parte más con sus acordes en grande
-export const sinApuntes = (texto: string) => texto
-    .split('\n')
-    .flatMap(l => {
-        if (!esApunte(l)) return [l];
-        const rueda = /^\s*rueda\s*:?\s*(.*)$/i.exec(l);
-        // «G/G7» es «G y luego G7» (no un bajo): se escribe con guion para que se lea como acordes
-        const prog = rueda?.[1].trim().replace(/\/(?=[A-G][#b]?(?:m|maj|dim|aug|sus|add|\d))/g, ' - ');
-        return prog ? ['[Rueda]', prog] : [];
-    })
-    .join('\n');
+// Los apuntes de Víctor («Fuente:», «Otras versiones:», «Revisar tono»…) no van al grupo
+// (la misma regla con la que el lector los pone en gris)
+export const sinApuntes = (texto: string) => texto.split('\n').filter(l => !esApunte(l)).join('\n');
 
 // Lo que está escrito con «Capo 2» o {capo: 2}: se quita del texto (ya va en «s»)
 const sinCejillaEscrita = (texto: string) => texto
