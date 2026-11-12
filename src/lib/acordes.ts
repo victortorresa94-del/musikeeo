@@ -134,6 +134,7 @@ function marca(token: string): Marca | null {
 // Formato ligero escrito a mano en la letra: «# Título» (un título suyo, como una sección)
 // y «> Entra la batería» (un aviso). Negrita **así** y resaltado ==así== van dentro de la línea
 const RE_TITULO = /^#{1,3}\s+(\S.{0,58})$/;
+const RE_APUNTE = /^(fuente|otras versiones|revisar tono|corregido|tono sin verificar|acordes por verificar|confirmar|rueda)\b/i;
 export const RE_AVISO = /^>\s*(\S.*)$/;
 
 export function esSeccion(linea: string): string | null {
@@ -378,6 +379,10 @@ function leerCancionSinRecordar(texto: string): CancionLeida {
 
         const aviso = RE_AVISO.exec(l.trim());
         if (aviso && !acordesEn(i)) { meter({ tipo: 'nota', texto: aviso[1], aviso: true }); continue; }
+
+        // Apuntes para uno mismo («Fuente: …», «Otras versiones: …», «Tono sin verificar»): pequeños y
+        // en gris, no en letra de cantar. El texto guardado no cambia
+        if (RE_APUNTE.test(l.trim()) && !acordesEn(i)) { meter({ tipo: 'nota', texto: l.trim() }); continue; }
 
         // «Cejilla 2» va a los controles, no al texto (si no, se contradice al cambiarla)
         const capo = RE_CEJILLA.exec(l.trim());

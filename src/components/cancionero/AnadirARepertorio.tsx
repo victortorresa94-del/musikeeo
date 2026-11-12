@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { antesQue } from '../../lib/bolos';
 import { toast } from 'sonner';
 import { ChevronRight, Plus } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -24,7 +25,7 @@ export function AnadirARepertorio({ abierta, onCerrar, ids, onHecho }: {
     const hoy = new Date().toLocaleDateString('sv-SE');
     // Primero los bolos que vienen (el más cercano arriba) y luego los pasados
     const lista = useMemo(() => {
-        const futuros = repertorios.filter(r => r.fecha >= hoy).sort((a, b) => a.fecha.localeCompare(b.fecha));
+        const futuros = repertorios.filter(r => r.fecha >= hoy).sort(antesQue);
         const pasados = repertorios.filter(r => r.fecha < hoy).sort((a, b) => b.fecha.localeCompare(a.fecha));
         return [...futuros, ...pasados];
     }, [repertorios, hoy]);

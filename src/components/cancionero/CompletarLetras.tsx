@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { toast } from 'sonner';
+import { antesQue } from '../../lib/bolos';
 import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { leerCancion, lineasDeLetra } from '../../lib/acordes';
 import { useCancionero } from '../../hooks/useCancionero';
@@ -26,7 +27,7 @@ export function CompletarLetras({ abierta, onCerrar, repertorioId }: { abierta: 
             const hoy = new Date().toLocaleDateString('sv-SE');
             const bolos = repertorioId
                 ? repertorios.filter(r => r.id === repertorioId)
-                : repertorios.filter(r => r.fecha >= hoy).sort((a, b) => a.fecha.localeCompare(b.fecha));
+                : repertorios.filter(r => r.fecha >= hoy).sort(antesQue);
             const primero = bolos.flatMap(r => r.canciones);
             const faltan = canciones.filter(c => sinLetra(c));
             const orden = [...new Set([...primero.filter(id => faltan.some(c => c.id === id)), ...faltan.map(c => c.id)])];

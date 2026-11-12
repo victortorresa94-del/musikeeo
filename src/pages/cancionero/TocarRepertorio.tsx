@@ -61,7 +61,7 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
     const [auto, setAuto] = useState(() => { try { return localStorage.getItem(CLAVE_AUTO) === '1'; } catch { return false; } });
     const alternarAuto = () => setAuto(a => {
         try { localStorage.setItem(CLAVE_AUTO, a ? '0' : '1'); } catch { /* sin almacenamiento */ }
-        toast(a ? 'Modo auto apagado' : 'Modo auto: dale a ▶ y la hoja baja sola al ritmo de cada canción', { id: 'auto', duration: 2500 });
+        toast(a ? 'Modo auto apagado: «Bajar sola» va a velocidad fija' : 'Modo auto: el botón amarillo baja la hoja al ritmo de cada canción', { id: 'auto', duration: 2500 });
         return !a;
     });
     // Línea a línea (teleprompter): la línea que toca, en negrita; se corrige tocándola o con el pedal
@@ -251,13 +251,12 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
                         <span className="truncate"><span className="tabular-nums">{actual + 1} de {canciones.length}</span> · {nombre}</span>
                         <ChevronDown className={cn('h-4 w-4 shrink-0 text-muted-foreground transition-transform', indice && 'rotate-180')} />
                     </button>
-                    <BotonBarra etiqueta={auto ? 'Apagar el modo auto' : 'Modo auto: la hoja baja sola'} activo={auto} onClick={alternarAuto}>Auto</BotonBarra>
                     <BotonBarra etiqueta="Lista de canciones" activo={indice} onClick={() => setIndice(v => !v)}><ListMusic className="h-[18px] w-[18px]" /></BotonBarra>
                 </div>
             </div>
 
             {/* Abajo: tono, tamaño, que quepa y desplazar; y «Dame el tono», la cuenta, anterior y siguiente */}
-            <ControlesCancion cancion={cancion} visibles={controles} rodando={rodando} auto={auto} versos={versos} linea={linea} onLinea={alternarLinea}
+            <ControlesCancion cancion={cancion} visibles={controles} rodando={rodando} auto={auto} versos={versos} linea={linea} onLinea={alternarLinea} onAuto={alternarAuto}
                 onRodar={() => setRodando(r => !r)} cambiar={cambio => cambiar(cancion, cambio)}
                 onAnterior={actual > 0 ? () => ir(actual - 1) : undefined}
                 onSiguiente={actual < canciones.length - 1 ? () => ir(actual + 1) : undefined} />
@@ -281,8 +280,8 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
     );
 }
 
-function ControlesCancion({ cancion, visibles, rodando, auto, versos, linea, onLinea, onRodar, cambiar, onAnterior, onSiguiente }: {
-    cancion: Cancion; visibles: boolean; rodando: boolean; auto: boolean; versos: number; linea: boolean; onLinea: () => void; onRodar: () => void;
+function ControlesCancion({ cancion, visibles, rodando, auto, versos, linea, onLinea, onAuto, onRodar, cambiar, onAnterior, onSiguiente }: {
+    cancion: Cancion; visibles: boolean; rodando: boolean; auto: boolean; versos: number; linea: boolean; onLinea: () => void; onAuto: () => void; onRodar: () => void;
     cambiar: (c: Partial<AjustesCancion>) => void; onAnterior?: () => void; onSiguiente?: () => void;
 }) {
     const { leida, tonoSuena, sinAcordes } = useMusicaCancion(cancion.texto, cancion.ajustes);
@@ -321,6 +320,13 @@ function ControlesCancion({ cancion, visibles, rodando, auto, versos, linea, onL
             <Hoja abierta={mas} onCerrar={() => setMas(false)} titulo={cancion.titulo}
                 derecha={<BotonHoja fuerte onClick={() => setMas(false)}>Listo</BotonHoja>}>
                 <div className="px-4 pb-5 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                        <span className="min-w-0">
+                            <span className="block text-[15px] text-foreground">Auto: al ritmo de cada canción</span>
+                            <span className="block text-[13px] text-muted-foreground">Con él, el botón amarillo baja la hoja en lo que dura la canción</span>
+                        </span>
+                        <BotonBarra etiqueta={auto ? 'Apagar el modo auto' : 'Modo auto: la hoja baja sola'} activo={auto} onClick={onAuto}>Auto</BotonBarra>
+                    </div>
                     <div className="flex items-center justify-between gap-3">
                         <span className="min-w-0">
                             <span className="block text-[15px] text-foreground">Línea a línea</span>

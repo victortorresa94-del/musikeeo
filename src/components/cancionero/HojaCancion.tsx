@@ -96,7 +96,7 @@ function LineaCancion({ linea: l, opciones, estilo }: { linea: Linea; opciones: 
                     </p>
                 );
             }
-            return <p className="pb-[0.2em] text-[0.85em] italic text-muted-foreground">{l.texto}</p>;
+            return <p className="pb-[0.3em] text-[0.68em] leading-snug italic text-muted-foreground">{l.texto}</p>;
         case 'letra':
             return <p data-linea="" className="whitespace-pre-wrap leading-[1.4]">{conFormato(l.texto.trimStart(), { negrita: false, resaltado: false })}</p>;
         case 'tab':

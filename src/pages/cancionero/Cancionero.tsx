@@ -1,5 +1,6 @@
 import { toast } from 'sonner';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { antesQue } from '../../lib/bolos';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckSquare, ChevronRight, Cloud, Download, FileText, FileUp, Loader2, MoreHorizontal, Plus, Search, Smartphone, X } from 'lucide-react';
 import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
@@ -108,8 +109,8 @@ export default function Cancionero() {
     const hoy = new Date().toLocaleDateString('sv-SE');
     const proximo = useMemo(() => {
         const con = repertorios.filter(r => r.canciones.length && r.fecha);
-        return con.filter(r => r.fecha >= hoy).sort((a, b) => a.fecha.localeCompare(b.fecha))[0]
-            ?? [...con].sort((a, b) => b.fecha.localeCompare(a.fecha))[0];
+        return con.filter(r => r.fecha >= hoy).sort(antesQue)[0]
+            ?? [...con].sort((a, b) => antesQue(b, a))[0];
     }, [repertorios, hoy]);
     const [verArchivados, setVerArchivados] = useState(false);
     const reps = useMemo(() => [...repertorios].sort((a, b) => b.fecha.localeCompare(a.fecha) || b.actualizadaEn.localeCompare(a.actualizadaEn)), [repertorios]);
