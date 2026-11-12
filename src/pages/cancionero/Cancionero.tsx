@@ -16,6 +16,7 @@ import { ResultadosCatalogo } from '../../components/cancionero/ResultadosCatalo
 import { norm, pedirPantallaCompleta, tonoDe } from '../../components/cancionero/utilidades';
 import type { Cancion } from '../../types/cancionero';
 import { FilaCancion } from '../../components/cancionero/FilaCancion';
+import { FilaConAcordes } from '../../components/cancionero/FilaDesplegable';
 import { SelectorVista } from '../../components/cancionero/SelectorVista';
 import { CifradoEnDirecto, HojaSet } from '../../components/cancionero/VistaCifrado';
 import { TableroBloques } from '../../components/cancionero/TableroBloques';
@@ -117,10 +118,13 @@ export default function Cancionero() {
 
     const filas = (l: Cancion[]) => (
         <div className="rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
-            {l.map(c => (
+            {l.map(c => (elegidas ? (
                 <FilaCancion key={c.id} cancion={c} tono={tonos.get(c.id) ?? null}
-                    elegida={elegidas?.includes(c.id)} onElegir={elegidas ? () => alternarElegida(c.id) : undefined} />
-            ))}
+                    elegida={elegidas.includes(c.id)} onElegir={() => alternarElegida(c.id)} />
+            ) : (
+                // Se despliega para ver sus acordes y notas sin salir de la lista
+                <FilaConAcordes key={c.id} cancion={c} fila={() => <FilaCancion cancion={c} tono={tonos.get(c.id) ?? null} derecha={<></>} />} />
+            )))}
         </div>
     );
     const nuevoRepertorio = () => {

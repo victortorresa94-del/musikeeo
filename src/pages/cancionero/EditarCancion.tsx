@@ -11,6 +11,7 @@ import { HojaCancion } from '../../components/cancionero/HojaCancion';
 import { Segmentado } from '../../components/cancionero/Controles';
 import { AcordesRapidos } from '../../components/cancionero/AcordesRapidos';
 import { EditorFicha } from '../../components/cancionero/EditorFicha';
+import { textoPegado } from '../../lib/pegado';
 import { FormatoLetra } from '../../components/cancionero/FormatoLetra';
 
 // El editor de notas (Tiptap) va en su trozo: solo se baja al editar
@@ -227,7 +228,7 @@ function Formulario({ existente }: { existente?: Cancion }) {
                         onPaste={e => {
                             if (texto.trim()) return;
                             e.preventDefault();
-                            meter(e.clipboardData.getData('text/plain'));
+                            meter(textoPegado(e.clipboardData));
                         }}
                         placeholder={EJEMPLO}
                         wrap="off"

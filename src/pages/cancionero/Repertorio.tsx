@@ -18,6 +18,7 @@ import { minutos } from '../../lib/cantar';
 import { duracionDe, filtrar, mismoTitulo, mismoTonoSeguido, reparto, textoDuracion, tonoMostrado } from '../../lib/biblioteca';
 import type { Cancion, Repertorio as TipoRepertorio } from '../../types/cancionero';
 import { CompartirGrupo } from '../../components/cancionero/CompartirGrupo';
+import { BotonDesplegar, PanelAcordes } from '../../components/cancionero/FilaDesplegable';
 import { SelectorVista, type Vista } from '../../components/cancionero/SelectorVista';
 import { CifradoEnDirecto, HojaSet } from '../../components/cancionero/VistaCifrado';
 import { TableroBloques } from '../../components/cancionero/TableroBloques';
@@ -277,6 +278,7 @@ function Fila({ id, n, cancion, tono, bloque, mismoTono, onQuitar, onTocar }: {
     id: string; n: number; cancion: Cancion; tono: string | null; bloque: string | null; mismoTono?: boolean; onQuitar: () => void; onTocar: () => void;
 }) {
     const arrastre = useDragControls();
+    const [abierta, setAbierta] = useState(false);
     const etiquetas = etiquetasTema(cancion);
     const estilo = bloque ? estiloBloque(bloque) : null;
     return (
@@ -317,10 +319,12 @@ function Fila({ id, n, cancion, tono, bloque, mismoTono, onQuitar, onTocar }: {
                     className={cn('shrink-0 min-w-[36px] h-7 px-2.5 rounded-full text-[13px] font-bold flex items-center justify-center',
                         mismoTono ? cn(PASTEL.melocoton.fondo, PASTEL.melocoton.tinta) : 'bg-fill-strong text-foreground')}>{tono}</span>
             )}
+            <BotonDesplegar abierta={abierta} onClick={() => setAbierta(a => !a)} titulo={cancion.titulo} />
             <button onClick={onQuitar} aria-label={`Quitar ${cancion.titulo}`} className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-muted-foreground active:bg-fill">
                 <X className="h-4 w-4" />
             </button>
             </div>
+            {abierta && <div className="border-b border-hairline"><PanelAcordes cancion={cancion} /></div>}
         </Reorder.Item>
     );
 }

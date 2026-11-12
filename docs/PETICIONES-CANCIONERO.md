@@ -177,14 +177,22 @@ Plan, ordenado por momentos del músico:
 
 Antes de construir se sueñan 3 conceptos en Aura Studio para que elija. Gasto aprobado: *«sí, o más, las que hagan falta»*.
 
-## 15. Editor rico «con la potencia de Aura notas» 🔧 (sesión 2)
+## 15. Editor rico «con la potencia de Aura notas» ✅ (sesión 2, en main)
 
 *«NO PUEDO EDITAR esto, debería poder cambiarlo a mi gusto, poner negritas, títulos… ponle la potencia de Aura notas, te paso el repo.»*
 
 - Se trae de `victortorresa94-del/aura-project-2` (Tiptap: `src/components/notes/BlockEditor.tsx`, `MobileFormatToolbar`, `SlashCommand`, `Callout`).
 - Va en la canción y en una «hoja del bolo» de cada repertorio.
 
-## 16. Vista con todo el set y los acordes debajo, y tipos de vista 🔧 (sesión 2, HOY)
+
+**Estado (12-nov):**
+- ✅ **Formato en la letra:** botones Negrita, Resaltar, Título y Aviso encima del texto. Escriben `**así**`, `==así==`, `# Título` y `> Aviso`, y el motor de acordes los respeta. El tono, la cejilla, «que quepa», Tocar y el modo sin red siguen igual.
+- ✅ **Notas de la canción y Hoja del bolo:** editor Tiptap 3 con títulos, negrita, cursiva, subrayado, tachado, colores de fondo y de texto, listas, casillas, avisos en baldosa, enlaces y deshacer. Con «/» sale el menú de bloques. En el móvil, la barra va encima del teclado.
+- ✅ **Dónde salen las notas:** en el lector, el escenario, Tocar y el enlace del grupo. Se pintan sin cargar el editor.
+- ⚠️ **Aura:** no se pudo añadir el repo de Aura a la sesión (permiso denegado). El editor está hecho desde cero sobre la misma base (Tiptap 3).
+- 👤 **Reglas:** Víctor tiene que desplegarlas (campo `notas`) para que se suba a la cuenta.
+
+## 16. Vista con todo el set y los acordes debajo, y tipos de vista ✅ (sesión 2, en main)
 
 *«Quiero poder tener una vista donde vea todas las canciones en orden y con sus acordes debajo, como una forma de ver el
 reper entero para el en vivo, porque en verdad es la que yo uso más, para no tener que entrar en cada canción y solo
@@ -199,7 +207,16 @@ En el repertorio:
 
 En Canciones: también vistas Lista y Cifrado.
 
-## 17. Compartir el repertorio con los músicos 🔧 (sesión 2)
+
+**Estado (12-nov):**
+- ✅ **Selector «Lista · Cifrado · Bloques»** en el repertorio (`?vista=`) y en Canciones.
+- ✅ **Cifrado:** el set seguido con tono grande, ficha, notas, partes y avisos, sin letra. Los dibujos de acordes repetidos salen una vez con «(xN)». Tocar un título abre la canción, y al volver la hoja sigue donde estaba.
+- ✅ **«En directo»:** pantalla completa, oscuro, Auto con velocidad, tamaño, pedal y pantalla encendida.
+- ✅ **Hueco del bolo** (`repertorio.hueco`): «Te pasas 4 min», «Te sobran X» o «Clavado al hueco».
+- ✅ **«Compartir con el grupo» y «Hoja del bolo»** en el repertorio.
+- ✅ **Lista desplegable:** cada fila (del repertorio y de Canciones) se despliega para ver sus acordes y notas sin salir.
+
+## 17. Compartir el repertorio con los músicos ✅ (sesión 2, en main)
 
 *«Ya quedaría muy pro enviárselo a los músicos así… si se lo mando a los músicos en un link, sería la polla, desde
 donde tengan la partitura, toda la canción, etc.»* (primero que él corrija tonos y orden)
@@ -208,6 +225,12 @@ donde tengan la partitura, toda la canción, etc.»* (primero que él corrija to
 
 - Enlace que se abre sin cuenta y en solo lectura, con cifrado sin letra por defecto.
 - Tiene que funcionar aunque no estén desplegadas las reglas: datos en el fragmento # o documento público con `get` público y `list` solo del dueño.
+
+
+**Estado (12-nov):**
+- ✅ **El enlace:** `/grupo#…` lleva el set comprimido tras «#», así que no pasa por el servidor. Funciona sin reglas y, una vez abierto, sin red. Cifrado por defecto; con letra solo si se elige.
+- ✅ **Página del músico:** oscura, con Lista o Cifrado. El escenario se pasa deslizando, con tono ± y tamaño ±, pedal y diagramas.
+- ⏳ **Enlace corto que se actualice solo** (documento público con `get` público): queda para cuando estén las reglas. Hoy, si cambia el set, se reenvía el enlace.
 
 ## 18. Letra y acordes de todas las canciones, como en LaCuerda 🔧 (sesión 1)
 
@@ -255,14 +278,22 @@ Antes de diseñarlo hace falta el informe legal:
 - el art. 17 de la Directiva 2019/790;
 - publicar solo acordes frente a letra completa.
 
-## 20. Diagramas de acordes 🔧 (sesión 2)
+## 20. Diagramas de acordes ✅ (sesión 2, en main)
 
 *«Deberíamos tener esa capacidad de poner el acorde y poder verlo.»* (captura de una web con el diagrama de «A» y el botón «Cambiar»)
 
 - Al tocar un acorde sale su diagrama de guitarra en SVG, con «Cambiar» para otras posiciones.
 - Respeta tono y cejilla, funciona sin red y aparece también en el enlace para los músicos.
 
-## 21. Organizar por bloques, como en Notion y en las tareas de Aura 🔧 (sesión 2 + chat principal)
+
+**Estado (12-nov):**
+- ✅ **El motor** (`lib/diagramas.ts`): calcula las posturas con una tabla propia y las de siempre van primero.
+- ✅ **El dibujo:** SVG con dedos, cejilla, × y ○.
+- ✅ **Tocar un acorde** en cualquier hoja abre su diagrama con «Cambiar». Respeta el tono y la cejilla, y funciona sin red y en el enlace del grupo.
+- ✅ **«Ver acordes»** en la canción: todos en fila.
+- ⏳ **Ukelele y piano:** solo hay guitarra.
+
+## 21. Organizar por bloques, como en Notion y en las tareas de Aura ✅ vista y campos / ⏳ importar Notion (chat principal)
 
 *«Al igual que hacía en Notion, quiero poder organizar por bloques, como hago en Aura con mis tareas, y así poder
 organizar según las categorizaciones como "flamencas, rockeras", o por grupo, por cantante, por las que están en el mismo tono…»*
@@ -280,6 +311,17 @@ Campos nuevos en la ficha:
 - Campos: Apto para, Recurrencia, Tanda, Ensayar, Mood, Lo canta, Tono, Inicia en, Capo, Rueda, Letra y Comentarios.
 - Sus páginas tienen enlaces de LaCuerda.
 - Cuando estén los dos campos, el chat principal prepara una importación desde Notion con etiquetas y enlaces.
+
+
+**Estado (12-nov):**
+- ✅ **Vista Bloques** en Canciones y en el repertorio:
+  - Columnas por Estilo, Grupo, Canta, Tono, Energía, Estado o Etiquetas; en el set, también por bloque.
+  - Cada columna lleva su cuenta y su duración.
+  - Arrastrar por el asa (también con el dedo) cambia el dato de la ficha, con Deshacer.
+  - «Añadir aquí» crea una canción con ese dato ya puesto.
+- ✅ **`ficha.etiquetas` y `ficha.enlace`:** en el editor de la ficha, el lector, los filtros y agrupar (`biblioteca.ts`) y las reglas.
+- ✅ **Importar:** las etiquetas se suman a las que ya había. También valen las directivas `{etiquetas:}`, `{apto para:}` y `{enlace:}`.
+- ⏳ **La importación de Notion:** la prepara el chat principal.
 
 ## 21b. Vista Tabla, versiones favoritas y las dos vistas de la cejilla 🔧 (sesión 2, 12-nov)
 

@@ -15,7 +15,7 @@ import { estiloBloque, sinLoDeLasPildoras } from './estilo';
 // debajo sus acordes por partes y sus avisos (sin letra). Para tocar en directo sin entrar en
 // cada canción. La misma hoja sale en el repertorio, en la biblioteca y en el enlace del grupo
 
-const Tema = memo(function Tema({ tema, n, tamano, onAbrir }: { tema: TemaCompartido; n: number; tamano: number; onAbrir?: () => void }) {
+export const TemaCifrado = memo(function Tema({ tema, n, tamano, onAbrir, sinBorde, sinCabecera }: { tema: TemaCompartido; n: number; tamano: number; onAbrir?: () => void; sinBorde?: boolean; sinCabecera?: boolean }) {
     const leida = useMemo(() => leerCancion(tema.x), [tema.x]);
     const lineas = useMemo(() => sinLoDeLasPildoras(leida.lineas, tema.g ?? null), [leida.lineas, tema.g]);
     const opciones: OpcionesNombre = useMemo(() => {
@@ -29,8 +29,8 @@ const Tema = memo(function Tema({ tema, n, tamano, onAbrir }: { tema: TemaCompar
         </>
     );
     return (
-        <article className="py-4 border-b border-hairline break-inside-avoid" aria-label={`${n}. ${tema.t}`}>
-            <div className="flex items-start gap-3">
+        <article className={cn('break-inside-avoid', sinBorde ? '' : 'py-4 border-b border-hairline')} aria-label={`${n}. ${tema.t}`}>
+            {!sinCabecera && <div className="flex items-start gap-3">
                 <div className="flex-1 min-w-0">
                     {onAbrir
                         ? <button onClick={onAbrir} className="text-left font-heading text-[1.25em] font-bold leading-tight text-foreground active:opacity-60">{titulo}</button>
@@ -38,8 +38,8 @@ const Tema = memo(function Tema({ tema, n, tamano, onAbrir }: { tema: TemaCompar
                     {(tema.v || tema.a) && <p className="text-[0.75em] text-muted-foreground truncate">{[tema.v && `Versión ${tema.v}`, tema.a].filter(Boolean).join(' · ')}</p>}
                 </div>
                 {tema.k && <span className="shrink-0 min-w-[2.6em] h-[1.9em] px-[0.6em] rounded-full bg-foreground text-background text-[1.05em] font-bold flex items-center justify-center">{tema.k}</span>}
-            </div>
-            {datosTema(tema).length > 0 && (
+            </div>}
+            {!sinCabecera && datosTema(tema).length > 0 && (
                 <div className="mt-[0.4em] flex flex-wrap gap-1">
                     {datosTema(tema).map(p => <span key={p.texto} className={cn('h-[1.6em] px-[0.6em] rounded-full text-[0.7em] font-semibold flex items-center', p.clase)}>{p.texto}</span>)}
                 </div>
@@ -70,7 +70,7 @@ export function HojaSet({ temas, tamano = 17, onAbrir, className }: {
                                 <img src={estilo.icono} alt="" aria-hidden className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-[52px] w-[72px] object-contain" />
                             </div>
                         )}
-                        <Tema tema={t} n={i + 1} tamano={tamano} onAbrir={onAbrir ? () => onAbrir(i) : undefined} />
+                        <TemaCifrado tema={t} n={i + 1} tamano={tamano} onAbrir={onAbrir ? () => onAbrir(i) : undefined} />
                     </div>
                 );
             })}
