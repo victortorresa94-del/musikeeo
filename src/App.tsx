@@ -58,6 +58,7 @@ const LegalNotice = lazy(() => import('./pages/legal/LegalNotice'));
 const PrivacyPolicy = lazy(() => import('./pages/legal/PrivacyPolicy'));
 const TermsOfService = lazy(() => import('./pages/legal/TermsOfService'));
 const CookiePolicy = lazy(() => import('./pages/legal/CookiePolicy'));
+const AvisosDerechos = lazy(() => import('./pages/legal/AvisosDerechos'));
 
 const CookieBanner = lazy(() => import('./components/CookieBanner'));
 const VisorDiagramas = lazy(() => import('./components/cancionero/VisorDiagramas'));
@@ -206,6 +207,7 @@ function App() {
               <Route path="/privacidad" element={<PrivacyPolicy />} />
               <Route path="/terminos" element={<TermsOfService />} />
               <Route path="/cookies" element={<CookiePolicy />} />
+              <Route path="/avisos-derechos" element={<AvisosDerechos />} />
 
 
               <Route element={<RequireAnon />}>

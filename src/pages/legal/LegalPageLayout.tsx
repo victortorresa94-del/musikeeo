@@ -38,6 +38,7 @@ export default function LegalPageLayout({ title, updatedAt, children }: Props) {
                         <Link to="/privacidad" className="hover:text-primary-ink transition-colors">Privacidad</Link>
                         <Link to="/cookies" className="hover:text-primary-ink transition-colors">Cookies</Link>
                         <Link to="/terminos" className="hover:text-primary-ink transition-colors">Términos</Link>
+                        <Link to="/avisos-derechos" className="hover:text-primary-ink transition-colors">Avisos de derechos</Link>
                     </div>
                 </footer>
             </main>

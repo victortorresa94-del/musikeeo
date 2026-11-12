@@ -54,6 +54,11 @@ export function CompartirGrupo({ abierta, onCerrar, repertorio, canciones }: {
                     ))}
                 </div>
 
+                {conLetra && (
+                    <p className="mt-2 rounded-xl bg-pastel-mantequilla px-3 py-2 text-[13.5px] font-semibold text-pastel-mantequilla-ink">
+                        Solo para tu grupo; no lo publiques.
+                    </p>
+                )}
                 <div className="mt-4 grid grid-cols-2 gap-2">
                     <button onClick={() => void enviar()} disabled={demasiado}
                         className="pulsable h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] flex items-center justify-center gap-2 disabled:opacity-40">

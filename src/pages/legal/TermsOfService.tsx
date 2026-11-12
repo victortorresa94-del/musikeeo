@@ -2,7 +2,7 @@ import LegalPageLayout from './LegalPageLayout';
 
 export default function TermsOfService() {
     return (
-        <LegalPageLayout title="Términos y condiciones de uso" updatedAt="2026-10-25">
+        <LegalPageLayout title="Términos y condiciones de uso" updatedAt="2026-11-12">
             <p>
                 Los presentes Términos y condiciones (en adelante, &laquo;los Términos&raquo;)
                 regulan el uso de la plataforma Musikeeo, accesible en
@@ -99,6 +99,19 @@ export default function TermsOfService() {
                 exclusiva, mundial y por el tiempo necesario para mostrarlo en la Plataforma y
                 en sus comunicaciones promocionales relacionadas.
             </p>
+
+            <h2>7 bis. Cancionero</h2>
+            <p>
+                El Cancionero sirve para guardar, ordenar y tocar las canciones que tú mismo escribes o pegas
+                (letras, acordes, notas y repertorios). Al usarlo:
+            </p>
+            <ul>
+                <li>Solo guardas contenido que <strong>tienes derecho a usar</strong>: tuyo, en dominio público o con permiso de sus titulares. Al copiar de otras webs debes respetar sus condiciones.</li>
+                <li><strong>Eres responsable</strong> de lo que pegas, guardas y compartes, y de cómo lo usas (por ejemplo, en actuaciones).</li>
+                <li>Tu cancionero es <strong>privado</strong>: Musikeeo no revisa, no publica ni ofrece letras ni cifrados de terceros. Se guarda en tu dispositivo y, si tienes cuenta, en tu cuenta.</li>
+                <li>«Compartir con el grupo» crea un enlace que envías tú. Es para las personas con las que tocas: no lo publiques. Por defecto lleva solo los acordes; si añades la letra, la responsabilidad de compartirla es tuya.</li>
+                <li>Si recibimos un aviso de que algo guardado o compartido infringe derechos y es así, <strong>lo retiramos o bloqueamos</strong> y te lo explicamos de forma motivada. Puedes reclamar en {'hola@musikeeo.com'}. Los avisos se envían desde <a href="/avisos-derechos">Avisos de derechos</a>.</li>
+            </ul>
 
             <h2>8. Disponibilidad y modificaciones del servicio</h2>
             <p>

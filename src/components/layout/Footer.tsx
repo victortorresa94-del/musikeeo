@@ -51,6 +51,7 @@ export const Footer = () => {
                         <li><Link to="/terminos" className="hover:text-primary-ink transition-colors">Términos y condiciones</Link></li>
                         <li><Link to="/privacidad" className="hover:text-primary-ink transition-colors">Privacidad</Link></li>
                         <li><Link to="/cookies" className="hover:text-primary-ink transition-colors">Cookies</Link></li>
+                        <li><Link to="/avisos-derechos" className="hover:text-primary-ink transition-colors">Avisos de derechos</Link></li>
                     </ul>
                 </div>
             </div>

@@ -48,8 +48,14 @@ export default function Grupo() {
         const color = meta?.getAttribute('content');
         meta?.setAttribute('content', '#0A0A0A');
         document.title = datos ? `${datos.n} · Musikeeo` : 'Repertorio · Musikeeo';
+        // Que los buscadores no lo indexen: es un enlace privado para un grupo
+        const robots = document.createElement('meta');
+        robots.name = 'robots';
+        robots.content = 'noindex, nofollow';
+        document.head.appendChild(robots);
         return () => {
             root.classList.toggle('dark', antes);
+            robots.remove();
             if (color) meta?.setAttribute('content', color);
         };
     }, [datos]);
