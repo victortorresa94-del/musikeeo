@@ -25,13 +25,14 @@ Las sesiones deciden con criterio; él no contesta hasta mañana. Cada cosa se p
 | 1 | Subir .json en PC e iPhone; varios a la vez; pegar una copia | sesión 2 | ✅ d262c84, probado en producción |
 | 2 | Importador de copias: artista, «Otras versiones», tonoAlt, «(versión …)» aparte, notas, ⭐, hueco y hoja del bolo | sesión 2 | ✅ 85498c9, probado en producción con las 166 canciones |
 | 3 | Enlace del grupo de lujo: longitud para WhatsApp, QR, iPhone/Android, oscuro, sin red | sesión 2 | ✅ 34bdce4 + 95fcd60 + de31c67. Sin los apuntes de Víctor, con todas las partes y acordes; unos 2.400 caracteres. Probado sin red en producción |
-| 4 | Rediseño (se construye el mejor concepto): cabecera del repertorio, ajustes por momentos, listas personalizadas, PC a lo ancho | sesión 1 | ✅ repertorio (C), canción (A), Canciones (B), Tocar limpio, listas personalizadas y menú del Cancionero en PC (31180ba). 🔧 Repertorio a lo ancho en PC con el panel de la canción |
+| 4 | Rediseño (se construye el mejor concepto): cabecera del repertorio, ajustes por momentos, listas personalizadas, PC a lo ancho | sesión 1 | ✅ repertorio (C), canción (A), Canciones (B), Tocar limpio, listas personalizadas y menú del Cancionero en PC (31180ba), repertorio a lo ancho en PC con la canción al lado (9e6db10). Probado en producción a 1440 |
 | 5 | Legal: avisos de derechos, cláusula, «solo para tu grupo» | sesión 2 | ✅ 7e4be6e |
 | 6 | Teleprompter: negrita por tiempo + «Escuchar» opcional | sesión 1 | ✅ «Línea a línea» (e9d8e3d), sin red ni micro. «Escuchar» queda para más adelante |
 | 7 | Comprobar que la importación encaja con etiquetas, favorita, tonoAlt y notas | sesiones 1 y 2 | ✅ los cuatro ficheros en producción con sus 166 canciones: nada perdido ni duplicado (91c1a67) |
 | 8 | Que la página no se quede en blanco si se abre durante un despliegue (recarga una vez) | chat principal | ✅ 1878c39, probado en local con piezas rotas a propósito |
 | 9 | Apuntes («Fuente:», «Otras versiones:», «Tono sin verificar»…) en pequeño y gris en el lector, Tocar y Cifrado; «Rueda» y las partes con coletilla con los acordes grandes | sesión 1 | ✅ 329e96d + ad2d0a5 |
 | 10 | «Próximo bolo»: el mismo día va primero el de hora más temprana (Lady 12:30 antes que Cataleya 19:00) | sesión 1 | ✅ 329e96d |
+| 11 | Tono de la ficha en Tocar y en «Dame el tono» (Marcha salía en A por leer la rueda; es E) | sesión 1 | 🔧 visto en producción a las 01:13 |
 
 ### Guía para Víctor por la mañana (se completa cuando esté probado)
 
