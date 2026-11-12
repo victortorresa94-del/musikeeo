@@ -6,6 +6,7 @@ import { CheckSquare, ChevronRight, Cloud, Download, FileText, FileUp, ListPlus,
 import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
+import { cancioneroService } from '../../services/cancioneroService';
 import { CANCION_EJEMPLO } from '../../components/cancionero/ejemplo';
 import { Baldosa, TarjetaBolo, TarjetaEscuchar } from '../../components/cancionero/Baldosas';
 import { ICONO, PASTEL, iconoRepertorio, pastelDe } from '../../components/cancionero/estilo';
@@ -58,6 +59,7 @@ export default function Cancionero() {
     const [aRepertorio, setARepertorio] = useState(false);
     const [completar, setCompletar] = useState(false);
     const [mantenimiento, setMantenimiento] = useState(false);
+    const [confirmarBorrar, setConfirmarBorrar] = useState(false);
     // Listas: la de ahora va en la dirección (?lista=), y en el ordenador el menú de la izquierda las enseña todas
     const [hojaListas, setHojaListas] = useState(false);
     const [editorLista, setEditorLista] = useState<{ lista: Lista | null } | null>(null);
@@ -236,7 +238,7 @@ export default function Cancionero() {
                     <TarjetaEscuchar />
 
                     <div className="mt-6 mb-2 flex items-center justify-between gap-3">
-                        <h2 className="font-heading text-[20px] font-bold text-foreground whitespace-nowrap">
+                        <h2 className="min-w-0 truncate font-heading text-[20px] font-bold text-foreground whitespace-nowrap">
                             {ver === 'repertorios' ? 'Repertorios' : listaId === 'todas' ? 'Tus canciones' : nombreDeLista(listaId, listas)}
                             <span className="ml-1.5 text-[15px] font-semibold text-muted-foreground">{ver === 'repertorios' ? reps.length || '' : enLista.length || ''}</span>
                         </h2>
@@ -245,10 +247,11 @@ export default function Cancionero() {
                                 <Plus className="h-4 w-4" /> Nuevo
                             </button>
                         ) : canciones.length > 0 && (
-                            <span className="flex items-center gap-2">
-                                <button onClick={() => setElegidas(e => e ? null : [])} aria-pressed={!!elegidas}
-                                    className={cn('pulsable h-9 px-3.5 rounded-full text-[14px] font-semibold flex items-center gap-1.5', elegidas ? 'bg-foreground text-background' : 'bg-fill text-foreground')}>
-                                    {elegidas ? 'Cancelar' : <><CheckSquare className="h-4 w-4" /> Elegir</>}
+                            <span className="shrink-0 flex items-center gap-2">
+                                {/* En el móvil «Elegir» va solo con el icono: con el texto, el ⋯ se salía de la pantalla */}
+                                <button onClick={() => setElegidas(e => e ? null : [])} aria-pressed={!!elegidas} aria-label={elegidas ? 'Cancelar la selección' : 'Elegir canciones'}
+                                    className={cn('pulsable h-9 rounded-full text-[14px] font-semibold flex items-center gap-1.5', elegidas ? 'px-3.5 bg-foreground text-background' : 'w-9 justify-center sm:w-auto sm:px-3.5 bg-fill text-foreground')}>
+                                    {elegidas ? 'Cancelar' : <><CheckSquare className="h-4 w-4" /> <span className="hidden sm:inline">Elegir</span></>}
                                 </button>
                                 {!elegidas && (
                                     <Link to="/cancionero/nueva" className="pulsable h-9 pl-3 pr-4 rounded-full bg-primary text-primary-foreground text-[14px] font-semibold flex items-center gap-1">
@@ -256,7 +259,7 @@ export default function Cancionero() {
                                     </Link>
                                 )}
                                 {!elegidas && (
-                                    <button onClick={() => setMantenimiento(true)} aria-label="Más: completar letras, portadas, tempo, importar y copia"
+                                    <button onClick={() => setMantenimiento(true)} aria-label="Más: completar letras, portadas, tempo, importar, copia y borrar todo"
                                         className="pulsable relative h-9 w-9 rounded-full bg-fill flex items-center justify-center text-foreground">
                                         <MoreHorizontal className="h-5 w-5" />
                                         {faltanLetra > 0 && <span className="absolute -top-0.5 -right-0.5 h-2.5 w-2.5 rounded-full bg-primary ring-2 ring-background" aria-hidden />}
@@ -480,7 +483,7 @@ export default function Cancionero() {
             <ImportarCanciones abierto={importar} onCerrar={() => setImportar(false)} />
             <CompletarLetras abierta={completar} onCerrar={() => setCompletar(false)} />
             {/* ⋯: lo de poner al día el cancionero, fuera del primer plano */}
-            <Hoja abierta={mantenimiento} onCerrar={() => setMantenimiento(false)} titulo="Tu cancionero" derecha={<BotonHoja fuerte onClick={() => setMantenimiento(false)}>Listo</BotonHoja>}>
+            <Hoja abierta={mantenimiento} onCerrar={() => { setMantenimiento(false); setConfirmarBorrar(false); }} titulo="Tu cancionero" derecha={<BotonHoja fuerte onClick={() => setMantenimiento(false)}>Listo</BotonHoja>}>
                 <div className="px-4 pb-5 space-y-2">
                     {faltanLetra > 0 && (
                         <button type="button" onClick={() => { setMantenimiento(false); setCompletar(true); }} className="pulsable w-full h-12 px-4 rounded-2xl bg-fill text-[15px] font-semibold text-foreground flex items-center gap-2.5">
@@ -497,6 +500,31 @@ export default function Cancionero() {
                             <Download className="h-[18px] w-[18px]" /> Guardar una copia del cancionero
                         </button>
                     </div>
+                    {(canciones.length > 0 || repertorios.length > 0) && (
+                        !confirmarBorrar ? (
+                            <button onClick={() => setConfirmarBorrar(true)} className="w-full h-12 px-4 rounded-2xl bg-fill flex items-center gap-2.5 text-[15px] text-destructive active:bg-fill-strong">
+                                <Trash2 className="h-[18px] w-[18px]" /> Borrar todo y empezar de cero
+                            </button>
+                        ) : (
+                            <div className="rounded-2xl bg-fill p-4 space-y-3">
+                                <p className="text-[15px] text-foreground">
+                                    Se borran tus {canciones.length} canciones, {repertorios.length} {repertorios.length === 1 ? 'repertorio' : 'repertorios'}{listas.length ? ' y tus listas' : ''}
+                                    {conCuenta ? ', aquí y en tu cuenta' : ''}. Antes se descarga una copia por si acaso.
+                                </p>
+                                <div className="grid grid-cols-2 gap-2">
+                                    <button onClick={() => setConfirmarBorrar(false)} className="pulsable h-11 rounded-[14px] bg-sheet text-[15px] font-semibold text-foreground">Cancelar</button>
+                                    <button onClick={() => {
+                                        descargarCopia(crearCopia(canciones, repertorios));
+                                        void cancioneroService.vaciarTodo();
+                                        setConfirmarBorrar(false);
+                                        setMantenimiento(false);
+                                        toast('Cancionero vacío. Ya puedes importar lo nuevo.');
+                                        setImportar(true);
+                                    }} className="pulsable h-11 rounded-[14px] bg-destructive text-[15px] font-semibold text-destructive-foreground">Borrar todo</button>
+                                </div>
+                            </div>
+                        )
+                    )}
                 </div>
             </Hoja>
         </div>

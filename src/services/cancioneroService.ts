@@ -173,8 +173,25 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
         }
     }
 
+    // Empezar de cero: el móvil se vacía al momento y, con cuenta, se borra también lo de la nube
+    // (lo que el móvil sabía y lo que hubiera allí). Sin permiso en la nube, solo el móvil
+    async function vaciar() {
+        const duenio = estado.duenio || INVITADO;
+        esperando.forEach(t => clearTimeout(t));
+        esperando.clear();
+        const antes = estado.items.map(x => x.id);
+        escribirLocal(duenio, []);
+        avisar({ items: [] });
+        if (!esUid(duenio) || estado.nube === 'sin-permiso') return;
+        try {
+            const snap = await getDocs(query(coleccion(duenio), limit(1000)));
+            const ids = new Set([...antes, ...snap.docs.map(d => d.id)]);
+            await Promise.all([...ids].map(id => deleteDoc(doc(coleccion(duenio), id))));
+        } catch (e) { fallo(e); }
+    }
+
     const suscribir = (f: () => void) => { oyentes.add(f); return () => { oyentes.delete(f); }; };
-    return { suscribir, estado: () => estado, cargarPrevio, cargar, guardar, guardarVarias, borrar };
+    return { suscribir, estado: () => estado, cargarPrevio, cargar, guardar, guardarVarias, borrar, vaciar };
 }
 
 // Firestore no admite undefined: los datos opcionales solo van si están
@@ -285,4 +302,6 @@ export const cancioneroService = {
     borrarRepertorio: almacenRepertorios.borrar,
     guardarLista: almacenListas.guardar,
     borrarLista: almacenListas.borrar,
+    // Borrar todo el cancionero (canciones, repertorios y listas) para empezar de cero
+    vaciarTodo: async () => { await Promise.all([almacenCanciones.vaciar(), almacenRepertorios.vaciar(), almacenListas.vaciar()]); },
 };
