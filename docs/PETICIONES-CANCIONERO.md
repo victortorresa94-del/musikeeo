@@ -281,6 +281,32 @@ Campos nuevos en la ficha:
 - Sus páginas tienen enlaces de LaCuerda.
 - Cuando estén los dos campos, el chat principal prepara una importación desde Notion con etiquetas y enlaces.
 
+## 21b. Vista Tabla, versiones favoritas y las dos vistas de la cejilla 🔧 (sesión 2, 12-nov)
+
+*«Esa vista completa bien chetada de todas las canciones tipo Notion, que la pueda ordenar por muchas cosas y cambiar
+cada cosa… una vista tipo ClickUp como la que tenemos en Aura Business, con los atributos de cada canción cambiables ahí
+también, ordenables por grupos.»*
+
+*«Podríamos hacer algo donde guardar versiones que hacemos "favoritas"… a veces la canto en un tono o en otro.»*
+
+*«Meterle cejilla para no tener que ponerla en "G"… poder tener las dos opciones, con cejilla en el 4… las dos vistas.»*
+
+- **Vista Tabla**: cada celda editable, ordenar, agrupar y elegir columnas.
+- **Versiones favoritas**: la versión marcada con ⭐ sale por defecto; se pueden guardar tonos alternativos.
+- **Cejilla**: conmutador «Suena en G | Formas (cejilla 3)».
+
+### Tonos que dijo él (12-nov) — mandan
+
+- **Fuentes**: mandan las notas más recientes y las de Sant Joan.
+- **El Merengue**: Gm.
+- **MIX Bad Bunny**: F#m.
+- **Mi estrella blanca con Cataleya**: E con cejilla 3, suena G.
+- **Vivir mi vida**: «depende», así que hay dos versiones, la suya y la de Cataleya.
+- **Nada de esto fue un error**: tiene dudas, así que van las dos opciones (G y A) en la nota.
+- **Marcha**: E.
+
+Un agente prepara `actualizar-tonos.json` con estos datos y las fuentes recientes: Lloret 24-oct, el popurrí de octubre y Sant Joan.
+
 ## 22. Datos de la BBDD a corregir ⏳
 
 Artistas mal en la BBDD:
