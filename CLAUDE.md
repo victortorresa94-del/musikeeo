@@ -144,9 +144,9 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 - Importar papeles de Drive (`lib/papeles.ts`): quita el número («12 - …»), reconoce alias entre paréntesis y erratas de una letra, mixes («+») como «Mix: …»; cada papel cae en el tono de su ficha (`tonoDelPapel`: respeta el capo; si duda, no lo mueve y le pone la etiqueta «Revisar tono»). Pruebas en `scripts/importar/papeles.test.ts`.
 - Pegar desde webs de acordes con su formato (`lib/pegado.ts`), LaCuerda la primera con logo en «Falta la letra», y «Completar letras» (`components/cancionero/CompletarLetras.tsx`). No se baja nada de esas webs (decisión de Víctor, informe en `docs/LEGAL-CANCIONERO.md`).
 - Rediseño (sueños en Aura, lienzo «Cancionero · color»; detalle en `docs/PETICIONES-CANCIONERO.md` §14): cabecera del repertorio con «Tocar» grande; barra de 5 botones en la canción (`PanelAjustes` con `seccion`); filtros en iconos y mantenimiento detrás de ⋯ en Canciones; Tocar con anterior · Auto (amarillo) · siguiente y el resto en ⋯.
+- Teleprompter «Línea a línea» en Tocar (⋯; clave `musikeeo-tocar-linea`, `lib/teleprompter.ts`): línea de ahora en negrita (`data-linea`/`data-ahora` en `HojaCancion`, estilos `.teleprompter` en `index.css`), por tiempo con Auto, corregida tocando o con el pedal; sin red.
 
 **❌ Pendiente:**
-- Teleprompter (aprobado: negrita por tiempo, corregida con toque o pedal, sin red).
 - Duración de la versión estimada y «medir grabándote» (abrir `microphone=(self)` en `vercel.json`).
 - Listas personalizadas y Cancionero a lo ancho en PC (§21c).
 - Víctor: elegir si le gusta la mezcla del rediseño; desplegar reglas.

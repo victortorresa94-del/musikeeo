@@ -98,7 +98,7 @@ function LineaCancion({ linea: l, opciones, estilo }: { linea: Linea; opciones: 
             }
             return <p className="pb-[0.2em] text-[0.85em] italic text-muted-foreground">{l.texto}</p>;
         case 'letra':
-            return <p className="whitespace-pre-wrap leading-[1.4]">{conFormato(l.texto.trimStart(), { negrita: false, resaltado: false })}</p>;
+            return <p data-linea="" className="whitespace-pre-wrap leading-[1.4]">{conFormato(l.texto.trimStart(), { negrita: false, resaltado: false })}</p>;
         case 'tab':
             return <pre className="font-mono text-[0.78em] leading-[1.3] overflow-x-auto hide-scrollbar">{l.texto}</pre>;
         case 'acordes':
@@ -116,7 +116,7 @@ function LineaCancion({ linea: l, opciones, estilo }: { linea: Linea; opciones: 
             let n = 0;
             const de = () => (formato ? formato[n++] : null);
             return (
-                <div className="flex flex-wrap items-end pb-[0.25em]">
+                <div data-linea="" className="flex flex-wrap items-end pb-[0.25em]">
                     {palabras.map((palabra, k) => (palabra.length === 1
                         ? silaba(palabra[0], opciones, k, de())
                         : (

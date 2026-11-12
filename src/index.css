@@ -345,6 +345,12 @@
   }
 }
 
+/* Teleprompter de Tocar («Línea a línea»): la línea de ahora en negrita (con trazo, para que no
+   cambie el ancho ni se muevan las demás) y el resto apagado. Hueco abajo: la última llega a la guía */
+.teleprompter [data-hoja] { padding-bottom: 55dvh; }
+.teleprompter [data-hoja] [data-linea] { opacity: 0.38; transition: opacity 220ms ease; }
+.teleprompter [data-hoja] [data-linea][data-ahora] { opacity: 1; -webkit-text-stroke: 0.035em currentColor; }
+
 /* Ilustración pegada a una tarjeta de color: el borde izquierdo se funde con el fondo,
    así no se ve la costura entre el fondo de la imagen y el de la tarjeta. */
 @layer utilities {

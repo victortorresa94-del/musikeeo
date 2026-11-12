@@ -152,12 +152,20 @@ En Tocar:
 
 Tempo de 25 de los 32 temas de los sets, sacado de la muestra de Apple.
 
-## 10. Teleprompter 🔧 (sesión 1; decidido: negrita por tiempo + «Escuchar» opcional en Safari con red)
+## 10. Teleprompter ✅ (sesión 1, en main, 12-nov; decidido: negrita por tiempo + «Escuchar» opcional en Safari con red)
 
 *«Y si te pudiera escuchar, ya sería la polla, para que fuera interpretando la canción y se fuera poniendo en negrita
 mientras cantas cada parte, para que sea rollo teleprompter.»*
 
 Primero se investiga qué se puede hacer en iPhone/Safari y sin red, se le explica en 5 líneas y luego se construye.
+
+✅ **Hecho el 12-nov: «Línea a línea» en Tocar** (⋯ → Línea a línea; se recuerda en el móvil).
+- La línea que toca cantar sale en negrita, con sus acordes; las demás, apagadas.
+- Va por tiempo, como Auto: la marca baja con la hoja, empieza por la primera línea y la última también llega.
+- Se corrige tocando una línea (sin parar la hoja) o con el pedal: adelante = siguiente línea; atrás = la anterior. Al final de la canción, el pedal pasa a la siguiente.
+- Sin red, sin micro. Con «que quepa» no se usa (no hay que bajar la hoja). Motor en `src/lib/teleprompter.ts`.
+- Probado en iPhone 13 simulado: pedal, toque, Auto (de la línea 9 a la 14 en 12 s) y sin red.
+- «Escuchar» (Safari con red) queda para después: opcional y solo con cobertura.
 
 ## 11. Rodrigo con cerebro (para el lanzamiento, NO hoy) ✅ plan / ⏳
 

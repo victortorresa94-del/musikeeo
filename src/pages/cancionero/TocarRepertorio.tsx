@@ -1,7 +1,7 @@
 import { startTransition, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronDown, ChevronLeft, ChevronRight, ListMusic, Loader2, MoreHorizontal, Pause, Play, Shrink, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ListMusic, Loader2, MoreHorizontal, Pause, Play, ScrollText, Shrink, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { useMusicaCancion } from '../../hooks/useMusicaCancion';
@@ -17,6 +17,7 @@ import { Pildora } from '../../components/cancionero/Baldosas';
 import { bloqueDe, estiloBloque, etiquetasDe, ICONO, pastelCanta, sinLoDeLasPildoras } from '../../components/cancionero/estilo';
 import { tonoDe } from '../../components/cancionero/utilidades';
 import { esperaDeIntro, minutos, RITMO_MAX, RITMO_MIN, segundosAuto, velocidadAlDesplazar, versosDe } from '../../lib/cantar';
+import { aLaGuia, marcar, vecina } from '../../lib/teleprompter';
 import { buscarEncaje, columnasPosibles, type Encaje } from '../../components/cancionero/medir';
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
 
@@ -63,6 +64,15 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
         toast(a ? 'Modo auto apagado' : 'Modo auto: dale a ▶ y la hoja baja sola al ritmo de cada canción', { id: 'auto', duration: 2500 });
         return !a;
     });
+    // Línea a línea (teleprompter): la línea que toca, en negrita; se corrige tocándola o con el pedal
+    const [linea, setLinea] = useState(() => { try { return localStorage.getItem(CLAVE_LINEA) === '1'; } catch { return false; } });
+    const alternarLinea = () => setLinea(l => {
+        try { localStorage.setItem(CLAVE_LINEA, l ? '0' : '1'); } catch { /* sin almacenamiento */ }
+        toast(l ? 'Línea a línea apagado' : 'Línea a línea: la que toca sale en negrita. Toca una línea o usa el pedal para corregir', { id: 'linea', duration: 3000 });
+        return !l;
+    });
+    const lineaRef = useRef(linea);
+    useEffect(() => { lineaRef.current = linea; }, [linea]);
     const actualRef = useRef(inicio);
     useEffect(() => { actualRef.current = actual; }, [actual]);
     const autoRef = useRef(auto), rodandoRef = useRef(rodando);
@@ -153,6 +163,28 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
         return () => { clearTimeout(empezar); cancelAnimationFrame(raf); if (intro) toast.dismiss('intro-hoja'); };
     }, [rodando, actual]);
 
+    // Línea a línea: al bajar la hoja (sola o con el dedo) se marca la que cruza la guía
+    useEffect(() => {
+        const el = diapositivas.current[actual];
+        if (!linea || !el) return;
+        let marcada: HTMLElement | null = null, raf = 0;
+        const pintar = () => { raf = 0; marcada = marcar(el, marcada); };
+        const alMover = () => { if (!raf) raf = requestAnimationFrame(pintar); };
+        pintar();
+        el.addEventListener('scroll', alMover, { passive: true });
+        window.addEventListener('resize', alMover);
+        // Al cambiar el tono o el tamaño se vuelven a pintar las líneas: se marca otra vez
+        const cambios = new MutationObserver(alMover);
+        cambios.observe(el, { childList: true, subtree: true });
+        return () => {
+            cambios.disconnect();
+            cancelAnimationFrame(raf);
+            el.removeEventListener('scroll', alMover);
+            window.removeEventListener('resize', alMover);
+            marcada?.removeAttribute('data-ahora');
+        };
+    }, [linea, actual, cerca]);
+
     useEffect(() => {
         if (!rodando || !controles) return;
         const t = setTimeout(() => setControles(false), 2500);
@@ -169,7 +201,13 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
             if (e.key === ' ' && !(e.target as HTMLElement).closest('button')) { e.preventDefault(); setRodando(r => !r); }
             else if (e.key === 'Escape') salir();
             else if (adelante && el && autoRef.current && !rodandoRef.current && el.scrollTop < 4) { e.preventDefault(); setRodando(true); }
-            else if (adelante && el) {
+            else if ((adelante || atras) && el && lineaRef.current) {
+                e.preventDefault();
+                const v = vecina(el, adelante ? 1 : -1);
+                if (v) aLaGuia(el, v, !rodandoRef.current);
+                else if (atras && el.scrollTop > 4) el.scrollTo({ top: 0, behavior: 'smooth' });
+                else ir(adelante ? i + 1 : i - 1);
+            } else if (adelante && el) {
                 e.preventDefault();
                 if (el.scrollTop + el.clientHeight < el.scrollHeight - 4) el.scrollBy({ top: el.clientHeight * 0.8, behavior: 'smooth' });
                 else ir(i + 1);
@@ -188,8 +226,14 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
             <div ref={carruselRef} onScroll={alDeslizar}
                 className="h-full w-full flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar overscroll-x-contain">
                 {canciones.map((c, i) => (
-                    <div key={c.id} ref={el => { diapositivas.current[i] = el; }} onClick={() => { if (auto && rodando) { setRodando(false); setControles(true); } else setControles(v => !v); }} data-diapositiva
-                        className="relative h-full w-full shrink-0 snap-start snap-always overflow-y-auto overscroll-contain touch-pan-x touch-pan-y">
+                    <div key={c.id} ref={el => { diapositivas.current[i] = el; }} onClick={e => {
+                        // Línea a línea: tocar una línea la lleva a la guía (sin parar la hoja)
+                        const l = linea && i === actual ? (e.target as HTMLElement).closest<HTMLElement>('[data-hoja] [data-linea]') : null;
+                        const el = diapositivas.current[i];
+                        if (l && el) { aLaGuia(el, l, !rodando); return; }
+                        if (auto && rodando) { setRodando(false); setControles(true); } else setControles(v => !v);
+                    }} data-diapositiva
+                        className={cn(linea && !c.ajustes.ajustar && 'teleprompter', 'relative h-full w-full shrink-0 snap-start snap-always overflow-y-auto overscroll-contain touch-pan-x touch-pan-y')}>
                         {i === actual || (cerca !== null && Math.abs(i - cerca) <= 1)
                             ? <Diapositiva cancion={c} n={i + 1} total={canciones.length} siguiente={canciones[i + 1]}
                                 onSiguiente={() => ir(i + 1)} cambiar={cambio => cambiar(c, cambio)} />
@@ -213,7 +257,7 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
             </div>
 
             {/* Abajo: tono, tamaño, que quepa y desplazar; y «Dame el tono», la cuenta, anterior y siguiente */}
-            <ControlesCancion cancion={cancion} visibles={controles} rodando={rodando} auto={auto} versos={versos}
+            <ControlesCancion cancion={cancion} visibles={controles} rodando={rodando} auto={auto} versos={versos} linea={linea} onLinea={alternarLinea}
                 onRodar={() => setRodando(r => !r)} cambiar={cambio => cambiar(cancion, cambio)}
                 onAnterior={actual > 0 ? () => ir(actual - 1) : undefined}
                 onSiguiente={actual < canciones.length - 1 ? () => ir(actual + 1) : undefined} />
@@ -237,8 +281,8 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
     );
 }
 
-function ControlesCancion({ cancion, visibles, rodando, auto, versos, onRodar, cambiar, onAnterior, onSiguiente }: {
-    cancion: Cancion; visibles: boolean; rodando: boolean; auto: boolean; versos: number; onRodar: () => void;
+function ControlesCancion({ cancion, visibles, rodando, auto, versos, linea, onLinea, onRodar, cambiar, onAnterior, onSiguiente }: {
+    cancion: Cancion; visibles: boolean; rodando: boolean; auto: boolean; versos: number; linea: boolean; onLinea: () => void; onRodar: () => void;
     cambiar: (c: Partial<AjustesCancion>) => void; onAnterior?: () => void; onSiguiente?: () => void;
 }) {
     const { leida, tonoSuena, sinAcordes } = useMusicaCancion(cancion.texto, cancion.ajustes);
@@ -277,6 +321,13 @@ function ControlesCancion({ cancion, visibles, rodando, auto, versos, onRodar, c
             <Hoja abierta={mas} onCerrar={() => setMas(false)} titulo={cancion.titulo}
                 derecha={<BotonHoja fuerte onClick={() => setMas(false)}>Listo</BotonHoja>}>
                 <div className="px-4 pb-5 space-y-3">
+                    <div className="flex items-center justify-between gap-3">
+                        <span className="min-w-0">
+                            <span className="block text-[15px] text-foreground">Línea a línea</span>
+                            <span className="block text-[13px] text-muted-foreground">La que toca cantar, en negrita</span>
+                        </span>
+                        <BotonBarra etiqueta="Línea a línea" activo={linea} onClick={onLinea}><ScrollText className="h-[18px] w-[18px]" /></BotonBarra>
+                    </div>
                     <div className="flex items-center justify-between gap-3">
                         <span className="text-[15px] text-foreground">Tamaño de la letra</span>
                         <Paso compacto etiqueta="Tamaño de la letra" valor="Aa" onMenos={() => cambiarTamano(-1)} onMas={() => cambiarTamano(1)} />
@@ -381,7 +432,7 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
             )}
             {/* Las notas con formato de la canción (avisos, entradas…), encima de la hoja */}
             {!notasVacias(cancion.notas) && <NotasRicas json={cancion.notas} className="mt-3 text-[15px]" />}
-            <div ref={zonaRef} className="mt-3">
+            <div ref={zonaRef} data-hoja className="mt-3">
                 <HojaCancion lineas={lineas} opciones={opciones} vista={a.vista} tamano={tamano} columnas={columnas} />
             </div>
             {/* Copia invisible para medir, solo con «que quepa»: el tamaño y las columnas los pone buscarEncaje */}
@@ -406,6 +457,7 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
 }
 
 const CLAVE_AUTO = 'musikeeo-tocar-auto';
+const CLAVE_LINEA = 'musikeeo-tocar-linea';
 
 // Modo auto: a qué ritmo baja esta canción y el ajuste a mano (se guarda con la canción)
 function FilaAuto({ cancion, versos, cambiar }: { cancion: Cancion; versos: number; cambiar: (c: Partial<AjustesCancion>) => void }) {
