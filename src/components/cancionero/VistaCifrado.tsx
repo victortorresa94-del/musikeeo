@@ -56,18 +56,19 @@ export const TemaCifrado = memo(function Tema({ tema, n, tamano, onAbrir, sinBor
     );
 });
 
-export function HojaSet({ temas, tamano = 17, onAbrir, className, formas }: {
-    temas: TemaCompartido[]; tamano?: number; onAbrir?: (i: number) => void; className?: string; formas?: boolean;
+// ancho: en el ordenador, los temas en 2 o 3 columnas (se leen de izquierda a derecha y hacia abajo)
+export function HojaSet({ temas, tamano = 17, onAbrir, className, formas, ancho }: {
+    temas: TemaCompartido[]; tamano?: number; onAbrir?: (i: number) => void; className?: string; formas?: boolean; ancho?: boolean;
 }) {
     return (
-        <div className={cn('text-foreground', className)} style={{ fontSize: tamano }}>
+        <div className={cn('text-foreground', ancho && 'md:grid md:grid-cols-2 2xl:grid-cols-3 md:gap-x-10 md:items-start', className)} style={{ fontSize: tamano }}>
             {temas.map((t, i) => {
                 const nuevoBloque = t.g && (i === 0 || t.g !== temas[i - 1].g) ? t.g : null;
                 const estilo = nuevoBloque ? estiloBloque(nuevoBloque) : null;
                 return (
-                    <div key={i}>
+                    <div key={i} className="contents">
                         {nuevoBloque && estilo && (
-                            <div className={cn('relative mt-4 h-[56px] rounded-[18px] overflow-hidden flex items-center pl-4 pr-[90px] text-[16px]', estilo.pastel.fondo)}>
+                            <div className={cn('md:col-span-full relative mt-4 h-[56px] rounded-[18px] overflow-hidden flex items-center pl-4 pr-[90px] text-[16px]', estilo.pastel.fondo)}>
                                 <span className="font-heading text-[18px] font-bold leading-tight text-foreground line-clamp-2">{nuevoBloque}</span>
                                 <img src={estilo.icono} alt="" aria-hidden className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-[52px] w-[72px] object-contain" />
                             </div>
@@ -166,9 +167,9 @@ function Directo({ onCerrar, titulo, temas, onAbrir, scrollInicial, onScroll, fo
             <div className="h-full bg-background">
                 <div ref={zonaRef} onClick={() => setControles(c => !c)} onScroll={e => onScroll?.((e.target as HTMLElement).scrollTop)}
                     className="h-full overflow-y-auto overscroll-contain px-4 md:px-10 pt-[calc(env(safe-area-inset-top)+56px)] pb-[calc(env(safe-area-inset-bottom)+120px)]">
-                    <div className="max-w-3xl mx-auto">
+                    <div className="max-w-3xl md:max-w-none mx-auto">
                         <p className="text-[13px] font-semibold text-muted-foreground truncate">{titulo} · {temas.length} temas</p>
-                        <HojaSet temas={temas} tamano={prefs.tamano} formas={formas} onAbrir={onAbrir ? i => { onScroll?.(zonaRef.current?.scrollTop ?? 0); onAbrir(i); } : undefined} />
+                        <HojaSet temas={temas} tamano={prefs.tamano} formas={formas} ancho onAbrir={onAbrir ? i => { onScroll?.(zonaRef.current?.scrollTop ?? 0); onAbrir(i); } : undefined} />
                     </div>
                 </div>
                 <button onClick={salir} aria-label="Salir del cifrado en directo"
