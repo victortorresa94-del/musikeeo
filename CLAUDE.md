@@ -138,6 +138,19 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 
 ## SESSION LOG
 
+### 2026-11-12 (Cancionero, sesión 1: papeles en su tono, pegar bien y rediseño, a `main`)
+
+**✅ Hecho:**
+- Importar papeles de Drive (`lib/papeles.ts`): quita el número («12 - …»), reconoce alias entre paréntesis y erratas de una letra, mixes («+») como «Mix: …»; cada papel cae en el tono de su ficha (`tonoDelPapel`: respeta el capo; si duda, no lo mueve y le pone la etiqueta «Revisar tono»). Pruebas en `scripts/importar/papeles.test.ts`.
+- Pegar desde webs de acordes con su formato (`lib/pegado.ts`), LaCuerda la primera con logo en «Falta la letra», y «Completar letras» (`components/cancionero/CompletarLetras.tsx`). No se baja nada de esas webs (decisión de Víctor, informe en `docs/LEGAL-CANCIONERO.md`).
+- Rediseño (sueños en Aura, lienzo «Cancionero · color»; detalle en `docs/PETICIONES-CANCIONERO.md` §14): cabecera del repertorio con «Tocar» grande; barra de 5 botones en la canción (`PanelAjustes` con `seccion`); filtros en iconos y mantenimiento detrás de ⋯ en Canciones; Tocar con anterior · Auto (amarillo) · siguiente y el resto en ⋯.
+
+**❌ Pendiente:**
+- Teleprompter (aprobado: negrita por tiempo, corregida con toque o pedal, sin red).
+- Duración de la versión estimada y «medir grabándote» (abrir `microphone=(self)` en `vercel.json`).
+- Listas personalizadas y Cancionero a lo ancho en PC (§21c).
+- Víctor: elegir si le gusta la mezcla del rediseño; desplegar reglas.
+
 ### 2026-11-11 (Cancionero: editor con formato y enlace para los músicos, a `main`)
 
 **✅ Hecho (segunda sesión del día, en paralelo a la de importar/ajustes/teleprompter):**

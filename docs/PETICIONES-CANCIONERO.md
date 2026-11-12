@@ -191,7 +191,7 @@ Pendiente de confirmar con él:
 - Desde un repertorio, con más de 40 canciones, pregunta antes de meterlas.
 - Borrar un repertorio no borra las canciones.
 
-## 14. Rediseño de ajustes, menús, filtros y botones 🔧 (sesión 1)
+## 14. Rediseño de ajustes, menús, filtros y botones ✅ primera vuelta (sesión 1, en main)
 
 *«Buf, dios mío, todo ese mega popup de ajustes, son todos importantes. Debemos hacer un menú derecho, y un buen menú
 inferior para móvil, o también menú izquierdo en móvil quizás que se abra, con todas estas opciones, y mejorar mucho la
@@ -226,6 +226,15 @@ Antes de construir se sueñan 3 conceptos en Aura Studio para que elija. Gasto a
 - **Tocar**: su barra de ahora, más limpia.
 
 Va después del .json y del importador, y sin romper Tocar, el modo sin red ni el enlace del grupo. Si a las 7:00 no está redondo, se queda en una rama.
+
+✅ **Hecho el 12-nov** (en `main`, probado en iPhone 13 simulado y sin red):
+- **Repertorio**: cabecera nueva (C). «Tocar» grande con el micro 3D y compartir al lado; una línea con fecha, temas y duración (en rojo si te pasas del hueco) y su barra; quién canta en píldoras; «Hoja del bolo» se despliega. Fecha, hueco, compartir y borrar, detrás de ⋯. Al bajar, Lista · Cifrado · Bloques se queda arriba con un ▶ amarillo pequeño.
+- **Canción**: barra de abajo con 5 botones (Tono · Cejilla · Ver · Bajar/Parar · Más); cada uno abre solo su parte de los ajustes. Fuera la barra de arriba.
+- **Canciones**: filtros en iconos redondos (canta, tono, estilo, energía, estado, etiquetas) que al activarse muestran lo elegido; Lady Jarana y Cataleya con su icono y su color. Completar letras, Poner portadas, Poner tempo, Importar y Guardar copia, en ⋯ «Tu cancionero» (punto amarillo si faltan letras).
+- **Tocar**: abajo, anterior · **Auto / Bajar sola** (amarillo) · siguiente; encima Tono ± y «Dame el tono»; tamaño, que quepa y la cuenta 1·2·3·4 detrás de ⋯.
+- **Toques**: cambiar el tono, 1 (2 si la barra está escondida); Auto, 1; siguiente canción, 1 (o deslizar).
+- Cambio respecto a lo anterior: en Tocar, el amarillo pasa de «Dame el tono» a Auto (una sola acción amarilla por pantalla).
+- Falta: listas personalizadas y PC a lo ancho (§21c).
 
 ## 15. Editor rico «con la potencia de Aura notas» ✅ (sesión 2, en main)
 
@@ -314,7 +323,7 @@ Están en estas carpetas de su Drive:
 
 Sin papel: La Morocha, La Marina, Coti x Coti, Marcha, La tortura, Si antes te hubiera conocido, El toro y la luna, Tusa, Lágrimas negras, 19 días y El Cantante.
 
-## 19. LaCuerda en «Falta la letra», y pegar bien 🔧 (sesión 1)
+## 19. LaCuerda en «Falta la letra», y pegar bien ✅ (sesión 1, en main)
 
 *«¿Por qué no sale LaCuerda aquí en las opciones?»*
 
@@ -331,7 +340,9 @@ Sin papel: La Morocha, La Marina, Coti x Coti, Marcha, La tortura, Si antes te h
 **Decisión de Víctor (11-nov):** no se baja nada de esas webs.
 - *«De momento, pues eso: tocará copiar y pegar, y que se pueda pegar bien el formato al menos. Hay que revisar si eso es legal.»*
 - Se copia y se pega con formato perfecto, y el enlace se guarda en `ficha.enlace`.
-- Revisión legal en marcha: va a `docs/LEGAL-CANCIONERO.md`.
+- Revisión legal hecha: `docs/LEGAL-CANCIONERO.md`.
+
+✅ Hecho (11-12-nov): LaCuerda la primera en «Falta la letra», con logo y el truco del móvil («Aa» → «Mostrar lector» para poder copiar); todas las webs con su logo. Al pegar se lee el formato de la web (`lib/pegado.ts`: se queda con el bloque `<pre>` más grande), así cada acorde cae encima de su sílaba. «Su página» abre `ficha.enlace` si la ficha lo tiene. **Completar letras** (en ⋯ de Canciones): va de una en una por las que no tienen letra, primero las del próximo bolo; al pegar, cae en el tono de su ficha y pasa a la siguiente.
 
 ### 19b. Buscador propio de canciones escrito por la comunidad ⏳ (plan, sin construir)
 
