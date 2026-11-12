@@ -11,7 +11,7 @@ import { almacenCanciones } from '../../services/cancioneroService';
 import { leerCancion, lineasDeLetra, separarCanciones } from '../../lib/acordes';
 import { leerSetlist, type CancionImportada } from '../../lib/setlist';
 import { leerCopia, mismoTitulo, sacarFicha, unirFichas, type Copia } from '../../lib/biblioteca';
-import { aNotas, unirNotas } from '../../lib/notas';
+import { aNotas, notasDeTexto, unirNotas } from '../../lib/notas';
 import { claveTitulo } from '../../lib/buscarCanciones';
 import { cancionDelPapel, partesDeMix, tituloDePapel, tonoDelPapel } from '../../lib/papeles';
 import { leerPortapapeles } from '../../lib/pegado';
@@ -52,20 +52,23 @@ const ACEPTA = [
 // del setlist (sin artista) o una chuleta de acordes sin letra se rellena con la canción entera
 // Si el título exacto no está, vale el mismo sin lo de entre paréntesis («Hace calor (Mucho
 // mejor)» = «Hace calor»), pero solo si es inequívoco: dos versiones no se juntan en una
+const ES_VERSION = /\(\s*versi[oó]n\b/i;
+
 function emparejar(canciones: Cancion[], t: CancionImportada, unica: boolean): { ya?: Cancion; rellena?: Cancion } {
     // Una versión solo se junta con la misma versión (Bamboléo de Víctor no rellena el de Cataleya)
     const casa = (c: Cancion) => norm(c.version ?? '') === norm(t.version ?? '')
         && (t.ficha || !c.artista || !t.artista || norm(c.artista) === norm(t.artista));
     let c = canciones.find(c => norm(c.titulo) === norm(t.titulo) && casa(c));
-    // «Bamboléo (versión Mafe)» es otra canción: nunca se junta por parecido con «Bamboléo»
-    if (!c && /\(\s*versi[oó]n\b/i.test(t.titulo)) return {};
+    // «Bamboléo (versión Mafe)» es otra canción: nunca se junta por parecido con «Bamboléo» (ni al revés)
+    if (!c && ES_VERSION.test(t.titulo)) return {};
+    const sinVersiones = canciones.filter(x => !ES_VERSION.test(x.titulo));
     if (!c && unica) {
-        const parecidas = canciones.filter(x => mismoTitulo(x.titulo, t.titulo) && casa(x));
+        const parecidas = sinVersiones.filter(x => mismoTitulo(x.titulo, t.titulo) && casa(x));
         if (parecidas.length === 1) c = parecidas[0];
     }
     // Un papel de tu Drive: «1 - MUCHO MEJOR» = «Hace Calor (Mucho mejor)», «Orgulli» = «Orgullo»,
     // «LA MADRE» = «La madre de José». Un mix («TU CALORRO + LA RAJA») no rellena las fichas sueltas
-    if (!c && unica && !t.version && partesDeMix(t.titulo).length === 1) c = cancionDelPapel(t.titulo, canciones.filter(casa)) ?? undefined;
+    if (!c && unica && !t.version && partesDeMix(t.titulo).length === 1) c = cancionDelPapel(t.titulo, sinVersiones.filter(casa)) ?? undefined;
     if (!c) return {};
     if (!t.ficha && c.texto.trim() !== t.texto.trim() && (!c.artista || (letra(t.texto) >= 8 && letra(c.texto) < 8))) return { rellena: c };
     return { ya: c };
@@ -163,7 +166,7 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
 
     const importar = () => {
         const corta = (t: CancionImportada) => t.ficha || t.texto.split('\n').length <= 25;
-        let nuevas = 0, rellenas = 0, conFicha = 0;
+        let nuevas = 0, rellenas = 0, conFicha = 0, conNotas = 0;
         const aGuardar: Cancion[] = [];
         const movidas: string[] = [], revisar: string[] = [], repetidas: string[] = [];
         let ids: string[];
@@ -178,6 +181,30 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
         try {
             ids = encontradas.map((t, i) => {
                 const { ya, rellena } = parejas[i];
+                if (ya && copia) {
+                    // De una copia (o de «actualizar tonos»): la ficha que llega manda (las etiquetas se
+                    // suman), el artista que llega sustituye, bpm y duración solo si faltan. El texto:
+                    // una chuleta se cambia por la que llega; una canción con letra NO se toca y las
+                    // líneas nuevas que llegan van a sus notas
+                    const llega = t.texto.trim();
+                    let base: Cancion = { ...ya, artista: t.artista || ya.artista };
+                    let notasExtra: string | undefined;
+                    if (llega && llega !== ya.texto.trim()) {
+                        if (letra(ya.texto) < 8) base = { ...base, texto: t.texto };
+                        else {
+                            const nuevasLineas = llega.split('\n').map(l => l.trim()).filter(l => l && !ya.texto.includes(l));
+                            if (nuevasLineas.length) notasExtra = notasDeTexto(nuevasLineas.join('\n'));
+                        }
+                    }
+                    const actualizada = extra(base, t);
+                    if (notasExtra) {
+                        const antes = actualizada.notas;
+                        actualizada.notas = unirNotas(antes, notasExtra);
+                        if (actualizada.notas !== antes) conNotas++;
+                    }
+                    if (JSON.stringify(actualizada) !== JSON.stringify(ya)) { conFicha++; aGuardar.push(actualizada); }
+                    return ya.id;
+                }
                 if (ya) {
                     // Ya estaba: se queda su letra, y la ficha que llega se suma a la suya
                     const sinTexto = !ya.texto.trim() && t.texto.trim();
@@ -218,7 +245,7 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
         }
         setTexto('');
         onCerrar();
-        const aviso = [nuevas && `${nuevas} nuevas`, rellenas && `${rellenas} fichas completadas`, conFicha && `${conFicha} actualizadas`].filter(Boolean).join(', ') || 'Ya las tenías';
+        const aviso = [conFicha && `${conFicha} ${conFicha === 1 ? 'actualizada' : 'actualizadas'}`, nuevas && `${nuevas} ${nuevas === 1 ? 'nueva' : 'nuevas'}`, rellenas && `${rellenas} fichas completadas`, conNotas && `${conNotas} con notas añadidas`].filter(Boolean).join(' · ') || 'Ya las tenías';
         // Las que siguen sin letra (para completarlas luego): al rellenar fichas, se dice cuáles
         const sinLetra = rellenas ? almacenCanciones.estado().items.filter(c => !c.version && letra(c.texto) < 8) : [];
         // Lo que se hizo con el tono de cada papel

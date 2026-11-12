@@ -263,7 +263,8 @@ export function leerCopia(texto: string): Copia | null {
     if (copias.some(c => !c)) return null;
     const canciones: CancionCopia[] = [];
     const repertorios: RepertorioCopia[] = [];
-    const clave = (c: CancionCopia) => `${norm(c.titulo)}|${norm(c.version ?? '')}|${norm(c.artista ?? '')}`;
+    // Por título y versión (el artista puede venir distinto en cada copia: manda la última)
+    const clave = (c: CancionCopia) => `${norm(c.titulo)}|${norm(c.version ?? '')}`;
     const indice = new Map<string, number>();
     for (const copia of copias as Copia[]) {
         const nuevoIndice = copia.canciones.map(c => {
@@ -272,7 +273,7 @@ export function leerCopia(texto: string): Copia | null {
             if (ya !== undefined) {
                 // La segunda trae algo más: se suma la ficha y lo que falte
                 const antes = canciones[ya];
-                canciones[ya] = { ...c, ...antes, ficha: unirFichas(antes.ficha, c.ficha), texto: antes.texto || c.texto, notas: antes.notas || c.notas };
+                canciones[ya] = { ...antes, ...c, ficha: unirFichas(antes.ficha, c.ficha), texto: c.texto || antes.texto, notas: c.notas || antes.notas, bpm: antes.bpm ?? c.bpm, duracion: antes.duracion ?? c.duracion };
                 return ya;
             }
             indice.set(k, canciones.length);
