@@ -213,8 +213,10 @@ export interface CancionCopia {
     duracion?: number;
     bpm?: number;
     version?: string;
+    notas?: string;          // notas con formato (JSON del editor)
+    favorita?: boolean;      // ⭐ la versión que sale por defecto
 }
-export interface RepertorioCopia { nombre: string; fecha?: string; canciones: number[] }
+export interface RepertorioCopia { nombre: string; fecha?: string; canciones: number[]; notas?: string; hueco?: number }
 export interface Copia { app: 'musikeeo-cancionero'; version: 1; creada: string; canciones: CancionCopia[]; repertorios: RepertorioCopia[] }
 
 export function crearCopia(canciones: Cancion[], repertorios: Repertorio[]): Copia {
@@ -225,10 +227,11 @@ export function crearCopia(canciones: Cancion[], repertorios: Repertorio[]): Cop
         creada: new Date().toISOString(),
         canciones: canciones.map(c => ({
             titulo: c.titulo, artista: c.artista || undefined, texto: c.texto || undefined, ficha: c.ficha, ajustes: c.ajustes,
-            portada: c.portada, duracion: c.duracion, bpm: c.bpm, version: c.version,
+            portada: c.portada, duracion: c.duracion, bpm: c.bpm, version: c.version, notas: c.notas, favorita: c.favorita || undefined,
         })),
         repertorios: repertorios.map(r => ({
             nombre: r.nombre, fecha: r.fecha, canciones: r.canciones.map(id => indice.get(id)).filter((i): i is number => i !== undefined),
+            notas: r.notas, hueco: r.hueco,
         })),
     };
 }
