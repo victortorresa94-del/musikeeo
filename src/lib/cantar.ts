@@ -46,8 +46,10 @@ export function intervalosDe(calidad: string): number[] {
 // Los nombres siguen las mismas reglas: el del tono es exactamente tonoSuena.
 export function tonoQueSuena(leida: CancionLeida, ajustes: AjustesCancion): TonoQueSuena | null {
     const tono = tonoDeLeida(leida);
-    const primero: Acorde | undefined = leida.acordes[0];
-    if (!tono || !primero) return null;
+    if (!tono) return null;
+    // Sin acordes escritos (solo letra, con el tono en la ficha): el primero es el del tono
+    const primero: Acorde = leida.acordes[0]
+        ?? { raiz: tono.raiz, calidad: tono.menor ? 'm' : '', bajo: null, latina: false, mayusculas: false, bemol: false };
     const suena = (leida.meta.cejilla ?? 0) + ajustes.semitonos + (leida.meta.sonido ?? 0);
     const latino = ajustes.notacion === 'latina'
         || (ajustes.notacion === 'original' && leida.acordes.filter(a => a.latina).length > leida.acordes.length / 2);

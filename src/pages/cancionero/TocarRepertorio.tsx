@@ -300,7 +300,7 @@ function ControlesCancion({ cancion, visibles, rodando, auto, versos, linea, onL
                 <div className="flex items-center gap-2">
                     <Paso compacto etiqueta="Tono" onMenos={() => cambiarTono(-1)} onMas={() => cambiarTono(1)} menosDesactivado={sinAcordes} masDesactivado={sinAcordes}
                         valor={<>{tonoSuena || 'Tono'}{a.semitonos !== 0 && <span className="ml-1 text-[12px] text-muted-foreground">{a.semitonos > 0 ? '+' : ''}{a.semitonos}</span>}</>} />
-                    {sinAcordes ? <div className="flex-1" /> : (
+                    {!tonoSuena ? <div className="flex-1" /> : (
                         <DameElTono leida={leida} ajustes={a} className="flex-1 min-w-0 h-9 pl-1.5 pr-3 text-[14px] bg-fill text-foreground">
                             Dame el tono
                         </DameElTono>

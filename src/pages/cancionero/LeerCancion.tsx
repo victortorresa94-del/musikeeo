@@ -273,7 +273,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
             menosDesactivado={sinAcordes} masDesactivado={sinAcordes}
             valor={<>{tonoSuena || 'Tono'}{ajustes.semitonos !== 0 && <span className="ml-1 text-[12px] text-muted-foreground">{ajustes.semitonos > 0 ? '+' : ''}{ajustes.semitonos}</span>}</>} />
     );
-    const dameElTono = (className: string) => !sinAcordes && (
+    const dameElTono = (className: string) => !!tonoSuena && (
         <DameElTono leida={leida} ajustes={ajustes} className={className}>Dame el tono</DameElTono>
     );
     const botonClaqueta = <BotonClaqueta bpm={cancion.bpm} />;
@@ -337,7 +337,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                     </div>
                 )}
                 {/* Lo de quien canta, antes de entrar: el tono y la cuenta */}
-                {(!sinAcordes || !!cancion.bpm) && (
+                {(!!tonoSuena || !!cancion.bpm) && (
                     <div className="mt-3 flex items-center gap-2">
                         {dameElTono('h-9 pl-1.5 pr-3.5 text-[14px]')}
                         {botonClaqueta}

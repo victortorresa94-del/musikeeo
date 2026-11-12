@@ -97,7 +97,10 @@ export function etiquetasDe(c: Cancion): Etiqueta[] {
             if (m) { salida.push(etiqueta(m)); break; }
         }
     }
-    if (c.ajustes.cejilla > 0) salida.push({ texto: `Cejilla ${c.ajustes.cejilla}`, pastel: null });
+    // La cejilla, antes de empezar: la de la ficha tal cual («Capo 3 · formas de E») o la puesta
+    const capo = c.ficha?.capo?.trim();
+    if (capo && /\d/.test(capo)) salida.push({ texto: /^(capo|cejilla)/i.test(capo) ? capo : `Capo ${capo}`, pastel: null });
+    else if (c.ajustes.cejilla > 0) salida.push({ texto: `Cejilla ${c.ajustes.cejilla}`, pastel: null });
     return salida;
 }
 

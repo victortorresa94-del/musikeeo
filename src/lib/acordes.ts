@@ -569,9 +569,11 @@ export const tonoDeLeida = (leida: CancionLeida): Tono | null => leida.meta.tono
 // escrito. Si no aparece (otra cejilla, una ficha de otra versión), se queda la detección
 export function conTonoDeFicha(leida: CancionLeida, tonoFicha: string | undefined, suena: number, capoFicha?: string): CancionLeida {
     const f = tonoFicha ? leerAcorde(tonoFicha.trim().split(/[\s(·,]+/)[0]) : null;
-    if (!f || !leida.acordes.length) return leida;
+    if (!f) return leida;
     const menor = /^m(?!aj)/.test(f.calidad);
     const mod = (n: number) => ((n % 12) + 12) % 12;
+    // Sin acordes escritos (solo letra): el tono es el de la ficha, para «Dame el tono»
+    if (!leida.acordes.length) return { ...leida, meta: { ...leida.meta, tono: { raiz: mod(f.raiz - suena), menor } } };
     const raices = new Set(leida.acordes.map(a => a.raiz));
     const escrita = [mod(f.raiz - suena), f.raiz].find(r => raices.has(r));
     if (escrita !== undefined) return { ...leida, meta: { ...leida.meta, tono: { raiz: escrita, menor } } };
