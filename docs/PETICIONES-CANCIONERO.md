@@ -34,7 +34,7 @@ Las sesiones deciden con criterio; él no contesta hasta mañana. Cada cosa se p
 
 1. Abre musikeeo.com → Cancionero. Si no ves lo nuevo, cierra la app del todo y vuelve a abrirla.
 2. Si te quedó un repertorio con las 166 canciones, ábrelo y toca «Borrar repertorio» (las canciones no se borran).
-3. Toca **Importar → Abrir archivos** y sube, **uno a uno**:
+3. Toca **Importar → Abrir archivos** y sube, **uno a uno** (por «Cargar documento» de Nueva canción no entran: probado el 12-nov a las 00:25):
    1. `Lady-Jarana-Palleja-12h30.json`;
    2. `Cataleya-Palleja-19h00.json`;
    3. `actualizar-tonos.json`;
