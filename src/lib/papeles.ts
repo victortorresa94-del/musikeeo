@@ -2,6 +2,7 @@
 // CAMARÓN» es «Como Camarón»; «1 - MUCHO MEJOR» es «Hace Calor (Mucho mejor)»; «Orgulli.pdf» es
 // «Orgullo»; «10 - TU CALORRO + LA RAJA» son dos canciones juntas (un mix). Sin React.
 import { claveTitulo } from './buscarCanciones';
+import { detectarTono, leerAcorde, leerCancion, nombreTono, semitonosHacia } from './acordes';
 
 // «12 - », «16/17 - », «01. », «3) », «04_» delante del título: el orden de la carpeta, no el nombre.
 // Sin separador no se quita («19 días y 500 noches» es el título)
@@ -65,4 +66,34 @@ export function cancionDelPapel<T extends ConTitulo>(papel: string, canciones: T
     if (k.length < 5) return null;
     const re = new RegExp(`(^| )${k.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')}( |$)`);
     return unica(originales.filter(c => claves(c.titulo).some(x => re.test(x))));
+}
+
+// ---------- El papel, en el tono de su ficha ----------
+
+export interface TonoDelPapel {
+    semitonos: number;                 // lo que hay que mover el papel (el texto no se reescribe)
+    revisar: boolean;                  // dudoso: no se mueve y se marca «Revisar tono»
+    de?: string; a?: string;           // «C» → «G», para el resumen
+}
+
+// Cuánto mover un papel para que suene en el tono de su ficha. El tono del papel se saca de sus
+// acordes (las etiquetas escritas a mano fallan: «La Flaca — G» y es Am). Si la ficha lleva capo
+// («Capo 2 · formas de Am») y el papel está en esas formas, no se mueve. Dudoso (sin acordes, otro
+// modo, medio tono —suele ser una cejilla que falta en la ficha—): no se mueve y se avisa
+export function tonoDelPapel(texto: string, tonoFicha?: string, capoFicha?: string): TonoDelPapel {
+    const destino = tonoFicha ? leerAcorde(tonoFicha.trim().split(/\s+/)[0]) : null;
+    const acordes = leerCancion(texto).acordes;
+    if (!destino) return { semitonos: 0, revisar: false };
+    const papel = acordes.length >= 3 ? detectarTono(acordes) : null;
+    if (!papel) return { semitonos: 0, revisar: true };
+    const menorDestino = /^m(?!aj)/.test(destino.calidad);
+    const mod = (n: number) => ((n % 12) + 12) % 12;
+    const de = nombreTono(papel, 0, 'americana', false);
+    const capo = Number(/\d+/.exec(capoFicha ?? '')?.[0] ?? 0);
+    if (capo && mod(papel.raiz + capo) === destino.raiz && papel.menor === menorDestino) return { semitonos: 0, revisar: false, de, a: de };
+    if (papel.menor !== menorDestino) return { semitonos: 0, revisar: true, de };
+    const s = semitonosHacia(acordes, destino);
+    const diferencia = ((mod(destino.raiz - papel.raiz) + 5) % 12) - 5;
+    if (s !== diferencia || Math.abs(s) === 1) return { semitonos: 0, revisar: true, de };
+    return { semitonos: s, revisar: false, de, a: nombreTono(papel, s, 'americana', false) };
 }

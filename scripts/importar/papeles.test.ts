@@ -1,6 +1,6 @@
 // Pruebas de src/lib/papeles.ts con títulos reales de los papeles de Víctor (11-nov-2026).
 // node_modules/.bin/esbuild scripts/importar/papeles.test.ts --bundle --platform=node | node
-import { cancionDelPapel, partesDeMix, sinNumero, tituloDePapel } from '../../src/lib/papeles';
+import { cancionDelPapel, partesDeMix, sinNumero, tituloDePapel, tonoDelPapel } from '../../src/lib/papeles';
 
 const fichas = ['Hace Calor (Mucho mejor)', 'La madre de José', 'Sin documentos', 'Como Camarón', 'Tu Calorro',
     'Por la raja de tu falda', 'No puedo vivir sin ti', 'Vivir mi vida', 'La vida es un carnaval', 'Orgullo',
@@ -37,5 +37,18 @@ igual(partesDeMix('10 - TU CALORRO + LA RAJA'), ['TU CALORRO', 'LA RAJA'], 'mix 
 igual(partesDeMix('16/17 - EL PERDON Y BAILANDO'), ['EL PERDON', 'BAILANDO'], 'mix con Y');
 igual(partesDeMix('18 - VIVIR MI VIDA + CARNAVAL').map(t), ['Vivir mi vida', 'La vida es un carnaval'], 'mix casado');
 igual(partesDeMix('19 - PETARDOS'), ['PETARDOS'], 'no es mix');
+// El tono: casos del análisis de sus papeles (11-nov)
+const papel = (...filas: string[]) => filas.map(f => `${f}\nLa letra de esta línea va aquí`).join('\n');
+const enC = papel('C       G', 'Am      F', 'C       G', 'F   G   C');
+const enEm = papel('Em      C', 'G       D', 'Em      C', 'B7      Em');
+igual(tonoDelPapel(enC, 'G').semitonos, -5, 'No puedo vivir sin ti: C → G');
+igual(tonoDelPapel(enC, 'E').semitonos, 4, 'Sarandonga: C → E');
+igual(tonoDelPapel(enEm, 'Dm').semitonos, -2, 'La camisa negra: Em → Dm');
+igual(tonoDelPapel(enC, 'C').semitonos, 0, 'ya en su tono');
+igual(tonoDelPapel(enEm, 'F#m', 'Capo 2 · formas de Em'), { semitonos: 0, revisar: false, de: 'Em', a: 'Em' }, 'en las formas del capo');
+igual(tonoDelPapel(enEm, 'G').revisar, true, 'otro modo: revisar');
+igual(tonoDelPapel(enC, 'C#').revisar, true, 'medio tono: revisar (falta la cejilla)');
+igual(tonoDelPapel('Solo letra\nsin acordes\npor aquí', 'Gm').revisar, true, 'sin acordes: revisar');
+igual(tonoDelPapel(enC).revisar, false, 'ficha sin tono: no toca nada');
 console.log(mal ? `${mal} fallos` : 'todo bien');
 process.exit(mal ? 1 : 0);

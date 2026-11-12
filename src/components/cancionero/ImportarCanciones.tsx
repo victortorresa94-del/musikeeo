@@ -12,7 +12,7 @@ import { leerCancion, lineasDeLetra, separarCanciones } from '../../lib/acordes'
 import { leerSetlist, type CancionImportada } from '../../lib/setlist';
 import { leerCopia, mismoTitulo, sacarFicha, unirFichas, type Copia } from '../../lib/biblioteca';
 import { claveTitulo } from '../../lib/buscarCanciones';
-import { cancionDelPapel, partesDeMix, tituloDePapel } from '../../lib/papeles';
+import { cancionDelPapel, partesDeMix, tituloDePapel, tonoDelPapel } from '../../lib/papeles';
 import { leerPortapapeles } from '../../lib/pegado';
 import { norm } from './utilidades';
 import type { Cancion } from '../../types/cancionero';
@@ -160,6 +160,7 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId }: { abierto
         const corta = (t: CancionImportada) => t.ficha || t.texto.split('\n').length <= 25;
         let nuevas = 0, rellenas = 0, conFicha = 0;
         const aGuardar: Cancion[] = [];
+        const movidas: string[] = [], revisar: string[] = [], repetidas: string[] = [];
         let ids: string[];
         // Lo que se sabe de la grabación solo rellena lo que falta
         const extra = (c: Cancion, t: CancionImportada): Cancion => ({
@@ -179,8 +180,19 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId }: { abierto
                     return ya.id;
                 }
                 if (rellena) {
-                    rellenas++;
-                    aGuardar.push(extra({ ...rellena, artista: t.artista || rellena.artista, texto: t.texto, ajustes: { ...rellena.ajustes, ajustar: corta(t) } }, t));
+                    // El mismo tema en varios papeles (el Doc de julio, el Word de septiembre…): se
+                    // queda el más completo, no el último
+                    const otro = aGuardar.findIndex(c => c.id === rellena.id);
+                    if (otro !== -1 && letra(aGuardar[otro].texto) >= letra(t.texto)) { repetidas.push(rellena.titulo); return rellena.id; }
+                    if (otro !== -1) { aGuardar.splice(otro, 1); repetidas.push(rellena.titulo); } else rellenas++;
+                    // En el tono de su ficha, sin reescribir el papel; si es dudoso, se marca
+                    const tono = t.ficha ? null : tonoDelPapel(t.texto, rellena.ficha?.tono, rellena.ficha?.capo);
+                    const ajustes = { ...rellena.ajustes, ajustar: corta(t), ...(tono && !tono.revisar ? { semitonos: tono.semitonos } : {}) };
+                    let ficha = rellena.ficha;
+                    if (tono?.revisar) ficha = { ...ficha, etiquetas: [...new Set([...(ficha?.etiquetas ?? []), 'Revisar tono'])] };
+                    if (tono?.revisar) revisar.push(rellena.titulo);
+                    else if (tono?.semitonos) movidas.push(`${rellena.titulo} (${tono.de} → ${tono.a})`);
+                    aGuardar.push(extra({ ...rellena, ficha, artista: t.artista || rellena.artista, texto: t.texto, ajustes }, t));
                     return rellena.id;
                 }
                 nuevas++;
@@ -201,6 +213,17 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId }: { abierto
         const aviso = [nuevas && `${nuevas} nuevas`, rellenas && `${rellenas} fichas completadas`, conFicha && `${conFicha} actualizadas`].filter(Boolean).join(', ') || 'Ya las tenías';
         // Las que siguen sin letra (para completarlas luego): al rellenar fichas, se dice cuáles
         const sinLetra = rellenas ? almacenCanciones.estado().items.filter(c => !c.version && letra(c.texto) < 8) : [];
+        // Lo que se hizo con el tono de cada papel
+        if (movidas.length || revisar.length || repetidas.length) {
+            toast(`${movidas.length ? `${movidas.length} en su tono` : ''}${movidas.length && revisar.length ? ' · ' : ''}${revisar.length ? `${revisar.length} con «Revisar tono»` : ''}`.trim() || 'Papeles repetidos', {
+                description: [
+                    movidas.length && `Puestas en su tono: ${movidas.join(', ')}.`,
+                    revisar.length && `Revisa el tono (no lo he movido): ${revisar.join(', ')}.`,
+                    repetidas.length && `Venían repetidas; me quedo con el papel más completo: ${[...new Set(repetidas)].join(', ')}.`,
+                ].filter(Boolean).join(' '),
+                duration: 12000,
+            });
+        }
         if (sinLetra.length) {
             toast(`${sinLetra.length} ${sinLetra.length === 1 ? 'canción sigue' : 'canciones siguen'} sin letra`, {
                 description: sinLetra.slice(0, 6).map(c => c.titulo).join(' · ') + (sinLetra.length > 6 ? '…' : ''), duration: 9000,
