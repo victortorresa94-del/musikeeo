@@ -1,4 +1,7 @@
 import { useEffect, useLayoutEffect, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
+import { toast } from 'sonner';
+import { useCancionero } from '../../hooks/useCancionero';
 import { Check } from 'lucide-react';
 import { FormatoLetra } from './FormatoLetra';
 import { cn } from '../../lib/utils';
@@ -8,12 +11,13 @@ import type { Cancion } from '../../types/cancionero';
 // partes, **negrita**, ==resaltado==, «> avisos»), en letra de máquina para que los acordes no se
 // muevan de su sitio. Crece con el texto (la página se desliza, no el cuadro). «Listo» guarda.
 // Lo usan la canción y Tocar: props { cancion, onGuardar(texto), onCerrar, lineaInicial? }
-export function EditarEnSitio({ cancion, onGuardar, onCerrar, lineaInicial, className }: {
+export function EditarEnSitio({ cancion, onGuardar, onCerrar, lineaInicial, className, barraArriba }: {
     cancion: Cancion;
     onGuardar: (texto: string) => void;
     onCerrar: () => void;
     lineaInicial?: number;      // la línea del texto donde se tocó: el cursor va ahí
     className?: string;
+    barraArriba?: string;      // dónde se pega la barra al deslizar (clase «top-…»)
 }) {
     const [texto, setTexto] = useState(cancion.texto);
     const areaRef = useRef<HTMLTextAreaElement>(null);
@@ -57,7 +61,7 @@ export function EditarEnSitio({ cancion, onGuardar, onCerrar, lineaInicial, clas
     return (
         <div className={cn('rounded-2xl border border-hairline-strong bg-sheet', className)} data-editar-en-sitio>
             {/* Arriba y pegada mientras se desliza: Cancelar · formato · Listo */}
-            <div className="sticky top-[calc(env(safe-area-inset-top)+56px)] md:top-16 z-10 flex items-center gap-2 px-2 py-2 rounded-t-2xl bg-sheet border-b border-hairline">
+            <div className={cn('sticky z-10', barraArriba ?? 'top-[calc(env(safe-area-inset-top)+56px)] md:top-16', ' flex items-center gap-2 px-2 py-2 rounded-t-2xl bg-sheet border-b border-hairline')}>
                 <button onClick={cancelar} className="pulsable h-9 px-3 rounded-full text-[15px] text-muted-foreground shrink-0">Cancelar</button>
                 <div className="flex-1 min-w-0 overflow-x-auto hide-scrollbar">
                     <FormatoLetra areaRef={areaRef} texto={texto} onCambio={setTexto} />
@@ -74,5 +78,23 @@ export function EditarEnSitio({ cancion, onGuardar, onCerrar, lineaInicial, clas
                 Los acordes, en su línea encima de la letra (o así: [Am]). Partes: «Estribillo:». Se guarda en el móvil, también sin cobertura.
             </p>
         </div>
+    );
+}
+
+// Lo mismo, encima de todo (para Tocar): guarda él mismo, con Deshacer, y no navega
+export function EditarEnSitioHoja({ abierta, onCerrar, cancion }: { abierta: boolean; onCerrar: () => void; cancion: Cancion }) {
+    const { guardar } = useCancionero();
+    if (!abierta) return null;
+    const alGuardar = (texto: string) => {
+        const antes = cancion;
+        guardar({ ...cancion, texto });
+        toast.success('Canción guardada', { action: { label: 'Deshacer', onClick: () => guardar(antes) } });
+    };
+    return createPortal(
+        <div className="fixed inset-0 z-[96] bg-background overflow-y-auto overscroll-contain px-3 pt-[calc(env(safe-area-inset-top)+8px)] pb-[calc(env(safe-area-inset-bottom)+24px)]">
+            <p className="px-1 pb-2 text-[15px] font-semibold text-foreground truncate">{cancion.titulo}</p>
+            <EditarEnSitio cancion={cancion} onGuardar={alGuardar} onCerrar={onCerrar} barraArriba="top-0" />
+        </div>,
+        document.body,
     );
 }
