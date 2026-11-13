@@ -95,7 +95,7 @@ export function FilaSpotify({ repertorio, canciones, className }: { repertorio: 
                                 </label>
                             )}
                             <p className="px-1 text-[13px] text-muted-foreground">
-                                Busco cada canción en Spotify y la creo en tu cuenta, privada. La primera vez Spotify te pide permiso. Lo que no encuentre te lo digo.
+                                Busco cada canción en Spotify y la creo en tu cuenta, pública para que tus músicos la abran con el enlace. La primera vez Spotify te pide permiso. Lo que no encuentre te lo digo.
                             </p>
                         </>
                     ) : (

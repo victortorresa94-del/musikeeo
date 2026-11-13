@@ -56,7 +56,10 @@ async function pedirToken(cuerpo: Record<string, string>): Promise<Token> {
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
         body: new URLSearchParams({ client_id: CLIENT_ID, ...cuerpo }),
     });
-    if (!r.ok) throw new Error('Spotify no ha dado permiso. Prueba otra vez.');
+    if (!r.ok) {
+        const motivo = await r.json().then((j: { error_description?: string; error?: string }) => j?.error_description || j?.error).catch(() => undefined);
+        throw new Error(`Spotify no ha dado permiso${motivo ? ` (${motivo})` : ''}. Prueba otra vez.`);
+    }
     const j = await r.json() as { access_token: string; refresh_token?: string; expires_in: number };
     const viejo = leerToken();
     const t: Token = { acceso: j.access_token, refresco: j.refresh_token ?? viejo?.refresco, caduca: Date.now() + (j.expires_in - 60) * 1000 };
@@ -131,8 +134,11 @@ export async function crearPlaylist(pedido: Pick<Pedido, 'n' | 'c'>, alAvanzar?:
             await new Promise(f => setTimeout(f, (Number(r.headers.get('Retry-After')) || 2) * 1000));
             return api<T>(ruta, opciones, intento + 1);
         }
-        if (r.status === 403) throw new Error('Spotify no deja a esta cuenta usar Musikeeo todavía (hay que añadirla en la app de Spotify).');
-        if (!r.ok) throw new Error('Spotify no ha contestado bien. Prueba otra vez.');
+        if (r.status === 403) throw new Error('Spotify no deja a esta cuenta usar Musikeeo: tiene que estar en «User Management» de la app de Spotify (máximo 5) y quien creó la app necesita Spotify Premium.');
+        if (!r.ok) {
+            const motivo = await r.json().then((j: { error?: { message?: string } }) => j?.error?.message).catch(() => undefined);
+            throw new Error(`Spotify no ha contestado bien (${r.status}${motivo ? `: ${motivo}` : ''}). Prueba otra vez.`);
+        }
         return (r.status === 204 ? null : await r.json()) as T;
     };
     type Pista = { uri: string; external_urls: { spotify: string } };
@@ -140,7 +146,6 @@ export async function crearPlaylist(pedido: Pick<Pedido, 'n' | 'c'>, alAvanzar?:
         const consulta = async (q: string) => (await api<{ tracks: { items: Pista[] } }>(`/search?type=track&limit=1&market=from_token&q=${encodeURIComponent(q)}`)).tracks.items[0] ?? null;
         return (artista && await consulta(`track:${titulo} artist:${artista}`)) || await consulta([titulo, artista].filter(Boolean).join(' '));
     };
-    const yo = await api<{ id: string }>('/me');
     const uris: string[] = [];
     const enlaces: Record<string, string> = {};
     const faltan: string[] = [];
@@ -157,12 +162,15 @@ export async function crearPlaylist(pedido: Pick<Pedido, 'n' | 'c'>, alAvanzar?:
         if (!alguna) faltan.push(c.t);
         alAvanzar?.(i + 1, pedido.c.length);
     }
-    const lista = await api<{ id: string; external_urls: { spotify: string } }>(`/users/${encodeURIComponent(yo.id)}/playlists`, {
+    // Desde febrero de 2026 Spotify quitó /users/{id}/playlists y /playlists/{id}/tracks a las apps
+    // en modo desarrollo: ahora son /me/playlists y /playlists/{id}/items. Pública, para que los
+    // músicos la abran con el enlace (ellos no conectan Spotify: solo caben 5 cuentas)
+    const lista = await api<{ id: string; external_urls: { spotify: string } }>('/me/playlists', {
         method: 'POST',
-        body: JSON.stringify({ name: pedido.n, description: 'Hecha con el Cancionero de Musikeeo', public: false }),
+        body: JSON.stringify({ name: pedido.n, description: 'Hecha con el Cancionero de Musikeeo', public: true }),
     });
     for (let i = 0; i < uris.length; i += 100) {
-        await api(`/playlists/${lista.id}/tracks`, { method: 'POST', body: JSON.stringify({ uris: uris.slice(i, i + 100) }) });
+        await api(`/playlists/${lista.id}/items`, { method: 'POST', body: JSON.stringify({ uris: uris.slice(i, i + 100) }) });
     }
     return { url: lista.external_urls.spotify, total: uris.length, enlaces, faltan };
 }
