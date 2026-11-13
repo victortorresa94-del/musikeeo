@@ -60,7 +60,7 @@ export const HojaCancion = forwardRef<HTMLDivElement, Props>(({ lineas, opciones
         );
     }), [estrofas, opciones]);
     return (
-        <div ref={ref} onClick={alTocar} className={cn('text-foreground gap-x-10', className)} style={{ fontSize: tamano, columnCount: columnas }}>
+        <div ref={ref} data-hoja-cancion="" onClick={alTocar} className={cn('text-foreground gap-x-10', className)} style={{ fontSize: tamano, columnCount: columnas }}>
             {contenido}
         </div>
     );

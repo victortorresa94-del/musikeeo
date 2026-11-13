@@ -21,9 +21,10 @@ import { esperaDeIntro, velocidadAlDesplazar } from '../../lib/cantar';
 import { buscarEncaje, topeQueQuepa, columnasPosibles, type Encaje } from '../../components/cancionero/medir';
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
 import { cn as unir } from '../../lib/utils';
-import { pastelCanta, pastelDe, estiloBloque } from '../../components/cancionero/estilo';
-import { ENERGIAS, ESTADOS, cejillaDeFicha, versionesDe } from '../../lib/biblioteca';
+import { cejillaDeFicha, versionesDe } from '../../lib/biblioteca';
 import { NotasRicas } from '../../components/notas/NotasRicas';
+import { EditarEnSitio } from '../../components/cancionero/EditarEnSitio';
+import { FichaEnSitio } from '../../components/cancionero/FichaEnSitio';
 import { notasVacias } from '../../lib/notas';
 
 export default function LeerCancion() {
@@ -58,10 +59,15 @@ function Lector({ cancion }: { cancion: Cancion }) {
     const navigate = useNavigate();
     const { guardar, borrar } = useCancionero();
     const [ajustes, setAjustes] = useState<AjustesCancion>(cancion.ajustes);
+    // Si los ajustes cambian desde fuera (el tono de la ficha, Deshacer), se siguen
+    const [ajustesVistos, setAjustesVistos] = useState(cancion.ajustes);
+    if (cancion.ajustes !== ajustesVistos) { setAjustesVistos(cancion.ajustes); setAjustes(cancion.ajustes); }
     // La hoja abierta de la barra de abajo (una sola cosa cada vez), o ninguna
     const [panel, setPanelSeccion] = useState<SeccionAjustes | null>(null);
     const setPanel = (v: false) => { if (!v) setPanelSeccion(null); };
     const [versionando, setVersionando] = useState(false);
+    // Editando el texto ahí mismo: la línea donde se tocó y a qué altura de la pantalla estaba
+    const [editando, setEditando] = useState<{ linea: number; y: number | null } | null>(null);
     const [rodando, setRodando] = useState(false);
     const [escenario, setEscenario] = useState(false);
     const [controles, setControles] = useState(true);
@@ -262,6 +268,55 @@ function Lector({ cancion }: { cancion: Cancion }) {
         navigate('/cancionero', { replace: true });
     };
 
+    // Elegir otro tono en la ficha: los acordes se mueven para que suene en ese tono
+    const transporteHacia = (nuevo: string): Partial<AjustesCancion> | null => {
+        const a = tonoNumero(tonoSuena), b = tonoNumero(nuevo);
+        if (sinAcordes || !a || !b) return null;
+        // De mayor a menor (o al revés) se compara con su relativo: Bm y D son los mismos acordes
+        const destino = a.menor === b.menor ? b.raiz : b.raiz + (b.menor ? 3 : -3);
+        const x = ajustes.semitonos + destino - a.raiz;
+        return { semitonos: ((((x + 6) % 12) + 12) % 12) - 6 };
+    };
+
+    // ---- Editar el texto ahí mismo ----
+    const editarEn = (linea: number, y: number | null) => {
+        setRodando(false);
+        setPanel(false);
+        setEditando({ linea, y });
+    };
+    // Tocar la letra la abre para editar en la línea tocada (no en un acorde: eso enseña su diagrama)
+    const alTocarHoja = (e: React.MouseEvent) => {
+        const t = e.target as HTMLElement;
+        if (t.closest('[data-acorde], a, button')) return;
+        if (window.getSelection()?.toString()) return;
+        const el = t.closest('[data-linea]');
+        if (!el && !t.closest('[data-hoja-cancion]')) return;
+        editarEn(lineaDelTexto(cancion.texto, el?.textContent ?? '', el), e.clientY);
+    };
+    const guardarTexto = (texto: string) => {
+        const antes = { ...cancion, ajustes };
+        guardar({ ...cancion, texto, ajustes });
+        toast.success('Canción guardada', { action: { label: 'Deshacer', onClick: () => guardar(antes) } });
+    };
+    const cerrarEdicion = () => {
+        // Que la canción siga a la misma altura al volver a pintarse
+        const antes = zonaRef.current?.getBoundingClientRect().top ?? null;
+        setEditando(null);
+        requestAnimationFrame(() => {
+            const ahora = zonaRef.current?.getBoundingClientRect().top;
+            if (antes !== null && ahora !== undefined && ahora !== antes) window.scrollBy({ top: ahora - antes });
+        });
+    };
+    // Al abrir, la línea tocada se queda donde estaba el dedo
+    useLayoutEffect(() => {
+        if (!editando || editando.y === null) return;
+        const area = zonaRef.current?.querySelector('textarea');
+        if (!area) return;
+        const alto = parseFloat(getComputedStyle(area).lineHeight) || 23;
+        const y = area.getBoundingClientRect().top + 12 + editando.linea * alto;
+        window.scrollBy({ top: y - editando.y });
+    }, [editando]);
+
     const hoja = (ref?: React.Ref<HTMLDivElement>, className?: string) => (
         <HojaCancion ref={ref} lineas={leida.lineas} opciones={opciones} vista={ajustes.vista}
             tamano={tamano} columnas={columnas} className={className} />
@@ -304,10 +359,10 @@ function Lector({ cancion }: { cancion: Cancion }) {
                         <ChevronLeft className="h-5 w-5" /> Cancionero
                     </Link>
                     <span className="flex items-center gap-2">
-                        <Link to={`/cancionero/${cancion.id}/editar`} aria-label="Editar la canción"
-                            className="pulsable h-9 pl-3 pr-3.5 rounded-full bg-fill text-[14px] font-semibold text-foreground flex items-center gap-1.5">
+                        <button onClick={() => editarEn(0, null)} aria-label="Editar el texto de la canción aquí" disabled={!!editando}
+                            className="pulsable h-9 pl-3 pr-3.5 rounded-full bg-fill text-[14px] font-semibold text-foreground flex items-center gap-1.5 disabled:opacity-40">
                             <Pencil className="h-4 w-4" /> Editar
-                        </Link>
+                        </button>
                         <BotonBarra etiqueta="Modo escenario: a pantalla completa" onClick={entrarEscenario}>
                             <Maximize className="h-4 w-4" />
                         </BotonBarra>
@@ -326,7 +381,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                         </p>
                     </div>
                 </div>
-                <FichaLectura cancion={cancion} />
+                <FichaEnSitio cancion={cancion} onTono={transporteHacia} />
                 <Versiones cancion={cancion} />
                 {/* Las dos vistas de la cejilla: como suena o con las formas que se tocan */}
                 {cejillaFormas > 0 && tonoSuena && !sinAcordes && (
@@ -379,7 +434,13 @@ function Lector({ cancion }: { cancion: Cancion }) {
                     </p>
                 )}
                 {/* Con «que quepa», la hoja tiene que poder subir hasta la barra aunque la canción sea corta */}
-                <div ref={zonaRef} className={cn(ajustes.ajustar && 'min-h-[100dvh]')}>{!escenario && hoja()}</div>
+                <div ref={zonaRef} className={cn(ajustes.ajustar && !editando && 'min-h-[100dvh]')}
+                    onClick={editando || rodando ? undefined : alTocarHoja}>
+                    {editando ? (
+                        <EditarEnSitio cancion={cancion} lineaInicial={editando.linea}
+                            onGuardar={guardarTexto} onCerrar={cerrarEdicion} />
+                    ) : !escenario && hoja()}
+                </div>
                 {/* Ficha o chuleta sin letra: primero la canción; buscar y pegar la letra, plegado debajo */}
                 {faltaLetra && (
                     verAnadir ? (
@@ -447,7 +508,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
             )}
 
             {/* La barra de la canción, abajo y al alcance del pulgar: cada botón abre UNA cosa */}
-            {!escenario && (
+            {!escenario && !editando && (
                 <div ref={barraRef} className="sticky bottom-0 z-20 mt-6 pb-safe bg-sheet border-t border-hairline">
                     <div className="max-w-xl mx-auto grid grid-cols-5 h-[60px]">
                         <BotonDeBarra etiqueta="Tono" activo={ajustes.semitonos !== 0} onClick={() => setPanelSeccion('tono')} desactivado={sinAcordes}>
@@ -484,35 +545,6 @@ function Lector({ cancion }: { cancion: Cancion }) {
             />
         </div>
         </ConMenu>
-    );
-}
-
-// La ficha del tema a la vista (tono, capo, quién canta, grupo, estilo…), y para editarla
-function FichaLectura({ cancion }: { cancion: Cancion }) {
-    const f = cancion.ficha ?? {};
-    const piezas: { texto: string; clase: string }[] = [];
-    if (f.tono) piezas.push({ texto: `Tono ${f.tono}${f.tonoAlt ? ` · también ${f.tonoAlt}` : ''}`, clase: 'bg-foreground text-background' });
-    if (f.capo) piezas.push({ texto: f.capo, clase: 'bg-fill-strong text-foreground' });
-    if (f.canta) { const p = pastelCanta(f.canta); piezas.push({ texto: `Canta ${f.canta}`, clase: unir(p.fondo, p.tinta) }); }
-    for (const g of f.proyectos ?? []) piezas.push({ texto: g, clase: 'bg-fill-strong text-foreground' });
-    if (f.estilo) { const p = estiloBloque(f.estilo).pastel; piezas.push({ texto: f.estilo, clase: unir(p.fondo, p.tinta) }); }
-    if (f.energia) piezas.push({ texto: ENERGIAS[f.energia], clase: 'bg-fill-strong text-foreground' });
-    for (const e of f.etiquetas ?? []) { const p = pastelDe(`etiqueta:${e.toLowerCase()}`); piezas.push({ texto: e, clase: unir(p.fondo, p.tinta) }); }
-    if (f.estado && f.estado !== 'lista') piezas.push({ texto: ESTADOS[f.estado], clase: 'bg-pastel-mantequilla text-pastel-mantequilla-ink' });
-    const aFicha = `/cancionero/${cancion.id}/editar#ficha`;
-    // En una sola línea que se desliza de lado (en el móvil no se come la pantalla); tocar una
-    // píldora abre la ficha para cambiarla
-    return (
-        <div className="mt-2.5 -mx-4 px-4 md:mx-0 md:px-0 flex flex-nowrap md:flex-wrap items-center gap-1.5 overflow-x-auto hide-scrollbar">
-            <Link to={aFicha} aria-label={piezas.length ? 'Editar la ficha' : 'Añadir la ficha: tono, quién canta…'}
-                className="h-7 shrink-0 px-2 rounded-full border border-hairline-strong text-[13px] font-semibold text-foreground flex items-center gap-1 active:opacity-60">
-                <Pencil className="h-3.5 w-3.5" />{!piezas.length && ' Ficha: tono, quién canta…'}
-            </Link>
-            {piezas.map(p => <Link key={p.texto} to={aFicha} className={unir('h-7 shrink-0 whitespace-nowrap px-2.5 rounded-full text-[13px] font-semibold flex items-center active:opacity-60', p.clase)}>{p.texto}</Link>)}
-            {f.enlace && /^https?:\/\//i.test(f.enlace) && (
-                <a href={f.enlace} target="_blank" rel="noopener noreferrer" className="h-7 shrink-0 whitespace-nowrap px-2.5 rounded-full bg-fill-strong text-[13px] font-semibold text-foreground flex items-center active:opacity-60">Sus acordes ↗</a>
-            )}
-        </div>
     );
 }
 
@@ -560,4 +592,38 @@ function BotonDeBarra({ etiqueta, activo, desactivado, onClick, children }: {
 function arribaLibre(): number {
     const cabecera = document.querySelector<HTMLElement>('header');
     return Math.max(0, cabecera?.getBoundingClientRect().bottom ?? 0) + 12;
+}
+
+// La línea del texto guardado que corresponde a la que se tocó (por su contenido; si no se
+// encuentra, por su posición en la hoja)
+function lineaDelTexto(texto: string, tocada: string, el: Element | null): number {
+    const plano = (x: string) => x.replace(/\*\*|==|\[[^\]]*\]/g, '').replace(/\s+/g, ' ').trim().toLowerCase();
+    const buscada = plano(tocada);
+    const lineas = texto.split('\n');
+    if (el) {
+        // Sin los acordes de encima: solo la letra de esa línea
+        const copia = el.cloneNode(true) as Element;
+        copia.querySelectorAll('[data-acorde]').forEach(n => n.remove());
+        const letra = plano(copia.textContent ?? '');
+        if (letra.length >= 3) {
+            const i = lineas.findIndex(l => { const p = plano(l); return p.length >= 3 && p.includes(letra); });
+            if (i >= 0) return i;
+        }
+    }
+    if (buscada.length >= 3) {
+        const i = lineas.findIndex(l => { const p = plano(l); return p.length >= 3 && (p.includes(buscada) || buscada.includes(p)); });
+        if (i >= 0) return i;
+    }
+    if (el) {
+        const todas = [...(el.closest('[data-hoja-cancion]') ?? document).querySelectorAll('[data-linea]')];
+        const n = todas.indexOf(el);
+        if (n >= 0 && todas.length) return Math.round((n / todas.length) * lineas.length);
+    }
+    return 0;
+}
+
+const NOTA: Record<string, number> = { C: 0, 'C#': 1, Db: 1, D: 2, 'D#': 3, Eb: 3, E: 4, F: 5, 'F#': 6, Gb: 6, G: 7, 'G#': 8, Ab: 8, A: 9, 'A#': 10, Bb: 10, B: 11 };
+function tonoNumero(t: string | null | undefined): { raiz: number; menor: boolean } | null {
+    const m = /^\s*([A-G][#b]?)(m(?!aj))?/.exec(t ?? '');
+    return m && NOTA[m[1]] !== undefined ? { raiz: NOTA[m[1]], menor: !!m[2] } : null;
 }

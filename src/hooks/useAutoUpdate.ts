@@ -14,6 +14,8 @@ export function useAutoUpdate() {
             if (checking || document.visibilityState !== 'visible') return;
             // En mitad del bolo no se recarga: ya se mirará al salir de Tocar o del escenario
             if (/\/tocar$/.test(window.location.pathname) || document.fullscreenElement) return;
+            // Ni con una canción a medio editar en su sitio (se perdería lo escrito)
+            if (document.querySelector('[data-editar-en-sitio]')) return;
             checking = true;
             try {
                 const res = await fetch(`/index.html?v=${Date.now()}`, { cache: 'no-store' });
