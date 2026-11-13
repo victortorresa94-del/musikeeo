@@ -7,7 +7,7 @@ export default function CookieBanner() {
     const { hasDecided, accept, reject } = useCookieConsent();
     // En el bolo (Tocar, a pantalla completa) no puede tapar la canción: se pregunta en otra pantalla
     const { pathname } = useLocation();
-    if (/^\/cancionero\/repertorio\/[^/]+\/tocar/.test(pathname) || /^\/grupo(\/|$)/.test(pathname)) return null;
+    if (/^\/cancionero\/repertorio\/[^/]+\/tocar/.test(pathname) || /^\/(grupo|bolo)(\/|$)/.test(pathname)) return null;
 
     return (
         <AnimatePresence>

@@ -50,6 +50,8 @@ const Repertorio = lazy(() => import('./pages/cancionero/Repertorio'));
 const TocarRepertorio = lazy(() => import('./pages/cancionero/TocarRepertorio'));
 const SacarAcordes = lazy(() => import('./pages/cancionero/SacarAcordes'));
 const Grupo = lazy(() => import('./pages/cancionero/Grupo'));
+const BoloGrupo = lazy(() => import('./pages/cancionero/BoloGrupo'));
+const BoloEditar = lazy(() => import('./pages/cancionero/Bolo'));
 // Musikeers cerca: Leaflet solo se descarga al abrir el mapa
 const Mapa = lazy(() => import('./pages/mapa/Mapa'));
 
@@ -221,6 +223,8 @@ function App() {
               {/* El repertorio que se comparte con el grupo: sin cuenta y sin la app alrededor */}
               <Route path="/grupo" element={<Grupo />} />
               <Route path="/grupo/:id" element={<Grupo />} />
+              <Route path="/bolo" element={<BoloGrupo />} />
+              <Route path="/bolo/:id" element={<BoloGrupo />} />
 
               {/* Onboarding - Protected but no layout */}
               <Route element={<RequireAuthSimple />}>
@@ -256,6 +260,7 @@ function App() {
                 <Route path="/cancionero/:id" element={<LeerCancion />} />
                 <Route path="/cancionero/:id/editar" element={<EditarCancion />} />
                 <Route path="/cancionero/repertorio/:id" element={<Repertorio />} />
+                <Route path="/cancionero/bolo/:id" element={<BoloEditar />} />
 
                 {/* Acciones: publicar, escribir y gestionar requieren cuenta */}
                 <Route element={<RequireAuthCompleted />}>

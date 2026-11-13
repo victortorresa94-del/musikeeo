@@ -1,6 +1,6 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { useAuth } from '../context/AuthContext';
-import { almacenCanciones, almacenListas, almacenRepertorios, cancioneroService } from '../services/cancioneroService';
+import { almacenBolos, almacenCanciones, almacenListas, almacenRepertorios, cancioneroService } from '../services/cancioneroService';
 import { compartidosService } from '../services/compartidosService';
 import { catalogoService } from '../services/catalogoService';
 import { useCatalogo } from './useCatalogo';
@@ -21,8 +21,10 @@ export function useCancionero() {
     const canciones = useSyncExternalStore(almacenCanciones.suscribir, almacenCanciones.estado);
     const repertorios = useSyncExternalStore(almacenRepertorios.suscribir, almacenRepertorios.estado);
     const listas = useSyncExternalStore(almacenListas.suscribir, almacenListas.estado);
+    const bolos = useSyncExternalStore(almacenBolos.suscribir, almacenBolos.estado);
     return {
         listas: listas.items,
+        bolos: bolos.items,
         catalogo,
         canciones: canciones.items,
         repertorios: repertorios.items,

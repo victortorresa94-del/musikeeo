@@ -4,6 +4,7 @@ import { antesQue } from '../../lib/bolos';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { CheckSquare, MinusCircle, ChevronRight, Cloud, Download, FileText, FileUp, ListPlus, Loader2, MoreHorizontal, Palette, Pencil, Plus, Search, Smartphone, Table2, Trash2, X } from 'lucide-react';
 import { GestionarCatalogo } from '../../components/cancionero/Catalogo';
+import { ListaBolos } from '../../components/cancionero/ListaBolos';
 import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
@@ -49,7 +50,7 @@ const fechaCorta = (f: string) => {
 // repertorios para tocarlo en el bolo. Un solo buscador: tus canciones y, debajo, las del
 // catálogo (con portada y muestra) para añadirlas
 export default function Cancionero() {
-    const { canciones, repertorios, listas, listo, nube, conCuenta, crear, crearRepertorio, guardar, guardarLista, borrarLista } = useCancionero();
+    const { canciones, repertorios, listas, bolos, listo, nube, conCuenta, crear, crearRepertorio, guardar, guardarLista, borrarLista } = useCancionero();
     const navigate = useNavigate();
     const location = useLocation();
     const [params, setParams] = useSearchParams();
@@ -296,6 +297,7 @@ export default function Cancionero() {
                         )}
                     </div>
 
+                    {ver === 'repertorios' && <ListaBolos />}
                     {ver === 'repertorios' ? (
                         reps.length === 0 ? (
                             <div className="rounded-[22px] bg-pastel-lavanda p-5 md:p-7">
@@ -436,7 +438,7 @@ export default function Cancionero() {
             )}
 
             {listo && canciones.length > 0 && (
-                <button onClick={() => descargarCopia(crearCopia(canciones, repertorios, catalogoService.paraCopia()))}
+                <button onClick={() => descargarCopia(crearCopia(canciones, repertorios, catalogoService.paraCopia(), bolos))}
                     className="mt-3 h-11 flex items-center gap-2 text-[14px] font-semibold text-foreground active:opacity-60">
                     <Download className="h-4 w-4" /> Guardar una copia del cancionero
                 </button>
@@ -540,7 +542,7 @@ export default function Cancionero() {
                         <button onClick={() => { setMantenimiento(false); setImportar(true); }} className="w-full h-12 px-4 flex items-center gap-2.5 text-[15px] text-foreground active:bg-fill-strong">
                             <FileUp className="h-[18px] w-[18px]" /> Importar canciones o una copia
                         </button>
-                        <button onClick={() => descargarCopia(crearCopia(canciones, repertorios, catalogoService.paraCopia()))} className="w-full h-12 px-4 flex items-center gap-2.5 text-[15px] text-foreground active:bg-fill-strong">
+                        <button onClick={() => descargarCopia(crearCopia(canciones, repertorios, catalogoService.paraCopia(), bolos))} className="w-full h-12 px-4 flex items-center gap-2.5 text-[15px] text-foreground active:bg-fill-strong">
                             <Download className="h-[18px] w-[18px]" /> Guardar una copia del cancionero
                         </button>
                     </div>
@@ -558,7 +560,7 @@ export default function Cancionero() {
                                 <div className="grid grid-cols-2 gap-2">
                                     <button onClick={() => setConfirmarBorrar(false)} className="pulsable h-11 rounded-[14px] bg-sheet text-[15px] font-semibold text-foreground">Cancelar</button>
                                     <button onClick={() => {
-                                        descargarCopia(crearCopia(canciones, repertorios, catalogoService.paraCopia()));
+                                        descargarCopia(crearCopia(canciones, repertorios, catalogoService.paraCopia(), bolos));
                                         void cancioneroService.vaciarTodo();
                                         setConfirmarBorrar(false);
                                         setMantenimiento(false);

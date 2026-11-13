@@ -1,7 +1,7 @@
 import { collection, deleteDoc, doc, getDocs, limit, query, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { datosDelPegado, leerCancion } from '../lib/acordes';
-import type { AjustesCancion, Cancion, Lista, Repertorio } from '../types/cancionero';
+import type { AjustesCancion, Bolo, Cancion, Lista, Repertorio } from '../types/cancionero';
 
 // El cancionero vive primero en el móvil (funciona sin cuenta y sin cobertura, en el bolo)
 // y, con cuenta, se copia a users/{uid}/canciones y users/{uid}/repertorios para tenerlo
@@ -228,6 +228,11 @@ export const almacenListas = crearAlmacen<Lista>('musikeeo-listas-v1', 'listas',
     ...siHay({ color: l.color, regla: l.regla && siHay({ filtros: l.regla.filtros && siHay(l.regla.filtros), texto: l.regla.texto }), orden: l.orden }),
 }));
 
+export const almacenBolos = crearAlmacen<Bolo>('musikeeo-bolos-v1', 'bolos', b => ({
+    titulo: b.titulo, fecha: b.fecha, horario: b.horario, sets: b.sets.map(s => siHay(s)), creadaEn: b.creadaEn, actualizadaEn: b.actualizadaEn,
+    ...siHay({ lugar: b.lugar, direccion: b.direccion, contacto: b.contacto, telefono: b.telefono, notas: b.notas, compartido: b.compartido && siHay(b.compartido) }),
+}));
+
 export const AJUSTES_INICIALES: AjustesCancion = {
     semitonos: 0,
     cejilla: 0,
@@ -268,6 +273,22 @@ function crearRepertorio(nombre: string, canciones: string[] = []): Repertorio {
         nombre: nombre.trim().slice(0, 120) || 'Repertorio',
         fecha: new Date().toLocaleDateString('sv-SE'),
         canciones,
+        creadaEn: ahora,
+        actualizadaEn: ahora,
+    });
+}
+
+// Un bolo nuevo, guardado (con lo que se sepa: título, fecha, sets…)
+function crearBolo(datos: Partial<Omit<Bolo, 'id' | 'creadaEn' | 'actualizadaEn'>> = {}): Bolo {
+    const ahora = new Date().toISOString();
+    return almacenBolos.guardar({
+        id: nuevoId(),
+        titulo: (datos.titulo ?? '').trim().slice(0, 120) || 'Bolo',
+        fecha: datos.fecha ?? new Date().toLocaleDateString('sv-SE'),
+        horario: datos.horario ?? [],
+        sets: datos.sets ?? [],
+        ...(datos.lugar ? { lugar: datos.lugar } : {}),
+        ...(datos.direccion ? { direccion: datos.direccion } : {}),
         creadaEn: ahora,
         actualizadaEn: ahora,
     });
@@ -315,6 +336,7 @@ function cargar(uid: string | null) {
     almacenCanciones.cargar(uid);
     almacenRepertorios.cargar(uid);
     almacenListas.cargar(uid);
+    almacenBolos.cargar(uid);
     try { localStorage.setItem(CLAVE_ULTIMO, uid || INVITADO); } catch { /* sin almacenamiento */ }
 }
 
@@ -326,6 +348,7 @@ function cargarPrevio() {
     almacenCanciones.cargarPrevio(ultimo);
     almacenRepertorios.cargarPrevio(ultimo);
     almacenListas.cargarPrevio(ultimo);
+    almacenBolos.cargarPrevio(ultimo);
 }
 if (typeof window !== 'undefined') cargarPrevio();
 
@@ -342,6 +365,9 @@ export const cancioneroService = {
     borrarRepertorio: almacenRepertorios.borrar,
     guardarLista: almacenListas.guardar,
     borrarLista: almacenListas.borrar,
-    // Borrar todo el cancionero (canciones, repertorios y listas) para empezar de cero
-    vaciarTodo: async () => { await Promise.all([almacenCanciones.vaciar(), almacenRepertorios.vaciar(), almacenListas.vaciar()]); },
+    crearBolo,
+    guardarBolo: almacenBolos.guardar,
+    borrarBolo: almacenBolos.borrar,
+    // Borrar todo el cancionero (canciones, repertorios, listas y bolos) para empezar de cero
+    vaciarTodo: async () => { await Promise.all([almacenCanciones.vaciar(), almacenRepertorios.vaciar(), almacenListas.vaciar(), almacenBolos.vaciar()]); },
 };

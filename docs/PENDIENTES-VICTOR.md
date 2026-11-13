@@ -14,7 +14,7 @@
    - Sin esto, en musikeeo.com no funcionan:
      - las publicaciones del Feed (dan «permiso denegado»), los me gusta y los comentarios;
      - el Cancionero guardado en la cuenta;
-     - el enlace del grupo que se actualiza solo (`compartidos`);
+     - el enlace del grupo y el del bolo, que se actualizan solos (`compartidos`), y los bolos en la cuenta (`bolos`);
      - tus colores, logos y columnas propias en otros dispositivos (`catalogo`);
      - el mapa de musikeers.
    - **Y entra con tu cuenta en el Cancionero**: sin cuenta, el enlace del grupo no se publica en la nube (los músicos ven el que les mandaste, pero no los cambios).
@@ -22,7 +22,8 @@
 2. **Antes del bolo del sábado 14 (RTF Pallejà: Lady Jarana 12:30 · Cataleya 19:00):**
    - Cancionero → ⋯ → «Borrar todo y empezar de cero» (descarga antes una copia) e importar `Mi-cancionero.json` (396 canciones, mandado en el chat). Tus canciones no van al repo.
    - Si tenías el orden de los sets a tu gusto: Importar → la copia que descargó «Borrar todo» → «Solo el orden de los repertorios».
-   - Comparte el set con los músicos desde el repertorio («Compartir»): el enlace es `/grupo/…` y se pone al día solo cuando estés con cuenta y las reglas desplegadas.
+   - Crea el bolo de Pallejà: en el repertorio de Lady Jarana, ⋯ → «Crear un bolo con este repertorio»; ponle «RTF Pallejà», añade el set de Cataleya, el lugar, el horario y a quién llamar, y pulsa «Compartir el bolo». El enlace es `/bolo/…`: con él tus músicos ven el horario, cómo llegar y los dos sets.
+   - Si solo quieres pasar un set, sigue estando «Compartir» en el repertorio (`/grupo/…`).
    - Pon el logo de Lady Jarana y de Cataleya: Tabla → «Grupos y colores» → el grupo → «Tu logo».
    - Repasa tonos y orden del repertorio.
    - Pulsa «Poner tempo y duración» en el Cancionero y prueba el botón «Auto» de Tocar con una canción.

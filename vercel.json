@@ -69,6 +69,15 @@
           "value": "noindex, nofollow"
         }
       ]
+    },
+    {
+      "source": "/bolo/:id*",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     }
   ]
 }

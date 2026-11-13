@@ -2,7 +2,8 @@ import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRe
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Reorder, useDragControls } from 'framer-motion';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, FileText, GripVertical, Loader2, MoreHorizontal, Play, Plus, Search, Share2, Trash2, X } from 'lucide-react';
+import { CalendarDays, ChevronLeft, ChevronRight, FileText, GripVertical, Loader2, MoreHorizontal, Play, Plus, Search, Share2, Trash2, X } from 'lucide-react';
+import { tituloYHoraDe } from '../../lib/compartirBolo';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { norm, pedirPantallaCompleta, tonoDe } from '../../components/cancionero/utilidades';
@@ -45,7 +46,7 @@ export default function Repertorio() {
 function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     const navigate = useNavigate();
     const [params, setParams] = useSearchParams();
-    const { canciones, guardar, guardarRepertorio, borrarRepertorio } = useCancionero();
+    const { canciones, guardar, guardarRepertorio, borrarRepertorio, bolos, crearBolo } = useCancionero();
     const [campoTablero, setCampoTablero] = useState<CampoTablero>(() => { try { return (localStorage.getItem('musikeeo-tablero-set') as CampoTablero) || 'bloque'; } catch { return 'bloque'; } });
     // La vista va en la dirección: al volver de una canción se queda donde estaba
     const vista: Vista = params.get('vista') === 'cifrado' ? 'cifrado' : params.get('vista') === 'bloques' ? 'bloques' : params.get('vista') === 'tabla' ? 'tabla' : 'lista';
@@ -138,6 +139,16 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     const tocar = (n = 0) => {
         pedirPantallaCompleta();
         navigate(`/cancionero/repertorio/${repertorio.id}/tocar${n ? `?n=${n}` : ''}`);
+    };
+
+    // El bolo de este set: si ya hay uno que lo lleva, se abre; si no, se crea con lo que se sabe
+    // («Lady Jarana · RTF Pallejà 12:30» → bolo «Lady Jarana · RTF Pallejà», set a las 12:30)
+    const boloDelSet = bolos.find(b => b.sets.some(s => s.repertorioId === repertorio.id));
+    const abrirBolo = () => {
+        if (boloDelSet) { navigate(`/cancionero/bolo/${boloDelSet.id}`); return; }
+        const { titulo, hora } = tituloYHoraDe(repertorio.nombre);
+        const b = crearBolo({ titulo, fecha: repertorio.fecha || undefined, sets: [{ repertorioId: repertorio.id, ...(hora ? { hora } : {}) }] });
+        navigate(`/cancionero/bolo/${b.id}`);
     };
 
     const borrar = () => {
@@ -245,6 +256,9 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                     <div className="rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
                         <button onClick={() => { setMenu(false); setCompartir(true); }} disabled={!ids.length} className="w-full h-12 px-4 flex items-center gap-3 text-[15px] text-foreground active:bg-fill-strong disabled:opacity-40">
                             <Share2 className="h-[18px] w-[18px]" /> Compartir con el grupo
+                        </button>
+                        <button onClick={() => { setMenu(false); abrirBolo(); }} className="w-full h-12 px-4 flex items-center gap-3 text-[15px] text-foreground active:bg-fill-strong">
+                            <CalendarDays className="h-[18px] w-[18px]" /> {boloDelSet ? `Bolo: ${boloDelSet.titulo}` : 'Crear un bolo con este repertorio'}
                         </button>
                         <button onClick={() => { setMenu(false); setEditandoHoja(true); }} className="w-full h-12 px-4 flex items-center gap-3 text-[15px] text-foreground active:bg-fill-strong">
                             <FileText className="h-[18px] w-[18px]" /> Hoja del bolo

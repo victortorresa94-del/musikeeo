@@ -146,13 +146,26 @@ const deBase64Url = (s: string) => {
     return u;
 };
 
-export const codificar = (p: Compartido) => `1${aBase64Url(deflateSync(strToU8(JSON.stringify(p)), { level: 9 }))}`;
+// Un set o un bolo (lib/compartirBolo), comprimido para ir tras «#» o en la nube
+export const codificar = (p: object) => `1${aBase64Url(deflateSync(strToU8(JSON.stringify(p)), { level: 9 }))}`;
 
-export function descodificar(codigo: string): Compartido | null {
+// Lo de vuelta, sin mirar qué es (null si está cortado o mal)
+export function descomprimir(codigo: string): unknown {
     try {
         const limpio = decodeURIComponent(codigo.replace(/^#/, '').trim());
         if (!limpio.startsWith('1')) return null;
-        const p = JSON.parse(strFromU8(inflateSync(deBase64Url(limpio.slice(1))))) as Compartido;
+        return JSON.parse(strFromU8(inflateSync(deBase64Url(limpio.slice(1)))));
+    } catch {
+        return null;
+    }
+}
+
+export const descodificar = (codigo: string): Compartido | null => sanear(descomprimir(codigo));
+
+// Un set que llega de fuera: solo lo que sabemos pintar, con su tipo
+export function sanear(dato: unknown): Compartido | null {
+    try {
+        const p = dato as Compartido;
         if (p?.v !== 1 || typeof p.n !== 'string' || !Array.isArray(p.c)) return null;
         // Lo que llega de fuera: solo lo que sabemos pintar, con su tipo
         const texto = (x: unknown) => (typeof x === 'string' ? x : undefined);
@@ -184,5 +197,5 @@ export function idCompartido(): string {
     return Array.from(azar, n => letras[n % letras.length]).join('');
 }
 
-// Lo que se compara para saber si hay que volver a publicar: el set sin la hora
-export const huella = (p: Compartido) => codificar({ ...p, u: undefined });
+// Lo que se compara para saber si hay que volver a publicar: el set (o el bolo) sin la hora
+export const huella = (p: { u?: string }) => codificar({ ...p, u: undefined });

@@ -593,6 +593,31 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
 - Repo: este documento, `docs/PENDIENTES-VICTOR.md` y el registro de la sesión en `CLAUDE.md`.
 - aura Brain: `musikeeo/cancionero` (contexto de las peticiones y decisiones), la bitácora de la sesión y la nota «2026-11-13 · cancionero musikeeo» en la libreta «Claude Code».
 
+### 21k. Crear un bolo y compartirlo (13-nov, noche) ✅
+
+> *«Estaría guay tener una opción de compartir no solo el repertorio —eso quiero dejarlo independiente—, pero también la opción de crear un bolo y compartir bolo… para pasar información, por ejemplo, cuando alguien te contrata… a mis músicos, un link donde puedan acceder al repertorio, al horario de cada cosa y a la ubicación. Como un panel donde puedan ver todo: el título, la duración del concierto, etcétera.»*
+
+- ✅ **El bolo, aparte del repertorio** (`Bolo` en `types/cancionero.ts`, almacén `musikeeo-bolos-v1` / `users/{uid}/bolos`, regla `bolos`). Un bolo tiene:
+  - título, fecha, lugar y dirección;
+  - uno o varios sets (repertorios), cada uno con su hora de empezar;
+  - el horario (llegada, montaje, prueba de sonido, comida… o lo que quieras);
+  - contacto con teléfono, y notas.
+- ✅ **Dónde se crea:**
+  - Repertorios → sección «Bolos» → «Nuevo bolo»;
+  - desde un repertorio: ⋯ → «Crear un bolo con este repertorio». El bolo sale con el nombre sin la hora, la fecha y el set a su hora («Lady Jarana · RTF Pallejà 12:30» → set a las 12:30).
+  - Pantalla: `pages/cancionero/Bolo.tsx` (`/cancionero/bolo/:id`). Se guarda al escribir.
+- ✅ **Compartir el bolo** (`CompartirBolo` en `CompartirGrupo.tsx`): el mismo enlace que se actualiza solo, ahora en `/bolo/{id}` (`lib/compartirBolo.ts`, publicado en `compartidos/{id}` por `compartidosService`).
+- ✅ **Lo que ven los músicos** (`pages/cancionero/BoloGrupo.tsx`, oscuro, sin cuenta):
+  - el panel con el título, la fecha y el lugar;
+  - cuándo empieza y cuánta música hay;
+  - cómo llegar (Google Maps, Apple Maps y Waze; sin mapa incrustado, para no meter cookies de terceros);
+  - el horario con los sets dentro (hora de empezar y de acabar), los sets con su duración frente al hueco, el contacto (Llamar y WhatsApp) y las notas.
+  - Cada set se abre como el enlace del repertorio, con su versión propia, y «‹ El bolo» para volver.
+- ✅ La copia .json lleva los bolos, y al importarla los crea o los pone al día.
+- Probado con emuladores (iPhone 13): crear desde el repertorio, compartir, el músico lo ve, abre un set y vuelve, y ve un cambio del horario sin recargar. Pruebas en `scripts/importar/bolo.test.ts` (17 casos).
+- ⏳ Para que se actualice solo: su cuenta y las reglas desplegadas (`bolos` y `compartidos`).
+- ⏳ No se soñó en Aura Studio (prisa por el bolo del 14): sigue el lenguaje del enlace del repertorio.
+
 ## 22. Datos de la BBDD a corregir ⏳
 
 Artistas mal en la BBDD:
@@ -615,7 +640,7 @@ Se corrige en la próxima copia y en la BBDD maestra del Drive.
 
 ## Pendientes de Víctor 👤
 
-- **Hoy, 13-nov (bolo del 14):** Borrar todo e importar `Mi-cancionero.json`; recuperar el orden con «Solo el orden» si hace falta; entrar con su cuenta; poner los logos de los grupos; compartir el set con los músicos.
+- **Hoy, 13-nov (bolo del 14):** Borrar todo e importar `Mi-cancionero.json`; recuperar el orden con «Solo el orden» si hace falta; entrar con su cuenta; poner los logos de los grupos; crear el bolo de Pallejà (desde el repertorio: ⋯ → «Crear un bolo con este repertorio»), rellenar lugar, horario y contacto, y compartirlo con los músicos.
 - **Desplegar las reglas de Firestore** desde su PC (ver §5). Sin esto el mapa no guarda y el cancionero no pasa a la cuenta.
 - **Borrar el repertorio** que se llenó con las 166 canciones e importar los dos archivos de los sets desde Cancionero → Importar.
 - **Importar sus papeles del Drive** (§18): ya caen en su tono. Se descargan de las carpetas de Drive y se suben por Importar → Abrir archivos (Word/PDF).

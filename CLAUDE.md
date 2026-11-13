@@ -175,11 +175,12 @@ Project is in active development. Architecture is solid, marketplace sprint in p
   - columnas casilla · etiquetas · número · texto en `ficha.extra` (`lib/camposPropios.ts`), en la Tabla (el «+» de la cabecera) y en la ficha (el «+» de las píldoras);
   - la copia .json lleva `catalogo` y se mezcla sin pisar;
   - probado con emuladores en iPhone 13 y en PC (`scripts/importar/catalogo.test.ts`, 15 casos).
+- **El bolo, aparte del repertorio** (`Bolo` en types, almacén `musikeeo-bolos-v1` / `users/{uid}/bolos`, regla `bolos`): título, fecha, lugar y dirección, sets (repertorios) con hora, horario, contacto y notas. Se crea en Repertorios → «Bolos» o desde un repertorio (⋯ → «Crear un bolo con este repertorio», que coge la hora del nombre). Editor `pages/cancionero/Bolo.tsx` (`/cancionero/bolo/:id`); compartir con `CompartirBolo` (la misma hoja que el repertorio, `HojaCompartir`); enlace `/bolo/{id}` que se actualiza solo (`lib/compartirBolo.ts`, en `compartidos/{id}`); los músicos ven `pages/cancionero/BoloGrupo.tsx`: panel con cómo llegar (Google/Apple/Waze, sin mapa incrustado), horario con los sets dentro, sets con su duración y hueco, contacto y notas, y cada set se abre con `VistaSet` de `Grupo.tsx`. La copia .json lleva los bolos. Pruebas: `scripts/importar/bolo.test.ts` (17; necesita `--define:import.meta.env={"MODE":"test"}`).
 
 **❌ Pendiente:**
 - Víctor:
   - borrar todo e importar `Mi-cancionero.json`; recuperar el orden de los sets con «Solo el orden» desde la copia de «Borrar todo»;
-  - desplegar las reglas (`listas`, `compartidos`, `catalogo` y `ficha.extra` incluidas);
+  - desplegar las reglas (`listas`, `compartidos`, `catalogo`, `bolos` y `ficha.extra` incluidas);
   - probar el pedal y el sonido en el iPhone de verdad.
 - Duración de la versión «midiendo grabándote» (abrir `microphone=(self)` en `vercel.json`); reordenar las listas arrastrando; un icono por lista.
 

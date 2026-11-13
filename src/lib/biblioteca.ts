@@ -2,7 +2,7 @@
 // quién canta, grupo, estilo, energía, estado), lo que dura un repertorio, las directivas de
 // ficha que llegan al importar y la copia de seguridad del cancionero entero.
 import { claveTitulo } from './buscarCanciones';
-import type { AjustesCancion, Cancion, EstadoCancion, FichaCancion, Repertorio } from '../types/cancionero';
+import type { AjustesCancion, Cancion, EstadoCancion, FichaCancion, Repertorio, Bolo } from '../types/cancionero';
 
 export const ESTADOS: Record<EstadoCancion, string> = { lista: 'Lista', ensayar: 'Por ensayar', aprender: 'Para aprender' };
 export const ENERGIAS: Record<1 | 2 | 3 | 4, string> = { 1: 'Suave', 2: 'Media', 3: 'Media-alta', 4: 'Arriba' };
@@ -222,9 +222,15 @@ export interface CancionCopia {
 }
 export interface RepertorioCopia { nombre: string; fecha?: string; canciones: number[]; notas?: string; hueco?: number }
 export interface CatalogoCopia { aspecto?: Record<string, unknown>; campos?: unknown[] }
-export interface Copia { app: 'musikeeo-cancionero'; version: 1; creada: string; canciones: CancionCopia[]; repertorios: RepertorioCopia[]; catalogo?: CatalogoCopia }
+export interface BoloCopia {
+    titulo: string; fecha?: string; lugar?: string; direccion?: string; contacto?: string; telefono?: string; notas?: string;
+    horario?: { hora: string; que: string }[];
+    sets: { repertorio: number; hora?: string }[];
+}
+export interface Copia { app: 'musikeeo-cancionero'; version: 1; creada: string; canciones: CancionCopia[]; repertorios: RepertorioCopia[]; catalogo?: CatalogoCopia; bolos?: BoloCopia[] }
 
-export function crearCopia(canciones: Cancion[], repertorios: Repertorio[], catalogo?: CatalogoCopia): Copia {
+export function crearCopia(canciones: Cancion[], repertorios: Repertorio[], catalogo?: CatalogoCopia, bolos: Bolo[] = []): Copia {
+    const posRep = new Map(repertorios.map((r, i) => [r.id, i]));
     const indice = new Map(canciones.map((c, i) => [c.id, i]));
     return {
         app: 'musikeeo-cancionero',
@@ -239,7 +245,29 @@ export function crearCopia(canciones: Cancion[], repertorios: Repertorio[], cata
             notas: r.notas, hueco: r.hueco,
         })),
         ...(catalogo && (Object.keys(catalogo.aspecto ?? {}).length || catalogo.campos?.length) ? { catalogo } : {}),
+        ...(bolos.length ? {
+            bolos: bolos.map(b => ({
+                titulo: b.titulo, fecha: b.fecha || undefined, lugar: b.lugar, direccion: b.direccion, contacto: b.contacto, telefono: b.telefono, notas: b.notas,
+                horario: b.horario.length ? b.horario : undefined,
+                sets: b.sets.map(s => ({ repertorio: posRep.get(s.repertorioId) ?? -1, ...(s.hora ? { hora: s.hora } : {}) })).filter(s => s.repertorio >= 0),
+            })),
+        } : {}),
     };
+}
+
+// Los bolos de una copia, con lo que sabemos leer (sus sets, a repertorios que existen en la copia)
+function leerBolos(dato: unknown, repertorios: number): BoloCopia[] | undefined {
+    if (!Array.isArray(dato)) return undefined;
+    const texto = (x: unknown, max: number) => (typeof x === 'string' && x.trim() ? x.slice(0, max) : undefined);
+    const bolos = dato.filter(b => b && typeof b.titulo === 'string').slice(0, 200).map((b): BoloCopia => ({
+        titulo: b.titulo.slice(0, 120), fecha: texto(b.fecha, 10), lugar: texto(b.lugar, 200), direccion: texto(b.direccion, 300),
+        contacto: texto(b.contacto, 120), telefono: texto(b.telefono, 40), notas: texto(b.notas, 5000),
+        horario: Array.isArray(b.horario) ? b.horario.filter((h: unknown) => h && typeof (h as { que: unknown }).que === 'string')
+            .map((h: { hora?: unknown; que: string }) => ({ hora: typeof h.hora === 'string' ? h.hora.slice(0, 5) : '', que: h.que.slice(0, 200) })).slice(0, 40) : undefined,
+        sets: Array.isArray(b.sets) ? b.sets.filter((s: { repertorio?: unknown }) => s && Number.isInteger(s.repertorio) && (s.repertorio as number) >= 0 && (s.repertorio as number) < repertorios)
+            .map((s: { repertorio: number; hora?: unknown }) => ({ repertorio: s.repertorio, ...(typeof s.hora === 'string' ? { hora: s.hora.slice(0, 5) } : {}) })).slice(0, 10) : [],
+    }));
+    return bolos.length ? bolos : undefined;
 }
 
 function leerUnaCopia(texto: string): Copia | null {
@@ -253,7 +281,8 @@ function leerUnaCopia(texto: string): Copia | null {
             .filter(r => r && typeof r.nombre === 'string' && Array.isArray(r.canciones))
             .map(r => ({ ...r, canciones: r.canciones.filter(i => Number.isInteger(i) && i >= 0 && i < canciones.length) }));
         const catalogo = c.catalogo && typeof c.catalogo === 'object' ? c.catalogo : undefined;
-        return { app: 'musikeeo-cancionero', version: 1, creada: c.creada ?? '', canciones, repertorios, ...(catalogo ? { catalogo } : {}) };
+        const bolos = leerBolos(c.bolos, repertorios.length);
+        return { app: 'musikeeo-cancionero', version: 1, creada: c.creada ?? '', canciones, repertorios, ...(catalogo ? { catalogo } : {}), ...(bolos ? { bolos } : {}) };
     } catch {
         return null;
     }
@@ -273,6 +302,7 @@ export function leerCopia(texto: string): Copia | null {
     // Por título y versión (el artista puede venir distinto en cada copia: manda la última)
     const clave = (c: CancionCopia) => `${norm(c.titulo)}|${norm(c.version ?? '')}`;
     const indice = new Map<string, number>();
+    const bolosJuntos: BoloCopia[] = [];
     for (const copia of copias as Copia[]) {
         const nuevoIndice = copia.canciones.map(c => {
             const k = clave(c);
@@ -287,10 +317,12 @@ export function leerCopia(texto: string): Copia | null {
             canciones.push(c);
             return canciones.length - 1;
         });
+        const primerRep = repertorios.length;
         for (const r of copia.repertorios) repertorios.push({ ...r, canciones: r.canciones.map(i => nuevoIndice[i]) });
+        for (const b of copia.bolos ?? []) bolosJuntos.push({ ...b, sets: b.sets.map(s => ({ ...s, repertorio: s.repertorio + primerRep })) });
     }
     const catalogo = (copias as Copia[]).reduce<CatalogoCopia | undefined>((a, c) => (c.catalogo ? { aspecto: { ...a?.aspecto, ...c.catalogo.aspecto }, campos: [...(a?.campos ?? []), ...(c.catalogo.campos ?? [])] } : a), undefined);
-    return { app: 'musikeeo-cancionero', version: 1, creada: (copias[0] as Copia).creada, canciones, repertorios, ...(catalogo ? { catalogo } : {}) };
+    return { app: 'musikeeo-cancionero', version: 1, creada: (copias[0] as Copia).creada, canciones, repertorios, ...(catalogo ? { catalogo } : {}), ...(bolosJuntos.length ? { bolos: bolosJuntos } : {}) };
 }
 
 // Descargar la copia como archivo (.json)

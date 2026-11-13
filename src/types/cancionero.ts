@@ -81,6 +81,28 @@ export interface Lista {
     sincronizada?: boolean;
 }
 
+// Un bolo (13-nov): lo que hay que saber de una actuación para pasárselo a los músicos —cuándo,
+// dónde, el horario, los sets (repertorios) con su hora, a quién llamar y las notas—. Aparte del
+// repertorio: uno o varios sets por bolo, y el mismo repertorio puede ir en varios bolos
+export interface HoraBolo { hora: string; que: string }          // «10:30» · «Llegada y montaje»
+export interface SetBolo { repertorioId: string; hora?: string }  // hora de empezar ese set
+export interface Bolo {
+    id: string;
+    titulo: string;             // «RTF Pallejà»
+    fecha: string;              // AAAA-MM-DD
+    lugar?: string;             // «Rambla Thomas Frenkel, sala grande»
+    direccion?: string;         // para el mapa
+    horario: HoraBolo[];
+    sets: SetBolo[];
+    contacto?: string;          // quién os recibe
+    telefono?: string;
+    notas?: string;             // aparcar, ropa, comida, pago… (texto)
+    compartido?: { cifrado?: string; letra?: string };   // como en el repertorio: compartidos/{id}
+    creadaEn: string;
+    actualizadaEn: string;
+    sincronizada?: boolean;
+}
+
 export interface Repertorio {
     id: string;
     nombre: string;

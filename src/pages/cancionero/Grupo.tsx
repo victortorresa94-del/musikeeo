@@ -124,6 +124,15 @@ export default function Grupo() {
     );
 }
 
+// Un set dentro de otra página (el bolo): su lista y su escenario, con «‹ Volver» arriba
+export function VistaSet({ datos, setKey, onVolver, volver }: { datos: Compartido; setKey: string; onVolver: () => void; volver: string }) {
+    const [abierta, setAbierta] = useState<number | null>(null);
+    useEffect(() => { window.scrollTo(0, 0); }, [abierta]);
+    return abierta === null
+        ? <ListaSet datos={datos} setKey={setKey} onAbrir={setAbierta} onVolver={onVolver} volver={volver} />
+        : <Escenario key={datos.u ?? 'h'} datos={datos} setKey={setKey} inicio={abierta} onLista={() => setAbierta(null)} />;
+}
+
 // ---- La versión de cada músico: en su móvil, por enlace y por canción ----
 interface Mia { x: string; base: string; usar: boolean; cuando: string }
 const claveTema = (t: TemaCompartido) => `${t.t}|${t.v ?? ''}`;
@@ -151,7 +160,7 @@ function useMias(setKey: string) {
     return { mias, poner, ver, de: (t: TemaCompartido) => mias[claveTema(t)] };
 }
 
-function ListaSet({ datos, setKey, onAbrir }: { datos: Compartido; setKey: string; onAbrir: (i: number) => void }) {
+function ListaSet({ datos, setKey, onAbrir, onVolver, volver }: { datos: Compartido; setKey: string; onAbrir: (i: number) => void; onVolver?: () => void; volver?: string }) {
     const { ver, de } = useMias(setKey);
     // Cifrado: el set entero seguido (con letra, solo si viene); se recuerda en el móvil
     const [vista, setVista] = useState<Vista>(() => { try { return localStorage.getItem('musikeeo-grupo-vista') === 'cifrado' ? 'cifrado' : 'lista'; } catch { return 'lista'; } });
@@ -165,6 +174,11 @@ function ListaSet({ datos, setKey, onAbrir }: { datos: Compartido; setKey: strin
     return (
         <main className="min-h-[100dvh] bg-background text-foreground">
             <div className="max-w-2xl mx-auto px-4 pt-[calc(env(safe-area-inset-top)+20px)] pb-[calc(env(safe-area-inset-bottom)+32px)]">
+                {onVolver && (
+                    <button onClick={onVolver} className="-ml-1 mb-3 h-9 pr-3 flex items-center gap-0.5 text-[15px] font-semibold text-muted-foreground active:opacity-60">
+                        <ChevronLeft className="h-5 w-5" /> {volver}
+                    </button>
+                )}
                 <p className="text-[13px] font-semibold text-muted-foreground">Repertorio · {datos.l ? 'con letra' : 'cifrado'}</p>
                 <h1 className="mt-1 font-heading text-[28px] font-bold leading-tight">{datos.n}</h1>
                 <p className="mt-1 text-[15px] text-muted-foreground first-letter:uppercase">

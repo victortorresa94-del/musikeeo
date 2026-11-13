@@ -80,6 +80,23 @@ service cloud.firestore {
           && (!('orden' in request.resource.data) || request.resource.data.orden is number);
       }
 
+      // Los bolos del cancionero: fecha, lugar, horario, sets (repertorios), contacto y notas
+      match /bolos/{boloId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && request.resource.data.keys().hasOnly(['titulo', 'fecha', 'lugar', 'direccion', 'horario', 'sets', 'contacto', 'telefono', 'notas', 'compartido', 'creadaEn', 'actualizadaEn'])
+          && request.resource.data.titulo is string && request.resource.data.titulo.size() <= 120
+          && request.resource.data.fecha is string && request.resource.data.fecha.size() <= 10
+          && request.resource.data.horario is list && request.resource.data.horario.size() <= 40
+          && request.resource.data.sets is list && request.resource.data.sets.size() <= 10
+          && (!('lugar' in request.resource.data) || (request.resource.data.lugar is string && request.resource.data.lugar.size() <= 200))
+          && (!('direccion' in request.resource.data) || (request.resource.data.direccion is string && request.resource.data.direccion.size() <= 300))
+          && (!('contacto' in request.resource.data) || (request.resource.data.contacto is string && request.resource.data.contacto.size() <= 120))
+          && (!('telefono' in request.resource.data) || (request.resource.data.telefono is string && request.resource.data.telefono.size() <= 40))
+          && (!('notas' in request.resource.data) || (request.resource.data.notas is string && request.resource.data.notas.size() <= 5000))
+          && (!('compartido' in request.resource.data) || request.resource.data.compartido is map);
+      }
+
       // El catálogo del cancionero: colores e iconos (o el logo) de cada grupo, estilo y etiqueta,
       // y las columnas propias. Un solo documento por persona
       match /catalogo/{docId} {

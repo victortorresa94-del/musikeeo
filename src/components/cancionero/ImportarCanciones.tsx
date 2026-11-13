@@ -82,7 +82,7 @@ function emparejar(canciones: Cancion[], t: CancionImportada, unica: boolean): {
 // Una copia del cancionero (.json) trae canciones con su ficha y sus repertorios
 export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicial }: { abierto: boolean; onCerrar: () => void; repertorioId?: string; textoInicial?: string }) {
     const navigate = useNavigate();
-    const { canciones, repertorios, nuevaCancion, guardarVarias, crearRepertorio, guardarRepertorio } = useCancionero();
+    const { canciones, repertorios, bolos, nuevaCancion, guardarVarias, crearRepertorio, guardarRepertorio, crearBolo, guardarBolo } = useCancionero();
     const destino = repertorios.find(r => r.id === repertorioId);
     // Desde «Nueva canción» con una copia (.json): llega ya puesta
     const [texto, setTexto] = useState(textoInicial ?? '');
@@ -333,7 +333,18 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
             return;
         }
         // Una copia trae sus repertorios: el que ya existe con ese nombre se pone al día
+        // Los bolos de la copia: el que ya existe (mismo nombre y fecha) se pone al día; si no, se crea
+        const importarBolos = (idsRep: string[]) => {
+            for (const b of copia?.bolos ?? []) {
+                const sets = b.sets.map(s => ({ repertorioId: idsRep[s.repertorio], ...(s.hora ? { hora: s.hora } : {}) })).filter(s => s.repertorioId);
+                const datos = { titulo: b.titulo, fecha: b.fecha ?? '', lugar: b.lugar, direccion: b.direccion, contacto: b.contacto, telefono: b.telefono, notas: b.notas, horario: b.horario ?? [], sets };
+                const ya = bolos.find(x => norm(x.titulo) === norm(b.titulo) && x.fecha === (b.fecha ?? ''));
+                if (ya) guardarBolo({ ...ya, ...Object.fromEntries(Object.entries(datos).filter(([, v]) => v !== undefined)) });
+                else crearBolo(datos);
+            }
+        };
         if (copia?.repertorios.length) {
+            const idsRep: string[] = [];
             for (const r of copia.repertorios) {
                 const lista = [...new Set(r.canciones.map(i => ids[i]).filter(Boolean))];
                 const ya = repertorios.find(x => norm(x.nombre) === norm(r.nombre));
@@ -345,13 +356,16 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
                         ? [...lista, ...ya.canciones.filter(id => !lista.includes(id))]
                         : [...ya.canciones, ...lista.filter(id => !ya.canciones.includes(id))];
                     guardarRepertorio({ ...ya, ...extraRep, canciones, fecha: r.fecha || ya.fecha });
+                    idsRep.push(ya.id);
                 }
                 else {
                     const nuevo = crearRepertorio(r.nombre, lista);
                     // Sin fecha: no es de hoy, es uno antiguo (va a «Archivados», no a «Próximo bolo»)
                     if ((r.fecha ?? '') !== nuevo.fecha || Object.keys(extraRep).length) guardarRepertorio({ ...nuevo, ...extraRep, fecha: r.fecha ?? '' });
+                    idsRep.push(nuevo.id);
                 }
             }
+            importarBolos(idsRep);
             const total = new Set(ids).size;
             toast.success(`${total} ${total === 1 ? 'canción' : 'canciones'} en tu cancionero · ${copia.repertorios.length} ${copia.repertorios.length === 1 ? 'repertorio' : 'repertorios'}`, { description: aviso });
             navigate('/cancionero?ver=repertorios');
