@@ -15,6 +15,7 @@ export interface AjustesCancion {
     intro?: number;             // segundos de intro que no cuentan para bajar (10 si no se dice)
     cejillaGuardada?: number;   // la cejilla de «Formas» mientras se ve como suena
     ritmo?: number;             // modo auto de Tocar: 1,2 = la hoja baja un 20 % más rápido en esta canción
+    marcas?: { l: number; t: number }[];   // Escuchar: la línea l (en el orden de la hoja) suena en el segundo t del vídeo
 }
 
 // En qué punto está para el repertorio
@@ -62,6 +63,7 @@ export interface Cancion {
     original?: string;          // id de la canción de la que se hizo
     favorita?: boolean;         // ⭐ la versión que sale por defecto (al buscar y al añadir a un repertorio)
     spotify?: string;           // la pista en Spotify (open.spotify.com/track/…), se apunta al crear una playlist
+    youtube?: string;           // el vídeo para escucharla con la hoja siguiéndola (el id de 11 caracteres)
     // Notas con formato (títulos, negrita, colores, avisos, casillas): el JSON del editor, en texto
     notas?: string;
 }

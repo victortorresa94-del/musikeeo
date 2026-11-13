@@ -63,6 +63,17 @@ export function conMarca(marcas: Marca[], nueva: Marca): Marca[] {
     return [...quedan, { l: nueva.l, t: Math.round(nueva.t * 10) / 10 }].sort((a, b) => a.t - b.t).slice(-60);
 }
 
+// Las marcas que llegan de fuera (una copia .json): solo las que tienen sentido, en orden y como mucho 60
+export function leerMarcas(dato: unknown): Marca[] | undefined {
+    if (!Array.isArray(dato)) return undefined;
+    const marcas = dato
+        .filter((m): m is Marca => !!m && Number.isInteger(m.l) && m.l >= 0 && m.l < 2000 && typeof m.t === 'number' && Number.isFinite(m.t) && m.t > 0 && m.t < 6 * 3600)
+        .map(m => ({ l: m.l, t: Math.round(m.t * 10) / 10 }))
+        .sort((a, b) => a.t - b.t)
+        .slice(-60);
+    return marcas.length ? marcas : undefined;
+}
+
 export const buscarEnYouTube = (titulo: string, artista: string) =>
     `https://www.youtube.com/results?search_query=${encodeURIComponent([titulo, artista].filter(Boolean).join(' '))}`;
 

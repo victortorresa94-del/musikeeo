@@ -30,8 +30,9 @@ service cloud.firestore {
       match /canciones/{cancionId} {
         allow read, delete: if isOwner(userId);
         allow create, update: if isOwner(userId)
-          && request.resource.data.keys().hasOnly(['titulo', 'artista', 'texto', 'ajustes', 'creadaEn', 'actualizadaEn', 'portada', 'duracion', 'muestra', 'bpm', 'ficha', 'version', 'original', 'notas', 'favorita', 'spotify'])
+          && request.resource.data.keys().hasOnly(['titulo', 'artista', 'texto', 'ajustes', 'creadaEn', 'actualizadaEn', 'portada', 'duracion', 'muestra', 'bpm', 'ficha', 'version', 'original', 'notas', 'favorita', 'spotify', 'youtube'])
           && (!('spotify' in request.resource.data) || (request.resource.data.spotify is string && request.resource.data.spotify.size() <= 300))
+          && (!('youtube' in request.resource.data) || (request.resource.data.youtube is string && request.resource.data.youtube.size() <= 20))
           && (!('ficha' in request.resource.data) || (request.resource.data.ficha is map
             && request.resource.data.ficha.keys().hasOnly(['tono', 'capo', 'canta', 'proyectos', 'estilo', 'energia', 'estado', 'etiquetas', 'enlace', 'tonoAlt', 'extra'])
             && (!('extra' in request.resource.data.ficha) || (request.resource.data.ficha.extra is map && request.resource.data.ficha.extra.size() <= 40))))
