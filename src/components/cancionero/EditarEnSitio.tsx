@@ -15,7 +15,7 @@ import { cargarEditorLetra, editorLetraCargado } from './cargarEditorLetra';
 // (quien lo usa avisa con Deshacer); «Guardar como versión nueva» y «Descartar», en el ⋯.
 // Lo usan la canción y Tocar: props { cancion, onGuardar(texto), onCerrar, lineaInicial? }.
 // Con repertorioId, la versión nueva ocupa el sitio de la original en ese repertorio
-export function EditarEnSitio({ cancion, onGuardar, onCerrar, lineaInicial, yInicial, className, barraArriba, repertorioId, onNueva, onNuevaDeshecha, tamano }: {
+export function EditarEnSitio({ cancion, onGuardar, onCerrar, lineaInicial, yInicial, className, barraArriba, repertorioId, onNueva, onNuevaDeshecha, tamano, onTamano }: {
     cancion: Cancion;
     onGuardar: (texto: string) => void;
     onCerrar: () => void;
@@ -27,6 +27,7 @@ export function EditarEnSitio({ cancion, onGuardar, onCerrar, lineaInicial, yIni
     onNueva?: (nueva: Cancion) => void;
     onNuevaDeshecha?: () => void;  // Deshacer la copia: volver a la original
     tamano?: number;           // el tamaño de letra con que se estaba viendo
+    onTamano?: (d: -1 | 1) => void;  // A− / A+: cambia el tamaño de la canción (se guarda en ella)
 }) {
     const { canciones, repertorios, nuevaCancion, guardar, borrar, guardarRepertorio } = useCancionero();
     const api = useRef<EditorLetraApi>(null);
@@ -100,6 +101,12 @@ export function EditarEnSitio({ cancion, onGuardar, onCerrar, lineaInicial, yIni
                         <button onMouseDown={ev => ev.preventDefault()} onClick={() => api.current?.alternarPrefijo('> ')} aria-label="Aviso" className={boton}><Megaphone className="h-4 w-4" /><span className="hidden sm:inline">Aviso</span></button>
                         <button onMouseDown={ev => ev.preventDefault()} onClick={cambiarAlinear} aria-pressed={alinear} aria-label="Alinear acordes con letra de máquina"
                             className={cn(boton, alinear && 'bg-foreground text-background hover:bg-foreground')}><AlignLeft className="h-4 w-4" /><span className="hidden sm:inline">Alinear</span></button>
+                        {/* El tamaño de la letra, ahí mismo (13-nov, Víctor: «poder hacer más pequeña la letra desde aquí») */}
+                        {onTamano && <>
+                            <span className="mx-0.5 h-5 w-px bg-hairline-strong shrink-0" aria-hidden />
+                            <button onMouseDown={ev => ev.preventDefault()} onClick={() => onTamano(-1)} aria-label="Letra más pequeña" className={boton}><span className="text-[13px] font-bold">A−</span></button>
+                            <button onMouseDown={ev => ev.preventDefault()} onClick={() => onTamano(1)} aria-label="Letra más grande" className={boton}><span className="text-[17px] font-bold">A+</span></button>
+                        </>}
                     </div>
                     <div className="relative shrink-0">
                         <button onClick={() => setMenu(m => !m)} aria-expanded={menu} aria-label="Más: guardar como versión nueva o descartar" className={boton}><MoreHorizontal className="h-5 w-5" /></button>

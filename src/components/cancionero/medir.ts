@@ -40,10 +40,11 @@ export const columnasPosibles = (ancho: number) => Math.max(1, Math.min(4, Math.
 
 // Tope de «que quepa» en pantalla: «que quepa» encoge lo que no cabe, pero no agranda una chuleta
 // corta hasta llenar la pantalla. Víctor (13-nov): «en móvil sale gigante… no tiene que salir tan
-// grande de primeras». En el móvil, 19 px de letra (la de entrada es 17); en tablet y ordenador, 28.
+// grande de primeras»; y de nuevo el 13-nov por la noche: «está como muy grande el texto de las
+// canciones en todas»). En el móvil, 18 px; en tablet y ordenador, 21.
 // Va en el cálculo, no en lo guardado: A± y el zoom con dos dedos pueden pasar de aquí
 const esMovil = () => typeof window !== 'undefined' && window.innerWidth < 768;
-export const topeQueQuepa = () => (esMovil() ? 19 : 28);
+export const topeQueQuepa = () => (esMovil() ? 18 : 21);
 // Y el suelo: si para caber hay que bajar de aquí, no se encoge (se lee a su tamaño y se desplaza).
 // En el móvil, una canción larga entraba a 9-11 px y no se podía leer
 export const sueloQueQuepa = () => (esMovil() ? 14 : 12);

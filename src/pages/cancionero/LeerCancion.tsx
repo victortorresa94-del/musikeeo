@@ -437,7 +437,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                 <div ref={zonaRef} className={cn(ajustes.ajustar && !editando && 'min-h-[100dvh]')}
                     onClick={editando || rodando ? undefined : alTocarHoja}>
                     {editando ? (
-                        <EditarEnSitio cancion={cancion} lineaInicial={editando.linea} yInicial={editando.y} tamano={tamano}
+                        <EditarEnSitio cancion={cancion} lineaInicial={editando.linea} yInicial={editando.y} tamano={tamano} onTamano={cambiarTamano}
                             onGuardar={guardarTexto} onCerrar={cerrarEdicion}
                             repertorioId={desdeRepertorio ?? undefined}
                             onNueva={n => navigate(`/cancionero/${n.id}${desdeRepertorio ? `?repertorio=${desdeRepertorio}` : ''}`, { replace: true })}

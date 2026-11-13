@@ -480,7 +480,8 @@ function Diapositiva({ cancion, n, total, siguiente, extra, onSiguiente, cambiar
             {!notasVacias(cancion.notas) && <NotasRicas json={cancion.notas} className="mt-3 text-[15px]" />}
             <div ref={zonaRef} data-hoja data-tamano={tamano} className="mt-3">
                 {editando
-                    ? <EditarEnSitio cancion={cancion} onGuardar={onGuardarTexto} onCerrar={onCerrarEdicion} repertorioId={repertorioId} tamano={tamano} barraArriba="top-[calc(env(safe-area-inset-top)+48px)]" />
+                    ? <EditarEnSitio cancion={cancion} onGuardar={onGuardarTexto} onCerrar={onCerrarEdicion} repertorioId={repertorioId} tamano={tamano} barraArriba="top-[calc(env(safe-area-inset-top)+48px)]"
+                        onTamano={d => cambiar({ tamano: Math.min(TAMANO_MAX, Math.max(TAMANO_MIN, Math.round(tamanoBase) + d)), ajustar: false, columnas: Math.min(3, columnas) as 1 | 2 | 3 })} />
                     : <HojaCancion lineas={lineas} opciones={opciones} vista={a.vista} tamano={tamano} columnas={columnas} />}
             </div>
             {/* Copia invisible para medir, solo con «que quepa»: el tamaño y las columnas los pone buscarEncaje */}

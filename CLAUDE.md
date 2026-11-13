@@ -147,7 +147,7 @@ Project is in active development. Architecture is solid, marketplace sprint in p
   - una barra en dos filas: Tono ± · «Dame el tono» pequeño · A− · A+ · que quepa · ⋯ / anterior · Línea · Auto · Bajar · siguiente;
   - la barra ya no se esconde al bajar;
   - lápiz arriba para editar la letra sin salir.
-- **Tamaño**: «que quepa» ya no agranda (tope de 19 px en el móvil y 28 en tablet/PC) ni baja de 14 px en el móvil, en la canción y en Tocar (`components/cancionero/medir.ts`: `topeQueQuepa`, `sueloQueQuepa`).
+- **Tamaño**: «que quepa» ya no agranda (tope de 18 px en el móvil y 21 en tablet/PC desde la noche del 13-nov; antes 19 y 28) ni baja de 14 px en el móvil, en la canción y en Tocar (`components/cancionero/medir.ts`: `topeQueQuepa`, `sueloQueQuepa`).
 - **Editar en su sitio** (`EditarEnSitio.tsx`): tocar la letra la edita ahí mismo. «Listo» pregunta «Guardar» (sustituye) o «Guardar como canción nueva». La nueva es una versión que, desde un repertorio (`?repertorio=` o Tocar), ocupa el sitio de la original.
 - **La ficha en su sitio** (`FichaEnSitio.tsx`):
   - cada píldora lleva su icono y abre un desplegable;

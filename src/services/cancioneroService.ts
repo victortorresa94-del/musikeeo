@@ -238,7 +238,7 @@ export const AJUSTES_INICIALES: AjustesCancion = {
     cejilla: 0,
     notacion: 'original',
     alteraciones: 'auto',
-    tamano: typeof window !== 'undefined' && window.innerWidth >= 768 ? 19 : 17,
+    tamano: typeof window !== 'undefined' && window.innerWidth >= 768 ? 18 : 16,   // 13-nov: «muy grande… en todas»
     columnas: 1,
     ajustar: false,
     vista: 'completa',
