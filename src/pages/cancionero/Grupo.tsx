@@ -5,7 +5,7 @@ import { escucharCompartido } from '../../services/compartidosService';
 import { cn } from '../../lib/utils';
 import { codificar, conExtras, descodificar, esUnaCancion, type Compartido, type TemaCompartido } from '../../lib/compartir';
 import { enlaceEscuchar } from '../../lib/spotify';
-import { LogoSpotify } from '../../components/cancionero/Spotify';
+import { HacerEnMiSpotify, LogoSpotify } from '../../components/cancionero/Spotify';
 import { detectarTono, leerCancion, usaBemoles, type OpcionesNombre } from '../../lib/acordes';
 import { textoDuracion } from '../../lib/biblioteca';
 import { notasVacias } from '../../lib/notas';
@@ -222,6 +222,8 @@ function ListaSet({ datos, setKey, onAbrir, onVolver, volver }: { datos: Compart
                         <LogoSpotify className="h-5 w-5 text-pastel-menta-ink" /> Escuchar en Spotify
                     </a>
                 )}
+                {/* Cada músico, la playlist en SU Spotify (sin la app de Spotify de Musikeeo: ver lib/spotify) */}
+                <HacerEnMiSpotify className="mt-2" canciones={datos.c.map(t => ({ titulo: t.t, artista: t.a ?? '' }))} />
 
                 {!notasVacias(datos.h) && (
                     <section className="mt-5 rounded-2xl bg-fill px-4 py-3" aria-label="Hoja del bolo">

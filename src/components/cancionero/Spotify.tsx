@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 import { ChevronRight, Copy, ExternalLink, Loader2, Send } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { crearPlaylist, enlaceEscuchar, irASpotify, pedidoDe, spotifyListo, tokenVivo } from '../../lib/spotify';
+import { TUNEMYMUSIC, crearPlaylist, enlaceEscuchar, irASpotify, listaEnTexto, pedidoDe, spotifyListo, tokenVivo } from '../../lib/spotify';
 import { useApuntarSpotify } from '../../hooks/useApuntarSpotify';
 import { BotonHoja, Hoja } from './Hoja';
 import type { Cancion, Repertorio } from '../../types/cancionero';
@@ -22,6 +22,26 @@ export function BotonSpotify({ cancion, className }: { cancion: Cancion; classNa
         <a href={enlaceEscuchar(cancion)} target="_blank" rel="noopener noreferrer"
             className={cn('pulsable h-9 pl-2.5 pr-3.5 rounded-full bg-fill text-[14px] font-semibold text-foreground flex items-center gap-1.5 shrink-0', className)}>
             <LogoSpotify className="h-[18px] w-[18px] text-pastel-menta-ink" /> Spotify
+        </a>
+    );
+}
+
+// Hacer la playlist en TU Spotify, cualquiera (también los músicos del enlace): copia la lista y
+// abre TuneMyMusic, donde se pega y se elige Spotify. Es un enlace de verdad: el iPhone lo abre
+// sin bloquearlo, y la copia sale en el mismo toque
+export function HacerEnMiSpotify({ canciones, className }: { canciones: Pick<Cancion, 'titulo' | 'artista'>[]; className?: string }) {
+    const copiar = () => {
+        const texto = listaEnTexto(canciones);
+        void navigator.clipboard?.writeText(texto).then(
+            () => toast.success('Lista copiada', { description: 'En TuneMyMusic: pégala, pulsa «Convertir mi lista» y elige Spotify.', duration: 12000 }),
+            () => toast('No se pudo copiar la lista', { description: 'Cópiala con «Copiar la lista» y pégala en TuneMyMusic.' }),
+        );
+    };
+    if (!canciones.length) return null;
+    return (
+        <a href={TUNEMYMUSIC} target="_blank" rel="noopener noreferrer" onClick={copiar}
+            className={cn('pulsable w-full h-[52px] rounded-[14px] bg-fill text-foreground text-[16px] font-semibold flex items-center justify-center gap-2', className)}>
+            <LogoSpotify className="h-5 w-5 text-pastel-menta-ink" /> Hacerla en mi Spotify
         </a>
     );
 }
@@ -121,6 +141,10 @@ export function FilaSpotify({ repertorio, canciones, className }: { repertorio: 
                             <p className="text-muted-foreground">Mientras, copia la lista o escucha cada canción con su botón de Spotify.</p>
                         </div>
                     )}
+                    <HacerEnMiSpotify canciones={lista} />
+                    <p className="-mt-1 px-1 text-[13px] text-muted-foreground">
+                        Para cualquiera, sin límite: copia la lista y abre TuneMyMusic, que la crea en su Spotify. Tus músicos lo tienen en la página que les envías.
+                    </p>
                     <button onClick={copiarLista} disabled={!lista.length}
                         className="pulsable w-full h-11 rounded-full bg-fill text-[15px] font-semibold text-foreground flex items-center justify-center gap-2 disabled:opacity-40">
                         <Copy className="h-4 w-4" /> Copiar la lista

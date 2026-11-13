@@ -41,6 +41,15 @@ export function enlaceEscuchar(c: Pick<Cancion, 'titulo' | 'artista' | 'spotify'
     return `https://open.spotify.com/search/${encodeURIComponent([p.titulo, p.artista].filter(Boolean).join(' '))}`;
 }
 
+// ---- Para cualquiera, sin la app de Spotify ----
+// Spotify solo deja 5 cuentas a una app pequeña como Musikeeo (desde febrero de 2026; abrirla a
+// todos pide ser empresa con ~250.000 usuarios al mes). Para que cualquiera haga la playlist en
+// SU Spotify: se copia la lista («Título - Artista», una por línea; un mix, cada canción) y se abre
+// TuneMyMusic (el mismo servicio que usa Spotify para importar), que la crea en su cuenta
+export const TUNEMYMUSIC = 'https://www.tunemymusic.com/es/transfer/freetext-to-spotify';
+export const listaEnTexto = (canciones: Pick<Cancion, 'titulo' | 'artista'>[]) =>
+    canciones.flatMap(c => piezasDe(c)).map(p => [p.titulo, p.artista].filter(Boolean).join(' - ')).join('\n');
+
 // ---- La sesión de Spotify (PKCE) ----
 interface Token { acceso: string; refresco?: string; caduca: number }
 const leerToken = (): Token | null => { try { return JSON.parse(localStorage.getItem(CLAVE_TOKEN) || 'null'); } catch { return null; } };
