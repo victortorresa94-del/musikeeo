@@ -1,9 +1,11 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useParams } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, Copy, List, Minus, Pencil, Plus, RefreshCw } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Copy, Minus, Pencil, Plus, RefreshCw } from 'lucide-react';
 import { escucharCompartido } from '../../services/compartidosService';
 import { cn } from '../../lib/utils';
-import { codificar, conExtras, descodificar, type Compartido, type TemaCompartido } from '../../lib/compartir';
+import { codificar, conExtras, descodificar, esUnaCancion, type Compartido, type TemaCompartido } from '../../lib/compartir';
+import { enlaceEscuchar } from '../../lib/spotify';
+import { LogoSpotify } from '../../components/cancionero/Spotify';
 import { detectarTono, leerCancion, usaBemoles, type OpcionesNombre } from '../../lib/acordes';
 import { textoDuracion } from '../../lib/biblioteca';
 import { notasVacias } from '../../lib/notas';
@@ -128,9 +130,13 @@ export default function Grupo() {
         );
     }
     const setKey = id ?? `n:${datos.n}`;
+    // Una sola canción («Enviar» desde la canción): directa en ella, sin lista de una
+    const sola = esUnaCancion(datos);
     return (
         <>
-            {abierta === null
+            {sola
+                ? <Escenario key={datos.u ?? 'h'} datos={datos} setKey={setKey} inicio={0} onLista={() => {}} sola />
+                : abierta === null
                 ? <ListaSet datos={datos} setKey={setKey} onAbrir={setAbierta} />
                 : <Escenario key={datos.u ?? 'h'} datos={{ ...datos, c: conExtras(datos) }} setKey={setKey} inicio={abierta} onLista={() => setAbierta(null)} />}
             {aviso && (
@@ -193,8 +199,8 @@ function ListaSet({ datos, setKey, onAbrir, onVolver, volver }: { datos: Compart
         <main className="min-h-[100dvh] bg-background text-foreground">
             <div className="max-w-2xl mx-auto px-4 pt-[calc(env(safe-area-inset-top)+20px)] pb-[calc(env(safe-area-inset-bottom)+32px)]">
                 {onVolver && (
-                    <button onClick={onVolver} className="-ml-1 mb-3 h-9 pr-3 flex items-center gap-0.5 text-[15px] font-semibold text-muted-foreground active:opacity-60">
-                        <ChevronLeft className="h-5 w-5" /> {volver}
+                    <button onClick={onVolver} aria-label={`Volver a ${volver}`} className="-ml-1 mb-3 h-9 max-w-full pr-3 flex items-center gap-0.5 text-[15px] font-semibold text-muted-foreground active:opacity-60">
+                        <ChevronLeft className="h-5 w-5 shrink-0" /> <span className="truncate">{volver}</span>
                     </button>
                 )}
                 <p className="text-[13px] font-semibold text-muted-foreground">Repertorio · {datos.l ? 'con letra' : 'cifrado'}</p>
@@ -207,6 +213,12 @@ function ListaSet({ datos, setKey, onAbrir, onVolver, volver }: { datos: Compart
                     className="pulsable mt-5 w-full h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] disabled:opacity-40">
                     Empezar
                 </button>
+                {datos.sp && (
+                    <a href={datos.sp} target="_blank" rel="noopener noreferrer"
+                        className="pulsable mt-2 w-full h-[52px] rounded-[14px] bg-fill text-foreground font-semibold text-[16px] flex items-center justify-center gap-2">
+                        <LogoSpotify className="h-5 w-5 text-pastel-menta-ink" /> Escuchar en Spotify
+                    </a>
+                )}
 
                 {!notasVacias(datos.h) && (
                     <section className="mt-5 rounded-2xl bg-fill px-4 py-3" aria-label="Hoja del bolo">
@@ -232,6 +244,7 @@ function ListaSet({ datos, setKey, onAbrir, onVolver, volver }: { datos: Compart
                                         <img src={estilo.icono} alt="" aria-hidden className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-[56px] w-[76px] object-contain" />
                                     </div>
                                 )}
+                                <div className="relative">
                                 <button onClick={() => onAbrir(i)} className="w-full text-left py-3 border-b border-hairline flex items-start gap-3 active:opacity-60">
                                     <span className="w-6 shrink-0 pt-0.5 text-[14px] font-semibold text-muted-foreground tabular-nums">{i + 1}</span>
                                     <span className="flex-1 min-w-0">
@@ -242,8 +255,11 @@ function ListaSet({ datos, setKey, onAbrir, onVolver, volver }: { datos: Compart
                                             {datosTemaConTono(t).map(p => <span key={p.texto} className={cn('h-6 px-2 rounded-full text-[12px] font-semibold flex items-center', p.clase)}>{p.texto}</span>)}
                                         </span>
                                     </span>
+                                    <span className="w-9 shrink-0" aria-hidden />
                                     <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-muted-foreground" />
                                 </button>
+                                <EscucharTema tema={t} />
+                                </div>
                             </li>
                         );
                     })}
@@ -261,6 +277,7 @@ function ListaSet({ datos, setKey, onAbrir, onVolver, volver }: { datos: Compart
                         <ol>
                             {datos.x.map((t, j) => (
                                 <li key={j}>
+                                    <div className="relative">
                                     <button onClick={() => onAbrir(datos.c.length + j)} className="w-full text-left py-3 border-b border-hairline flex items-start gap-3 active:opacity-60">
                                         <span className="w-6 shrink-0 pt-0.5 text-[14px] font-semibold text-muted-foreground">·</span>
                                         <span className="flex-1 min-w-0">
@@ -270,8 +287,11 @@ function ListaSet({ datos, setKey, onAbrir, onVolver, volver }: { datos: Compart
                                                 {datosTemaConTono(t).map(p => <span key={p.texto} className={cn('h-6 px-2 rounded-full text-[12px] font-semibold flex items-center', p.clase)}>{p.texto}</span>)}
                                             </span>
                                         </span>
+                                        <span className="w-9 shrink-0" aria-hidden />
                                         <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-muted-foreground" />
                                     </button>
+                                    <EscucharTema tema={t} />
+                                    </div>
                                 </li>
                             ))}
                         </ol>
@@ -285,7 +305,18 @@ function ListaSet({ datos, setKey, onAbrir, onVolver, volver }: { datos: Compart
     );
 }
 
-function Escenario({ datos, setKey, inicio, onLista }: { datos: Compartido; setKey: string; inicio: number; onLista: () => void }) {
+// Escuchar un tema en Spotify: su pista si quien comparte la tiene apuntada; si no, su búsqueda
+const enlaceDeTema = (t: TemaCompartido) => enlaceEscuchar({ titulo: t.t, artista: t.a ?? '', spotify: t.sp });
+function EscucharTema({ tema }: { tema: TemaCompartido }) {
+    return (
+        <a href={enlaceDeTema(tema)} target="_blank" rel="noopener noreferrer" aria-label={`Escuchar ${tema.t} en Spotify`}
+            className={cn('pulsable absolute right-7 top-2 h-9 w-9 rounded-full flex items-center justify-center active:bg-fill-strong', tema.sp ? 'text-pastel-menta-ink' : 'text-muted-foreground')}>
+            <LogoSpotify className="h-5 w-5" />
+        </a>
+    );
+}
+
+function Escenario({ datos, setKey, inicio, onLista, sola }: { datos: Compartido; setKey: string; inicio: number; onLista: () => void; sola?: boolean }) {
     const conLetra = !!datos.l;
     const { ver, de, poner } = useMias(setKey);
     const [editando, setEditando] = useState<TemaCompartido | null>(null);
@@ -355,6 +386,7 @@ function Escenario({ datos, setKey, inicio, onLista }: { datos: Compartido; setK
     }, [ir]);
 
     const tema = datos.c[actual];
+    const nombreSet = datos.n.trim() || 'Repertorio';
     const cambiarTono = (d: number) => setTonos(t => t.map((x, i) => (i === actual ? (Math.abs(x + d) >= 12 ? 0 : x + d) : x)));
 
     const boton = 'pulsable h-10 min-w-10 px-2 rounded-full flex items-center justify-center text-foreground active:bg-fill-strong disabled:opacity-30';
@@ -366,26 +398,29 @@ function Escenario({ datos, setKey, inicio, onLista }: { datos: Compartido; setK
                     <div key={i} data-diapositiva={i} className="relative h-full w-full shrink-0 snap-start snap-always overflow-y-auto overscroll-contain">
                         {Math.abs(i - actual) <= 1
                             ? <Diapositiva tema={ver(t)} n={i + 1} total={datos.c.length} tamano={tamano} delta={tonos[i]} formas={formas} soloAcordes={soloAcordes} siguiente={datos.c[i + 1]} onSiguiente={() => ir(i + 1)}
+                                sola={sola ? (conLetra ? 'Canción · con letra' : 'Canción · acordes') : undefined}
                                 mia={<MiVersion original={t} mia={de(t)} onUsar={usar => { const m = de(t); if (m) poner(t, { ...m, usar }); }} onEditar={() => setEditando(t)} />} />
                             : <div className="h-full" />}
                     </div>
                 ))}
             </div>
 
-            {/* Arriba: volver a la lista */}
-            <div className="fixed left-3 right-3 top-[calc(env(safe-area-inset-top)+8px)] flex items-center gap-2 pointer-events-none">
-                <button onClick={onLista} className="pointer-events-auto pulsable h-10 pl-2.5 pr-3.5 rounded-full bg-sheet border border-hairline shadow-e2 text-[14px] font-semibold flex items-center gap-1.5">
-                    <List className="h-4 w-4" /> Lista
+            {/* Arriba: volver a la lista (una canción sola no tiene lista) */}
+            {!sola && <div className="fixed left-3 right-3 top-[calc(env(safe-area-inset-top)+8px)] flex items-center gap-2 pointer-events-none">
+                {/* Dice a dónde vuelve (Víctor: «Lista» no se entendía): el nombre del set */}
+                <button onClick={onLista} aria-label={`Volver a ${nombreSet}`}
+                    className="pointer-events-auto pulsable h-10 min-w-0 max-w-[65vw] md:max-w-sm pl-1.5 pr-3.5 rounded-full bg-sheet border border-hairline shadow-e2 text-[14px] font-semibold flex items-center gap-0.5">
+                    <ChevronLeft className="h-5 w-5 shrink-0" /> <span className="truncate">{nombreSet}</span>
                 </button>
                 <span className="ml-auto pointer-events-auto h-10 px-3.5 rounded-full bg-sheet border border-hairline shadow-e2 text-[14px] font-semibold tabular-nums flex items-center">
                     {actual + 1} / {datos.c.length}
                 </span>
-            </div>
+            </div>}
 
             {/* Abajo: tono, tamaño y pasar de tema */}
             <div className="fixed left-1/2 -translate-x-1/2 bottom-[calc(env(safe-area-inset-bottom)+14px)] max-w-[calc(100vw-20px)] flex items-center gap-0.5 p-1 rounded-full bg-sheet border border-hairline shadow-e3 overflow-x-auto hide-scrollbar">
-                <button onClick={() => ir(actual - 1)} disabled={actual === 0} aria-label="Tema anterior" className={boton}><ChevronLeft className="h-5 w-5" /></button>
-                <span className="mx-0.5 h-6 w-px shrink-0 bg-hairline-strong" aria-hidden />
+                {!sola && <button onClick={() => ir(actual - 1)} disabled={actual === 0} aria-label="Tema anterior" className={boton}><ChevronLeft className="h-5 w-5" /></button>}
+                {!sola && <span className="mx-0.5 h-6 w-px shrink-0 bg-hairline-strong" aria-hidden />}
                 <button onClick={() => cambiarTono(-1)} aria-label="Bajar medio tono" className={boton}><Minus className="h-4 w-4" /></button>
                 <span className="min-w-[46px] text-center text-[13px] font-semibold leading-tight">
                     Tono{tonos[actual] !== 0 && <span className="block text-[11px] text-muted-foreground">{tonos[actual] > 0 ? '+' : ''}{tonos[actual]}</span>}
@@ -406,8 +441,8 @@ function Escenario({ datos, setKey, inicio, onLista }: { datos: Compartido; setK
                         Solo acordes
                     </button>
                 )}
-                <span className="mx-0.5 h-6 w-px shrink-0 bg-hairline-strong" aria-hidden />
-                <button onClick={() => ir(actual + 1)} disabled={actual >= datos.c.length - 1} aria-label="Tema siguiente" className={boton}><ChevronRight className="h-5 w-5" /></button>
+                {!sola && <span className="mx-0.5 h-6 w-px shrink-0 bg-hairline-strong" aria-hidden />}
+                {!sola && <button onClick={() => ir(actual + 1)} disabled={actual >= datos.c.length - 1} aria-label="Tema siguiente" className={boton}><ChevronRight className="h-5 w-5" /></button>}
             </div>
             <span className="sr-only" aria-live="polite">{tema ? `${actual + 1} de ${datos.c.length}: ${tema.t}` : ''}</span>
             {editando && (
@@ -424,14 +459,14 @@ function Escenario({ datos, setKey, inicio, onLista }: { datos: Compartido; setK
 function MiVersion({ original, mia, onUsar, onEditar }: { original: TemaCompartido; mia?: Mia; onUsar: (usar: boolean) => void; onEditar: () => void }) {
     if (!mia) {
         return (
-            <button onClick={onEditar} className="pulsable mt-3 h-9 px-3.5 rounded-full border border-hairline-strong text-[14px] font-semibold flex items-center gap-1.5">
+            <button onClick={onEditar} className="pulsable h-9 px-3.5 rounded-full border border-hairline-strong text-[14px] font-semibold flex items-center gap-1.5">
                 <Copy className="h-4 w-4" /> Hacer mi versión
             </button>
         );
     }
     const cambio = mia.base !== original.x;
     return (
-        <div className="mt-3 flex flex-wrap items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
             <div className="inline-flex p-1 rounded-full bg-fill gap-0.5" role="radiogroup" aria-label="Qué versión ver">
                 {([[false, 'Original'], [true, 'La mía']] as const).map(([v, nombre]) => (
                     <button key={nombre} role="radio" aria-checked={mia.usar === v} onClick={() => onUsar(v)}
@@ -478,8 +513,9 @@ function EditorMia({ original, mia, onGuardar, onBorrar, onCerrar }: { original:
     );
 }
 
-function Diapositiva({ tema, n, total, tamano, delta, formas, soloAcordes, siguiente, onSiguiente, mia }: {
+function Diapositiva({ tema, n, total, tamano, delta, formas, soloAcordes, siguiente, onSiguiente, mia, sola }: {
     tema: TemaCompartido; n: number; total: number; tamano: number; delta: number; formas: boolean; soloAcordes: boolean; siguiente?: TemaCompartido; onSiguiente: () => void; mia?: React.ReactNode;
+    sola?: string;   // una canción sola: lo que es (sin la barra de la lista encima)
 }) {
     const leida = useMemo(() => leerCancion(tema.x), [tema.x]);
     const lineas = useMemo(() => sinLoDeLasPildoras(leida.lineas, tema.g ?? null), [leida.lineas, tema.g]);
@@ -491,10 +527,15 @@ function Diapositiva({ tema, n, total, tamano, delta, formas, soloAcordes, sigui
     }, [tema.s, tema.m, formas, delta, leida.acordes]);
     const estiloG = tema.g ? estiloBloque(tema.g) : null;
     return (
-        <div className="min-h-full px-5 md:px-10 pt-[calc(env(safe-area-inset-top)+64px)] pb-[calc(env(safe-area-inset-bottom)+120px)] max-w-4xl mx-auto">
-            <h2 className="font-heading text-[28px] font-bold leading-tight">
-                <span className="sr-only">{n} de {total}: </span>{tema.t}
-            </h2>
+        <div className={cn('min-h-full px-5 md:px-10 pb-[calc(env(safe-area-inset-bottom)+120px)] max-w-4xl mx-auto', sola ? 'pt-[calc(env(safe-area-inset-top)+24px)]' : 'pt-[calc(env(safe-area-inset-top)+64px)]')}>
+            {sola && <p className="mb-1 text-[13px] font-semibold text-muted-foreground">{sola}</p>}
+            {sola
+                ? <h1 className="font-heading text-[28px] font-bold leading-tight">{tema.t}</h1>
+                : (
+                    <h2 className="font-heading text-[28px] font-bold leading-tight">
+                        <span className="sr-only">{n} de {total}: </span>{tema.t}
+                    </h2>
+                )}
             {(tema.v || tema.a) && <p className="text-[14px] text-muted-foreground">{[tema.v && `Versión ${tema.v}`, tema.a].filter(Boolean).join(' · ')}</p>}
             <div className="mt-2 flex flex-wrap gap-1.5">
                 {tema.g && estiloG && <Pildora texto={tema.g} pastel={estiloG.pastel} icono={estiloG.icono} />}
@@ -502,7 +543,13 @@ function Diapositiva({ tema, n, total, tamano, delta, formas, soloAcordes, sigui
                 {formas && !!tema.m && <span className="h-8 px-3 rounded-full text-[13px] font-semibold flex items-center bg-pastel-mantequilla text-pastel-mantequilla-ink">Formas · cejilla {tema.m}</span>}
                 {delta !== 0 && <span className="h-8 px-3 rounded-full text-[13px] font-semibold flex items-center bg-pastel-mantequilla text-pastel-mantequilla-ink">Transportado {delta > 0 ? '+' : ''}{delta}</span>}
             </div>
-            {mia}
+            <div className="mt-3 flex flex-wrap items-center gap-2">
+                <a href={enlaceDeTema(tema)} target="_blank" rel="noopener noreferrer"
+                    className="pulsable h-9 pl-2.5 pr-3.5 rounded-full bg-fill text-[14px] font-semibold flex items-center gap-1.5">
+                    <LogoSpotify className={cn('h-[18px] w-[18px]', tema.sp ? 'text-pastel-menta-ink' : 'text-muted-foreground')} /> Escuchar
+                </a>
+                {mia}
+            </div>
             {!notasVacias(tema.o) && <NotasRicas json={tema.o} className="mt-3 text-[16px]" />}
             <div className="mt-4">
                 {lineas.length

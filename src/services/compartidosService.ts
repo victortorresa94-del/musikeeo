@@ -24,6 +24,7 @@ const esUid = (d: string | null) => !!d && d !== 'invitado';
 
 let iniciado = false;
 const pendientes = new Map<string, ReturnType<typeof setTimeout>>();
+const sueltos = new Map<string, ReturnType<typeof setTimeout>>();   // los envíos rápidos (aparte: ahora() vacía `pendientes`)
 const estados = new Map<string, EstadoPublicar>();
 const oyentes = new Set<() => void>();
 
@@ -102,6 +103,19 @@ export const compartidosService = {
     },
     // Subir ya (al abrir la hoja de compartir o al crear el enlace)
     ahora() { revisar(); for (const [id, t] of pendientes) { clearTimeout(t); pendientes.delete(id); } forzar(); },
+    // Un envío rápido (unas canciones o una sola, sin repertorio ni bolo): se sube con lo de ahora y
+    // otra vez si se vuelve a enviar con cambios (mismo id: el enlace viejo enseña lo nuevo). No se
+    // vigila después: no está en ningún almacén. Sin cuenta o sin reglas, el enlace largo vale igual
+    publicar(id: string, p: Compartido) {
+        const r = almacenRepertorios.estado();
+        if (r.duenio === null) return;
+        if (!esUid(r.duenio)) { ponerEstado(id, 'sin-cuenta'); return; }
+        if (leerPublicado(id) === huella(p)) { ponerEstado(id, 'al-dia'); return; }
+        clearTimeout(sueltos.get(id));
+        const uid = r.duenio;
+        ponerEstado(id, 'subiendo');
+        sueltos.set(id, setTimeout(() => { sueltos.delete(id); void subir(id, p, uid); }, 300));
+    },
     estado: (id: string | undefined): EstadoPublicar | null => (id ? estados.get(id) ?? null : null),
     suscribir(f: () => void) { oyentes.add(f); return () => { oyentes.delete(f); }; },
 };

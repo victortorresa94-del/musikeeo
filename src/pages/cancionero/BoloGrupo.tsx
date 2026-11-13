@@ -112,7 +112,7 @@ export default function BoloGrupo() {
     if (set) {
         return (
             <>
-                <VistaSet datos={set} setKey={`b:${id ?? datos.n}:${set.n}`} onVolver={() => setSetAbierto(null)} volver="El bolo" />
+                <VistaSet datos={set} setKey={`b:${id ?? datos.n}:${set.n}`} onVolver={() => setSetAbierto(null)} volver={datos.n.trim() || 'El bolo'} />
                 {toast}
             </>
         );

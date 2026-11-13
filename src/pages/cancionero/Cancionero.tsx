@@ -1,8 +1,10 @@
 import { toast } from 'sonner';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { antesQue } from '../../lib/bolos';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { CheckSquare, MinusCircle, ChevronRight, Cloud, Download, FileText, FileUp, ListPlus, Loader2, MoreHorizontal, Palette, Pencil, Plus, Search, Smartphone, Table2, Trash2, X } from 'lucide-react';
+import { CheckSquare, MinusCircle, ChevronRight, Cloud, Download, FileText, FileUp, ListPlus, Loader2, MoreHorizontal, Palette, Pencil, Plus, Search, Send, Smartphone, Table2, Trash2, X } from 'lucide-react';
+import { EnviarCanciones } from '../../components/cancionero/CompartirGrupo';
 import { GestionarCatalogo } from '../../components/cancionero/Catalogo';
 import { ListaBolos } from '../../components/cancionero/ListaBolos';
 import { VistaTareas } from '../../components/cancionero/Tareas';
@@ -79,6 +81,8 @@ export default function Cancionero() {
     const [opcionesLista, setOpcionesLista] = useState<Lista | null>(null);
     const [aLista, setALista] = useState(false);
     const [lote, setLote] = useState(false);
+    // «Enviar»: las elegidas, en el orden en que se eligieron, por el enlace del grupo (sin repertorio)
+    const [enviar, setEnviar] = useState(false);
     const [ancho] = useState(() => typeof window !== 'undefined' && window.matchMedia?.('(min-width: 1024px)').matches);
 
     // Para el bolo sin cobertura: se bajan ya las pantallas de leer y tocar
@@ -106,6 +110,10 @@ export default function Cancionero() {
     const listaId = params.get('lista') || 'todas';
     const listaPropia = listas.find(l => l.id === listaId) ?? null;
     const grupoActual = listaId.startsWith('grupo:') ? listaId.slice(6) : null;
+    const elegidasEnOrden = useMemo(() => {
+        const porId = new Map(canciones.map(c => [c.id, c]));
+        return (elegidas ?? []).map(id => porId.get(id)).filter((c): c is Cancion => !!c);
+    }, [canciones, elegidas]);
     const enLista = useMemo(() => cancionesDeLista(listaId, canciones, listas, tonoDeCancion), [listaId, canciones, listas, tonoDeCancion]);
     const cuantas = useCallback((id: string) => cancionesDeLista(id, canciones, listas, tonoDeCancion).length, [canciones, listas, tonoDeCancion]);
     const filtradas = useMemo(() => filtrar(enLista, filtros, tonoDeCancion), [enLista, filtros, tonoDeCancion]);
@@ -222,7 +230,7 @@ export default function Cancionero() {
 
     return (
         <ConMenu activo={{ ver, lista: listaId }} onLista={elegirLista} onVer={cambiarVer} onOpcionesLista={l => setOpcionesLista(l)}>
-        <div className={cn('max-w-3xl mx-auto lg:max-w-none lg:mx-0 px-4 md:px-0 pt-3 md:pt-6', elegidas?.length ? 'pb-40' : 'pb-16')}>
+        <div className={cn('max-w-3xl mx-auto lg:max-w-none lg:mx-0 px-4 md:px-0 pt-3 md:pt-6', elegidas?.length ? 'pb-52 sm:pb-40' : 'pb-16')}>
             <h1 className="font-heading text-[28px] font-bold leading-tight text-foreground">Cancionero</h1>
             <p className="mt-0.5 text-[17px] text-muted-foreground">¿Qué tocamos hoy?</p>
 
@@ -473,10 +481,14 @@ export default function Cancionero() {
                 </button>
             )}
 
-            {/* Elegir varias: la barra de abajo las lleva a un repertorio */}
-            {elegidas && elegidas.length > 0 && (
-                <div className="fixed inset-x-0 bottom-[calc(52px+env(safe-area-inset-bottom))] md:bottom-0 z-[45] px-4 py-3 bg-chrome backdrop-blur-2xl border-t border-hairline">
-                    <div className="max-w-3xl mx-auto flex items-center gap-3">
+            {/* Elegir varias: la barra de abajo las lleva a un repertorio (o las envía). Va en <body>:
+                dentro de la página, el «animate-fade-in-up» de MainLayout deja un transform puesto y la
+                barra salía al final de la lista en vez de abajo de la pantalla */}
+            {elegidas && elegidas.length > 0 && createPortal(
+                <div className="fixed inset-x-0 md:left-64 bottom-[calc(52px+env(safe-area-inset-bottom))] md:bottom-0 z-[45] px-4 py-3 bg-chrome backdrop-blur-2xl border-t border-hairline">
+                    {/* En el móvil, dos filas: lo de las elegidas arriba y el repertorio, grande, abajo */}
+                    <div className="max-w-3xl mx-auto flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
+                        <div className="flex items-center gap-2 sm:gap-3 min-w-0">
                         <button onClick={() => setElegidas([])} aria-label="Quitar la selección" className="h-11 w-11 shrink-0 rounded-full bg-fill flex items-center justify-center text-foreground">
                             <X className="h-5 w-5" />
                         </button>
@@ -498,13 +510,20 @@ export default function Cancionero() {
                                 <ListPlus className="h-5 w-5" /> A una lista
                             </button>
                         )}
-                        <button onClick={() => setARepertorio(true)} className="pulsable flex-1 min-w-0 h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] truncate px-3">
+                        <button onClick={() => setEnviar(true)}
+                            className="pulsable h-[52px] px-3.5 flex-1 min-w-[96px] sm:flex-none rounded-[14px] bg-fill text-foreground font-semibold text-[15px] flex items-center justify-center gap-1.5">
+                            <Send className="h-5 w-5" /> Enviar
+                        </button>
+                        </div>
+                        <button onClick={() => setARepertorio(true)} className="pulsable w-full sm:w-auto sm:flex-1 min-w-0 h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] truncate px-3">
                             {elegidas.length} al repertorio
                         </button>
                     </div>
-                </div>
+                </div>,
+                document.body,
             )}
             <AccionesLote abierta={lote} onCerrar={() => setLote(false)} elegidas={elegidas ?? []} onHecho={() => setElegidas(null)} />
+            <EnviarCanciones abierta={enviar} onCerrar={() => setEnviar(false)} canciones={elegidasEnOrden} />
             <AnadirALista abierta={aLista} onCerrar={() => setALista(false)} ids={elegidas ?? []} listas={listas} onHecho={() => setElegidas(null)}
                 onNueva={() => { setALista(false); setEditorLista({ lista: null }); }} />
             <Hoja abierta={hojaListas} onCerrar={() => setHojaListas(false)} titulo="Listas" alta derecha={<BotonHoja fuerte onClick={() => setHojaListas(false)}>Listo</BotonHoja>}>

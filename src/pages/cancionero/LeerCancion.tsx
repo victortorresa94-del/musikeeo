@@ -3,7 +3,7 @@ import { ConMenu } from '../../components/cancionero/ConMenu';
 import { createPortal } from 'react-dom';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronLeft, ChevronRight, Eye, Guitar, Loader2, Maximize, MoreHorizontal, Pause, Pencil, Play, Shrink, X } from 'lucide-react';
+import { ChevronLeft, ChevronRight, Eye, Guitar, Loader2, Maximize, MoreHorizontal, Pause, Pencil, Play, Send, Shrink, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { juntarAcordesYLetra, lineasDeLetra, nombreAcorde } from '../../lib/acordes';
 import { verAcordes } from '../../lib/verAcorde';
@@ -31,6 +31,7 @@ import { FichaEnSitio } from '../../components/cancionero/FichaEnSitio';
 import { BotonWebs } from '../../components/cancionero/BotonWebs';
 import { BotonTareas } from '../../components/cancionero/Tareas';
 import { BotonSpotify } from '../../components/cancionero/Spotify';
+import { EnviarCancion } from '../../components/cancionero/CompartirGrupo';
 import { notasVacias } from '../../lib/notas';
 
 export default function LeerCancion() {
@@ -72,6 +73,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
     const [panel, setPanelSeccion] = useState<SeccionAjustes | null>(null);
     const setPanel = (v: false) => { if (!v) setPanelSeccion(null); };
     const [versionando, setVersionando] = useState(false);
+    const [enviando, setEnviando] = useState(false);
     const [historial, setHistorial] = useState(0);   // abierto: la marca de cuándo (para montarlo de nuevo)
     // Editando el texto ahí mismo: la línea donde se tocó y a qué altura de la pantalla estaba
     const [editando, setEditando] = useState<{ linea: number; y: number | null } | null>(null);
@@ -107,6 +109,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
     const juntada = useMemo(() => juntarAcordesYLetra(cancion.texto), [cancion.texto]);
 
     const cejillaFormas = ajustes.cejilla || ajustes.cejillaGuardada || cejillaDeFicha(cancion);
+    const paraEnviar = useMemo(() => ({ ...cancion, ajustes }), [cancion, ajustes]);
     const cambiarTono = (d: number) => {
         const s = ajustes.semitonos + d;
         cambiar({ semitonos: Math.abs(s) >= 12 ? 0 : s });
@@ -414,6 +417,10 @@ function Lector({ cancion }: { cancion: Cancion }) {
                     <BotonWebs cancion={cancion} />
                     <BotonSpotify cancion={cancion} />
                     <BotonTareas de={`c:${cancion.id}`} />
+                    <button onClick={() => setEnviando(true)}
+                        className="pulsable h-9 pl-3 pr-3.5 rounded-full bg-fill text-[14px] font-semibold text-foreground flex items-center gap-1.5">
+                        <Send className="h-4 w-4" /> Enviar
+                    </button>
                 </div>
             </div>
 
@@ -540,6 +547,8 @@ function Lector({ cancion }: { cancion: Cancion }) {
             )}
 
             <HacerVersion cancion={cancion} abierta={versionando} onCerrar={() => setVersionando(false)} />
+            {/* Enviar la canción a quien va a cantarla contigo: en el tono en que la tienes ahora */}
+            <EnviarCancion cancion={paraEnviar} abierta={enviando} onCerrar={() => setEnviando(false)} />
             {historial > 0 && <VersionesAnteriores key={historial} cancion={cancion} abierta onCerrar={() => setHistorial(0)} />}
             <PanelAjustes
                 seccion={panel ?? undefined} abierto={panel !== null} onCerrar={() => setPanel(false)}

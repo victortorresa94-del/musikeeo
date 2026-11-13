@@ -29,6 +29,7 @@ export interface TemaCompartido {
     g?: string;             // bloque del bolo
     v?: string;             // versión
     m?: number;             // cejilla con la que lo toca quien comparte
+    sp?: string;            // la pista en Spotify (solo open.spotify.com)
 }
 
 export interface Compartido {
@@ -38,9 +39,14 @@ export interface Compartido {
     h?: string;             // hoja del bolo (JSON del editor)
     l?: 1;                  // lleva letra
     u?: string;             // cuándo se publicó (ISO): manda el más nuevo entre el «#», la copia del móvil y la nube
+    sp?: string;            // la playlist en Spotify (pública: los músicos la abren sin conectar Spotify)
     c: TemaCompartido[];
     x?: TemaCompartido[];   // extras: la recámara (fuera del orden y de la duración)
 }
+
+// Un enlace de Spotify que llega de fuera: solo si es de open.spotify.com (lo demás se descarta)
+export const enlaceSpotify = (x: unknown): string | undefined =>
+    (typeof x === 'string' && x.startsWith('https://open.spotify.com/') && x.length <= 300 && !/\s/.test(x) ? x : undefined);
 
 // El set y, detrás, los extras con su bloque: para el escenario y el cifrado
 export const conExtras = (p: Compartido): TemaCompartido[] => [...p.c, ...(p.x ?? []).map(t => ({ ...t, g: 'Extras' }))];
@@ -120,7 +126,7 @@ export function temaDe(c: Cancion, conLetra: boolean): TemaCompartido {
         ...quitarVacios({
             a: c.artista, s, k: tonoMostrado(c, tonoDe(c)) ?? undefined, p: c.ficha?.capo, c: canta, e: c.ficha?.estilo,
             b: c.bpm, d: c.duracion, o: notasVacias(c.notas) ? undefined : c.notas, g: bloqueDe(c) ?? undefined, v: c.version,
-            m: c.ajustes.cejilla || c.ajustes.cejillaGuardada || cejillaDeFicha(c),
+            m: c.ajustes.cejilla || c.ajustes.cejillaGuardada || cejillaDeFicha(c), sp: enlaceSpotify(c.spotify),
         }),
     };
 }
@@ -135,10 +141,27 @@ export function paquete(repertorio: Repertorio, canciones: Cancion[], conLetra: 
         ...(repertorio.fecha ? { f: repertorio.fecha } : {}),
         ...(!notasVacias(repertorio.notas) ? { h: repertorio.notas } : {}),
         ...(conLetra ? { l: 1 as const } : {}),
+        ...(enlaceSpotify(repertorio.spotify) ? { sp: repertorio.spotify } : {}),
         c: temas.map(c => temaDe(c, conLetra)),
         ...(extras.length ? { x: extras.map(c => temaDe(c, conLetra)) } : {}),
     };
 }
+
+// Enviar rápido, sin bolo ni repertorio (14-nov, Víctor: «una pantalla solo para reper o X
+// canciones, y otra para enviar solo una canción a alguien con quien vas a cantar»): las
+// canciones elegidas, en ese orden, con el mismo formato. Con una sola, la página del músico
+// la abre directamente (Grupo.tsx: `esUnaCancion`)
+export function paqueteSuelto(nombre: string, canciones: Cancion[], conLetra: boolean): Compartido {
+    return {
+        v: 1,
+        n: nombre.trim().slice(0, 120) || (canciones.length === 1 ? canciones[0].titulo : `${canciones.length} canciones`),
+        ...(conLetra ? { l: 1 as const } : {}),
+        c: canciones.map(c => temaDe(c, conLetra)),
+    };
+}
+
+// Un paquete de una sola canción (sin extras ni hoja del bolo): se abre en la canción, sin lista
+export const esUnaCancion = (p: Compartido) => p.c.length === 1 && !p.x?.length && notasVacias(p.h);
 
 const aBase64Url = (u: Uint8Array) => {
     let bin = '';
@@ -178,12 +201,15 @@ export function sanear(dato: unknown): Compartido | null {
         p.f = texto(p.f);
         p.h = texto(p.h);
         p.u = texto(p.u);
+        p.sp = enlaceSpotify(p.sp);
+        if (!p.sp) delete p.sp;
         const temas = (l: TemaCompartido[]) => l.filter(t => t && typeof t.t === 'string' && typeof t.x === 'string').map(t => ({
             t: t.t, x: t.x, a: texto(t.a), k: texto(t.k), p: texto(t.p), c: texto(t.c), e: texto(t.e), o: texto(t.o), g: texto(t.g), v: texto(t.v),
             s: typeof t.s === 'number' ? Math.max(-24, Math.min(24, Math.round(t.s))) : undefined,
             b: typeof t.b === 'number' ? t.b : undefined,
             d: typeof t.d === 'number' ? t.d : undefined,
             m: typeof t.m === 'number' ? t.m : undefined,
+            sp: enlaceSpotify(t.sp),
         }));
         p.c = temas(p.c);
         p.x = Array.isArray(p.x) ? temas(p.x) : undefined;
