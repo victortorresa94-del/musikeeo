@@ -6,7 +6,7 @@ import { Check, ExternalLink, Palette, Pencil, Plus, Tag } from 'lucide-react';
 import { ICONO_CAMPO } from './iconosFicha';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
-import { ESTADOS, energiaDeNombre, estadoDeNombre, nombreEnergia, nombreEstado } from '../../lib/biblioteca';
+import { ESTADOS, energiaDeNombre, estadoDeNombre, fichaSegura, nombreEnergia, nombreEstado } from '../../lib/biblioteca';
 import { estiloBloque, pastelCanta, pastelDe, pastelGrupo } from './estilo';
 import { EditarAspecto, IconoValor, PildoraValor } from './Aspecto';
 import { GestionarCatalogo } from './Catalogo';
@@ -45,7 +45,8 @@ export function FichaEnSitio({ cancion, onTono }: { cancion: Cancion; onTono?: (
     const [gestionar, setGestionar] = useState<PestanaCatalogo | null>(null);
     const colores = (t: PestanaCatalogo) => { setAbierto(null); setGestionar(t); };
     const colorDe = (tipo: TipoValor, valor: string) => { setAbierto(null); setAspecto({ tipo, valor }); };
-    const f = cancion.ficha ?? {};
+    // Con cada dato en su tipo: una ficha rara (un grupo como texto suelto…) no tumba la canción
+    const f = fichaSegura(cancion.ficha);
     const aFicha = `/cancionero/${cancion.id}/editar#ficha`;
 
     const poner = (cambio: Partial<FichaCancion>, aviso: string, ajustes?: Partial<AjustesCancion> | null) => {

@@ -50,17 +50,48 @@ export const NOMBRE_CAMPO: Record<CampoFiltro, string> = {
     proyectos: 'Grupo', canta: 'Canta', estilos: 'Estilo', tonos: 'Tono', energias: 'Energía', estados: 'Estado', etiquetas: 'Etiquetas',
 };
 
-// Lo que vale una canción en cada campo (puede tener varios grupos)
+// Una ficha que se puede leer sin romper nada: cada dato con su tipo. Una copia vieja, otro aparato
+// o un import a mano pueden traer un grupo como texto suelto («Lady Jarana, Cataleya») o un número
+// donde va un nombre, y entonces el editor de la ficha se caía entero. Lo que no conocemos se queda
+const TEXTOS_FICHA = ['tono', 'capo', 'canta', 'estilo', 'tonoAlt', 'enlace', 'estado'] as const;
+const comoTexto = (v: unknown) => (typeof v === 'string' ? v : typeof v === 'number' && Number.isFinite(v) ? String(v) : undefined);
+function comoLista(v: unknown): string[] | undefined {
+    const l = Array.isArray(v) ? v : typeof v === 'string' ? v.split(',') : [];
+    const r = l.map(x => comoTexto(x)?.trim()).filter((x): x is string => !!x);
+    return r.length ? r : undefined;
+}
+export function fichaSegura(f: unknown): FichaCancion {
+    if (!f || typeof f !== 'object' || Array.isArray(f)) return {};
+    const o = f as Record<string, unknown>;
+    const salida = { ...o } as FichaCancion & Record<string, unknown>;
+    for (const k of TEXTOS_FICHA) {
+        if (!(k in o)) continue;
+        const v = comoTexto(o[k]);
+        if (v) salida[k] = v; else delete salida[k];
+    }
+    for (const k of ['proyectos', 'etiquetas'] as const) {
+        if (!(k in o)) continue;
+        const v = comoLista(o[k]);
+        if (v) salida[k] = v; else delete salida[k];
+    }
+    if ('energia' in o && !((typeof o.energia === 'number' && Number.isFinite(o.energia)) || (typeof o.energia === 'string' && o.energia.trim()))) delete salida.energia;
+    if ('extra' in o && (!o.extra || typeof o.extra !== 'object' || Array.isArray(o.extra))) delete salida.extra;
+    return salida;
+}
+
+// Lo que vale una canción en cada campo (puede tener varios grupos). Todo como texto: un valor de
+// otro tipo no puede tumbar los filtros ni el editor de la ficha
 export function valoresDe(c: Cancion, campo: CampoFiltro, tono: string | null): string[] {
     const f = c.ficha ?? {};
+    const uno = (v: unknown) => { const t = comoTexto(v); return t ? [t] : []; };
     switch (campo) {
-        case 'proyectos': return (f.proyectos ?? []).filter(Boolean);
-        case 'canta': return f.canta ? [f.canta] : [];
-        case 'estilos': return f.estilo ? [f.estilo] : [];
+        case 'proyectos': return comoLista(f.proyectos) ?? [];
+        case 'canta': return uno(f.canta);
+        case 'estilos': return uno(f.estilo);
         case 'tonos': return tono ? [tono] : [];
-        case 'energias': return f.energia ? [String(f.energia)] : [];
-        case 'estados': return f.estado ? [f.estado] : [];
-        case 'etiquetas': return (f.etiquetas ?? []).filter(Boolean);
+        case 'energias': return uno(f.energia);
+        case 'estados': return uno(f.estado);
+        case 'etiquetas': return comoLista(f.etiquetas) ?? [];
     }
 }
 
@@ -297,7 +328,10 @@ function leerUnaCopia(texto: string): Copia | null {
     try {
         const c = JSON.parse(t) as Partial<Copia>;
         if (c.app !== 'musikeeo-cancionero' || !Array.isArray(c.canciones)) return null;
-        const canciones = c.canciones.filter(x => x && typeof x.titulo === 'string' && x.titulo.trim()).slice(0, 2000);
+        // La ficha con cada dato en su tipo: una copia hecha a mano o con un script puede traer un
+        // grupo como texto suelto, y eso tumbaba luego las listas y el editor
+        const canciones = c.canciones.filter(x => x && typeof x.titulo === 'string' && x.titulo.trim()).slice(0, 2000)
+            .map(x => (x.ficha === undefined ? x : { ...x, ficha: fichaSegura(x.ficha) }));
         const repertorios = (Array.isArray(c.repertorios) ? c.repertorios : [])
             .filter(r => r && typeof r.nombre === 'string' && Array.isArray(r.canciones))
             .map(r => ({

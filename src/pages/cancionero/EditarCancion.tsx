@@ -1,4 +1,4 @@
-import { Suspense, lazy, useEffect, useMemo, useRef, useState } from 'react';
+import { Component, Suspense, lazy, useEffect, useMemo, useRef, useState, type ErrorInfo, type ReactNode } from 'react';
 import { createPortal } from 'react-dom';
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
@@ -14,10 +14,44 @@ import { EditorFicha } from '../../components/cancionero/EditorFicha';
 import { textoPegado } from '../../lib/pegado';
 import { FormatoLetra } from '../../components/cancionero/FormatoLetra';
 import { ImportarCanciones } from '../../components/cancionero/ImportarCanciones';
-import { leerCopia } from '../../lib/biblioteca';
+import { fichaSegura, leerCopia } from '../../lib/biblioteca';
+import { SiFalla } from '../../components/cancionero/SiFalla';
+import { Sentry } from '../../lib/sentry';
+import type EditorNotasTipo from '../../components/notas/EditorNotas';
 
-// El editor de notas (Tiptap) va en su trozo: solo se baja al editar
-const EditorNotas = lazy(() => import('../../components/notas/EditorNotas'));
+// El editor de notas (Tiptap) va en su trozo: solo se baja al editar. Si ese trozo no llega (se
+// publicó otra versión de la app mientras la tenías abierta, sin cobertura…), las notas no se
+// pueden tocar ahora pero el resto se edita y se guarda igual: la pantalla no se cae
+const EditorNotas = lazy(() => import('../../components/notas/EditorNotas')
+    .catch(() => ({ default: NotasNoDisponibles as typeof EditorNotasTipo })));
+
+function NotasNoDisponibles() {
+    return <p className="text-[14px] text-muted-foreground">Las notas no se pueden editar ahora. Lo demás se guarda igual; para tocarlas, cierra la app y vuelve a abrirla.</p>;
+}
+
+// Si algo de la pantalla falla, falla solo eso (con su aviso) y no la app entera
+class Aguanta extends Component<{ donde: string; fallback: ReactNode; children: ReactNode }, { fallo: boolean }> {
+    state = { fallo: false };
+    static getDerivedStateFromError() { return { fallo: true }; }
+    componentDidCatch(error: Error, info: ErrorInfo) {
+        console.error(`[cancionero] falló ${this.props.donde}`, error, info.componentStack);
+        Sentry.withScope(scope => { scope.setTag('donde', this.props.donde); scope.setExtras({ componentStack: info.componentStack }); Sentry.captureException(error); });
+    }
+    render() { return this.state.fallo ? this.props.fallback : this.props.children; }
+}
+
+function NoAbre({ id }: { id: string }) {
+    return (
+        <div className="max-w-md mx-auto px-6 py-20 text-center">
+            <p className="text-[17px] font-semibold text-foreground">No se ha podido abrir el editor</p>
+            <p className="mt-2 text-[15px] text-muted-foreground">La canción sigue guardada tal cual. Vuelve a ella y prueba otra vez.</p>
+            <div className="mt-5 flex items-center justify-center gap-2">
+                <Link to={`/cancionero/${id}`} replace className="pulsable h-9 px-4 rounded-full bg-foreground text-background text-[14px] font-semibold inline-flex items-center">Volver a la canción</Link>
+                <button type="button" onClick={() => window.location.reload()} className="pulsable h-9 px-4 rounded-full bg-fill text-foreground text-[14px] font-semibold">Recargar</button>
+            </div>
+        </div>
+    );
+}
 import { ICONO, PASTEL, type Pastel } from '../../components/cancionero/estilo';
 import type { Cancion, FichaCancion } from '../../types/cancionero';
 import { mover as moverEnTablero, type CampoTablero } from '../../lib/tablero';
@@ -31,13 +65,20 @@ C                       G
 
 También vale con los acordes dentro: Cierran la [Am]persiana…`;
 
+const OPCIONES_PREVIA = { semitonos: 0, notacion: 'original', bemoles: null } as const;
+
 export default function EditarCancion() {
     const { id } = useParams();
     const { canciones, listo } = useCancionero();
     if (!id) return <Formulario />;
     if (!listo) return <div className="min-h-[60vh] flex items-center justify-center"><Loader2 className="h-7 w-7 animate-spin text-muted-foreground" /></div>;
     const cancion = canciones.find(c => c.id === id);
-    return cancion ? <Formulario key={cancion.id} existente={cancion} /> : <Navigate to="/cancionero" replace />;
+    if (!cancion) return <Navigate to="/cancionero" replace />;
+    return (
+        <Aguanta key={cancion.id} donde="el editor de la canción" fallback={<NoAbre id={cancion.id} />}>
+            <Formulario existente={cancion} />
+        </Aguanta>
+    );
 }
 
 // Buscar la canción en las webs de acordes (se abre aparte; luego se copia y se pega aquí)
@@ -80,7 +121,7 @@ function Formulario({ existente }: { existente?: Cancion }) {
     const [pestana, setPestana] = useState<'texto' | 'previa'>('texto');
     // Desde «Añadir aquí» de una columna de Bloques: la ficha ya trae ese dato
     const [ficha, setFicha] = useState<FichaCancion>(() => {
-        if (existente) return existente.ficha ?? {};
+        if (existente) return fichaSegura(existente.ficha);
         const v = params.get('valor')?.slice(0, 40);
         if (!v) return {};
         const campo = params.get('campo') as CampoTablero | null;
@@ -90,6 +131,20 @@ function Formulario({ existente }: { existente?: Cancion }) {
     const [duracion, setDuracion] = useState<number | undefined>(existente?.duracion);
     const [notas, setNotas] = useState<string | undefined>(existente?.notas);
     const [leyendo, setLeyendo] = useState(false);
+    // Lo que cambia fuera mientras el formulario está abierto se coge si aquí no lo has tocado. Pasaba
+    // al editar la letra en su sitio y tocar el lápiz de la ficha: lo escrito se guardaba al salir,
+    // pero este formulario ya se había abierto con el texto de antes y «Guardar» lo borraba
+    const vista = useRef(existente);
+    useEffect(() => {
+        const antes = vista.current;
+        if (!existente || !antes || existente === antes) return;
+        vista.current = existente;
+        setTexto(t => (t === antes.texto ? existente.texto : t));
+        setTitulo(t => (t === antes.titulo ? existente.titulo : t));
+        setArtista(a => (a === antes.artista ? existente.artista : a));
+        setNotas(n => (n === antes.notas ? existente.notas : n));
+        setFicha(f => (JSON.stringify(f) === JSON.stringify(fichaSegura(antes.ficha)) ? fichaSegura(existente.ficha) : f));
+    }, [existente]);
     const [copia, setCopia] = useState<string | null>(null);
     const areaRef = useRef<HTMLTextAreaElement>(null);
     const archivoRef = useRef<HTMLInputElement>(null);
@@ -99,8 +154,12 @@ function Formulario({ existente }: { existente?: Cancion }) {
     }, []);
 
     const leida = useMemo(() => leerCancion(texto), [texto]);
-    const tono = useMemo(() => detectarTono(leida.acordes), [leida]);
-    const tonoTexto = tono ? nombreTono(tono, leida.meta.cejilla ?? 0, leida.acordes.filter(a => a.latina).length > leida.acordes.length / 2 ? 'latina' : 'americana', false) : null;
+    // El tono que dicen los acordes es una ayuda: si algo raro lo impide, se sigue sin él
+    const tono = useMemo(() => { try { return detectarTono(leida.acordes); } catch { return null; } }, [leida]);
+    const tonoTexto = useMemo(() => {
+        if (!tono) return null;
+        try { return nombreTono(tono, leida.meta.cejilla ?? 0, leida.acordes.filter(a => a.latina).length > leida.acordes.length / 2 ? 'latina' : 'americana', false); } catch { return null; }
+    }, [tono, leida]);
     const demasiado = texto.length > LIMITE_TEXTO;
     // Una ficha sin letra también vale (título y su tono): la letra se pega luego
     const puedeGuardar = (!!texto.trim() || !!titulo.trim()) && !demasiado;
@@ -171,7 +230,7 @@ function Formulario({ existente }: { existente?: Cancion }) {
     const previa = (
         <div className="rounded-2xl border border-hairline p-4 min-h-[50dvh]">
             {leida.lineas.length
-                ? <HojaCancion lineas={leida.lineas} opciones={{ semitonos: 0, notacion: 'original', bemoles: null }} vista="completa" tamano={16} columnas={1} />
+                ? <SiFalla texto={texto}><HojaCancion lineas={leida.lineas} opciones={OPCIONES_PREVIA} vista="completa" tamano={16} columnas={1} /></SiFalla>
                 : <p className="text-[15px] text-muted-foreground">Aquí verás cómo queda.</p>}
         </div>
     );
@@ -248,7 +307,7 @@ function Formulario({ existente }: { existente?: Cancion }) {
                         {demasiado
                             ? 'Es demasiado largo para una canción.'
                             : leida.acordes.length
-                                ? `${leida.acordes.length} acordes${tono ? ` · Tono ${nombreTono(tono, leida.meta.cejilla ?? 0, leida.acordes.filter(a => a.latina).length > leida.acordes.length / 2 ? 'latina' : 'americana', false)}` : ''}`
+                                ? `${leida.acordes.length} acordes${tonoTexto ? ` · Tono ${tonoTexto}` : ''}`
                                 : !texto.trim() && titulo.trim() ? 'Puedes guardarla ya solo con el título y su ficha, y pegar la letra luego.'
                                 : texto.trim() ? 'Aún no vemos acordes: tienen que ir en su línea, encima de la letra, o entre corchetes como [Am].' : 'Lo que no sea la canción (anuncios, botones) lo puedes borrar aquí.'}
                     </p>
@@ -262,9 +321,11 @@ function Formulario({ existente }: { existente?: Cancion }) {
                 <h2 id="titulo-notas" className="scroll-mt-[calc(env(safe-area-inset-top)+4.5rem)] text-[17px] font-bold text-foreground">Notas de la canción</h2>
                 <p className="mt-0.5 mb-2 text-[13px] text-muted-foreground">Títulos, negritas, colores, avisos y casillas. Salen en la canción, en Tocar y en el enlace para el grupo. Pulsa «/» para meter un bloque.</p>
                 <div className="rounded-2xl border border-hairline p-3 md:p-4">
-                    <Suspense fallback={<div className="min-h-32" />}>
-                        <EditorNotas valor={notas} onCambio={setNotas} placeholder="Ej.: Entra la batería en el segundo estribillo. Final: parón y «¡Olé!»…" />
-                    </Suspense>
+                    <Aguanta donde="las notas de la canción" fallback={<NotasNoDisponibles />}>
+                        <Suspense fallback={<div className="min-h-32" />}>
+                            <EditorNotas valor={notas} onCambio={setNotas} placeholder="Ej.: Entra la batería en el segundo estribillo. Final: parón y «¡Olé!»…" />
+                        </Suspense>
+                    </Aguanta>
                 </div>
             </section>
 
