@@ -2,7 +2,8 @@ import { useEffect, useLayoutEffect, useRef, useState, type ReactNode } from 're
 import { createPortal } from 'react-dom';
 import { Link } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Check, Pencil, Plus } from 'lucide-react';
+import { Check, ExternalLink, Pencil, Plus, Tag } from 'lucide-react';
+import { ICONO_CAMPO } from './iconosFicha';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { ENERGIAS, ESTADOS, opcionesDe } from '../../lib/biblioteca';
@@ -47,13 +48,13 @@ export function FichaEnSitio({ cancion, onTono }: { cancion: Cancion; onTono?: (
         toast.success(aviso, { action: { label: 'Deshacer', onClick: () => guardar(antes) } });
     };
 
-    const pildora = (campo: Campo, texto: string, clase: string) => (
+    const pildora = (campo: Campo, texto: string, clase: string) => { const Icono = ICONO_CAMPO[campo]; return (
         <button key={`${campo}:${texto}`} onClick={e => { const ancla = e.currentTarget; setAbierto(a => (a?.ancla === ancla ? null : { campo, ancla })); }}
             aria-haspopup="dialog" aria-expanded={abierto?.campo === campo}
             className={cn('h-7 shrink-0 whitespace-nowrap px-2.5 rounded-full text-[13px] font-semibold flex items-center active:opacity-60', clase)}>
-            {texto}
+            <Icono className="h-3.5 w-3.5 mr-1 shrink-0" aria-hidden />{texto}
         </button>
-    );
+    ); };
 
     const piezas: ReactNode[] = [];
     if (f.tono) piezas.push(pildora('tono', `Tono ${f.tono}${f.tonoAlt ? ` · también ${f.tonoAlt}` : ''}`, 'bg-foreground text-background'));
@@ -64,7 +65,7 @@ export function FichaEnSitio({ cancion, onTono }: { cancion: Cancion; onTono?: (
     if (f.energia) piezas.push(pildora('energia', ENERGIAS[f.energia], 'bg-fill-strong text-foreground'));
     for (const e of f.etiquetas ?? []) {
         const p = pastelDe(`etiqueta:${e.toLowerCase()}`);
-        piezas.push(<Link key={`e:${e}`} to={aFicha} className={cn('h-7 shrink-0 whitespace-nowrap px-2.5 rounded-full text-[13px] font-semibold flex items-center active:opacity-60', p.fondo, p.tinta)}>{e}</Link>);
+        piezas.push(<Link key={`e:${e}`} to={aFicha} className={cn('h-7 shrink-0 whitespace-nowrap px-2.5 rounded-full text-[13px] font-semibold flex items-center active:opacity-60', p.fondo, p.tinta)}><Tag className="h-3.5 w-3.5 mr-1 shrink-0" aria-hidden />{e}</Link>);
     }
     if (f.estado && f.estado !== 'lista') piezas.push(pildora('estado', ESTADOS[f.estado], 'bg-pastel-mantequilla text-pastel-mantequilla-ink'));
     // Lo que falta, para ponerlo con un toque (solo lo que más se usa)
@@ -115,12 +116,12 @@ export function FichaEnSitio({ cancion, onTono }: { cancion: Cancion; onTono?: (
                 </Link>
                 {piezas}
                 {f.enlace && /^https?:\/\//i.test(f.enlace) && (
-                    <a href={f.enlace} target="_blank" rel="noopener noreferrer" className="h-7 shrink-0 whitespace-nowrap px-2.5 rounded-full bg-fill-strong text-[13px] font-semibold text-foreground flex items-center active:opacity-60">Sus acordes ↗</a>
+                    <a href={f.enlace} target="_blank" rel="noopener noreferrer" className="h-7 shrink-0 whitespace-nowrap px-2.5 rounded-full bg-fill-strong text-[13px] font-semibold text-foreground flex items-center active:opacity-60"><ExternalLink className="h-3.5 w-3.5 mr-1 shrink-0" aria-hidden />Sus acordes</a>
                 )}
                 {faltan.map(([c, nombre]) => (
                     <button key={`+${c}`} onClick={e => { const ancla = e.currentTarget; setAbierto(a => (a?.ancla === ancla ? null : { campo: c, ancla })); }}
                         className="h-7 shrink-0 whitespace-nowrap pl-1.5 pr-2.5 rounded-full border border-dashed border-hairline-strong text-[13px] font-semibold text-muted-foreground flex items-center gap-0.5 active:opacity-60">
-                        <Plus className="h-3.5 w-3.5" />{nombre}
+                        {(() => { const I = ICONO_CAMPO[c]; return <I className="h-3.5 w-3.5 mr-0.5" aria-hidden />; })()}{nombre}
                     </button>
                 ))}
             </div>

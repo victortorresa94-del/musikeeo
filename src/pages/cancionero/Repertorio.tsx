@@ -8,6 +8,7 @@ import { useCancionero } from '../../hooks/useCancionero';
 import { norm, pedirPantallaCompleta, tonoDe } from '../../components/cancionero/utilidades';
 import { Portada } from '../../components/cancionero/Portada';
 import { ICONO, PASTEL, bloqueDe, estiloBloque, etiquetasTema, pastelCanta } from '../../components/cancionero/estilo';
+import { ICONO_CAMPO } from '../../components/cancionero/iconosFicha';
 import { FilaCancion } from '../../components/cancionero/FilaCancion';
 import { BarraFiltros } from '../../components/cancionero/Filtros';
 import { useFiltrosGuardados } from '../../hooks/useFiltrosGuardados';
@@ -412,7 +413,7 @@ function Fila({ id, n, cancion, tono, bloque, mismoTono, onQuitar, onTocar, eleg
                         <span className="mt-1 flex flex-nowrap gap-1 overflow-hidden">
                             {etiquetas.map(e => (
                                 <span key={e.texto} className={cn('shrink-0 h-5 px-2 rounded-full text-[11.5px] font-semibold flex items-center',
-                                    e.pastel ? cn(e.pastel.fondo, e.pastel.tinta) : 'bg-fill-strong text-muted-foreground')}>{e.texto}</span>
+                                    e.pastel ? cn(e.pastel.fondo, e.pastel.tinta) : 'bg-fill-strong text-muted-foreground')}>{e.tipo && (() => { const I = ICONO_CAMPO[e.tipo]; return <I className="h-3 w-3 mr-0.5 shrink-0" aria-hidden />; })()}{e.texto}</span>
                             ))}
                         </span>
                     )}
@@ -566,7 +567,7 @@ function PanelCancion({ cancion, tono, onTocar }: { cancion: Cancion; tono: stri
                     <div className="mt-2 flex flex-wrap gap-1">
                         {etiquetas.map(e => (
                             <span key={e.texto} className={cn('h-6 px-2.5 rounded-full text-[12.5px] font-semibold flex items-center',
-                                e.pastel ? cn(e.pastel.fondo, e.pastel.tinta) : 'bg-fill-strong text-muted-foreground')}>{e.texto}</span>
+                                e.pastel ? cn(e.pastel.fondo, e.pastel.tinta) : 'bg-fill-strong text-muted-foreground')}>{e.tipo && (() => { const I = ICONO_CAMPO[e.tipo]; return <I className="h-3.5 w-3.5 mr-0.5 shrink-0" aria-hidden />; })()}{e.texto}</span>
                         ))}
                     </div>
                 )}

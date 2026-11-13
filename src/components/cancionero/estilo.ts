@@ -77,7 +77,7 @@ export function bloqueDe(c: Cancion): string | null {
     return m && !NO_ES_BLOQUE.test(m[1]) ? m[1].trim() : null;
 }
 
-export interface Etiqueta { texto: string; pastel: Pastel | null; icono?: string }
+export interface Etiqueta { texto: string; pastel: Pastel | null; icono?: string; tipo?: 'canta' | 'estilo' | 'estado' | 'capo' }
 
 // Los avisos de la ficha que salen en píldora. «entera»: la píldora lo dice todo (en Tocar la
 // línea no se repite en la hoja); «Confirmar: …» se queda también en la hoja, por el detalle
@@ -153,14 +153,14 @@ export const pastelCanta = (quien: string): Pastel => pastelDe(`canta:${quien.tr
 export function etiquetasTema(c: Cancion): Etiqueta[] {
     const f = c.ficha ?? {};
     const salida: Etiqueta[] = [];
-    if (f.canta) salida.push({ texto: f.canta, pastel: pastelCanta(f.canta), icono: ICONO.canciones });
-    if (f.estilo) salida.push({ texto: f.estilo, pastel: estiloBloque(f.estilo).pastel });
-    if (f.estado && ESTADO_PILDORA[f.estado]) salida.push(ESTADO_PILDORA[f.estado]);
+    if (f.canta) salida.push({ texto: f.canta, pastel: pastelCanta(f.canta), icono: ICONO.canciones, tipo: 'canta' });
+    if (f.estilo) salida.push({ texto: f.estilo, pastel: estiloBloque(f.estilo).pastel, tipo: 'estilo' });
+    if (f.estado && ESTADO_PILDORA[f.estado]) salida.push({ ...ESTADO_PILDORA[f.estado], tipo: 'estado' });
     for (const e of etiquetasDe(c)) {
         if (f.canta && /^canta /i.test(e.texto)) continue;
         if (/^cejilla/i.test(e.texto) && f.capo) continue;
         salida.push(e);
     }
-    if (f.capo && !/^capo 0\b/i.test(f.capo)) salida.push({ texto: f.capo.replace(/\s*·.*$/, ''), pastel: null });
+    if (f.capo && !/^capo 0\b/i.test(f.capo)) salida.push({ texto: f.capo.replace(/\s*·.*$/, ''), pastel: null, tipo: 'capo' });
     return salida;
 }
