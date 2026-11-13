@@ -50,6 +50,9 @@ export default function Grupo() {
     const { id } = useParams<{ id?: string }>();
     const [datos, setDatos] = useState<Compartido | null>(() => masNuevo(descodificar(window.location.hash), leerCopia(id)));
     const [abierta, setAbierta] = useState<number | null>(null);
+    // En qué canción va el músico (por título), para seguir en ella si el set cambia en directo
+    const recuerdo = useRef<string | null>(null);
+    const [recordar] = useState<Recuerdo>(() => ({ leer: () => recuerdo.current, poner: t => { recuerdo.current = t; } }));
     const [aviso, setAviso] = useState<string | null>(null);
     // El enlace corto (solo el id) no trae nada: se espera a la nube antes de decir que no se abre
     const [esperando, setEsperando] = useState(() => !!id);
@@ -137,8 +140,8 @@ export default function Grupo() {
             {sola
                 ? <Escenario key={datos.u ?? 'h'} datos={datos} setKey={setKey} inicio={0} onLista={() => {}} sola />
                 : abierta === null
-                ? <ListaSet datos={datos} setKey={setKey} onAbrir={setAbierta} />
-                : <Escenario key={datos.u ?? 'h'} datos={{ ...datos, c: conExtras(datos) }} setKey={setKey} inicio={abierta} onLista={() => setAbierta(null)} />}
+                ? <ListaSet datos={datos} setKey={setKey} onAbrir={i => { recuerdo.current = null; setAbierta(i); }} />
+                : <Escenario key={datos.u ?? 'h'} datos={{ ...datos, c: conExtras(datos) }} setKey={setKey} inicio={abierta} onLista={() => setAbierta(null)} recordar={recordar} />}
             {aviso && (
                 <div role="status" className="fixed left-1/2 -translate-x-1/2 top-[calc(env(safe-area-inset-top)+60px)] z-30 h-9 px-3.5 rounded-full bg-sheet border border-hairline shadow-e3 text-[13.5px] font-semibold flex items-center gap-1.5">
                     <RefreshCw className="h-4 w-4" /> {aviso}
@@ -152,9 +155,11 @@ export default function Grupo() {
 export function VistaSet({ datos, setKey, onVolver, volver }: { datos: Compartido; setKey: string; onVolver: () => void; volver: string }) {
     const [abierta, setAbierta] = useState<number | null>(null);
     useEffect(() => { window.scrollTo(0, 0); }, [abierta]);
+    const recuerdo = useRef<string | null>(null);
+    const [recordar] = useState<Recuerdo>(() => ({ leer: () => recuerdo.current, poner: t => { recuerdo.current = t; } }));
     return abierta === null
-        ? <ListaSet datos={datos} setKey={setKey} onAbrir={setAbierta} onVolver={onVolver} volver={volver} />
-        : <Escenario key={datos.u ?? 'h'} datos={{ ...datos, c: conExtras(datos) }} setKey={setKey} inicio={abierta} onLista={() => setAbierta(null)} />;
+        ? <ListaSet datos={datos} setKey={setKey} onAbrir={i => { recuerdo.current = null; setAbierta(i); }} onVolver={onVolver} volver={volver} />
+        : <Escenario key={datos.u ?? 'h'} datos={{ ...datos, c: conExtras(datos) }} setKey={setKey} inicio={abierta} onLista={() => setAbierta(null)} recordar={recordar} />;
 }
 
 // ---- La versión de cada músico: en su móvil, por enlace y por canción ----
@@ -321,7 +326,15 @@ function EscucharTema({ tema }: { tema: TemaCompartido }) {
     );
 }
 
-function Escenario({ datos, setKey, inicio, onLista, sola }: { datos: Compartido; setKey: string; inicio: number; onLista: () => void; sola?: boolean }) {
+// recordar: la canción en la que va el músico (por título). Si el set cambia mientras toca (se vuelve
+// a montar con lo nuevo), sigue en ESA canción y no en la que abrió desde la lista
+interface Recuerdo { leer: () => string | null; poner: (titulo: string | null) => void }
+function Escenario({ datos, setKey, inicio: pedida, onLista, sola, recordar }: { datos: Compartido; setKey: string; inicio: number; onLista: () => void; sola?: boolean; recordar?: Recuerdo }) {
+    const [inicio] = useState(() => {
+        const t = recordar?.leer();
+        const j = t ? datos.c.findIndex(x => x.t === t) : -1;
+        return j >= 0 ? j : pedida;
+    });
     const conLetra = !!datos.l;
     const { ver, de, poner } = useMias(setKey);
     const [editando, setEditando] = useState<TemaCompartido | null>(null);
@@ -333,7 +346,7 @@ function Escenario({ datos, setKey, inicio, onLista, sola }: { datos: Compartido
     const [actual, setActual] = useState(inicio);
     const carruselRef = useRef<HTMLDivElement>(null);
     const actualRef = useRef(inicio);
-    useEffect(() => { actualRef.current = actual; }, [actual]);
+    useEffect(() => { actualRef.current = actual; recordar?.poner(datos.c[actual]?.t ?? null); }, [actual, recordar, datos.c]);
     usePantallaEncendida();
 
     const cambiarTamano = (d: number) => setTamano(t => {

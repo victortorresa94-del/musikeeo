@@ -171,7 +171,8 @@ export function AjustesCantante({ cancion, ajustes, leida }: { cancion: Cancion;
     const ponerBpm = (nuevo: number | undefined) => {
         const c: Cancion = { ...cancion, ajustes };
         if (nuevo) c.bpm = nuevo; else delete c.bpm;
-        guardar(c, { esperar: true });
+        // Poner el tempo sube solo eso; quitarlo, la canción entera (un campo quitado no se sube solo)
+        guardar(c, { esperar: true, ...(nuevo ? { campos: ['ajustes', 'bpm'] } : {}) });
     };
 
     useEffect(() => alParar(() => setSuena(null)), []);

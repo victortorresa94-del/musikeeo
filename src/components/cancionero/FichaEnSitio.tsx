@@ -56,7 +56,7 @@ export function FichaEnSitio({ cancion, onTono }: { cancion: Cancion; onTono?: (
             const v = ficha[k];
             if (v === undefined || v === '' || (Array.isArray(v) && !v.length)) delete ficha[k];
         }
-        guardar({ ...cancion, ficha, ...(ajustes ? { ajustes: { ...cancion.ajustes, ...ajustes } } : {}) });
+        guardar({ ...cancion, ficha, ...(ajustes ? { ajustes: { ...cancion.ajustes, ...ajustes } } : {}) }, { campos: ['ficha', 'ajustes'] });
         toast.success(aviso, { action: { label: 'Deshacer', onClick: () => guardar(antes) } });
     };
 

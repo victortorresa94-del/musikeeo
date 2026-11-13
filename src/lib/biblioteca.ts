@@ -318,7 +318,7 @@ function leerBolos(dato: unknown, repertorios: number): BoloCopia[] | undefined 
         horario: Array.isArray(b.horario) ? b.horario.filter((h: unknown) => h && typeof (h as { que: unknown }).que === 'string')
             .map((h: { hora?: unknown; que: string; hasta?: unknown }) => ({ hora: typeof h.hora === 'string' ? h.hora.slice(0, 5) : '', que: h.que.slice(0, 200), ...(typeof h.hasta === 'string' && h.hasta ? { hasta: h.hasta.slice(0, 5) } : {}) })).slice(0, 40) : undefined,
         sets: Array.isArray(b.sets) ? b.sets.filter((s: { repertorio?: unknown }) => s && Number.isInteger(s.repertorio) && (s.repertorio as number) >= 0 && (s.repertorio as number) < repertorios)
-            .map((s: { repertorio: number; hora?: unknown }) => ({ repertorio: s.repertorio, ...(typeof s.hora === 'string' ? { hora: s.hora.slice(0, 5) } : {}) })).slice(0, 10) : [],
+            .map((s: { repertorio: number; hora?: unknown; hasta?: unknown }) => ({ repertorio: s.repertorio, ...(typeof s.hora === 'string' ? { hora: s.hora.slice(0, 5) } : {}), ...(typeof s.hasta === 'string' && s.hasta ? { hasta: s.hasta.slice(0, 5) } : {}) })).slice(0, 10) : [],
     }));
     return bolos.length ? bolos : undefined;
 }

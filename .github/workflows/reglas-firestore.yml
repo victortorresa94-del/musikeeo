@@ -30,7 +30,7 @@ jobs:
         id: clave
         run: |
           if [ -z "${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' && 'si' || '' }}" ]; then
-            echo "Falta el secreto FIREBASE_SERVICE_ACCOUNT: no se despliega nada (ver la cabecera de este archivo)."
+            echo "::warning title=Reglas de Firestore SIN desplegar::Falta el secreto FIREBASE_SERVICE_ACCOUNT. Lo nuevo del Cancionero no sube a la cuenta hasta desplegarlas (ver la cabecera de .github/workflows/reglas-firestore.yml)."
             echo "hay=no" >> "$GITHUB_OUTPUT"
           else
             echo "hay=si" >> "$GITHUB_OUTPUT"

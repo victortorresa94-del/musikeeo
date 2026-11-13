@@ -67,7 +67,7 @@ const TAMANO_MAX = 44;
 
 function Lector({ cancion }: { cancion: Cancion }) {
     const navigate = useNavigate();
-    const { guardar, borrar, repertorios } = useCancionero();
+    const { guardar, borrarCanciones, repertorios } = useCancionero();
     const [ajustes, setAjustes] = useState<AjustesCancion>(cancion.ajustes);
     // Si los ajustes cambian desde fuera (el tono de la ficha, Deshacer), se siguen
     const [ajustesVistos, setAjustesVistos] = useState(cancion.ajustes);
@@ -104,7 +104,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
     const cambiar = (cambio: Partial<AjustesCancion>) => {
         const nuevos = { ...ajustes, ...cambio };
         setAjustes(nuevos);
-        guardar({ ...cancion, ajustes: nuevos }, { esperar: true });
+        guardar({ ...cancion, ajustes: nuevos }, { esperar: true, campos: ['ajustes'] });
     };
 
     // ---- La música: tono, cejilla y nombres de los acordes ----
@@ -285,8 +285,10 @@ function Lector({ cancion }: { cancion: Cancion }) {
 
     const borrarCancion = () => {
         setPanel(false);
-        void borrar(cancion.id);
-        toast('Canción borrada', { action: { label: 'Deshacer', onClick: () => guardar({ ...cancion, ajustes }) } });
+        // Deshacer la devuelve también a sus repertorios y listas (antes volvía solo la canción y
+        // desaparecía del set del bolo sin avisar)
+        const { deshacer } = borrarCanciones([cancion.id], true);
+        toast('Canción borrada', { action: { label: 'Deshacer', onClick: deshacer } });
         navigate('/cancionero', { replace: true });
     };
 

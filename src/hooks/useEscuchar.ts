@@ -245,7 +245,7 @@ export function useEscuchar({ cancion, ajustes, cambiar, zonaRef, seguir, onSuen
         const otro = id !== video;
         if (otro || !video) {
             const sinMarcas = otro && ajustes.marcas?.length ? { ...ajustes, marcas: [] } : ajustes;
-            guardar({ ...cancion, ajustes: sinMarcas, youtube: id }, { esperar: true });
+            guardar({ ...cancion, ajustes: sinMarcas, youtube: id }, { esperar: true, campos: ['ajustes', 'youtube'] });
         }
         setHojaVideo(false);
         if (!navigator.onLine) { toast('Vídeo guardado. Sin conexión: YouTube necesita internet', { id: 'escuchar-sin-red' }); return; }

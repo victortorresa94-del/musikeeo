@@ -71,7 +71,7 @@ export default function SacarAcordes() {
             navigate(`/cancionero/${destino.id}`, { replace: true });
         } else {
             const c = nuevaCancion({ titulo: titulo.trim() || 'Sin título', artista: artista.trim(), texto: hoja });
-            guardar({ ...c, bpm: r.bpm, duracion });
+            guardar({ ...c, bpm: r.bpm, duracion }, { campos: ['bpm', 'duracion'] });
             if (repertorio) {
                 guardarRepertorio({ ...repertorio, canciones: [...repertorio.canciones, c.id] });
                 navigate(`/cancionero/repertorio/${repertorio.id}`, { replace: true });

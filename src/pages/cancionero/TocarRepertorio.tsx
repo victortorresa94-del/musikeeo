@@ -112,7 +112,7 @@ function Escenario({ nombre, repertorioId, canciones, extrasDesde, inicio }: { n
     usePantallaEncendida();
 
     const cancion = canciones[actual];
-    const cambiar = (c: Cancion, cambio: Partial<AjustesCancion>) => guardar({ ...c, ajustes: { ...c.ajustes, ...cambio } }, { esperar: true });
+    const cambiar = (c: Cancion, cambio: Partial<AjustesCancion>) => guardar({ ...c, ajustes: { ...c.ajustes, ...cambio } }, { esperar: true, campos: ['ajustes'] });
     // Editar la letra ahí mismo (lápiz arriba): la canción que suena, sin salir de Tocar
     const [editando, setEditando] = useState<string | null>(null);
     // El editor de la letra, listo antes de tocar el lápiz (en el iPhone, así se abre el teclado)

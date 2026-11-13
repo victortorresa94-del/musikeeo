@@ -1,4 +1,4 @@
-import { collection, deleteDoc, doc, getDocs, limit, query, setDoc, where } from 'firebase/firestore';
+import { collection, deleteDoc, doc, documentId, getDocs, limit, orderBy, query, setDoc, startAfter, type Query, type QuerySnapshot } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { datosDelPegado, leerCancion } from '../lib/acordes';
 import { apuntarVersion, type MotivoVersion } from './versionesService';
@@ -28,14 +28,30 @@ const esUid = (duenio: string | null): duenio is string => !!duenio && duenio !=
 function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, paraNube: (x: T) => Record<string, unknown>,
     alReemplazar?: (viejo: T, nuevo: T, motivo: MotivoVersion) => void) {
     let estado: EstadoAlmacen<T> = { duenio: null, items: [], nube: 'local' };
-    // Lo más reciente que se ha visto en la nube (para pedir solo lo cambiado después) y lo que se
-    // acaba de borrar aquí (que un refresco a medio borrar no lo traiga de vuelta)
-    let marca = '';
+    // Hasta dónde se ha leído la cuenta (fecha y id del último cambio visto), para pedir solo lo
+    // cambiado después y en orden. Sin él (no se pudo sincronizar), el refresco sincroniza entero
+    let cursor: { fecha: string; id: string } | null = null;
+    // Lo que se acaba de borrar aquí (que un refresco a medio borrar no lo traiga de vuelta)
     const borradas = new Set<string>();
+    // Lo que la cuenta no acepta (sus reglas aún no conocen algún campo): no se reintenta en esta
+    // sesión, se queda en el móvil, y lo demás sigue subiendo. Antes un solo rechazo paraba TODO
+    const rechazadas = new Set<string>();
+    const subiendo = new Set<string>();
+    const enLaNube = new Set<string>();
     const reemplazar = (viejo: T | undefined, nuevo: T, motivo: MotivoVersion) => {
         if (viejo && alReemplazar) { try { alReemplazar(viejo, nuevo, motivo); } catch { /* la copia no frena el guardado */ } }
     };
-    const masReciente = (xs: T[]) => xs.reduce((m, x) => (x.actualizadaEn > m ? x.actualizadaEn : m), marca);
+    const avanzar = (xs: T[]) => {
+        for (const x of xs) {
+            if (!cursor || x.actualizadaEn > cursor.fecha || (x.actualizadaEn === cursor.fecha && x.id > cursor.id)) cursor = { fecha: x.actualizadaEn, id: x.id };
+        }
+    };
+    // ¿Lo mismo? (las claves de un mapa pueden volver de la nube en otro orden)
+    const estable = (v: unknown): string => JSON.stringify(v, (_k, x) => (x && typeof x === 'object' && !Array.isArray(x)
+        ? Object.fromEntries(Object.keys(x).sort().map(k => [k, (x as Record<string, unknown>)[k]])) : x));
+    const igual = (a: T, b: T) => estable(paraNube(a)) === estable(paraNube(b));
+    const deLaNube = (d: { id: string; data: () => unknown }) => ({ ...(d.data() as Omit<T, 'id'>), id: d.id, sincronizada: true }) as T;
+    const sinRed = () => typeof navigator !== 'undefined' && navigator.onLine === false;
     const oyentes = new Set<() => void>();
     const avisar = (cambio: Partial<EstadoAlmacen<T>>) => {
         estado = { ...estado, ...cambio };
@@ -54,34 +70,62 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
     };
     const ordenar = (lista: T[]) => [...lista].sort((a, b) => b.actualizadaEn.localeCompare(a.actualizadaEn));
     const coleccion = (uid: string) => collection(db, 'users', uid, subcoleccion);
+    const permisoDenegado = (e: unknown) => (e as { code?: string })?.code === 'permission-denied';
 
-    function fallo(e: unknown) {
-        const code = (e as { code?: string })?.code;
-        // Sin la regla desplegada todavía: se queda en el móvil sin dar la lata
-        avisar({ nube: code === 'permission-denied' ? 'sin-permiso' : 'local' });
+    // Sin permiso para LEER (la regla de la colección no está): se queda en el móvil sin dar la lata
+    function fallo(e: unknown, leyendo = false) {
+        if (permisoDenegado(e)) { if (leyendo) avisar({ nube: 'sin-permiso' }); return; }
+        avisar({ nube: 'local' });
     }
+    const marcarSubida = (uid: string, xs: T[]) => {
+        if (estado.duenio !== uid || !xs.length) return;
+        const subidas = new Map(xs.map(x => [x.id, x.actualizadaEn]));
+        xs.forEach(x => enLaNube.add(x.id));
+        const lista = estado.items.map(y => (subidas.get(y.id) === y.actualizadaEn ? { ...y, sincronizada: true } : y));
+        escribirLocal(uid, lista);
+        avisar({ items: lista, nube: 'nube' });
+    };
 
-    async function subir(uid: string, x: T) {
-        if (estado.nube === 'sin-permiso') return;
+    // campos: solo esos (con la fecha), sobre lo que ya hay en la cuenta. Un ajuste (tono, tamaño)
+    // no vuelve a subir la letra: si otro aparato la cambió, no se pisa
+    async function subir(uid: string, x: T, campos?: string[]) {
+        if (estado.nube === 'sin-permiso' || rechazadas.has(x.id)) return;
+        subiendo.add(x.id);
         try {
-            await setDoc(doc(coleccion(uid), x.id), paraNube(x));
-            if (estado.duenio !== uid) return;
-            const lista = estado.items.map(y => (y.id === x.id && y.actualizadaEn === x.actualizadaEn ? { ...y, sincronizada: true } : y));
-            escribirLocal(uid, lista);
-            avisar({ items: lista, nube: 'nube' });
-        } catch (e) { fallo(e); }
+            const datos = paraNube(x);
+            const ref = doc(coleccion(uid), x.id);
+            if (campos && enLaNube.has(x.id)) {
+                await setDoc(ref, { ...Object.fromEntries(campos.filter(k => k in datos).map(k => [k, datos[k]])), actualizadaEn: x.actualizadaEn }, { merge: true });
+            } else await setDoc(ref, datos);
+            marcarSubida(uid, [x]);
+        } catch (e) {
+            if (permisoDenegado(e)) rechazadas.add(x.id); else fallo(e);
+        } finally { subiendo.delete(x.id); }
     }
 
     // Junta lo del móvil con lo de la cuenta: gana la versión más reciente de cada uno
     async function sincronizar(uid: string) {
         avisar({ nube: 'sincronizando' });
-        let enNube: T[];
+        const enNube: T[] = [];
         try {
-            const snap = await getDocs(query(coleccion(uid), limit(500)));
-            enNube = snap.docs.map(d => ({ ...(d.data() as Omit<T, 'id'>), id: d.id, sincronizada: true }) as T);
-        } catch (e) { fallo(e); return; }
+            // Por páginas: con más de las que caben en una, las de más no se daban por borradas
+            let ultimo: string | null = null;
+            for (let pagina = 0; pagina < 20; pagina++) {
+                const q: Query = ultimo
+                    ? query(coleccion(uid), orderBy(documentId()), startAfter(ultimo), limit(1000))
+                    : query(coleccion(uid), orderBy(documentId()), limit(1000));
+                const snap: QuerySnapshot = await getDocs(q);
+                // Sin red, Firestore contesta con su copia del móvil (que puede estar incompleta): no
+                // se decide nada con ella (borraría lo que no tenga). Se vuelve a intentar al refrescar
+                if (snap.metadata.fromCache) { if (estado.duenio === uid) avisar({ nube: 'local' }); return; }
+                enNube.push(...snap.docs.map(deLaNube));
+                if (snap.size < 1000) break;
+                ultimo = snap.docs[snap.docs.length - 1].id;
+            }
+        } catch (e) { fallo(e, true); return; }
         if (estado.duenio !== uid) return;
 
+        enNube.forEach(x => enLaNube.add(x.id));
         const porId = new Map(enNube.map(x => [x.id, x]));
         const pendientes: T[] = [];
         const lista: T[] = [...enNube];
@@ -100,12 +144,14 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
                 reemplazar(local, remoto, 'otro');
             }
         }
-        // Sin nada en la cuenta todavía, desde ahora (con el margen de refrescar)
-        marca = masReciente(enNube) || new Date().toISOString();
+        // Desde dónde pedir lo nuevo: lo último de la cuenta (o, si está vacía, hace un rato)
+        cursor = null;
+        avanzar(enNube);
+        if (!cursor) cursor = { fecha: new Date(Date.now() - 10 * 60_000).toISOString(), id: '' };
         const ordenada = ordenar(lista);
         escribirLocal(uid, ordenada);
         avisar({ items: ordenada, nube: 'nube' });
-        await Promise.all(pendientes.map(x => subir(uid, x)));
+        await Promise.all(pendientes.filter(x => !rechazadas.has(x.id)).map(x => subir(uid, x)));
     }
 
     // Antes de saber quién es, lo que hay en el móvil de quien lo usó la última vez: Firebase
@@ -131,26 +177,38 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
                 try { localStorage.removeItem(`${clave}:${INVITADO}`); } catch { /* */ }
             }
         }
+        cursor = null;
         avisar({ duenio, items, nube: 'local', provisional: false });
         if (uid) void sincronizar(uid);
     }
 
     const esperando = new Map<string, ReturnType<typeof setTimeout>>();
+    // Lo que espera para subir ENTERO (un cambio sin `campos` todavía sin subir): un ajuste que
+    // llegue después no puede subir solo su campo, o ese cambio se quedaría sin subir
+    const pendienteEntero = new Set<string>();
 
-    function guardar(x: T, opciones: { esperar?: boolean } = {}): T {
+    // campos: lo que cambia (p. ej. ['ajustes']): a la cuenta sube solo eso, sobre lo que ya hay
+    function guardar(x: T, opciones: { esperar?: boolean; campos?: string[] } = {}): T {
         const duenio = estado.duenio || INVITADO;
-        const actual: T = { ...x, actualizadaEn: new Date().toISOString() };
+        const actual: T = { ...x, actualizadaEn: new Date().toISOString(), sincronizada: false };
         reemplazar(estado.items.find(y => y.id === x.id), actual, 'editar');
         borradas.delete(x.id);
         const lista = ordenar([actual, ...estado.items.filter(y => y.id !== x.id)]);
         escribirLocal(duenio, lista);
         avisar({ items: lista });
         if (!esUid(duenio)) return actual;
-        // Los ajustes cambian a cada toque: a la cuenta se sube cuando la persona para
         clearTimeout(esperando.get(x.id));
         esperando.delete(x.id);
-        if (opciones.esperar) esperando.set(x.id, setTimeout(() => { esperando.delete(x.id); void subir(duenio, actual); }, 1500));
-        else void subir(duenio, actual);
+        const campos = opciones.campos && !pendienteEntero.has(x.id) ? opciones.campos : undefined;
+        if (!campos) pendienteEntero.add(x.id);
+        // Al subir, lo que haya en ese momento (no la copia de cuando se tocó)
+        const subida = () => {
+            if (!campos) pendienteEntero.delete(x.id);
+            void subir(duenio, estado.items.find(y => y.id === x.id) ?? actual, campos);
+        };
+        // Los ajustes cambian a cada toque: a la cuenta se sube cuando la persona para
+        if (opciones.esperar) esperando.set(x.id, setTimeout(() => { esperando.delete(x.id); subida(); }, 1500));
+        else subida();
         return actual;
     }
 
@@ -161,9 +219,14 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
         if (!xs.length) return [];
         const duenio = estado.duenio || INVITADO;
         const ahora = new Date().toISOString();
-        const nuevos = xs.map(x => ({ ...x, actualizadaEn: ahora }));
+        const nuevos = xs.map(x => ({ ...x, actualizadaEn: ahora, sincronizada: false }));
         const antes = new Map(estado.items.map(y => [y.id, y]));
-        nuevos.forEach(x => { reemplazar(antes.get(x.id), x, 'importar'); borradas.delete(x.id); });
+        nuevos.forEach(x => {
+            reemplazar(antes.get(x.id), x, 'importar');
+            borradas.delete(x.id);
+            // Lo que esperaba para subir ya va en esta subida (el temporizador subiría lo de antes)
+            clearTimeout(esperando.get(x.id)); esperando.delete(x.id); pendienteEntero.delete(x.id);
+        });
         const ids = new Set(nuevos.map(x => x.id));
         const lista = ordenar([...nuevos, ...estado.items.filter(y => !ids.has(y.id))]);
         escribirLocal(duenio, lista);
@@ -174,26 +237,32 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
 
     async function subirVarias(uid: string, xs: T[]) {
         if (estado.nube === 'sin-permiso') return;
-        try {
-            await Promise.all(xs.map(x => setDoc(doc(coleccion(uid), x.id), paraNube(x))));
-            if (estado.duenio !== uid) return;
-            const subidas = new Map(xs.map(x => [x.id, x.actualizadaEn]));
-            const lista = estado.items.map(y => (subidas.get(y.id) === y.actualizadaEn ? { ...y, sincronizada: true } : y));
-            escribirLocal(uid, lista);
-            avisar({ items: lista, nube: 'nube' });
-        } catch (e) { fallo(e); }
+        const aSubir = xs.filter(x => !rechazadas.has(x.id));
+        aSubir.forEach(x => subiendo.add(x.id));
+        const hechos = await Promise.allSettled(aSubir.map(x => setDoc(doc(coleccion(uid), x.id), paraNube(x))));
+        aSubir.forEach(x => subiendo.delete(x.id));
+        const bien: T[] = [];
+        let otroFallo: unknown = null;
+        hechos.forEach((h, i) => {
+            if (h.status === 'fulfilled') bien.push(aSubir[i]);
+            else if (permisoDenegado(h.reason)) rechazadas.add(aSubir[i].id);
+            else otroFallo = h.reason;
+        });
+        marcarSubida(uid, bien);
+        if (otroFallo) fallo(otroFallo);
     }
 
     async function borrar(id: string) {
         const duenio = estado.duenio || INVITADO;
         clearTimeout(esperando.get(id));
         esperando.delete(id);
+        pendienteEntero.delete(id);
         borradas.add(id);
         const lista = estado.items.filter(x => x.id !== id);
         escribirLocal(duenio, lista);
         avisar({ items: lista });
         if (esUid(duenio) && estado.nube !== 'sin-permiso') {
-            try { await deleteDoc(doc(coleccion(duenio), id)); } catch (e) { fallo(e); }
+            try { await deleteDoc(doc(coleccion(duenio), id)); enLaNube.delete(id); } catch (e) { fallo(e); }
         }
     }
 
@@ -202,13 +271,13 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
         if (!ids.length) return;
         const duenio = estado.duenio || INVITADO;
         const fuera = new Set(ids);
-        fuera.forEach(id => { clearTimeout(esperando.get(id)); esperando.delete(id); borradas.add(id); });
+        fuera.forEach(id => { clearTimeout(esperando.get(id)); esperando.delete(id); pendienteEntero.delete(id); borradas.add(id); });
         const lista = estado.items.filter(x => !fuera.has(x.id));
         escribirLocal(duenio, lista);
         avisar({ items: lista });
         if (esUid(duenio) && estado.nube !== 'sin-permiso') {
             for (const id of ids) {
-                try { await deleteDoc(doc(coleccion(duenio), id)); } catch (e) { fallo(e); break; }
+                try { await deleteDoc(doc(coleccion(duenio), id)); enLaNube.delete(id); } catch (e) { fallo(e); break; }
             }
         }
     }
@@ -219,55 +288,86 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
         const duenio = estado.duenio || INVITADO;
         esperando.forEach(t => clearTimeout(t));
         esperando.clear();
+        pendienteEntero.clear();
         const antes = estado.items.map(x => x.id);
         antes.forEach(id => borradas.add(id));
         escribirLocal(duenio, []);
         avisar({ items: [] });
         if (!esUid(duenio) || estado.nube === 'sin-permiso') return;
         try {
-            const snap = await getDocs(query(coleccion(duenio), limit(1000)));
+            const snap = await getDocs(query(coleccion(duenio), limit(5000)));
             const ids = new Set([...antes, ...snap.docs.map(d => d.id)]);
-            await Promise.all([...ids].map(id => deleteDoc(doc(coleccion(duenio), id))));
+            // Lo que se haya importado mientras tanto (ya está otra vez en el móvil) no se borra
+            const ahora = new Set(estado.items.map(x => x.id));
+            await Promise.all([...ids].filter(id => !ahora.has(id)).map(id => deleteDoc(doc(coleccion(duenio), id)).then(() => enLaNube.delete(id))));
         } catch (e) { fallo(e); }
     }
 
     // Al volver a la app (o cada poco mientras se mira): lo cambiado en la cuenta desde otro aparato.
     // Sin esto, el móvil que llevaba horas abierto guardaba su copia vieja ENTERA al tocar un ajuste
-    // (tono, tamaño, zoom) y pisaba la letra escrita en el PC. Solo pide lo cambiado (barato) y,
-    // de paso, sube lo que se quedó sin subir por falta de red
+    // (tono, tamaño, zoom) y pisaba la letra escrita en el PC. Pide solo lo cambiado desde lo último
+    // visto, en orden y por páginas (tras importar cientos de golpe, todas tienen la misma fecha); lo
+    // que otro aparato guarde con el reloj atrasado llega al volver a abrir la app. De paso, sube lo
+    // que se quedó sin subir por falta de red
     let refrescando = false;
     async function refrescar() {
         const uid = estado.duenio;
-        if (!esUid(uid) || estado.provisional || estado.nube === 'sin-permiso' || refrescando || !marca) return;
+        if (!esUid(uid) || estado.provisional || estado.nube === 'sin-permiso' || refrescando || sinRed()) return;
+        if (!cursor) { if (estado.nube !== 'sincronizando') await sincronizar(uid); return; }
         refrescando = true;
         try {
-            // Con margen: los relojes de dos aparatos no van iguales
-            const desde = new Date(Date.parse(marca) - 10 * 60_000).toISOString();
-            const snap = await getDocs(query(coleccion(uid), where('actualizadaEn', '>', desde), limit(300)));
+            const remotos: T[] = [];
+            let desde = cursor;
+            let entero = false;
+            for (let pagina = 0; ; pagina++) {
+                // Sin id (la cuenta estaba vacía), solo por fecha: un id vacío hace fallar la consulta
+                const despues = desde.id ? startAfter(desde.fecha, desde.id) : startAfter(desde.fecha);
+                const snap = await getDocs(query(coleccion(uid), orderBy('actualizadaEn'), orderBy(documentId()), despues, limit(300)));
+                if (snap.metadata.fromCache) return;   // sin red de verdad: nada que decidir
+                const lote = snap.docs.map(deLaNube);
+                remotos.push(...lote);
+                if (lote.length < 300) break;
+                if (pagina >= 3) { entero = true; break; }   // muchísimo cambio: mejor entero
+                const u = lote[lote.length - 1];
+                desde = { fecha: u.actualizadaEn, id: u.id };
+            }
             if (estado.duenio !== uid) return;
-            const remotos = snap.docs.map(d => ({ ...(d.data() as Omit<T, 'id'>), id: d.id, sincronizada: true }) as T);
+            if (entero) { refrescando = false; await sincronizar(uid); return; }
+            remotos.forEach(x => enLaNube.add(x.id));
             const porId = new Map(estado.items.map(x => [x.id, x]));
             let cambio = false;
             const lista = [...estado.items];
+            // La primera que no se puede decidir ahora (se está subiendo): la marca no pasa de ella,
+            // para volver a mirarla en el siguiente refresco (si no, no se miraría nunca más)
+            let tope: T | null = null;
             for (const remoto of remotos) {
                 if (borradas.has(remoto.id)) continue;
                 const local = porId.get(remoto.id);
                 if (!local) { lista.push(remoto); cambio = true; continue; }
-                if (remoto.actualizadaEn > local.actualizadaEn && !esperando.has(local.id)) {
+                if (esperando.has(local.id) || subiendo.has(local.id)) { tope ??= remoto; continue; }
+                // Más nuevo en la cuenta, o el mismo momento con otra cosa dentro (un ajuste de aquí
+                // subido sobre la letra que puso otro aparato): manda la cuenta
+                const masNuevo = remoto.actualizadaEn > local.actualizadaEn;
+                const mismoDistinto = remoto.actualizadaEn === local.actualizadaEn && !igual(remoto, local);
+                if (mismoDistinto && !local.sincronizada) { tope ??= remoto; continue; }
+                if (masNuevo || mismoDistinto) {
                     reemplazar(local, remoto, 'otro');
                     lista[lista.indexOf(local)] = remoto;
                     cambio = true;
                 }
             }
-            marca = masReciente(remotos);
+            avanzar(tope ? remotos.slice(0, remotos.indexOf(tope)) : remotos);
             if (cambio) {
                 const ordenada = ordenar(lista);
                 escribirLocal(uid, ordenada);
                 avisar({ items: ordenada });
             }
-            const sinSubir = estado.items.filter(x => !x.sincronizada && !esperando.has(x.id)).slice(0, 50);
+            const sinSubir = estado.items.filter(x => !x.sincronizada && !esperando.has(x.id) && !subiendo.has(x.id) && !rechazadas.has(x.id)).slice(0, 50);
             await Promise.all(sinSubir.map(x => subir(uid, x)));
-        } catch { /* sin red: ya se hará al volver */ } finally { refrescando = false; }
+        } catch (e) {
+            if (permisoDenegado(e)) fallo(e, true);   // sin la regla para leer; lo demás (red), al volver
+            else if (import.meta.env.DEV) console.warn('[refrescar]', subcoleccion, e);
+        } finally { refrescando = false; }
     }
 
     const suscribir = (f: () => void) => { oyentes.add(f); return () => { oyentes.delete(f); }; };
@@ -277,9 +377,14 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
 // Firestore no admite undefined: los datos opcionales solo van si están
 const siHay = <T extends object>(o: T) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined && v !== null && v !== ''));
 
+// Las claves de la ficha que aceptan las reglas (firestore.rules, canciones): una de más hace que la
+// cuenta rechace la canción entera. Lo demás se queda en el móvil
+const FICHA_EN_LA_NUBE = ['tono', 'capo', 'canta', 'proyectos', 'estilo', 'energia', 'estado', 'etiquetas', 'enlace', 'tonoAlt', 'extra'] as const;
+const fichaParaNube = (f: Cancion['ficha']) => f && siHay(Object.fromEntries(FICHA_EN_LA_NUBE.filter(k => k in f).map(k => [k, f[k]])));
+
 export const almacenCanciones = crearAlmacen<Cancion>('musikeeo-cancionero-v1', 'canciones', c => ({
     titulo: c.titulo, artista: c.artista, texto: c.texto, ajustes: c.ajustes, creadaEn: c.creadaEn, actualizadaEn: c.actualizadaEn,
-    ...siHay({ portada: c.portada, duracion: c.duracion, muestra: c.muestra, bpm: c.bpm, ficha: c.ficha && siHay(c.ficha), version: c.version, original: c.original, notas: c.notas, favorita: c.favorita || undefined, spotify: c.spotify, youtube: c.youtube }),
+    ...siHay({ portada: c.portada, duracion: c.duracion, muestra: c.muestra, bpm: c.bpm, ficha: fichaParaNube(c.ficha), version: c.version, original: c.original, notas: c.notas, favorita: c.favorita || undefined, spotify: c.spotify, youtube: c.youtube }),
 }), (viejo, nuevo, motivo) => { if (viejo.texto !== nuevo.texto) apuntarVersion(viejo.id, viejo.texto, motivo); });
 
 export const almacenRepertorios = crearAlmacen<Repertorio>('musikeeo-repertorios-v1', 'repertorios', r => ({
@@ -436,6 +541,8 @@ function cargarPrevio() {
     almacenTareas.cargarPrevio(ultimo);
 }
 if (typeof window !== 'undefined') cargarPrevio();
+// Solo en desarrollo: para las pruebas (en producción no existe)
+if (import.meta.env.DEV && typeof window !== 'undefined') Object.assign(window, { __cancionero: { canciones: almacenCanciones } });
 
 // Ponerse al día con la cuenta al volver a la app, al recuperar la red y cada minuto mientras se
 // mira: así un aparato abierto desde hace horas no guarda su copia vieja encima de lo escrito en

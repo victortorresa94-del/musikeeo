@@ -73,6 +73,9 @@ const OPCIONES_PREVIA = { semitonos: 0, notacion: 'original', bemoles: null } as
 type IdBloque = 'basico' | 'musica' | 'bolo' | 'enlaces' | 'letra' | 'notas';
 const BLOQUES: [IdBloque, string][] = [['basico', 'Lo básico'], ['musica', 'Música'], ['bolo', 'Bolo'], ['enlaces', 'Enlaces'], ['letra', 'Letra'], ['notas', 'Notas']];
 
+// Volver a donde se estaba (la canción, la lista…) por el historial: así «Atrás» no vuelve al editor
+const hayAtras = () => (window.history.state?.idx ?? 0) > 0;
+
 export default function EditarCancion() {
     const { id } = useParams();
     const { canciones, listo } = useCancionero();
@@ -239,7 +242,8 @@ function Formulario({ existente }: { existente?: Cancion }) {
         const fichaLimpia = Object.keys(ficha).length ? ficha : undefined;
         if (existente) {
             guardar({ ...existente, ...datos, titulo: datos.titulo || existente.titulo, ficha: fichaLimpia, bpm, duracion, notas, ...(existente.version ? { version: version.trim().slice(0, 40) || existente.version } : {}) });
-            navigate(`/cancionero/${existente.id}`, { replace: true });
+            // De vuelta a la canción por el historial (si se vino de ella): así «Atrás» no vuelve aquí
+            if (hayAtras()) navigate(-1); else navigate(`/cancionero/${existente.id}`, { replace: true });
         } else {
             const c = guardar({ ...crear(datos), ficha: fichaLimpia, bpm, duracion, notas });
             if (repertorio) {
@@ -284,7 +288,7 @@ function Formulario({ existente }: { existente?: Cancion }) {
     return (
         <div className="max-w-5xl mx-auto px-4 md:px-0 pt-3 md:pt-6 pb-32 md:pb-16">
             <div className="flex items-center justify-between gap-3">
-                <button onClick={() => navigate(existente ? `/cancionero/${existente.id}` : repertorio ? `/cancionero/repertorio/${repertorio.id}` : '/cancionero')} className="text-[15px] text-muted-foreground active:opacity-60">Cancelar</button>
+                <button onClick={() => (hayAtras() ? navigate(-1) : navigate(existente ? `/cancionero/${existente.id}` : repertorio ? `/cancionero/repertorio/${repertorio.id}` : '/cancionero', { replace: true }))} className="text-[15px] text-muted-foreground active:opacity-60">Cancelar</button>
                 <p className="min-w-0 truncate text-[16px] font-semibold text-foreground">{existente ? `Editar «${existente.titulo}»` : 'Nueva canción'}</p>
                 <span className="w-[62px]" />
             </div>
