@@ -653,7 +653,7 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
   - «Alinear» pone letra de máquina para colocar un acorde justo encima de su sílaba (se recuerda);
   - precargado al abrir la canción: en el iPhone el teclado sale al primer toque.
 - *«Ábreme un fork»* para meter canciones y probar partituras → sesión aparte «Musikeeo · canciones al Cancionero y partituras».
-- ⏳ Energía (y todas las píldoras): cambiar el color y añadir valores nuevos desde la píldora, como en Estilo.
+- *«quiero poder cambiar el color de las etiquetas de las energías y además poder añadir nuevas… igual que en Fiesta [Estilo]… para todas»* → ✅ Energía y Estado como Estilo: «+ Otro», sus colores y «Colores, renombrar o quitar» (pestañas nuevas en «Grupos y colores»). Las cuatro energías de siempre siguen como 1–4; las nuevas, por su nombre (`Energia` en types, `nombreEnergia`/`energiaDeNombre` en `biblioteca.ts`). Filtros, Tabla, Bloques y agrupar las entienden.
 
 ## 22. Datos de la BBDD a corregir ⏳
 

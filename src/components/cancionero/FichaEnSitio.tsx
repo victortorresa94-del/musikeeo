@@ -6,14 +6,14 @@ import { Check, ExternalLink, Palette, Pencil, Plus, Tag } from 'lucide-react';
 import { ICONO_CAMPO } from './iconosFicha';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
-import { ENERGIAS, ESTADOS } from '../../lib/biblioteca';
+import { ESTADOS, energiaDeNombre, estadoDeNombre, nombreEnergia, nombreEstado } from '../../lib/biblioteca';
 import { estiloBloque, pastelCanta, pastelDe, pastelGrupo } from './estilo';
 import { EditarAspecto, IconoValor, PildoraValor } from './Aspecto';
 import { GestionarCatalogo } from './Catalogo';
-import { ICONO_TIPO, valoresDeTipo, type PestanaCatalogo } from './catalogoVista';
+import { ICONO_TIPO, pastelDeValor, valoresDeTipo, type PestanaCatalogo } from './catalogoVista';
 import { conExtra, etiquetasExtra, leerExtra, opcionesExtra, textoExtra, valorExtra } from '../../lib/camposPropios';
 import type { CampoPropio, TipoValor } from '../../services/catalogoService';
-import type { AjustesCancion, Cancion, EstadoCancion, FichaCancion } from '../../types/cancionero';
+import type { AjustesCancion, Cancion, FichaCancion } from '../../types/cancionero';
 
 // La ficha a la vista (tono, capo, quién canta, grupo, estilo…). Tocar una píldora abre un
 // desplegable pequeño junto a ella y se guarda al elegir, con Deshacer. El lápiz lleva a la ficha entera
@@ -80,12 +80,12 @@ export function FichaEnSitio({ cancion, onTono }: { cancion: Cancion; onTono?: (
     if (f.canta) { const p = pastelCanta(f.canta); piezas.push(pildora('canta', `Canta ${f.canta}`, cn(p.fondo, p.tinta))); }
     for (const g of f.proyectos ?? []) { const p = pastelGrupo(g); piezas.push(pildora('proyectos', g, cn(p.fondo, p.tinta), <IconoValor tipo="grupo" valor={g} className="mr-1" />)); }
     if (f.estilo) { const p = estiloBloque(f.estilo).pastel; piezas.push(pildora('estilo', f.estilo, cn(p.fondo, p.tinta))); }
-    if (f.energia) piezas.push(pildora('energia', ENERGIAS[f.energia], 'bg-fill-strong text-foreground'));
+    if (f.energia) { const n = nombreEnergia(f.energia); const p = pastelDeValor('energia', n); piezas.push(pildora('energia', n, cn(p.fondo, p.tinta))); }
     for (const e of f.etiquetas ?? []) {
         const p = pastelDe(`etiqueta:${e.toLowerCase()}`);
         piezas.push(pildora('etiquetas', e, cn(p.fondo, p.tinta), <Tag className="h-3.5 w-3.5 mr-1 shrink-0" aria-hidden />));
     }
-    if (f.estado && f.estado !== 'lista') piezas.push(pildora('estado', ESTADOS[f.estado], 'bg-pastel-mantequilla text-pastel-mantequilla-ink'));
+    if (f.estado && f.estado !== 'lista') { const n = nombreEstado(f.estado); const p = pastelDeValor('estado', n); piezas.push(pildora('estado', n, cn(p.fondo, p.tinta))); }
     // Las columnas propias que tienen algo
     for (const cp of catalogo.campos) {
         const v = valorExtra(cancion, cp);
@@ -127,12 +127,13 @@ export function FichaEnSitio({ cancion, onTono }: { cancion: Cancion; onTono?: (
                     onElegir={v => { cerrar(); if (v !== f.estilo) poner({ estilo: v || undefined }, v || 'Sin estilo'); }} />;
                 break;
             case 'estado':
-                contenido = <ElegirUno titulo="Estado" fijas opciones={Object.values(ESTADOS)} actual={f.estado ? ESTADOS[f.estado] : ESTADOS.lista}
-                    onElegir={v => { cerrar(); const k = (Object.keys(ESTADOS) as EstadoCancion[]).find(e => ESTADOS[e] === v); if (k && k !== f.estado) poner({ estado: k }, v); }} />;
+                // Como Estilo: con su color, «+ Otro» y «Colores, renombrar o quitar» (13-nov)
+                contenido = <ElegirUno titulo="Estado" tipo="estado" onColores={() => colores('estado')} opciones={opciones('estado')} actual={nombreEstado(f.estado) || ESTADOS.lista}
+                    onElegir={v => { cerrar(); const k = estadoDeNombre(v); if (k !== f.estado) poner({ estado: k }, v || 'Sin estado'); }} />;
                 break;
             case 'energia':
-                contenido = <ElegirUno titulo="Energía" fijas opciones={Object.values(ENERGIAS)} actual={f.energia ? ENERGIAS[f.energia] : undefined}
-                    onElegir={v => { cerrar(); const k = (Object.keys(ENERGIAS).map(Number) as (1 | 2 | 3 | 4)[]).find(e => ENERGIAS[e] === v); if (k !== f.energia) poner({ energia: k }, v || 'Sin energía'); }} />;
+                contenido = <ElegirUno titulo="Energía" tipo="energia" onColores={() => colores('energia')} opciones={opciones('energia')} actual={nombreEnergia(f.energia) || undefined}
+                    onElegir={v => { cerrar(); const k = energiaDeNombre(v); if (k !== f.energia) poner({ energia: k }, v || 'Sin energía'); }} />;
                 break;
             case 'proyectos':
                 contenido = <ElegirGrupos titulo="Grupo" tipo="grupo" opciones={opciones('grupo')} actuales={f.proyectos ?? []} onColor={v => colorDe('grupo', v)} onColores={() => colores('grupo')}

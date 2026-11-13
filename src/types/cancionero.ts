@@ -19,6 +19,9 @@ export interface AjustesCancion {
 
 // En qué punto está para el repertorio
 export type EstadoCancion = 'lista' | 'ensayar' | 'aprender';
+// Energía: las cuatro de siempre (1 suave · 2 media · 3 media-alta · 4 arriba) o una propia, por su
+// nombre (13-nov, Víctor: «poder añadir nuevas desde aquí, igual que en Estilo»)
+export type Energia = 1 | 2 | 3 | 4 | string;
 
 // La ficha del tema, como en una base de datos de repertorio: para buscar, filtrar y elegir
 // canciones para el bolo de un vistazo. Todo opcional y escrito a mano por su dueño
@@ -28,8 +31,8 @@ export interface FichaCancion {
     canta?: string;             // quién lleva la voz: «Víctor», «Mafe», «Ambos»…
     proyectos?: string[];       // con qué grupo o formación se toca: «Lady Jarana», «Cataleya»
     estilo?: string;            // «Rumba», «Pop-rock», «Latino»…
-    energia?: 1 | 2 | 3 | 4;    // 1 suave · 2 media · 3 media-alta · 4 arriba
-    estado?: EstadoCancion;
+    energia?: Energia;          // 1 suave · 2 media · 3 media-alta · 4 arriba, o una propia
+    estado?: EstadoCancion | (string & {});   // lista · ensayar · aprender, o uno propio
     tonoAlt?: string;           // otro tono en que también la tocáis («G · también A»)
     etiquetas?: string[];       // categorías propias, libres: «Bodas», «Tardeo», «Flamencas»…
     enlace?: string;            // su página de acordes (LaCuerda u otra web)

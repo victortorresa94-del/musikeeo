@@ -5,6 +5,7 @@ import { cn } from '../../lib/utils';
 import { BotonHoja, Hoja } from './Hoja';
 import { EditarAspecto, PildoraValor } from './Aspecto';
 import { ICONO_TIPO, valoresDeTipo, type PestanaCatalogo } from './catalogoVista';
+import { energiaDeNombre, estadoDeNombre, nombreEnergia, nombreEstado } from '../../lib/biblioteca';
 import { useCancionero } from '../../hooks/useCancionero';
 import { NOMBRE_TIPO, conExtra } from '../../lib/camposPropios';
 import { catalogoService, claveAspecto, type CampoPropio, type TipoCampo, type TipoValor } from '../../services/catalogoService';
@@ -16,9 +17,9 @@ import type { Cancion, FichaCancion } from '../../types/cancionero';
 
 const PESTANAS: { id: PestanaCatalogo; nombre: string }[] = [
     { id: 'grupo', nombre: 'Grupos' }, { id: 'estilo', nombre: 'Estilos' }, { id: 'etiqueta', nombre: 'Etiquetas' },
-    { id: 'canta', nombre: 'Canta' }, { id: 'columnas', nombre: 'Columnas' },
+    { id: 'canta', nombre: 'Canta' }, { id: 'energia', nombre: 'Energía' }, { id: 'estado', nombre: 'Estado' }, { id: 'columnas', nombre: 'Columnas' },
 ];
-const NUEVO: Record<TipoValor, string> = { grupo: 'Nuevo grupo', estilo: 'Nuevo estilo', etiqueta: 'Nueva etiqueta', canta: 'Otra persona' };
+const NUEVO: Record<TipoValor, string> = { grupo: 'Nuevo grupo', estilo: 'Nuevo estilo', etiqueta: 'Nueva etiqueta', canta: 'Otra persona', energia: 'Nueva energía', estado: 'Nuevo estado' };
 
 const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
@@ -29,6 +30,8 @@ const lleva = (c: Cancion, tipo: TipoValor, v: string) => {
     const k = norm(v);
     if (tipo === 'grupo') return (f.proyectos ?? []).some(x => norm(x) === k);
     if (tipo === 'etiqueta') return (f.etiquetas ?? []).some(x => norm(x) === k);
+    if (tipo === 'energia') return norm(nombreEnergia(f.energia)) === k;
+    if (tipo === 'estado') return norm(nombreEstado(f.estado)) === k;
     return norm((tipo === 'estilo' ? f.estilo : f.canta) ?? '') === k;
 };
 function cambiarValor(c: Cancion, tipo: TipoValor, viejo: string, nuevo: string): Cancion {
@@ -45,6 +48,8 @@ function cambiarValor(c: Cancion, tipo: TipoValor, viejo: string, nuevo: string)
     if (tipo === 'grupo') f.proyectos = lista(f.proyectos);
     else if (tipo === 'etiqueta') f.etiquetas = lista(f.etiquetas);
     else if (tipo === 'estilo') f.estilo = nuevo || undefined;
+    else if (tipo === 'energia') f.energia = energiaDeNombre(nuevo);
+    else if (tipo === 'estado') f.estado = estadoDeNombre(nuevo);
     else f.canta = nuevo || undefined;
     for (const key of Object.keys(f) as (keyof FichaCancion)[]) if (f[key] === undefined) delete f[key];
     return { ...c, ficha: Object.keys(f).length ? f : undefined };

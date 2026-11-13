@@ -1,8 +1,8 @@
 // La vista Bloques (tablero): columnas por un dato de la ficha, y pasar una canción de una
 // columna a otra cambia ese dato. Sin React.
-import { DURACION_MEDIA, ENERGIAS, ESTADOS, etiquetaValor, opcionesDe, valoresDe, type CampoFiltro } from './biblioteca';
+import { DURACION_MEDIA, ENERGIAS, ESTADOS, energiaDeNombre, estadoDeNombre, etiquetaValor, opcionesDe, valoresDe, type CampoFiltro } from './biblioteca';
 import { bloqueDe } from '../components/cancionero/estilo';
-import type { Cancion, EstadoCancion, FichaCancion } from '../types/cancionero';
+import type { Cancion, FichaCancion } from '../types/cancionero';
 
 export type CampoTablero = CampoFiltro | 'bloque';
 
@@ -34,8 +34,8 @@ export function columnas(canciones: Cancion[], campo: CampoTablero, tonoDe: (c: 
     }
     let valores = opcionesDe(canciones, campo, tonoDe).map(o => o.valor);
     // Energía y estado: todas sus columnas aunque estén vacías (para poder llevar canciones ahí)
-    if (campo === 'energias') valores = Object.keys(ENERGIAS);
-    if (campo === 'estados') valores = Object.keys(ESTADOS);
+    if (campo === 'energias') valores = [...Object.keys(ENERGIAS), ...valores.filter(v => !(v in ENERGIAS))];
+    if (campo === 'estados') valores = [...Object.keys(ESTADOS), ...valores.filter(v => !(v in ESTADOS))];
     for (const v of valores) {
         const cs = canciones.filter(c => valoresDe(c, campo, tonoDe(c)).some(x => norm(x) === norm(v)));
         salida.push({ clave: v, titulo: etiquetaValor(campo, v), canciones: cs, ...duracion(cs) });
@@ -66,8 +66,8 @@ export function mover(c: Cancion, campo: CampoTablero, desde: string, hacia: str
         case 'estilos': f.estilo = valor; break;
         case 'canta': f.canta = valor; break;
         case 'tonos': f.tono = valor; break;
-        case 'energias': f.energia = valor ? (Number(valor) as FichaCancion['energia']) : undefined; break;
-        case 'estados': f.estado = valor as EstadoCancion | undefined; break;
+        case 'energias': f.energia = valor ? energiaDeNombre(valor) : undefined; break;
+        case 'estados': f.estado = valor ? estadoDeNombre(valor) : undefined; break;
         case 'proyectos': case 'etiquetas': {
             const actual = (campo === 'proyectos' ? f.proyectos : f.etiquetas) ?? [];
             const sin = actual.filter(x => !desde || norm(x) !== norm(desde));

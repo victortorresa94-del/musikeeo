@@ -16,8 +16,8 @@ import { catalogoService, claveAspecto, COLORES, logoPequeno, type ColorPastel, 
 const NOMBRE_COLOR: Record<ColorPastel, string> = {
     mantequilla: 'Amarillo', cielo: 'Azul', menta: 'Verde', lavanda: 'Lila', melocoton: 'Naranja', rosa: 'Rosa', gris: 'Gris',
 };
-const TITULO: Record<TipoValor, string> = { grupo: 'Grupo', estilo: 'Estilo', etiqueta: 'Etiqueta', canta: 'Canta' };
-const CAMPO_ICONO = { grupo: 'proyectos', estilo: 'estilo', etiqueta: 'etiqueta', canta: 'canta' } as const;
+const TITULO: Record<TipoValor, string> = { grupo: 'Grupo', estilo: 'Estilo', etiqueta: 'Etiqueta', canta: 'Canta', energia: 'Energía', estado: 'Estado' };
+const CAMPO_ICONO = { grupo: 'proyectos', estilo: 'estilo', etiqueta: 'etiqueta', canta: 'canta', energia: 'energia', estado: 'estado' } as const;
 
 
 

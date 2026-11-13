@@ -34,7 +34,7 @@ export interface Catalogo {
     actualizadaEn: string;
 }
 
-export type TipoValor = 'grupo' | 'estilo' | 'etiqueta' | 'canta';
+export type TipoValor = 'grupo' | 'estilo' | 'etiqueta' | 'canta' | 'energia' | 'estado';
 export const claveAspecto = (tipo: TipoValor, valor: string) => `${tipo}:${valor.trim().toLowerCase()}`;
 
 const VACIO: Catalogo = { aspecto: {}, campos: [], actualizadaEn: '' };

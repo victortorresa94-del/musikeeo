@@ -1,9 +1,9 @@
 import { useMemo, useState, type ReactNode } from 'react';
 import { ArrowDown, ArrowUp, Check, Columns3, ExternalLink, Palette, Plus } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { ENERGIAS, ESTADOS, opcionesDe, textoDuracion, DURACION_MEDIA, type CampoFiltro } from '../../lib/biblioteca';
+import { ESTADOS, energiaDeNombre, estadoDeNombre, etiquetaValor, nombreEnergia, nombreEstado, opcionesDe, ordenEnergia, textoDuracion, DURACION_MEDIA, type CampoFiltro } from '../../lib/biblioteca';
 import { leerDuracion, minutos } from '../../lib/cantar';
-import type { Cancion, EstadoCancion, FichaCancion } from '../../types/cancionero';
+import type { Cancion, FichaCancion } from '../../types/cancionero';
 import { BotonHoja, Hoja } from './Hoja';
 import { pastelDe } from './estilo';
 import { PildoraValor } from './Aspecto';
@@ -24,7 +24,7 @@ type Col = ColBase | `x:${string}`;
 type Columna = { id: Col; nombre: string; ancho: string; campo?: CampoPropio };
 const ANCHO_TIPO: Record<TipoCampo, string> = { casilla: 'w-[96px]', etiqueta: 'w-[170px]', numero: 'w-[90px]', texto: 'w-[180px]' };
 // El tipo del catálogo de cada columna de valores (para su color, su icono y la hoja de colores)
-const TIPO_COL: Partial<Record<ColBase, TipoValor>> = { canta: 'canta', proyectos: 'grupo', estilo: 'estilo', etiquetas: 'etiqueta' };
+const TIPO_COL: Partial<Record<ColBase, TipoValor>> = { canta: 'canta', proyectos: 'grupo', estilo: 'estilo', etiquetas: 'etiqueta', energia: 'energia', estado: 'estado' };
 const COLUMNAS: Columna[] = [
     { id: 'version', nombre: 'Versión', ancho: 'w-[110px]' },
     { id: 'tono', nombre: 'Tono', ancho: 'w-[76px]' },
@@ -72,8 +72,8 @@ function valorOrden(c: Cancion, col: Orden['col'], tono: string | null, i: numbe
         case 'canta': return norm(f.canta ?? '');
         case 'proyectos': return norm((f.proyectos ?? []).join(' '));
         case 'estilo': return norm(f.estilo ?? '');
-        case 'energia': return f.energia ?? 0;
-        case 'estado': return f.estado ? Object.keys(ESTADOS).indexOf(f.estado) : 9;
+        case 'energia': return ordenEnergia(f.energia);
+        case 'estado': { const i = f.estado ? Object.keys(ESTADOS).indexOf(f.estado) : -1; return i < 0 ? 9 : i; }
         case 'etiquetas': return norm((f.etiquetas ?? []).join(' '));
         case 'duracion': return c.duracion ?? 0;
         case 'bpm': return c.bpm ?? 0;
@@ -127,7 +127,7 @@ export function TablaCanciones({ canciones, tonoDe, guardar, onAbrir, clave, enS
         const campo = CAMPO[ag];
         const ops = opcionesDe(ordenadas, campo, tonoDe);
         const lista = ops.map(o => ({
-            titulo: campo === 'energias' ? ENERGIAS[+o.valor as 1] : campo === 'estados' ? ESTADOS[o.valor as EstadoCancion] : o.valor,
+            titulo: etiquetaValor(campo, o.valor),
             canciones: ordenadas.filter(c => valores(c, ag, tonoDe(c)).some(v => norm(v) === norm(o.valor))),
             tipo: TIPO_AGRUPAR[ag],
         }));
@@ -345,8 +345,8 @@ function Celda({ cancion: c, col, campo, tono, onEscribir, onElegir, onMarcar }:
         case 'canta': return boton(f.canta && valorPildora('canta', f.canta));
         case 'proyectos': return boton(f.proyectos?.length ? f.proyectos.map(p => valorPildora('grupo', p)) : null);
         case 'estilo': return boton(f.estilo && valorPildora('estilo', f.estilo));
-        case 'energia': return boton(f.energia && chip(ENERGIAS[f.energia], 'bg-fill-strong text-foreground'));
-        case 'estado': return boton(f.estado && chip(ESTADOS[f.estado], f.estado === 'lista' ? 'bg-pastel-menta text-pastel-menta-ink' : 'bg-pastel-mantequilla text-pastel-mantequilla-ink'));
+        case 'energia': return boton(f.energia ? valorPildora('energia', nombreEnergia(f.energia)) : null);
+        case 'estado': return boton(f.estado ? valorPildora('estado', nombreEstado(f.estado)) : null);
         case 'etiquetas': return boton(f.etiquetas?.length ? f.etiquetas.map(e => valorPildora('etiqueta', e)) : null);
     }
 }
@@ -363,20 +363,19 @@ function EditorOpciones({ cancion, col, campo: cp, titulo, todas, onCerrar, onCo
     const tipo = TIPO_COL[col as ColBase];
     const multiple = col === 'proyectos' || col === 'etiquetas';
     const campo: CampoFiltro = col === 'canta' ? 'canta' : col === 'proyectos' ? 'proyectos' : col === 'estilo' ? 'estilos' : col === 'etiquetas' ? 'etiquetas' : col === 'energia' ? 'energias' : 'estados';
-    const fijos = col === 'energia' ? Object.keys(ENERGIAS) : col === 'estado' ? Object.keys(ESTADOS) : null;
     // Los que ya usas y los creados en «Grupos y colores» (aunque aún no los lleve ninguna)
-    const opciones = fijos ?? (tipo ? valoresDeTipo(todas, tipo).map(o => o.valor) : opcionesDe(todas, campo, tonoDe).map(o => o.valor));
+    const opciones = tipo ? valoresDeTipo(todas, tipo).map(o => o.valor) : opcionesDe(todas, campo, tonoDe).map(o => o.valor);
     const actuales: string[] = col === 'canta' ? (f.canta ? [f.canta] : []) : col === 'proyectos' ? f.proyectos ?? [] : col === 'estilo' ? (f.estilo ? [f.estilo] : [])
-        : col === 'etiquetas' ? f.etiquetas ?? [] : col === 'energia' ? (f.energia ? [String(f.energia)] : []) : (f.estado ? [f.estado] : []);
-    const nombre = (v: string) => (col === 'energia' ? ENERGIAS[+v as 1] : col === 'estado' ? ESTADOS[v as EstadoCancion] : v);
+        : col === 'etiquetas' ? f.etiquetas ?? [] : col === 'energia' ? (f.energia ? [nombreEnergia(f.energia)] : []) : (f.estado ? [nombreEstado(f.estado)] : []);
+    const nombre = (v: string) => v;
 
     const poner = (lista: string[]) => {
         const g: FichaCancion = { ...f };
         const uno = lista[0];
         if (col === 'canta') g.canta = uno;
         else if (col === 'estilo') g.estilo = uno;
-        else if (col === 'energia') g.energia = uno ? (Number(uno) as FichaCancion['energia']) : undefined;
-        else if (col === 'estado') g.estado = uno as EstadoCancion | undefined;
+        else if (col === 'energia') g.energia = uno ? energiaDeNombre(uno) : undefined;
+        else if (col === 'estado') g.estado = uno ? estadoDeNombre(uno) : undefined;
         else if (col === 'proyectos') g.proyectos = lista;
         else if (col === 'etiquetas') g.etiquetas = lista;
         guardar(limpiar({ ...cancion, ficha: g }));
@@ -411,7 +410,7 @@ function EditorOpciones({ cancion, col, campo: cp, titulo, todas, onCerrar, onCo
                         );
                     })}
                 </div>
-                {!fijos && (
+                {(
                     <div className="mt-3 flex gap-2">
                         <input value={nuevo} onChange={e => setNuevo(e.target.value)} onKeyDown={e => { if (e.key === 'Enter') meterNuevo(); }}
                             placeholder={multiple ? 'Nueva…' : 'Otro…'} aria-label="Valor nuevo"

@@ -2,10 +2,29 @@
 // quién canta, grupo, estilo, energía, estado), lo que dura un repertorio, las directivas de
 // ficha que llegan al importar y la copia de seguridad del cancionero entero.
 import { claveTitulo } from './buscarCanciones';
-import type { AjustesCancion, Cancion, EstadoCancion, FichaCancion, Repertorio, Bolo } from '../types/cancionero';
+import type { AjustesCancion, Cancion, Energia, EstadoCancion, FichaCancion, Repertorio, Bolo } from '../types/cancionero';
 
 export const ESTADOS: Record<EstadoCancion, string> = { lista: 'Lista', ensayar: 'Por ensayar', aprender: 'Para aprender' };
 export const ENERGIAS: Record<1 | 2 | 3 | 4, string> = { 1: 'Suave', 2: 'Media', 3: 'Media-alta', 4: 'Arriba' };
+
+// Energía y estado: los de siempre por su clave, los propios por su nombre
+export const nombreEnergia = (e?: Energia | null): string =>
+    e === undefined || e === null || e === '' ? '' : typeof e === 'number' ? ENERGIAS[e as 1] ?? String(e) : ENERGIAS[+e as 1] ?? e;
+export function energiaDeNombre(nombre: string): Energia | undefined {
+    const t = nombre.trim().slice(0, 40);
+    if (!t) return undefined;
+    if (/^[1-4]$/.test(t)) return +t as 1 | 2 | 3 | 4;
+    const k = (Object.keys(ENERGIAS) as unknown as (1 | 2 | 3 | 4)[]).find(x => ENERGIAS[x].toLowerCase() === t.toLowerCase());
+    return k ? (+k as 1 | 2 | 3 | 4) : t;
+}
+// Para ordenar: las de siempre por su número; las propias, detrás
+export const ordenEnergia = (e?: Energia | null) => (typeof e === 'number' ? e : e && /^[1-4]$/.test(e) ? +e : e ? 10 : 0);
+export const nombreEstado = (e?: string | null): string => (e ? ESTADOS[e as EstadoCancion] ?? e : '');
+export function estadoDeNombre(nombre: string): string | undefined {
+    const t = nombre.trim().slice(0, 40);
+    if (!t) return undefined;
+    return (Object.keys(ESTADOS) as EstadoCancion[]).find(k => k === t || ESTADOS[k].toLowerCase() === t.toLowerCase()) ?? t;
+}
 
 const norm = (s: string) => s.normalize('NFD').replace(/[̀-ͯ]/g, '').toLowerCase().trim();
 
@@ -84,8 +103,8 @@ export function opcionesDe(canciones: Cancion[], campo: CampoFiltro, tonoDe: (c:
     }
     const lista = [...cuenta.values()];
     if (campo === 'tonos') return lista.sort((a, b) => ordenTono(a.valor) - ordenTono(b.valor) || a.valor.localeCompare(b.valor));
-    if (campo === 'energias') return lista.sort((a, b) => +a.valor - +b.valor);
-    if (campo === 'estados') return lista.sort((a, b) => Object.keys(ESTADOS).indexOf(a.valor) - Object.keys(ESTADOS).indexOf(b.valor));
+    if (campo === 'energias') return lista.sort((a, b) => ordenEnergia(a.valor) - ordenEnergia(b.valor) || a.valor.localeCompare(b.valor, 'es'));
+    if (campo === 'estados') { const i = (v: string) => { const k = Object.keys(ESTADOS).indexOf(v); return k < 0 ? 9 : k; }; return lista.sort((a, b) => i(a.valor) - i(b.valor) || a.valor.localeCompare(b.valor, 'es')); }
     return lista.sort((a, b) => b.n - a.n || a.valor.localeCompare(b.valor, 'es'));
 }
 
@@ -165,7 +184,7 @@ export function sacarFicha(texto: string): { ficha?: FichaCancion; texto: string
         else if (k === 'canta' || k === 'voz') ficha.canta = v.slice(0, 40);
         else if (k.startsWith('grupo') || k.startsWith('proyecto')) ficha.proyectos = v.split(/\s*[,·]\s*/).filter(Boolean).slice(0, 6).map(x => x.slice(0, 40));
         else if (k === 'estilo') ficha.estilo = v.slice(0, 40);
-        else if (k.startsWith('energ')) { const n = Math.round(+v.replace(/[^\d]/g, '')); if (n >= 1 && n <= 4) ficha.energia = n as 1 | 2 | 3 | 4; }
+        else if (k.startsWith('energ')) { const n = Math.round(+v.replace(/[^\d]/g, '')); if (n >= 1 && n <= 4 && /^\s*\d/.test(v)) ficha.energia = n as 1 | 2 | 3 | 4; else if (v.trim()) ficha.energia = energiaDeNombre(v); }
         else if (k === 'estado') ficha.estado = leerEstado(v);
         else if (k.startsWith('etiqueta') || k.startsWith('apto')) ficha.etiquetas = v.split(/\s*[,·]\s*/).filter(Boolean).slice(0, 20).map(x => x.slice(0, 40));
         else if (/^https?:\/\//i.test(v)) ficha.enlace = v.slice(0, 500);
