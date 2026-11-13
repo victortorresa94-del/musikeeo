@@ -15,6 +15,8 @@ import { FilaCancion } from './FilaCancion';
 import { BarraFiltros } from './Filtros';
 import { ImportarCanciones } from './ImportarCanciones';
 import { ResultadosCatalogo } from './ResultadosCatalogo';
+import { BusquedasRecientes } from './BusquedasRecientes';
+import { useBusquedasRecientes } from '../../hooks/useBusquedasRecientes';
 
 // «Añadir canciones» al repertorio a pantalla completa (13-nov, víspera de Pallejà). Víctor:
 // «quiero una vista mucho mejor que ese popup… por categorías, organizarlo de distintas formas,
@@ -65,6 +67,8 @@ export function ElegirParaSet({ abierto, onCerrar, repertorio, destinoInicial = 
     const tonos = useMemo(() => new Map(canciones.map(c => [c.id, tonoMostrado(c, tonoDe(c))])), [canciones]);
     const tonoDeCancion = useCallback((c: Cancion) => tonos.get(c.id) ?? null, [tonos]);
     const termino = q.trim();
+    const { recientes, apuntar: apuntarBusqueda, quitar: quitarBusqueda, borrarTodas: borrarBusquedas } = useBusquedasRecientes('musikeeo-busquedas-anadir', q);
+    const [enBuscador, setEnBuscador] = useState(false);
     const lista = useMemo(() => {
         const t = norm(termino);
         const base = filtrar(canciones, filtros, tonoDeCancion);
@@ -150,12 +154,17 @@ export function ElegirParaSet({ abierto, onCerrar, repertorio, destinoInicial = 
                     <label className="mt-2 relative block">
                         <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                         <input value={q} onChange={e => setQ(e.target.value)} placeholder="Busca o escribe el título" aria-label="Buscar o escribir el título" enterKeyHint="done"
-                            onKeyDown={e => { if (e.key === 'Enter' && termino && !yaEsta && !lista.length) crearConTitulo(); }}
+                            onKeyDown={e => { if (e.key === 'Enter') { apuntarBusqueda(q); if (termino && !yaEsta && !lista.length) crearConTitulo(); } }}
+                            onFocus={() => setEnBuscador(true)} onBlur={() => setEnBuscador(false)}
                             className="w-full h-11 rounded-2xl bg-fill pl-12 pr-10 text-[16px] text-foreground placeholder:text-muted-foreground focus:outline-none" />
                         {q && (
                             <button onClick={() => setQ('')} aria-label="Borrar" className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground">
                                 <X className="h-4 w-4" />
                             </button>
+                        )}
+                        {enBuscador && !q && (
+                            <BusquedasRecientes recientes={recientes} onElegir={setQ} onQuitar={quitarBusqueda} onBorrar={borrarBusquedas}
+                                className="absolute left-0 right-0 top-full mt-1.5 z-30" />
                         )}
                     </label>
 

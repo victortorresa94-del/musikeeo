@@ -20,6 +20,8 @@ import { PonerTempo } from '../../components/cancionero/PonerTempo';
 import { CompletarLetras } from '../../components/cancionero/CompletarLetras';
 import { leerCancion, lineasDeLetra } from '../../lib/acordes';
 import { ResultadosCatalogo } from '../../components/cancionero/ResultadosCatalogo';
+import { BusquedasRecientes } from '../../components/cancionero/BusquedasRecientes';
+import { useBusquedasRecientes } from '../../hooks/useBusquedasRecientes';
 import { norm, pedirPantallaCompleta, tonoDe } from '../../components/cancionero/utilidades';
 import type { Cancion } from '../../types/cancionero';
 import { FilaCancion } from '../../components/cancionero/FilaCancion';
@@ -59,6 +61,8 @@ export default function Cancionero() {
     // Las tres vistas grandes (13-nov): Canciones · Repertorios · Bolos
     const ver: VistaCancionero = params.get('ver') === 'repertorios' ? 'repertorios' : params.get('ver') === 'bolos' ? 'bolos' : params.get('ver') === 'tareas' ? 'tareas' : 'canciones';
     const [q, setQ] = useState('');
+    const { recientes, apuntar: apuntarBusqueda, quitar: quitarBusqueda, borrarTodas: borrarBusquedas } = useBusquedasRecientes('musikeeo-busquedas-cancionero', q);
+    const [enBuscador, setEnBuscador] = useState(false);
     const [importar, setImportar] = useState(false);
     const buscadorRef = useRef<HTMLInputElement>(null);
     // La biblioteca: filtros por la ficha, grupos y elegir varias para un repertorio
@@ -226,13 +230,19 @@ export default function Cancionero() {
             <label className="relative mt-4 block">
                 <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
                 <input ref={buscadorRef} value={q} onChange={e => setQ(e.target.value)} type="search" enterKeyHint="search"
-                    onKeyDown={e => { if (e.key === 'Enter') e.currentTarget.blur(); }}
+                    onKeyDown={e => { if (e.key === 'Enter') { apuntarBusqueda(q); e.currentTarget.blur(); } }}
+                    onFocus={() => setEnBuscador(true)} onBlur={() => setEnBuscador(false)}
                     placeholder="Busca una canción, artista o tono" aria-label="Buscar en el cancionero y en el catálogo"
                     className="w-full h-11 rounded-2xl bg-fill pl-12 pr-10 text-[16px] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-foreground/10 [&::-webkit-search-cancel-button]:hidden" />
                 {q && (
                     <button onClick={() => setQ('')} aria-label="Borrar" className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground">
                         <X className="h-4 w-4" />
                     </button>
+                )}
+                {/* Con el buscador vacío y tocado: lo que buscaste antes */}
+                {enBuscador && !q && (
+                    <BusquedasRecientes recientes={recientes} onElegir={setQ} onQuitar={quitarBusqueda} onBorrar={borrarBusquedas}
+                        className="absolute left-0 right-0 top-full mt-1.5 z-30" />
                 )}
             </label>
 

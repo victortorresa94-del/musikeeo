@@ -682,6 +682,7 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
   - **Escuchar**: botón «Spotify» en cada canción (la pista exacta si se sabe, `cancion.spotify`; si no, su búsqueda, que en el móvil abre la app). Funciona ya.
   - **Crear playlist**: fila «Crear playlist en Spotify» en el repertorio (con o sin los extras): busca cada canción (un mix, cada tema del paréntesis), crea la playlist privada en su cuenta, apunta en cada canción su pista y en el repertorio su playlist (`repertorio.spotify`: luego sale «Abrir su playlist»). Lo que no encuentra lo dice. Sin clave: «Copiar la lista» y la lista con un enlace por canción.
   - ⏳ **Víctor: conectar Spotify una vez** (5 min): developer.spotify.com/dashboard → Create app → Redirect URIs `https://www.musikeeo.com/spotify` y `https://musikeeo.com/spotify` → API: Web API → guardar; copiar el **Client ID** a Vercel como `VITE_SPOTIFY_CLIENT_ID` y volver a desplegar; en la app de Spotify, «User Management», añadir su correo de Spotify (y el de quien vaya a usarlo). Probado con un Spotify simulado.
+- *«también quiero que aparezcan las búsquedas recientes cuando busque una canción nueva»* → ✅ al tocar el buscador vacío (el del Cancionero y el de «Añadir canciones» del repertorio) salen las últimas 8: un toque la repite, la ✕ la quita, «Borrar» las borra todas. Cuenta lo que se deja escrito 1,5 s o con Intro (`hooks/useBusquedasRecientes.ts`, `components/cancionero/BusquedasRecientes.tsx`; en el móvil, por buscador).
 
 ## 22. Datos de la BBDD a corregir ⏳
 
