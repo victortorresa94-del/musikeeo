@@ -3,7 +3,8 @@ import { toast } from 'sonner';
 import { Check, ChevronDown, GraduationCap, ListMusic, MoreHorizontal, Plus, Repeat, Sparkles, Star } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { BotonHoja, Hoja } from './Hoja';
-import { ICONO, PASTEL, pastelDe, type Pastel } from './estilo';
+import { PASTEL, type Pastel } from './estilo';
+import { CirculoGrupo } from './Aspecto';
 import { COLORES_LISTA, entradasPropias, gruposDe, LISTAS_FIJAS, resumenRegla, type EntradaLista } from '../../lib/listas';
 import { cancioneroService } from '../../services/cancioneroService';
 import type { Cancion, Lista, ReglaLista } from '../../types/cancionero';
@@ -15,7 +16,7 @@ const nuevoId = () => (typeof crypto !== 'undefined' && 'randomUUID' in crypto ?
 function IconoLista({ e, className }: { e: EntradaLista; className?: string }) {
     const caja = 'h-8 w-8 shrink-0 rounded-[10px] flex items-center justify-center';
     if (e.clase === 'grupo' && e.id !== 'sin-grupo') {
-        return <span className={cn(caja, pastelDe(`grupo:${e.nombre}`).fondo, className)}><img src={ICONO.rumba} alt="" className="h-7 w-7 object-contain" /></span>;
+        return <CirculoGrupo grupo={e.nombre} className={cn(caja, className)} imagen="h-7 w-7" />;
     }
     const p = pastelDeColor(e.color);
     const Icono = e.id === 'todas' ? ListMusic : e.id === 'aprender' ? GraduationCap : e.id === 'ensayar' ? Repeat : e.id === 'favoritas' ? Star

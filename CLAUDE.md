@@ -167,11 +167,19 @@ Project is in active development. Architecture is solid, marketplace sprint in p
   - «Orgullo» se juntó con «Los Barrieros», que va con formato (partes de color, una fila de acordes por parte, `> aviso`, `==coros==`, `**negrita**`) y en A;
   - lleva los dos sets de Pallejà.
 - **Página de revisión** (https://claude.ai/artifact/4GKkapTqsopXqJ825N2eJf): ya no hace falta, porque prefirió el JSON entero.
+- **Enlace del grupo en vivo** (`services/compartidosService.ts`, `/grupo/{id}`, regla `compartidos`: get público, list prohibido, escribe solo el dueño): el set se publica solo al cambiar y el músico lo ve sin recargar. «Hacer mi versión» (en su móvil, `musikeeo-grupo-mias:<set>`) avisa si el original cambió. Probado con emuladores (dos cuentas) y en producción sin cuenta.
+- **Grupos y colores + columnas propias** (`services/catalogoService.ts`, `users/{uid}/catalogo/principal`, regla `catalogo`):
+  - color de cada grupo, estilo, etiqueta y quien canta (`estilo.ts` lo lee: `pastelValor`, `pastelGrupo`);
+  - icono 3D de la app o logo propio (128 px, data URL) en los grupos (`Aspecto.tsx`: `CirculoGrupo`, `PildoraValor`, `EditarAspecto`);
+  - crear, renombrar en todas las canciones o quitar, con Deshacer (`Catalogo.tsx`);
+  - columnas casilla · etiquetas · número · texto en `ficha.extra` (`lib/camposPropios.ts`), en la Tabla (el «+» de la cabecera) y en la ficha (el «+» de las píldoras);
+  - la copia .json lleva `catalogo` y se mezcla sin pisar;
+  - probado con emuladores en iPhone 13 y en PC (`scripts/importar/catalogo.test.ts`, 15 casos).
 
 **❌ Pendiente:**
 - Víctor:
   - borrar todo e importar `Mi-cancionero.json`; recuperar el orden de los sets con «Solo el orden» desde la copia de «Borrar todo»;
-  - desplegar las reglas (`listas` incluidas);
+  - desplegar las reglas (`listas`, `compartidos`, `catalogo` y `ficha.extra` incluidas);
   - probar el pedal y el sonido en el iPhone de verdad.
 - Duración de la versión «midiendo grabándote» (abrir `microphone=(self)` en `vercel.json`); reordenar las listas arrastrando; un icono por lista.
 

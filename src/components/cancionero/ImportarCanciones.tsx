@@ -8,6 +8,7 @@ import { Switch } from '../ui/switch';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { almacenCanciones } from '../../services/cancioneroService';
+import { catalogoService } from '../../services/catalogoService';
 import { leerCancion, lineasDeLetra, separarCanciones } from '../../lib/acordes';
 import { leerSetlist, type CancionImportada } from '../../lib/setlist';
 import { leerCopia, mismoTitulo, sacarFicha, unirFichas, type Copia } from '../../lib/biblioteca';
@@ -220,6 +221,8 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
 
     const importar = () => {
         if (copia && soloOrden) { soloReordenar(); return; }
+        // Los colores, iconos y columnas propias que trae la copia (lo tuyo no se pisa)
+        catalogoService.mezclar(copia?.catalogo);
         const corta = (t: CancionImportada) => t.ficha || t.texto.split('\n').length <= 25;
         let nuevas = 0, rellenas = 0, conFicha = 0, conNotas = 0;
         const aGuardar: Cancion[] = [];

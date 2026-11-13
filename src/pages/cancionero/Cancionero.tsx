@@ -2,11 +2,13 @@ import { toast } from 'sonner';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { antesQue } from '../../lib/bolos';
 import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-dom';
-import { CheckSquare, MinusCircle, ChevronRight, Cloud, Download, FileText, FileUp, ListPlus, Loader2, MoreHorizontal, Pencil, Plus, Search, Smartphone, Table2, Trash2, X } from 'lucide-react';
+import { CheckSquare, MinusCircle, ChevronRight, Cloud, Download, FileText, FileUp, ListPlus, Loader2, MoreHorizontal, Palette, Pencil, Plus, Search, Smartphone, Table2, Trash2, X } from 'lucide-react';
+import { GestionarCatalogo } from '../../components/cancionero/Catalogo';
 import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { cancioneroService } from '../../services/cancioneroService';
+import { catalogoService } from '../../services/catalogoService';
 import { CANCION_EJEMPLO } from '../../components/cancionero/ejemplo';
 import { Baldosa, TarjetaBolo, TarjetaEscuchar } from '../../components/cancionero/Baldosas';
 import { ICONO, PASTEL, iconoRepertorio, pastelDe } from '../../components/cancionero/estilo';
@@ -61,6 +63,7 @@ export default function Cancionero() {
     const [aRepertorio, setARepertorio] = useState(false);
     const [completar, setCompletar] = useState(false);
     const [mantenimiento, setMantenimiento] = useState(false);
+    const [catalogoAbierto, setCatalogoAbierto] = useState(false);
     const [confirmarBorrar, setConfirmarBorrar] = useState(false);
     // Listas: la de ahora va en la dirección (?lista=), y en el ordenador el menú de la izquierda las enseña todas
     const [hojaListas, setHojaListas] = useState(false);
@@ -433,7 +436,7 @@ export default function Cancionero() {
             )}
 
             {listo && canciones.length > 0 && (
-                <button onClick={() => descargarCopia(crearCopia(canciones, repertorios))}
+                <button onClick={() => descargarCopia(crearCopia(canciones, repertorios, catalogoService.paraCopia()))}
                     className="mt-3 h-11 flex items-center gap-2 text-[14px] font-semibold text-foreground active:opacity-60">
                     <Download className="h-4 w-4" /> Guardar una copia del cancionero
                 </button>
@@ -520,6 +523,7 @@ export default function Cancionero() {
             <ImportarCanciones abierto={importar} onCerrar={() => setImportar(false)} />
             <CompletarLetras abierta={completar} onCerrar={() => setCompletar(false)} />
             {/* ⋯: lo de poner al día el cancionero, fuera del primer plano */}
+            {catalogoAbierto && <GestionarCatalogo abierta onCerrar={() => setCatalogoAbierto(false)} />}
             <Hoja abierta={mantenimiento} onCerrar={() => { setMantenimiento(false); setConfirmarBorrar(false); }} titulo="Tu cancionero" derecha={<BotonHoja fuerte onClick={() => setMantenimiento(false)}>Listo</BotonHoja>}>
                 <div className="px-4 pb-5 space-y-2">
                     {faltanLetra > 0 && (
@@ -527,13 +531,16 @@ export default function Cancionero() {
                             <FileText className="h-[18px] w-[18px]" /> Completar letras <span className="ml-auto text-muted-foreground">{faltanLetra}</span>
                         </button>
                     )}
+                    <button onClick={() => { setMantenimiento(false); setCatalogoAbierto(true); }} className="w-full h-12 px-4 rounded-2xl bg-fill flex items-center gap-2.5 text-[15px] text-foreground active:bg-fill-strong">
+                        <Palette className="h-[18px] w-[18px]" /> Grupos, colores y columnas
+                    </button>
                     <PonerPortadas className="w-full h-12 px-4 rounded-2xl text-[15px] gap-2.5" />
                     <PonerTempo className="w-full h-12 px-4 rounded-2xl text-[15px] gap-2.5" />
                     <div className="rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
                         <button onClick={() => { setMantenimiento(false); setImportar(true); }} className="w-full h-12 px-4 flex items-center gap-2.5 text-[15px] text-foreground active:bg-fill-strong">
                             <FileUp className="h-[18px] w-[18px]" /> Importar canciones o una copia
                         </button>
-                        <button onClick={() => descargarCopia(crearCopia(canciones, repertorios))} className="w-full h-12 px-4 flex items-center gap-2.5 text-[15px] text-foreground active:bg-fill-strong">
+                        <button onClick={() => descargarCopia(crearCopia(canciones, repertorios, catalogoService.paraCopia()))} className="w-full h-12 px-4 flex items-center gap-2.5 text-[15px] text-foreground active:bg-fill-strong">
                             <Download className="h-[18px] w-[18px]" /> Guardar una copia del cancionero
                         </button>
                     </div>
@@ -551,7 +558,7 @@ export default function Cancionero() {
                                 <div className="grid grid-cols-2 gap-2">
                                     <button onClick={() => setConfirmarBorrar(false)} className="pulsable h-11 rounded-[14px] bg-sheet text-[15px] font-semibold text-foreground">Cancelar</button>
                                     <button onClick={() => {
-                                        descargarCopia(crearCopia(canciones, repertorios));
+                                        descargarCopia(crearCopia(canciones, repertorios, catalogoService.paraCopia()));
                                         void cancioneroService.vaciarTodo();
                                         setConfirmarBorrar(false);
                                         setMantenimiento(false);

@@ -181,6 +181,10 @@ export function unirFichas(antes: FichaCancion | undefined, nueva: FichaCancion 
     for (const [k, v] of Object.entries(nueva) as [keyof FichaCancion, FichaCancion[keyof FichaCancion]][]) {
         if (v === undefined || v === '' || (Array.isArray(v) && !v.length)) continue;
         // Las etiquetas se suman a las que ya tenía (no se reemplazan)
+        if (k === 'extra' && v && typeof v === 'object' && !Array.isArray(v)) {
+            unida.extra = { ...unida.extra, ...(v as Record<string, never>) };
+            continue;
+        }
         if (k === 'etiquetas' && Array.isArray(v)) {
             const ya = unida.etiquetas ?? [];
             unida.etiquetas = [...ya, ...v.filter(x => !ya.some(y => norm(y) === norm(x)))].slice(0, 30);
@@ -217,9 +221,10 @@ export interface CancionCopia {
     favorita?: boolean;      // ⭐ la versión que sale por defecto
 }
 export interface RepertorioCopia { nombre: string; fecha?: string; canciones: number[]; notas?: string; hueco?: number }
-export interface Copia { app: 'musikeeo-cancionero'; version: 1; creada: string; canciones: CancionCopia[]; repertorios: RepertorioCopia[] }
+export interface CatalogoCopia { aspecto?: Record<string, unknown>; campos?: unknown[] }
+export interface Copia { app: 'musikeeo-cancionero'; version: 1; creada: string; canciones: CancionCopia[]; repertorios: RepertorioCopia[]; catalogo?: CatalogoCopia }
 
-export function crearCopia(canciones: Cancion[], repertorios: Repertorio[]): Copia {
+export function crearCopia(canciones: Cancion[], repertorios: Repertorio[], catalogo?: CatalogoCopia): Copia {
     const indice = new Map(canciones.map((c, i) => [c.id, i]));
     return {
         app: 'musikeeo-cancionero',
@@ -233,6 +238,7 @@ export function crearCopia(canciones: Cancion[], repertorios: Repertorio[]): Cop
             nombre: r.nombre, fecha: r.fecha, canciones: r.canciones.map(id => indice.get(id)).filter((i): i is number => i !== undefined),
             notas: r.notas, hueco: r.hueco,
         })),
+        ...(catalogo && (Object.keys(catalogo.aspecto ?? {}).length || catalogo.campos?.length) ? { catalogo } : {}),
     };
 }
 
@@ -246,7 +252,8 @@ function leerUnaCopia(texto: string): Copia | null {
         const repertorios = (Array.isArray(c.repertorios) ? c.repertorios : [])
             .filter(r => r && typeof r.nombre === 'string' && Array.isArray(r.canciones))
             .map(r => ({ ...r, canciones: r.canciones.filter(i => Number.isInteger(i) && i >= 0 && i < canciones.length) }));
-        return { app: 'musikeeo-cancionero', version: 1, creada: c.creada ?? '', canciones, repertorios };
+        const catalogo = c.catalogo && typeof c.catalogo === 'object' ? c.catalogo : undefined;
+        return { app: 'musikeeo-cancionero', version: 1, creada: c.creada ?? '', canciones, repertorios, ...(catalogo ? { catalogo } : {}) };
     } catch {
         return null;
     }
@@ -282,7 +289,8 @@ export function leerCopia(texto: string): Copia | null {
         });
         for (const r of copia.repertorios) repertorios.push({ ...r, canciones: r.canciones.map(i => nuevoIndice[i]) });
     }
-    return { app: 'musikeeo-cancionero', version: 1, creada: (copias[0] as Copia).creada, canciones, repertorios };
+    const catalogo = (copias as Copia[]).reduce<CatalogoCopia | undefined>((a, c) => (c.catalogo ? { aspecto: { ...a?.aspecto, ...c.catalogo.aspecto }, campos: [...(a?.campos ?? []), ...(c.catalogo.campos ?? [])] } : a), undefined);
+    return { app: 'musikeeo-cancionero', version: 1, creada: (copias[0] as Copia).creada, canciones, repertorios, ...(catalogo ? { catalogo } : {}) };
 }
 
 // Descargar la copia como archivo (.json)

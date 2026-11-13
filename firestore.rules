@@ -32,7 +32,8 @@ service cloud.firestore {
         allow create, update: if isOwner(userId)
           && request.resource.data.keys().hasOnly(['titulo', 'artista', 'texto', 'ajustes', 'creadaEn', 'actualizadaEn', 'portada', 'duracion', 'muestra', 'bpm', 'ficha', 'version', 'original', 'notas', 'favorita'])
           && (!('ficha' in request.resource.data) || (request.resource.data.ficha is map
-            && request.resource.data.ficha.keys().hasOnly(['tono', 'capo', 'canta', 'proyectos', 'estilo', 'energia', 'estado', 'etiquetas', 'enlace', 'tonoAlt'])))
+            && request.resource.data.ficha.keys().hasOnly(['tono', 'capo', 'canta', 'proyectos', 'estilo', 'energia', 'estado', 'etiquetas', 'enlace', 'tonoAlt', 'extra'])
+            && (!('extra' in request.resource.data.ficha) || (request.resource.data.ficha.extra is map && request.resource.data.ficha.extra.size() <= 40))))
           && request.resource.data.titulo is string && request.resource.data.titulo.size() <= 120
           && request.resource.data.artista is string && request.resource.data.artista.size() <= 120
           && request.resource.data.texto is string && request.resource.data.texto.size() <= 50000
@@ -77,6 +78,17 @@ service cloud.firestore {
           && (!('color' in request.resource.data) || (request.resource.data.color is string && request.resource.data.color.size() <= 20))
           && (!('regla' in request.resource.data) || request.resource.data.regla is map)
           && (!('orden' in request.resource.data) || request.resource.data.orden is number);
+      }
+
+      // El catálogo del cancionero: colores e iconos (o el logo) de cada grupo, estilo y etiqueta,
+      // y las columnas propias. Un solo documento por persona
+      match /catalogo/{docId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId) && docId == 'principal'
+          && request.resource.data.keys().hasOnly(['aspecto', 'campos', 'actualizadaEn'])
+          && request.resource.data.aspecto is map && request.resource.data.aspecto.size() <= 600
+          && request.resource.data.campos is list && request.resource.data.campos.size() <= 40
+          && request.resource.data.actualizadaEn is string && request.resource.data.actualizadaEn.size() <= 40;
       }
     }
 

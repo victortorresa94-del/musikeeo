@@ -33,7 +33,9 @@ export interface FichaCancion {
     tonoAlt?: string;           // otro tono en que también la tocáis («G · también A»)
     etiquetas?: string[];       // categorías propias, libres: «Bodas», «Tardeo», «Flamencas»…
     enlace?: string;            // su página de acordes (LaCuerda u otra web)
+    extra?: Record<string, ValorExtra>; // columnas propias (catálogo): casilla, etiquetas, número o texto
 }
+export type ValorExtra = boolean | number | string | string[];
 
 // Privada: solo la ve su dueño (en su móvil, y en su cuenta si tiene)
 export interface Cancion {

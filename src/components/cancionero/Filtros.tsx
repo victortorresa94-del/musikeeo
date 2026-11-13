@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { Check, Flame, KeyRound, Layers, ListChecks, Mic, Music2, Tag, X, type LucideIcon } from 'lucide-react';
-import { ICONO, pastelDe } from './estilo';
+import { CirculoGrupo } from './Aspecto';
 import { cn } from '../../lib/utils';
 import {
     NOMBRE_AGRUPAR, NOMBRE_CAMPO, SIN_FILTROS, etiquetaValor, hayFiltros, opcionesDe,
@@ -59,9 +59,7 @@ export function BarraFiltros({ canciones, tonoDe, filtros, onCambio, agrupar, on
                     return (
                         <button key={p.valor} onClick={() => alternar('proyectos', p.valor)} aria-pressed={activo}
                             className={cn(chip(activo), 'pl-1')}>
-                            <span className={cn('h-7 w-7 rounded-full flex items-center justify-center', pastelDe(`grupo:${p.valor}`).fondo)}>
-                                <img src={ICONO.rumba} alt="" aria-hidden className="h-6 w-6 object-contain" />
-                            </span>
+                            <CirculoGrupo grupo={p.valor} />
                             {p.valor}
                         </button>
                     );

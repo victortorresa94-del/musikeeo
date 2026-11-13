@@ -555,6 +555,35 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
 - **Probado en producción:** datos viejos → Borrar todo → importar → 396, grupos y sets correctos, sin palabras partidas.
 - **Formato para las letras que mande:** `Parte:` en su línea, debajo los acordes de la parte con guiones, la letra, `> aviso`, `==coros==` y `**negrita**`.
 
+### 21h. El enlace del grupo siempre al día, y la versión de cada músico (13-nov, tarde) ✅
+
+> *«el enlace de musikeeo que comparto con los músicos… deben tener la opción de "duplicar" la canción y cambiar a la suya para poner sus apuntes… pero la "original" siempre debe estar actualizada al último cambio que lo haga de cada canción, o de orden.»*
+
+- ✅ El enlace es `/grupo/{id}`: el set se publica solo en `compartidos/{id}` al cambiar una canción o el orden (`services/compartidosService.ts`), y el músico lo ve sin recargar.
+- ✅ Cada músico puede «Hacer mi versión» de una canción, con sus apuntes. Se guarda en su móvil y le avisa si el original cambió.
+- ✅ Sin red, el enlace abre con la última copia que vio.
+- ⏳ Para que se actualice de verdad: entrar con su cuenta y desplegar las reglas (`compartidos`).
+
+### 21i. Iconos, logos y colores de cada cosa, y columnas propias (13-nov, tarde) ✅ en local
+
+> *«debería poder añadir un icono a cada grupo y proyecto musical. tanto algunos variados de la app como personalizado, para ponerle mi logo»*
+> *«debería poder añadir desde aquí nuevas etiquetas, estilos, colores de cada cosa etc»*
+> *«y de la misma forma, características o columnas nuevas y personalizadas a elegir entre check, etiqueta, número, texto..»*
+
+- ✅ **Grupos y colores** (`components/cancionero/Catalogo.tsx`). Se abre desde la Tabla («Grupos y colores»), desde el ⋯ de Canciones y desde el pie de cada desplegable de la ficha. Tiene pestañas Grupos · Estilos · Etiquetas · Canta · Columnas, y en cada una:
+  - crear uno nuevo aunque ninguna canción lo lleve todavía;
+  - cambiar su color (7 pastel o «Automático»);
+  - renombrarlo en todas las canciones o quitarlo, con Deshacer.
+- ✅ **Icono o logo de un grupo** (`Aspecto.tsx`): 18 iconos 3D de la app o «Tu logo». El logo se guarda a 128 px y sale en la píldora, en la lista del grupo, en los filtros y en la cabecera de la Tabla agrupada.
+- ✅ **Columnas propias** (`lib/camposPropios.ts`, `ficha.extra`): casilla, etiquetas, número o texto.
+  - Se crean con el «+» de la cabecera de la Tabla, en «Columnas» o en «Grupos y colores».
+  - En la Tabla se ordenan, se esconden y se agrupa por ellas (casilla y etiquetas).
+  - En la ficha salen como píldoras, y el «+» de las píldoras las pone. Las etiquetas también se cambian ahí, sin ir a la ficha entera.
+- ✅ Todo vive en `services/catalogoService.ts`: en el móvil y en `users/{uid}/catalogo/principal`. La copia .json lo lleva y al importarla se añade sin pisar lo tuyo.
+- ✅ De paso: «Capo 2» salía dos veces en las filas.
+- ⏳ La ficha entera (Editar → ficha) aún no enseña las columnas propias: se cambian en las píldoras y en la Tabla.
+- ⏳ Desplegar las reglas (`catalogo` y `ficha.extra`).
+
 ## 22. Datos de la BBDD a corregir ⏳
 
 Artistas mal en la BBDD:

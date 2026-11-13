@@ -4,6 +4,7 @@
 import { cn } from '../../lib/utils';
 import type { Linea } from '../../lib/acordes';
 import type { Cancion } from '../../types/cancionero';
+import { catalogoService, claveAspecto, type ColorPastel, type TipoValor } from '../../services/catalogoService';
 
 export interface Pastel { fondo: string; tinta: string }
 
@@ -19,8 +20,22 @@ export const PASTEL = {
 
 const ORDEN: Pastel[] = [PASTEL.mantequilla, PASTEL.cielo, PASTEL.lavanda, PASTEL.menta, PASTEL.melocoton, PASTEL.rosa];
 
-// Siempre el mismo color para la misma clave (un repertorio, un bloque sin nombre conocido)
+// El gris de lo neutro (un grupo sin color elegido, la cejilla…)
+export const PASTEL_GRIS: Pastel = { fondo: 'bg-fill-strong', tinta: 'text-foreground' };
+export const pastelDeColor = (c: ColorPastel): Pastel => (c === 'gris' ? PASTEL_GRIS : PASTEL[c]);
+
+// El color que eligió la persona para ese valor (catálogo), si eligió alguno
+function elegido(clave: string): Pastel | null {
+    const c = catalogoService.aspecto(clave)?.color;
+    return c ? pastelDeColor(c) : null;
+}
+export const pastelValor = (tipo: TipoValor, valor: string): Pastel | null => elegido(claveAspecto(tipo, valor));
+
+// Siempre el mismo color para la misma clave (un repertorio, un bloque sin nombre conocido),
+// salvo que se haya elegido uno (claves «etiqueta:…», «canta:…»)
 export function pastelDe(clave: string): Pastel {
+    const e = elegido(clave);
+    if (e) return e;
     let h = 0;
     for (const c of clave) h = (h * 31 + c.charCodeAt(0)) >>> 0;
     return ORDEN[h % ORDEN.length];
@@ -54,8 +69,12 @@ const BLOQUES: [RegExp, Pastel, string][] = [
 
 export function estiloBloque(nombre: string): { pastel: Pastel; icono: string } {
     const b = BLOQUES.find(([re]) => re.test(nombre));
-    return b ? { pastel: b[1], icono: b[2] } : { pastel: pastelDe(nombre), icono: ICONO.repertorios };
+    const propio = pastelValor('estilo', nombre);
+    return b ? { pastel: propio ?? b[1], icono: b[2] } : { pastel: propio ?? pastelDe(nombre), icono: ICONO.repertorios };
 }
+
+// El color de un grupo: el elegido o el de siempre (el mismo que su lista y su filtro)
+export const pastelGrupo = (g: string): Pastel => pastelValor('grupo', g) ?? pastelDe(`grupo:${g}`);
 
 // El icono de un repertorio por su nombre (una boda, una noche de rumba…)
 export function iconoRepertorio(nombre: string): string {
@@ -162,5 +181,6 @@ export function etiquetasTema(c: Cancion): Etiqueta[] {
         salida.push(e);
     }
     if (f.capo && !/^capo 0\b/i.test(f.capo)) salida.push({ texto: f.capo.replace(/\s*·.*$/, ''), pastel: null, tipo: 'capo' });
-    return salida;
+    // La cejilla de la ficha ya sale arriba como «Capo 2»: sin repetirla (ni ninguna otra)
+    return salida.filter((e, i) => salida.findIndex(x => x.texto.toLowerCase() === e.texto.toLowerCase()) === i);
 }
