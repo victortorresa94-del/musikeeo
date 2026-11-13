@@ -25,6 +25,7 @@ import { cejillaDeFicha, versionesDe } from '../../lib/biblioteca';
 import { NotasRicas } from '../../components/notas/NotasRicas';
 import { EditarEnSitio } from '../../components/cancionero/EditarEnSitio';
 import { FichaEnSitio } from '../../components/cancionero/FichaEnSitio';
+import { BotonWebs } from '../../components/cancionero/BotonWebs';
 import { notasVacias } from '../../lib/notas';
 
 export default function LeerCancion() {
@@ -402,16 +403,15 @@ function Lector({ cancion }: { cancion: Cancion }) {
                     </div>
                 )}
                 {/* Lo de quien canta, antes de entrar: el tono y la cuenta */}
-                {(!!tonoSuena || !!cancion.bpm) && (
-                    <div className="mt-3 flex items-center gap-2">
-                        {dameElTono('h-9 pl-1.5 pr-3.5 text-[14px]')}
-                        {botonClaqueta}
-                        {!sinAcordes && (
-                            <button onClick={() => verAcordes([...new Set(leida.acordes.map(a => nombreAcorde(a, opciones)))].slice(0, 30))}
-                                className="pulsable h-9 px-3.5 rounded-full bg-fill text-[14px] font-semibold text-foreground">Ver acordes</button>
-                        )}
-                    </div>
-                )}
+                <div className="mt-3 flex flex-wrap items-center gap-2">
+                    {(!!tonoSuena || !!cancion.bpm) && dameElTono('h-9 pl-1.5 pr-3.5 text-[14px]')}
+                    {(!!tonoSuena || !!cancion.bpm) && botonClaqueta}
+                    {!sinAcordes && (
+                        <button onClick={() => verAcordes([...new Set(leida.acordes.map(a => nombreAcorde(a, opciones)))].slice(0, 30))}
+                            className="pulsable h-9 px-3.5 rounded-full bg-fill text-[14px] font-semibold text-foreground">Ver acordes</button>
+                    )}
+                    <BotonWebs cancion={cancion} />
+                </div>
             </div>
 
             {/* La hoja */}
