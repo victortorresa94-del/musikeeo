@@ -253,7 +253,7 @@ export default function Cancionero() {
                     {canciones.length > 0 && (lista.length > 0 ? (
                         <>
                             <p className="mt-4 mb-1.5 px-1 flex items-center justify-between gap-2 text-[13px] font-semibold text-muted-foreground">
-                                Tu cancionero
+                                Tus canciones · {lista.length}
                                 <button onClick={() => setEditorLista({ lista: null })} className="text-foreground underline underline-offset-2">Guardar como lista</button>
                             </p>
                             {filas(lista)}

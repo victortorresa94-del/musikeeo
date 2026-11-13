@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState, useSyncExternalStore } from 'react';
+import { useEffect, useMemo, useRef, useState, useSyncExternalStore, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { AnimatePresence, motion } from 'framer-motion';
@@ -20,6 +20,17 @@ const suscribirRed = (f: () => void) => {
     return () => { window.removeEventListener('online', f); window.removeEventListener('offline', f); };
 };
 const hayRed = () => navigator.onLine;
+
+// El título de cada bloque al buscar: «Tus canciones · 3» encima de las tuyas y «En el
+// catálogo» encima de las de Apple (13-nov: Víctor no distinguía cuáles eran suyas)
+export function TituloResultados({ titulo, n, className, children }: { titulo: string; n?: number; className?: string; children?: ReactNode }) {
+    return (
+        <div className={cn('mb-1.5 px-1 flex items-center gap-2', className)}>
+            <p className="text-[13px] font-semibold text-muted-foreground">{titulo}{n !== undefined && ` · ${n}`}</p>
+            {children}
+        </div>
+    );
+}
 
 interface Busqueda { termino: string; resultados: CancionCatalogo[]; fallo?: MotivoFallo; otraVez?: boolean }
 
@@ -110,10 +121,9 @@ export function ResultadosCatalogo({ q, onElegida }: { q: string; onElegida?: (c
     if (termino.length < 2) return null;
 
     const cabecera = (
-        <div className="mt-6 mb-1.5 px-1 flex items-center gap-2">
-            <p className="text-[13px] font-semibold text-muted-foreground">En el catálogo</p>
+        <TituloResultados titulo="En el catálogo" className="mt-6">
             {buscando && enLinea && <Loader2 className="h-3.5 w-3.5 animate-spin text-muted-foreground" aria-label="Buscando" />}
-        </div>
+        </TituloResultados>
     );
 
     if (!enLinea) {

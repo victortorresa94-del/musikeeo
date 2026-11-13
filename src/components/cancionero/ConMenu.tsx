@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react';
+import { createContext, useCallback, useContext, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FileText } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -15,6 +15,14 @@ import type { Lista } from '../../types/cancionero';
 
 // Las tres vistas grandes del Cancionero (13-nov, Víctor: «canciones, repertorios y bolos»)
 export type VistaCancionero = 'canciones' | 'repertorios' | 'bolos' | 'tareas';
+
+// Una pantalla que en el ordenador ocupa el hueco del contenido, con los menús a la vista
+// (13-nov, «Añadir canciones»: a pantalla completa tapaba también el menú de la app). Se pinta
+// en `hueco` con un portal y, mientras está, la página de debajo se esconde (sin desmontarse)
+interface HuecoDelMenu { hueco: HTMLElement | null; tapar: (si: boolean) => void }
+const HuecoCtx = createContext<HuecoDelMenu | null>(null);
+// eslint-disable-next-line react-refresh/only-export-components
+export const useHuecoDelMenu = () => useContext(HuecoCtx);
 
 // En el ordenador (≥ 1024 px), el menú del Cancionero a la izquierda en todas sus páginas, como
 // en un gestor de música. En el móvil no se ve: allí cada página trae su manera de volver
@@ -38,7 +46,23 @@ export function ConMenu({ children, activo, onLista, onVer, onOpcionesLista, cla
     const irLista = onLista ?? ((id: string) => navigate(id === 'todas' ? '/cancionero' : `/cancionero?lista=${encodeURIComponent(id)}`));
     const irVer = onVer ?? ((v: VistaCancionero) => navigate(v === 'canciones' ? '/cancionero' : `/cancionero?ver=${v}`));
 
+    // El hueco: al taparse, la pantalla nueva empieza arriba; al cerrarla, la página vuelve
+    // donde estaba
+    const [hueco, setHueco] = useState<HTMLDivElement | null>(null);
+    const [tapado, setTapado] = useState(false);
+    const scrollAntes = useRef<number | null>(null);
+    const tapar = useCallback((si: boolean) => {
+        if (si && scrollAntes.current === null) scrollAntes.current = window.scrollY;
+        setTapado(si);
+    }, []);
+    useLayoutEffect(() => {
+        if (tapado) window.scrollTo(0, 0);
+        else if (scrollAntes.current !== null) { window.scrollTo(0, scrollAntes.current); scrollAntes.current = null; }
+    }, [tapado]);
+    const ctx = useMemo(() => ({ hueco, tapar }), [hueco, tapar]);
+
     return (
+        <HuecoCtx.Provider value={ctx}>
         <div className="lg:flex lg:items-start lg:gap-8 lg:max-w-[1360px] lg:mx-auto lg:px-6">
             {listo && (
                 <aside aria-label="Menú del cancionero" className="hidden lg:block w-[240px] shrink-0 sticky top-20 pt-6 pb-10 max-h-[calc(100vh-5rem)] overflow-y-auto hide-scrollbar">
@@ -79,10 +103,13 @@ export function ConMenu({ children, activo, onLista, onVer, onOpcionesLista, cla
                         onOpciones={l => (onOpcionesLista ? onOpcionesLista(l) : irLista(l.id))} />
                 </aside>
             )}
-            <div className={cn('lg:flex-1 lg:min-w-0', className)}>{children}</div>
+            <div className={cn('lg:flex-1 lg:min-w-0', tapado && 'md:hidden', className)}>{children}</div>
+            {/* En el móvil nunca se tapa: allí esas pantallas van a pantalla completa */}
+            <div ref={setHueco} className={tapado ? 'hidden md:block lg:flex-1 lg:min-w-0' : 'hidden'} />
             <ImportarCanciones abierto={importar} onCerrar={() => setImportar(false)} />
             <CompletarLetras abierta={completar} onCerrar={() => setCompletar(false)} />
             <EditorLista abierta={nueva} onCerrar={() => setNueva(false)} onCreada={l => irLista(l.id)} />
         </div>
+        </HuecoCtx.Provider>
     );
 }
