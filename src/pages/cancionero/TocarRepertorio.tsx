@@ -194,11 +194,8 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
         };
     }, [linea, actual, cerca]);
 
-    useEffect(() => {
-        if (!rodando || !controles) return;
-        const t = setTimeout(() => setControles(false), 2500);
-        return () => clearTimeout(t);
-    }, [rodando, controles]);
+    // La barra no se esconde sola al bajar la hoja: en el bolo todo tiene que estar a mano
+    // (Víctor: «todo en la misma pantalla»). Se esconde y se enseña tocando la hoja
 
     // Pedal Bluetooth y teclado: adelante baja la canción y, al final, pasa a la siguiente
     useEffect(() => {
@@ -319,7 +316,7 @@ function ControlesCancion({ cancion, visibles, rodando, auto, versos, linea, onL
             <div className="max-w-xl mx-auto">
                 {auto && <FilaAuto cancion={cancion} versos={versos} cambiar={cambiar} />}
                 <div className="flex items-center justify-between gap-1.5">
-                    <Paso compacto etiqueta="Tono" className="h-11" onMenos={() => cambiarTono(-1)} onMas={() => cambiarTono(1)} menosDesactivado={sinAcordes} masDesactivado={sinAcordes}
+                    <Paso grande etiqueta="Tono" onMenos={() => cambiarTono(-1)} onMas={() => cambiarTono(1)} menosDesactivado={sinAcordes} masDesactivado={sinAcordes}
                         valor={<>{tonoSuena || 'Tono'}{a.semitonos !== 0 && <span className="ml-1 text-[12px] text-muted-foreground">{a.semitonos > 0 ? '+' : ''}{a.semitonos}</span>}</>} />
                     {tonoSuena && (
                         <DameElTono leida={leida} ajustes={a} className="h-11 min-w-11 px-1.5 text-[13px] bg-fill text-foreground">
@@ -455,7 +452,7 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar, edita
             {!notasVacias(cancion.notas) && <NotasRicas json={cancion.notas} className="mt-3 text-[15px]" />}
             <div ref={zonaRef} data-hoja data-tamano={tamano} className="mt-3">
                 {editando
-                    ? <EditarEnSitio cancion={cancion} onGuardar={onGuardarTexto} onCerrar={onCerrarEdicion} className="[&>div:first-child]:top-[calc(env(safe-area-inset-top)+48px)]" />
+                    ? <EditarEnSitio cancion={cancion} onGuardar={onGuardarTexto} onCerrar={onCerrarEdicion} barraArriba="top-[calc(env(safe-area-inset-top)+48px)]" />
                     : <HojaCancion lineas={lineas} opciones={opciones} vista={a.vista} tamano={tamano} columnas={columnas} />}
             </div>
             {/* Copia invisible para medir, solo con «que quepa»: el tamaño y las columnas los pone buscarEncaje */}

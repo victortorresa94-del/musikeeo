@@ -2,13 +2,15 @@ import { Minus, Plus } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
 // Menos · valor · más, en una píldora
-export function Paso({ etiqueta, valor, onMenos, onMas, menosDesactivado, masDesactivado, compacto, className }: {
+export function Paso({ etiqueta, valor, onMenos, onMas, menosDesactivado, masDesactivado, compacto, grande, className }: {
     etiqueta: string; valor: React.ReactNode; onMenos: () => void; onMas: () => void;
-    menosDesactivado?: boolean; masDesactivado?: boolean; compacto?: boolean; className?: string;
+    menosDesactivado?: boolean; masDesactivado?: boolean; compacto?: boolean;
+    grande?: boolean;           // 44 px de dedo (en el escenario se falla menos)
+    className?: string;
 }) {
-    const boton = cn('pulsable h-9 rounded-full flex items-center justify-center text-foreground disabled:opacity-30', compacto ? 'w-8' : 'w-9');
+    const boton = cn('pulsable rounded-full flex items-center justify-center text-foreground disabled:opacity-30', grande ? 'h-11 w-10' : cn('h-9', compacto ? 'w-8' : 'w-9'));
     return (
-        <div className={cn('h-9 shrink-0 rounded-full bg-fill flex items-center', className)} role="group" aria-label={etiqueta}>
+        <div className={cn(grande ? 'h-11' : 'h-9', 'shrink-0 rounded-full bg-fill flex items-center', className)} role="group" aria-label={etiqueta}>
             <button type="button" onClick={onMenos} disabled={menosDesactivado} aria-label={`${etiqueta}: menos`} className={boton}>
                 <Minus className="h-4 w-4" />
             </button>
