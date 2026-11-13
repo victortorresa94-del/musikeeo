@@ -177,7 +177,19 @@ Project is in active development. Architecture is solid, marketplace sprint in p
   - probado con emuladores en iPhone 13 y en PC (`scripts/importar/catalogo.test.ts`, 15 casos).
 - **El bolo, aparte del repertorio** (`Bolo` en types, almacén `musikeeo-bolos-v1` / `users/{uid}/bolos`, regla `bolos`): título, fecha, lugar y dirección, sets (repertorios) con hora, horario, contacto y notas. Se crea en Repertorios → «Bolos» o desde un repertorio (⋯ → «Crear un bolo con este repertorio», que coge la hora del nombre). Editor `pages/cancionero/Bolo.tsx` (`/cancionero/bolo/:id`); compartir con `CompartirBolo` (la misma hoja que el repertorio, `HojaCompartir`); enlace `/bolo/{id}` que se actualiza solo (`lib/compartirBolo.ts`, en `compartidos/{id}`); los músicos ven `pages/cancionero/BoloGrupo.tsx`: panel con cómo llegar (Google/Apple/Waze, sin mapa incrustado), horario con los sets dentro, sets con su duración y hueco, contacto y notas, y cada set se abre con `VistaSet` de `Grupo.tsx`. La copia .json lleva los bolos. Pruebas: `scripts/importar/bolo.test.ts` (17; necesita `--define:import.meta.env={"MODE":"test"}`).
 
+- **Noche del 13-nov** (otra sesión, en `main`):
+  - la página del bolo (`/bolo/{id}`) sale en blanco;
+  - con la nube al día, «Compartir» da el enlace corto `/bolo/{id}` o `/grupo/{id}`;
+  - **extras** del repertorio (`Repertorio.extras`, la recámara): fuera del orden y de la duración; al final en Tocar, aparte en el enlace (`x`) y en la copia .json;
+  - «Añadir canciones» a pantalla completa (`ElegirParaSet.tsx`), agrupado por estilo, grupo, canta, tono, energía, estado o etiquetas, con «Al set / A extras»;
+  - `.github/workflows/reglas-firestore.yml` despliega las reglas solo, cuando exista el secreto `FIREBASE_SERVICE_ACCOUNT`.
+
 **❌ Pendiente:**
+- Víctor: crear el secreto `FIREBASE_SERVICE_ACCOUNT` en GitHub (clave de la cuenta de servicio de Firebase). Así las reglas se despliegan solas y el enlace sale corto.
+- Después del bolo (Víctor: «lo de feed y eso, lo último»):
+  - Mi perfil en el móvil: iconos 3D, secciones aparte, Cancionero destacado, bolos y Editar perfil como botones;
+  - quitar el contenido de demostración;
+  - botón «Instala Musikeeo».
 - Víctor:
   - borrar todo e importar `Mi-cancionero.json`; recuperar el orden de los sets con «Solo el orden» desde la copia de «Borrar todo»;
   - desplegar las reglas (`listas`, `compartidos`, `catalogo`, `bolos` y `ficha.extra` incluidas);
