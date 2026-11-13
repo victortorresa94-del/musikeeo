@@ -508,6 +508,15 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
   - **Probado:** en producción, 397 canciones, 2 repertorios y nada duplicado.
 - **Editar en el móvil y la cabecera de la canción** 🔧 (sesión 1): «Editar» a la vista, que «Editar ficha» funcione en el iPhone, las píldoras en una línea y «Falta la letra» plegado.
 
+## 21e. Tocar con todo a la vista y editar la canción ahí mismo (13-nov, víspera del bolo) 🔧
+
+*«Los botones que me importan son los del tamaño de letra, que quepa en la pantalla y todo eso. Lo de línea a línea… lo quisiera tener en la pantalla principal. Y lo de dame el tono puede ser un botón más pequeño. Me gustaría tenerlo todo en una misma pantalla. Igual que lo de bajar sola, que es un botón súper grande… para no tener que ir a los tres botoncitos. Y por defecto, en móvil, salen todas las letras y acordes súper gigantes. Y sigo sin poder editar: quiero hacer clic encima y editarla, como una nota, sin ir a otro menú, en vivo o no. Quiero darle a "Tono G" y cambiarle el tono, darle a "Lady Jarana" y cambiarla de grupo, que salga un desplegable, o a "Pop-rock"… Lo más importante para mí es poder editar todo el texto desde la misma vista principal, sin ir a otro menú y sin que se pierda el contexto ni el formato.»*
+
+- **Tocar, una sola barra** 🔧 (sesión 1): anterior · Aa− · Aa+ · que quepa · Línea a línea · Bajar sola · siguiente, más Tono ± y «Dame el tono» pequeño. En ⋯ solo lo que se toca poco.
+- **Tamaño por defecto en el móvil** 🔧 (sesión 1): «que quepa» con tope (unos 30 px en el móvil y 40 en tablet/PC), puesto en el cálculo para que valga también para lo ya guardado. Letra de 17-18 px al empezar.
+- **Editar el texto ahí mismo** 🔧 (sesión 2): `components/cancionero/EditarEnSitio.tsx`. El texto tal cual (acordes, partes y formato intactos), en el mismo sitio, con «Listo» y «Cancelar». Sirve sin red, y también desde Tocar (lo monta la sesión 1).
+- **La ficha en su sitio** 🔧 (sesión 2): tocar una píldora (Tono, Grupo, Estilo, Canta, Estado, Energía, Capo) abre un desplegable junto a ella, se guarda al elegir y se puede deshacer.
+
 ## 22. Datos de la BBDD a corregir ⏳
 
 Artistas mal en la BBDD:
