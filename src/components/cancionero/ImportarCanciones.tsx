@@ -100,6 +100,7 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
             titulo: c.titulo.slice(0, 120), artista: (c.artista ?? '').slice(0, 120), texto: c.texto ?? '', ficha: letra(c.texto ?? '') < 8,
             datos: c.ficha, bpm: c.bpm, duracion: c.duracion, portada: c.portada, version: c.version?.slice(0, 40),
             notas: aNotas(c.notas), favorita: c.favorita || undefined,
+            spotify: typeof c.spotify === 'string' && /^https:\/\/open\.spotify\.com\//.test(c.spotify) ? c.spotify.slice(0, 300) : undefined,
         }));
         // {tono: …} {canta: …} {grupo: …}: a la ficha del tema
         return (leerSetlist(texto) ?? separarCanciones(texto)).map(t => {
@@ -235,6 +236,7 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
             // Las notas que llegan se AÑADEN a las que había (sin repetir líneas)
             notas: t.notas ? unirNotas(c.notas, t.notas) : c.notas,
             favorita: c.favorita || t.favorita || undefined,
+            spotify: c.spotify ?? t.spotify,
         });
         try {
             ids = encontradas.map((t, i) => {

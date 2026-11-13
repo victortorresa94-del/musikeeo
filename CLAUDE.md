@@ -78,6 +78,7 @@ git push origin main  # triggers Vercel auto-deploy
 - VITE_FIREBASE_APP_ID
 - KIMI_API_KEY  ← server-side only (Vercel env), NO VITE_ prefix (acepta también MOONSHOT_API_KEY)
 - KIMI_MODEL    ← opcional; por defecto kimi-k2-turbo-preview. Ante 404 (cuenta sin acceso al modelo) se prueban kimi-k2-0905-preview → kimi-k2-0711-preview → kimi-latest → moonshot-v1-8k
+- VITE_SPOTIFY_CLIENT_ID ← opcional, pública (Client ID de la app de Spotify, PKCE sin secreto): «Crear playlist» en el repertorio. Redirect URIs: https://www.musikeeo.com/spotify y https://musikeeo.com/spotify
 - KIMI_BASE_URL ← opcional; si se fija se prueba primero. Ante 401 se prueban en orden api.moonshot.ai → api.moonshot.cn → api.kimi.com/coding (modelo kimi-for-coding) y se recuerda el que funcione
 
 ## Acceso
@@ -189,6 +190,7 @@ Project is in active development. Architecture is solid, marketplace sprint in p
   - «Concierto» en el horario del bolo con `hasta`, y la página del músico abre con la hora en grande (`cuandoSeToca`).
   - entre titulares y extras se mueve arrastrando o con la flecha de cada fila; A−/A+ en el editor en su sitio y letra más pequeña de serie;
   - **Tareas** (cuarta vista, `?ver=tareas`; `components/cancionero/Tareas.tsx`, `lib/tareas.ts`, almacén `musikeeo-tareas-v1` / `users/{uid}/tareas`, regla `tareas`): ensayar, aprender letra… con prioridad, canción (se une sola al nombrarla) y madre (repertorio o bolo); agrupadas por madre o prioridad; tachadas a «Hechas»; accesos desde canción, repertorio y bolo (`BotonTareas`, `FilaTareas`). Falta llevarlas en la copia .json.
+  - **Spotify** (`lib/spotify.ts`, `components/cancionero/Spotify.tsx`, `/spotify`): «Spotify» en cada canción (su pista o la búsqueda) y «Crear playlist en Spotify» en el repertorio (Web API con PKCE; el pedido viaja en el `state` para que la vuelta lo haga sola). Apunta `cancion.spotify` y `repertorio.spotify` (reglas y copia .json). Falta que Víctor cree la app de Spotify y ponga `VITE_SPOTIFY_CLIENT_ID`.
   - **Mi perfil** (sueño A, «Baldosas», `pages/profile/Profile.tsx`): baldosa grande del Cancionero con sus números y el próximo bolo, y seis baldosas pastel con objeto 3D (Mensajes, Calendario, Musikeers cerca, Mis bolos, Editar perfil, Ajustes; iconos en `public/images/perfil/` y `public/images/3d/`). «Mis bolos» es su pantalla (`/profile?ver=bolos`: los del Cancionero y los publicados); las pestañas quedan en Publicaciones y Anuncios.
 
 **❌ Pendiente:**

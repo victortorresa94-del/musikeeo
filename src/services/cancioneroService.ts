@@ -215,12 +215,12 @@ const siHay = <T extends object>(o: T) => Object.fromEntries(Object.entries(o).f
 
 export const almacenCanciones = crearAlmacen<Cancion>('musikeeo-cancionero-v1', 'canciones', c => ({
     titulo: c.titulo, artista: c.artista, texto: c.texto, ajustes: c.ajustes, creadaEn: c.creadaEn, actualizadaEn: c.actualizadaEn,
-    ...siHay({ portada: c.portada, duracion: c.duracion, muestra: c.muestra, bpm: c.bpm, ficha: c.ficha && siHay(c.ficha), version: c.version, original: c.original, notas: c.notas, favorita: c.favorita || undefined }),
+    ...siHay({ portada: c.portada, duracion: c.duracion, muestra: c.muestra, bpm: c.bpm, ficha: c.ficha && siHay(c.ficha), version: c.version, original: c.original, notas: c.notas, favorita: c.favorita || undefined, spotify: c.spotify }),
 }));
 
 export const almacenRepertorios = crearAlmacen<Repertorio>('musikeeo-repertorios-v1', 'repertorios', r => ({
     nombre: r.nombre, fecha: r.fecha, canciones: r.canciones, creadaEn: r.creadaEn, actualizadaEn: r.actualizadaEn,
-    ...siHay({ notas: r.notas, hueco: r.hueco, compartido: r.compartido && siHay(r.compartido), extras: r.extras?.length ? r.extras : undefined }),
+    ...siHay({ notas: r.notas, hueco: r.hueco, compartido: r.compartido && siHay(r.compartido), extras: r.extras?.length ? r.extras : undefined, spotify: r.spotify }),
 }));
 
 export const almacenListas = crearAlmacen<Lista>('musikeeo-listas-v1', 'listas', l => ({

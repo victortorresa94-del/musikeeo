@@ -13,6 +13,7 @@ export interface CancionImportada {
     version?: string;           // de una copia del cancionero: tu versión de la canción
     notas?: string;             // notas con formato (o texto) de una copia
     favorita?: boolean;         // ⭐ de una copia
+    spotify?: string;           // su pista en Spotify, de una copia
 }
 
 interface Tema { titulo: string; seccion?: string; tono?: string; cejilla?: number; notas: string[] }

@@ -30,7 +30,8 @@ service cloud.firestore {
       match /canciones/{cancionId} {
         allow read, delete: if isOwner(userId);
         allow create, update: if isOwner(userId)
-          && request.resource.data.keys().hasOnly(['titulo', 'artista', 'texto', 'ajustes', 'creadaEn', 'actualizadaEn', 'portada', 'duracion', 'muestra', 'bpm', 'ficha', 'version', 'original', 'notas', 'favorita'])
+          && request.resource.data.keys().hasOnly(['titulo', 'artista', 'texto', 'ajustes', 'creadaEn', 'actualizadaEn', 'portada', 'duracion', 'muestra', 'bpm', 'ficha', 'version', 'original', 'notas', 'favorita', 'spotify'])
+          && (!('spotify' in request.resource.data) || (request.resource.data.spotify is string && request.resource.data.spotify.size() <= 300))
           && (!('ficha' in request.resource.data) || (request.resource.data.ficha is map
             && request.resource.data.ficha.keys().hasOnly(['tono', 'capo', 'canta', 'proyectos', 'estilo', 'energia', 'estado', 'etiquetas', 'enlace', 'tonoAlt', 'extra'])
             && (!('extra' in request.resource.data.ficha) || (request.resource.data.ficha.extra is map && request.resource.data.ficha.extra.size() <= 40))))
@@ -59,7 +60,8 @@ service cloud.firestore {
       match /repertorios/{repertorioId} {
         allow read, delete: if isOwner(userId);
         allow create, update: if isOwner(userId)
-          && request.resource.data.keys().hasOnly(['nombre', 'fecha', 'canciones', 'creadaEn', 'actualizadaEn', 'notas', 'hueco', 'compartido', 'extras'])
+          && request.resource.data.keys().hasOnly(['nombre', 'fecha', 'canciones', 'creadaEn', 'actualizadaEn', 'notas', 'hueco', 'compartido', 'extras', 'spotify'])
+          && (!('spotify' in request.resource.data) || (request.resource.data.spotify is string && request.resource.data.spotify.size() <= 300))
           && (!('compartido' in request.resource.data) || (request.resource.data.compartido is map
                && request.resource.data.compartido.keys().hasOnly(['cifrado', 'letra'])))
           && request.resource.data.nombre is string && request.resource.data.nombre.size() <= 120

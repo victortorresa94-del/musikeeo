@@ -61,6 +61,7 @@ export interface Cancion {
     version?: string;
     original?: string;          // id de la canción de la que se hizo
     favorita?: boolean;         // ⭐ la versión que sale por defecto (al buscar y al añadir a un repertorio)
+    spotify?: string;           // la pista en Spotify (open.spotify.com/track/…), se apunta al crear una playlist
     // Notas con formato (títulos, negrita, colores, avisos, casillas): el JSON del editor, en texto
     notas?: string;
 }
@@ -137,6 +138,7 @@ export interface Repertorio {
     // Extras: «canciones que tengo en la recámara» (13-nov). A mano en el bolo, pero fuera del
     // orden y de la duración. Nunca a la vez en `canciones`
     extras?: string[];
+    spotify?: string;           // la playlist de este repertorio en Spotify
     notas?: string;             // la hoja del bolo, con formato (JSON del editor, en texto)
     hueco?: number;             // minutos que dura el hueco del bolo (para ver si te pasas)
     // El enlace del grupo que se actualiza solo: id de su copia pública (compartidos/{id}),
