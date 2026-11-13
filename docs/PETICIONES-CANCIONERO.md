@@ -684,21 +684,38 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
   - ⏳ **Víctor: conectar Spotify una vez** (5 min): developer.spotify.com/dashboard → Create app → Redirect URIs `https://www.musikeeo.com/spotify` y `https://musikeeo.com/spotify` → API: Web API → guardar; copiar el **Client ID** a Vercel como `VITE_SPOTIFY_CLIENT_ID` y volver a desplegar; en la app de Spotify, «User Management», añadir su correo de Spotify (y el de quien vaya a usarlo). Probado con un Spotify simulado.
 - *«también quiero que aparezcan las búsquedas recientes cuando busque una canción nueva»* → ✅ al tocar el buscador vacío (el del Cancionero y el de «Añadir canciones» del repertorio) salen las últimas 8: un toque la repite, la ✕ la quita, «Borrar» las borra todas. Cuenta lo que se deja escrito 1,5 s o con Intro (`hooks/useBusquedasRecientes.ts`, `components/cancionero/BusquedasRecientes.tsx`; en el móvil, por buscador).
 
-### 21p. Que no se borre nada, y lo que pidió en la víspera, de madrugada (13-nov, noche) 🔧
+### 21p. Que no se borre nada, y lo que pidió en la víspera, de madrugada (13-nov, noche) ✅ en musikeeo.com
 
-- *«yo había puesto unos apuntes en mi canción de Marcha y ahora he entrado y se han borrado la mitad»* → ✅ en musikeeo.com (84cceee). La causa, reproducida con dos aparatos:
+- *«yo había puesto unos apuntes en mi canción de Marcha y ahora he entrado y se han borrado la mitad»* → ✅ (84cceee). La causa, reproducida con dos aparatos:
   - un aparato abierto desde hacía rato guardaba su copia vieja ENTERA, letra incluida, al tocar cualquier ajuste (tono, A−/A+, zoom, «que quepa»);
   - eso pisaba lo escrito en el otro.
   - Ahora el cancionero se pone al día al volver a la app, al recuperar la red y cada minuto (`refrescar` en `crearAlmacen`, solo lo cambiado).
   - Cada letra que se reemplaza (al editar, al llegar de otro aparato o al importar) queda guardada en el aparato (`services/versionesService.ts`, IndexedDB): Más → «Versiones anteriores de la letra», con lo que ahora no está en verde y «Recuperar esta» (`components/cancionero/VersionesAnteriores.tsx`).
   - Lo perdido ANTES de esto no tiene copia: si escribió parte en el otro aparato, puede que siga allí.
-- *«4dfe10b3356a419d995f1fcd74207b0f client id»* → ✅ `VITE_SPOTIFY_CLIENT_ID` puesto en Vercel (producción y pruebas).
-  - *«yo quiero que mis músicos puedan hacerlo»*: Spotify solo deja 5 cuentas en modo desarrollo, así que los músicos no conectan nada. Escuchan con el enlace de la playlist, que va en la página del grupo y del bolo (🔧 agente).
-- *«Quiero poder enviar también un repertorio o una canción, aunque no sea bolo… una pantalla solo para reper o X canciones, y otra para enviar solo una canción a alguien con quien vas a cantar»* → 🔧 agente.
-- *«quiero poder elegir los iconos del reper»* → 🔧 agente.
-- *«cuando en un reper nuevo quiero añadir una canción nueva… desaparece el menú y todo»* (PC) y *«cuando busco deberían diferenciarse "mis canciones" o todas»* → 🔧 agente.
-- La caída al editar la ficha de «Oye Cómo Va» abierta desde el catálogo y el *«pedazo de formulario gigante»* (con su skill de Aura Storage) → 🔧 agente.
-- *«que se reproduzcan y vaya con los acordes bajando»* (como GuitarTuna) → 🔧 agente (YouTube en la canción, motor en `lib/seguir.ts`).
+- *«4dfe10b3356a419d995f1fcd74207b0f client id»* → ✅ `VITE_SPOTIFY_CLIENT_ID` en Vercel. *«a mí no me funciona»* → ✅ Spotify cambió su API en febrero de 2026: crear es `POST /me/playlists` y añadir `/playlists/{id}/items`; la playlist nace pública; los errores dicen el motivo (ee468ec).
+- *«yo quiero que mis músicos puedan hacerlo»* / *«que todos podamos crear la playlist con el repertorio»* → ✅ con un límite que no es nuestro:
+  - **El botón directo:** Spotify solo deja 5 cuentas en modo desarrollo y quien creó la app necesita Premium; abrirlo a todos pide ser empresa con ~250.000 usuarios al mes.
+  - **Para todos (af7df04):** «Hacerla en mi Spotify» copia la lista y abre TuneMyMusic (el servicio con el que Spotify importa), en la hoja de Spotify y en la página de los músicos.
+  - **Escuchar y enviar:** los músicos tienen «Escuchar en Spotify» con la playlist e icono de Spotify en cada canción; el repertorio tiene «Enviar a los músicos».
+- *«cuando estoy dentro una canción y le doy a atrás, me lleva al menú principal»* → ✅ vuelve a donde estabas (repertorio con su nombre, lista con filtros, búsqueda) (6087c91).
+- *«Quiero poder enviar también un repertorio o una canción, aunque no sea bolo… y otra para enviar solo una canción a alguien»* → ✅ «Enviar» en Canciones → Elegir (varias, sin crear repertorio) y en cada canción (con letra o solo acordes; el enlace abre la canción directa).
+- *«quiero poder elegir los iconos del reper»* → ✅ 21 iconos 3D o «Automático» (tocar el icono de la cabecera, o ⋯ → «Cambiar el icono»); sale en todas partes y en la página del bolo.
+- *«cuando en un reper nuevo quiero añadir una canción nueva… desaparece el menú y todo»* (PC) → ✅ ocupa el hueco del contenido, con los menús a la vista. *«deberían diferenciarse "mis canciones" o todas»* → ✅ «Tus canciones · N» encima de «En el catálogo», y «2 tuyas más fuera del filtro · Ver todas». El botón del catálogo dice «Al set» / «A extras».
+- *«en la página compartida del bolo… pone "lista", no se entiende»* → ✅ «‹ nombre del set» y «‹ El bolo».
+- *«la vista cifrado… es para ver los acordes en modo rápido… que la app lo muestre en automático… eso debería ser una 3ª vista "detalle"»* → ✅ (379cd18):
+  - **Cifrado** es la chuleta: cada parte en una línea con sus acordes y «(xN)», y el orden de la canción.
+  - **Las partes salen solas** (`lib/estructura.ts`, aproximado): la letra que vuelve es el estribillo; lo que va sin letra al principio, la intro, y al final, el final; una parte que sale una vez tras el estribillo, el puente. Las chuletas hechas a mano no se tocan.
+  - **Detalle** es la canción entera con letra: en el repertorio y en la página de los músicos, si el enlace la lleva.
+- *«falta poder elegir a qué hora termina el bolo»* → ✅ cada set: «De 12:30 a 13:30»; los músicos ven esa hora sin «aprox.».
+- La caída al editar la ficha de «Oye Cómo Va» → ✅ (0cbbb97):
+  - **Causa más probable:** las cinco publicaciones seguidas de esa noche dejaron la página abierta sin el trozo de código del editor.
+  - **Arreglos:** se precarga al abrir la canción, la ficha no tumba la app y el móvil guarda 5 versiones de la app en vez de 2 (7e1f011).
+  - **Otro fallo que borraba datos, encontrado de paso:** editar en su sitio y luego abrir la ficha borraba lo escrito al guardar; corregido.
+- El *«pedazo de formulario gigante»* → ✅ por bloques (Lo básico · La música · Para el bolo · Enlaces · Letra y acordes · Notas), con saltos arriba y «Guardar» siempre a mano (fb02a0f). La skill de formularios no estaba en Aura Storage; se usaron las de organizar información que subió ese día.
+- *«que se reproduzcan y vaya con los acordes bajando»* → ✅ «Escuchar»:
+  - con el vídeo de YouTube, la hoja baja con la canción y la línea que suena se resalta;
+  - tocar una línea la clava a ese segundo.
+  - Reproductor a 200×200 (mínimo de YouTube). Sin probar con un vídeo de verdad en el iPhone.
 
 ## 22. Datos de la BBDD a corregir ⏳
 
