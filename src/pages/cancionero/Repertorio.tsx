@@ -139,13 +139,38 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     };
     const alSet = (id: string) => {
         cambiar({ canciones: [...repertorio.canciones.filter(c => c !== id), id], extras: (repertorio.extras ?? []).filter(c => c !== id) });
-        toast(`«${porId.get(id)?.titulo}» al final del set`, { action: { label: 'Deshacer', onClick: () => guardarRepertorio(repertorio) } });
+        toast(`«${porId.get(id)?.titulo}» a titulares (al final)`, { action: { label: 'Deshacer', onClick: () => guardarRepertorio(repertorio) } });
+    };
+    // Una sola lista que se arrastra: titulares · raya «Extras» · extras. Lo que queda por encima de
+    // la raya es el set y lo de debajo, la recámara (13-nov, Víctor: «quiero poder mover de extras a
+    // titulares y viceversa»). Lo que no está en el móvil (otra cuenta) se conserva al final
+    const reordenar = (orden: string[]) => {
+        const corte = orden.indexOf(RAYA_EXTRAS);
+        if (corte < 0) return;
+        const ocultasSet = repertorio.canciones.filter(c => !porId.has(c));
+        const ocultasExtras = (repertorio.extras ?? []).filter(c => !porId.has(c));
+        guardarRepertorio({ ...repertorio, canciones: [...orden.slice(0, corte), ...ocultasSet], extras: [...orden.slice(corte + 1), ...ocultasExtras] }, { esperar: true });
     };
     const quitarExtra = (id: string) => {
         cambiar({ extras: (repertorio.extras ?? []).filter(c => c !== id) });
         toast(`«${porId.get(id)?.titulo}» fuera de extras`, { action: { label: 'Deshacer', onClick: () => guardarRepertorio(repertorio) } });
     };
     const cerrarAnadir = useCallback(() => setAnadir(false), []);
+    // En la vista Lista, titulares y extras van en una sola lista que se arrastra
+    const listaUnida = vista === 'lista' && ids.length + extras.length > 0;
+    const botonesAnadir = (
+        <>
+            {listaUnida && !ids.length && <p className="mt-2 rounded-2xl bg-fill px-4 py-6 text-center text-[15px] text-muted-foreground">Añade las canciones en el orden en que las vas a tocar, o sube aquí una de extras.</p>}
+            <div className="mt-3 flex flex-wrap gap-2">
+                <button onClick={() => setAnadir('set')} className="pulsable h-9 px-4 rounded-full bg-foreground text-background text-[14px] font-semibold flex items-center gap-1.5">
+                    <Plus className="h-4 w-4" /> Añadir canciones
+                </button>
+                <Link to={`/cancionero/nueva?repertorio=${repertorio.id}`} className="pulsable h-9 px-4 rounded-full bg-fill text-foreground text-[14px] font-semibold flex items-center gap-1.5">
+                    Nueva canción
+                </Link>
+            </div>
+        </>
+    );
 
     const tocar = (n = 0) => {
         pedirPantallaCompleta();
@@ -312,10 +337,10 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                 </div>
             ) : ids.length > 0 && vista === 'cifrado' ? (
                 <HojaSet temas={temasCifrado} tamano={17} formas={formas} ancho onAbrir={i => abrirDesdeCifrado(i, false)} className="mt-2" />
-            ) : ids.length > 0 ? (
+            ) : vista === 'lista' && ids.length + extras.length > 0 ? (
                 // En un ordenador ancho (≥ 1280 px), al lado de la lista va el panel de la canción elegida
                 <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(340px,420px)] xl:gap-6 xl:items-start">
-                <Reorder.Group axis="y" values={ids} onReorder={orden => guardarRepertorio({ ...repertorio, canciones: orden }, { esperar: true })}
+                <Reorder.Group axis="y" values={[...ids, RAYA_EXTRAS, ...extras]} onReorder={reordenar}
                     className="mt-2">
                     {ids.map((id, i) => {
                         // El bloque del bolo sale encima de su primer tema
@@ -323,39 +348,44 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                         const nuevoBloque = bloque && (i === 0 || bloque !== bloqueDe(porId.get(ids[i - 1])!)) ? bloque : null;
                         return (
                             <Fila key={id} id={id} repertorioId={repertorio.id} n={i + 1} cancion={porId.get(id)!} tono={tonos[i]} bloque={nuevoBloque} mismoTono={repetidos.has(i)}
-                                onQuitar={() => quitar(id)} onAExtras={() => aExtras(id)} onTocar={() => tocar(i)}
+                                onQuitar={() => quitar(id)} onCambiarLado={() => aExtras(id)} onTocar={() => tocar(i)}
+                                elegida={enPanel === id} onElegir={() => setPanel(id)} />
+                        );
+                    })}
+                    {/* La raya: no se arrastra; lo que se suelta debajo pasa a extras y lo de encima, a titulares */}
+                    <Reorder.Item value={RAYA_EXTRAS} dragListener={false} className="relative bg-background">
+                        {botonesAnadir}
+                        <CabeceraExtras n={extras.length} className="mt-8" />
+                        {!extras.length && <p className="mt-2 px-1 text-[14px] text-muted-foreground">Arrastra aquí una canción por el asa, o pásala con su flecha ↓. Salen al final en Tocar y en el enlace del grupo.</p>}
+                    </Reorder.Item>
+                    {extras.map((id, j) => {
+                        const c = porId.get(id)!;
+                        return (
+                            <Fila key={id} id={id} repertorioId={repertorio.id} n={ids.length + j + 1} cancion={c} tono={tonoMostrado(c, tonoDe(c))} bloque={null} extra
+                                onQuitar={() => quitarExtra(id)} onCambiarLado={() => alSet(id)} onTocar={() => tocar(ids.length + j)}
                                 elegida={enPanel === id} onElegir={() => setPanel(id)} />
                         );
                     })}
                 </Reorder.Group>
                 {porId.get(enPanel) && (
-                    <PanelCancion cancion={porId.get(enPanel)!} tono={tonos[ids.indexOf(enPanel)] ?? null}
-                        onTocar={() => tocar(Math.max(0, ids.indexOf(enPanel)))} />
+                    <PanelCancion cancion={porId.get(enPanel)!} tono={ids.includes(enPanel) ? tonos[ids.indexOf(enPanel)] ?? null : tonoMostrado(porId.get(enPanel)!, tonoDe(porId.get(enPanel)!))}
+                        onTocar={() => tocar(ids.includes(enPanel) ? ids.indexOf(enPanel) : extras.includes(enPanel) ? ids.length + extras.indexOf(enPanel) : 0)} />
                 )}
                 </div>
             ) : (
                 <p className="mt-6 rounded-2xl bg-fill px-4 py-6 text-center text-[15px] text-muted-foreground">Añade las canciones en el orden en que las vas a tocar.</p>
             )}
 
-            <div className="mt-3 flex flex-wrap gap-2">
-                <button onClick={() => setAnadir('set')} className="pulsable h-9 px-4 rounded-full bg-foreground text-background text-[14px] font-semibold flex items-center gap-1.5">
-                    <Plus className="h-4 w-4" /> Añadir canciones
+            {listaUnida ? (
+                <button onClick={() => setAnadir('extras')} className="pulsable mt-3 h-9 px-4 rounded-full bg-fill text-foreground text-[14px] font-semibold flex items-center gap-1.5">
+                    <Plus className="h-4 w-4" /> Añadir extras
                 </button>
-                <Link to={`/cancionero/nueva?repertorio=${repertorio.id}`} className="pulsable h-9 px-4 rounded-full bg-fill text-foreground text-[14px] font-semibold flex items-center gap-1.5">
-                    Nueva canción
-                </Link>
-            </div>
+            ) : <>
+            {botonesAnadir}
 
             {/* Extras: las canciones en la recámara. A mano en el bolo, fuera del orden y de la duración */}
             <section className="mt-8" aria-label="Extras">
-                <div className="relative min-h-[68px] rounded-[18px] overflow-hidden flex items-center pl-4 pr-[96px] py-2 bg-pastel-cielo">
-                    <span className="min-w-0">
-                        <span className="block font-heading text-[19px] font-bold leading-tight text-foreground">Extras{extras.length ? ` · ${extras.length}` : ''}</span>
-                        <span className="block text-[13px] font-semibold text-pastel-cielo-ink">En la recámara · no cuentan en la duración</span>
-                    </span>
-                    <img src={ICONO.repertorios} alt="" aria-hidden draggable={false}
-                        className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-[64px] w-[84px] object-contain drop-shadow-[0_6px_8px_rgba(0,0,0,0.16)]" />
-                </div>
+                <CabeceraExtras n={extras.length} />
                 {extras.length > 0 ? (
                     <div className="mt-1">
                         {extras.map((id, j) => {
@@ -372,9 +402,9 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                                         )}
                                     </Link>
                                     {t && <span className="shrink-0 min-w-[36px] h-7 px-2.5 rounded-full bg-fill-strong text-[13px] font-bold text-foreground flex items-center justify-center">{t}</span>}
-                                    <button onClick={() => alSet(id)} aria-label={`Pasar ${c.titulo} al set`}
+                                    <button onClick={() => alSet(id)} aria-label={`Pasar ${c.titulo} a titulares`}
                                         className="shrink-0 h-8 px-2.5 rounded-full bg-fill text-[13px] font-semibold text-foreground flex items-center gap-1 active:opacity-60">
-                                        <ArrowUpToLine className="h-4 w-4" /> Al set
+                                        <ArrowUpToLine className="h-4 w-4" /> A titulares
                                     </button>
                                     <button onClick={() => quitarExtra(id)} aria-label={`Quitar ${c.titulo} de extras`}
                                         className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-muted-foreground active:bg-fill"><X className="h-4 w-4" /></button>
@@ -389,6 +419,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                     <Plus className="h-4 w-4" /> Añadir extras
                 </button>
             </section>
+            </>}
 
             <button onClick={borrar} className="mt-10 h-11 px-1 flex items-center gap-2 text-[15px] text-destructive active:opacity-60">
                 <Trash2 className="h-4 w-4" /> Borrar repertorio
@@ -440,9 +471,10 @@ function Hueco({ minutos: hueco, segundos, estimada, onCambio }: { minutos?: num
     );
 }
 
-function Fila({ id, repertorioId, n, cancion, tono, bloque, mismoTono, onQuitar, onAExtras, onTocar, elegida, onElegir }: {
-    id: string; repertorioId: string; n: number; cancion: Cancion; tono: string | null; bloque: string | null; mismoTono?: boolean; onQuitar: () => void; onAExtras: () => void; onTocar: () => void;
+function Fila({ id, repertorioId, n, cancion, tono, bloque, mismoTono, onQuitar, onCambiarLado, onTocar, elegida, onElegir, extra }: {
+    id: string; repertorioId: string; n: number; cancion: Cancion; tono: string | null; bloque: string | null; mismoTono?: boolean; onQuitar: () => void; onCambiarLado: () => void; onTocar: () => void;
     elegida?: boolean; onElegir?: () => void;
+    extra?: boolean;            // en la recámara: sin número (no es del orden) y su flecha sube a titulares
 }) {
     const arrastre = useDragControls();
     const [abierta, setAbierta] = useState(false);
@@ -463,9 +495,9 @@ function Fila({ id, repertorioId, n, cancion, tono, bloque, mismoTono, onQuitar,
                 className="h-11 w-9 shrink-0 flex items-center justify-center text-muted-foreground touch-none cursor-grab">
                 <GripVertical className="h-5 w-5" />
             </button>
-            {/* El número arranca el bolo desde este tema */}
+            {/* El número arranca el bolo desde este tema (un extra no tiene número: no es del orden) */}
             <button onClick={onTocar} aria-label={`Tocar desde ${cancion.titulo}`}
-                className="h-9 w-7 shrink-0 rounded-full text-[13px] font-semibold text-muted-foreground tabular-nums active:bg-fill">{n}</button>
+                className="h-9 w-7 shrink-0 rounded-full flex items-center justify-center text-[13px] font-semibold text-muted-foreground tabular-nums active:bg-fill">{extra ? <Play className="h-4 w-4" /> : n}</button>
             <Link to={`/cancionero/${cancion.id}?repertorio=${repertorioId}`}
                 className="flex-1 min-w-0 py-2.5 flex items-center gap-3 active:opacity-60">
                 {/* En el móvil sin portada: el número ya dice cuál es y el título necesita el sitio */}
@@ -493,8 +525,14 @@ function Fila({ id, repertorioId, n, cancion, tono, bloque, mismoTono, onQuitar,
                         mismoTono ? cn(PASTEL.melocoton.fondo, PASTEL.melocoton.tinta) : 'bg-fill-strong text-foreground')}>{tono}</span>
             )}
             <BotonDesplegar abierta={abierta} onClick={() => setAbierta(a => !a)} titulo={cancion.titulo} />
+            {/* Al otro lado: titulares ↓ extras, extras ↑ titulares (también arrastrando por el asa) */}
+            <button onClick={onCambiarLado} aria-label={extra ? `Pasar ${cancion.titulo} a titulares` : `Pasar ${cancion.titulo} a extras`}
+                title={extra ? 'A titulares' : 'A extras'}
+                className={cn('flex h-9 w-7 sm:w-9 shrink-0 rounded-full items-center justify-center active:bg-fill', extra ? 'text-foreground' : 'text-pastel-cielo-ink')}>
+                {extra ? <ArrowUpToLine className="h-4 w-4" /> : <ArrowDownToLine className="h-4 w-4" />}
+            </button>
             {/* Quitar, siempre a la vista (13-nov: en el móvil vivía escondida al desplegar y no se encontraba) */}
-            <button onClick={onQuitar} aria-label={`Quitar ${cancion.titulo} del repertorio`} className="flex h-9 w-7 sm:w-9 shrink-0 rounded-full items-center justify-center text-muted-foreground active:bg-fill">
+            <button onClick={onQuitar} aria-label={extra ? `Quitar ${cancion.titulo} de extras` : `Quitar ${cancion.titulo} del repertorio`} className="flex h-9 w-7 sm:w-9 shrink-0 rounded-full items-center justify-center text-muted-foreground active:bg-fill">
                 <X className="h-4 w-4" />
             </button>
             </div>
@@ -502,16 +540,32 @@ function Fila({ id, repertorioId, n, cancion, tono, bloque, mismoTono, onQuitar,
                 <div className="border-b border-hairline">
                     <PanelAcordes cancion={cancion} />
                     <div className="mx-3 mb-3 flex flex-wrap gap-2">
-                        <button onClick={onAExtras} className="h-9 px-3.5 rounded-full bg-pastel-cielo text-pastel-cielo-ink text-[14px] font-semibold flex items-center gap-1.5">
-                            <ArrowDownToLine className="h-4 w-4" /> Pasar a extras
+                        <button onClick={onCambiarLado} className="h-9 px-3.5 rounded-full bg-pastel-cielo text-pastel-cielo-ink text-[14px] font-semibold flex items-center gap-1.5">
+                            {extra ? <><ArrowUpToLine className="h-4 w-4" /> Pasar a titulares</> : <><ArrowDownToLine className="h-4 w-4" /> Pasar a extras</>}
                         </button>
                         <button onClick={onQuitar} className="h-9 px-3.5 rounded-full bg-fill text-[14px] font-semibold text-destructive flex items-center gap-1.5">
-                            <X className="h-4 w-4" /> Quitar del repertorio
+                            <X className="h-4 w-4" /> {extra ? 'Quitar de extras' : 'Quitar del repertorio'}
                         </button>
                     </div>
                 </div>
             )}
         </Reorder.Item>
+    );
+}
+
+// La raya que separa titulares de extras en la lista que se arrastra
+const RAYA_EXTRAS = '__extras__';
+
+function CabeceraExtras({ n, className }: { n: number; className?: string }) {
+    return (
+        <div className={cn('relative min-h-[68px] rounded-[18px] overflow-hidden flex items-center pl-4 pr-[96px] py-2 bg-pastel-cielo', className)}>
+            <span className="min-w-0">
+                <span className="block font-heading text-[19px] font-bold leading-tight text-foreground">Extras{n ? ` · ${n}` : ''}</span>
+                <span className="block text-[13px] font-semibold text-pastel-cielo-ink">En la recámara · no cuentan en la duración</span>
+            </span>
+            <img src={ICONO.repertorios} alt="" aria-hidden draggable={false}
+                className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-[64px] w-[84px] object-contain drop-shadow-[0_6px_8px_rgba(0,0,0,0.16)]" />
+        </div>
     );
 }
 

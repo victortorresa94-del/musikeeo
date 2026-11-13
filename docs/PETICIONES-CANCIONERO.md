@@ -667,6 +667,7 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
   - Probado sin red con la versión de publicar en un iPhone simulado.
 - *«en las opciones predeterminadas para el horario del bolo… debería salir obviamente concierto»* → ✅ «+ Concierto», el primero, ya con la hora del primer set y, si tiene hueco, la de acabar; el concierto lleva «hasta» (`HoraBolo.hasta`).
 - *«en la página que comparto a los músicos debería destacar mucho más el horario… que ponga más grande de 12:30 a 13:30»* → ✅ tarjeta negra arriba: «CONCIERTO · 12:30 – 13:30» en grande (`cuandoSeToca`); sin «Concierto» en el horario, cada set con su hora (con hueco, exacta; si no, «acaba hacia esa hora»).
+- *«quiero poder mover de extras a titulares y viceversa»* → ✅ en la vista Lista, titulares y extras son UNA lista que se arrastra por el asa: lo que se suelta debajo de la raya «Extras» pasa a la recámara y lo de encima, a titulares. Cada fila lleva además su flecha a la vista (↓ a extras, ↑ a titulares) con Deshacer. Los extras van sin número (no son del orden) y con ▷ para tocar desde ahí.
 
 ## 22. Datos de la BBDD a corregir ⏳
 
