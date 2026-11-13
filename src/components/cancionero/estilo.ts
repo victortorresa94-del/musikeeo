@@ -83,6 +83,40 @@ export function iconoRepertorio(nombre: string): string {
     return BLOQUES.find(([re]) => re.test(nombre))?.[2] ?? ICONO.repertorios;
 }
 
+// Los iconos 3D que se pueden poner a un repertorio (13-nov, Víctor: «quiero poder elegir los
+// iconos del reper»). Solo objetos sueltos, sin fondo: van encima del pastel del repertorio
+export const ICONOS_REPERTORIO: { src: string; nombre: string }[] = [
+    { src: ICONO.repertorios, nombre: 'Repertorio' },
+    { src: ICONO.canciones, nombre: 'Micro' },
+    { src: '/images/3d/cantante.webp', nombre: 'Cantante' },
+    { src: '/images/3d/banda.webp', nombre: 'Banda' },
+    { src: ICONO.escenario, nombre: 'Escenario' },
+    { src: ICONO.pop, nombre: 'Eléctrica' },
+    { src: ICONO.rumba, nombre: 'Rumba' },
+    { src: ICONO.latino, nombre: 'Maracas' },
+    { src: '/images/3d/violinista.webp', nombre: 'Violín' },
+    { src: '/images/3d/boda.webp', nombre: 'Anillos' },
+    { src: ICONO.boda, nombre: 'Boda' },
+    { src: '/images/3d/dj.webp', nombre: 'DJ' },
+    { src: '/images/3d/tocadiscos.webp', nombre: 'Vinilo' },
+    { src: '/images/3d/altavoz.webp', nombre: 'Altavoz' },
+    { src: '/images/3d/mesa.webp', nombre: 'Mesa' },
+    { src: ICONO.escuchar, nombre: 'Cascos' },
+    { src: ICONO.claqueta, nombre: 'Metrónomo' },
+    { src: ICONO.tono, nombre: 'Diapasón' },
+    { src: ICONO.bolos, nombre: 'Calendario' },
+    { src: '/images/perfil/mapa.webp', nombre: 'Gira' },
+    { src: ICONO.importar, nombre: 'Carpeta' },
+];
+
+// Una ruta de un icono de la app (lo que llega de una copia o de la nube no se pinta a ciegas)
+export const esIconoDeApp = (x: unknown): x is string =>
+    typeof x === 'string' && x.length <= 200 && /^\/images\/[\w/-]+\.(webp|png|jpe?g|svg)$/i.test(x);
+
+// El icono de un repertorio: el que se eligió o, si no, el de su nombre
+export const iconoDeRepertorio = (r: { nombre: string; icono?: string }): string =>
+    esIconoDeApp(r.icono) ? r.icono : iconoRepertorio(r.nombre);
+
 const NO_ES_BLOQUE = /^(intro|estrofa|verso|coro|estribillo|pre|puente|solo|final|outro|interludio|riff|letra|instrumental)\b/i;
 
 // Las líneas de la cabecera de la ficha: hasta la primera línea en blanco

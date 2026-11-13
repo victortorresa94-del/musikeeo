@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom';
 import { ChevronRight, Play } from 'lucide-react';
 import { cn } from '../../lib/utils';
-import { ICONO, iconoRepertorio, type Pastel } from './estilo';
+import { ICONO, iconoDeRepertorio, type Pastel } from './estilo';
 import type { Repertorio } from '../../types/cancionero';
 
 // Una baldosa como las de Explorar: el objeto 3D sobre su pastel y el nombre debajo
@@ -35,7 +35,7 @@ export function TarjetaBolo({ repertorio, etiqueta, temas, fecha, onTocar }: {
                     <Play className="h-4 w-4 fill-current" /> Tocar
                 </button>
             </div>
-            <img src={iconoRepertorio(repertorio.nombre)} alt="" draggable={false}
+            <img src={iconoDeRepertorio(repertorio)} alt="" draggable={false}
                 className="pointer-events-none absolute bottom-2 right-2 h-[128px] w-[40%] object-contain object-bottom drop-shadow-[0_10px_12px_rgba(0,0,0,0.18)]" />
         </div>
     );

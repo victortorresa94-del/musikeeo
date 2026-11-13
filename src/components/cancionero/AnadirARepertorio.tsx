@@ -5,7 +5,7 @@ import { toast } from 'sonner';
 import { ChevronRight, Plus } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
-import { iconoRepertorio, pastelDe } from './estilo';
+import { iconoDeRepertorio, pastelDe } from './estilo';
 import { BotonHoja, Hoja } from './Hoja';
 
 const fechaCorta = (f: string) => {
@@ -80,7 +80,7 @@ export function AnadirARepertorio({ abierta, onCerrar, ids, onHecho }: {
                                 return (
                                     <button key={r.id} onClick={() => aExistente(r.id)} className="w-full flex items-center gap-3 px-3 min-h-[60px] py-2 text-left active:bg-fill-strong">
                                         <span className={cn('h-10 w-10 shrink-0 rounded-[11px] flex items-center justify-center', pastelDe(r.id).fondo)}>
-                                            <img src={iconoRepertorio(r.nombre)} alt="" loading="lazy" className="h-8 w-8 object-contain" />
+                                            <img src={iconoDeRepertorio(r)} alt="" loading="lazy" className="h-8 w-8 object-contain" />
                                         </span>
                                         <span className="flex-1 min-w-0">
                                             <span className="block truncate text-[15.5px] font-semibold text-foreground">{r.nombre}</span>
