@@ -24,6 +24,7 @@ import { cn as unir } from '../../lib/utils';
 import { cejillaDeFicha, versionesDe } from '../../lib/biblioteca';
 import { NotasRicas } from '../../components/notas/NotasRicas';
 import { EditarEnSitio } from '../../components/cancionero/EditarEnSitio';
+import { precargarEditorLetra } from '../../components/cancionero/cargarEditorLetra';
 import { FichaEnSitio } from '../../components/cancionero/FichaEnSitio';
 import { BotonWebs } from '../../components/cancionero/BotonWebs';
 import { notasVacias } from '../../lib/notas';
@@ -69,6 +70,8 @@ function Lector({ cancion }: { cancion: Cancion }) {
     const [versionando, setVersionando] = useState(false);
     // Editando el texto ahí mismo: la línea donde se tocó y a qué altura de la pantalla estaba
     const [editando, setEditando] = useState<{ linea: number; y: number | null } | null>(null);
+    // El editor de la letra, listo antes de tocarla (en el iPhone, así se abre el teclado al momento)
+    useEffect(() => { precargarEditorLetra(); }, []);
     // Abierta desde un repertorio: «Guardar como canción nueva» la pone en su sitio en ese repertorio
     const [params] = useSearchParams();
     const desdeRepertorio = params.get('repertorio');
@@ -311,15 +314,6 @@ function Lector({ cancion }: { cancion: Cancion }) {
             if (antes !== null && ahora !== undefined && ahora !== antes) window.scrollBy({ top: ahora - antes });
         });
     };
-    // Al abrir, la línea tocada se queda donde estaba el dedo
-    useLayoutEffect(() => {
-        if (!editando || editando.y === null) return;
-        const area = zonaRef.current?.querySelector('textarea');
-        if (!area) return;
-        const alto = parseFloat(getComputedStyle(area).lineHeight) || 23;
-        const y = area.getBoundingClientRect().top + 12 + editando.linea * alto;
-        window.scrollBy({ top: y - editando.y });
-    }, [editando]);
 
     const hoja = (ref?: React.Ref<HTMLDivElement>, className?: string) => (
         <HojaCancion ref={ref} lineas={leida.lineas} opciones={opciones} vista={ajustes.vista}
@@ -440,7 +434,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                 <div ref={zonaRef} className={cn(ajustes.ajustar && !editando && 'min-h-[100dvh]')}
                     onClick={editando || rodando ? undefined : alTocarHoja}>
                     {editando ? (
-                        <EditarEnSitio cancion={cancion} lineaInicial={editando.linea}
+                        <EditarEnSitio cancion={cancion} lineaInicial={editando.linea} yInicial={editando.y} tamano={tamano}
                             onGuardar={guardarTexto} onCerrar={cerrarEdicion}
                             repertorioId={desdeRepertorio ?? undefined}
                             onNueva={n => navigate(`/cancionero/${n.id}${desdeRepertorio ? `?repertorio=${desdeRepertorio}` : ''}`, { replace: true })}

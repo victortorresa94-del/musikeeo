@@ -640,6 +640,21 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
   - se mantienen los filtros, el buscador, «Añadir "…"», el catálogo, Importar y Pegar.
 - Lo de Feed, perfil e instalar la app va **después** del bolo (Víctor: *«lo primordial hoy es poderme hacer el reper bien que mañana tengo el concierto»*).
 
+### 21n. Más del 13-nov (noche, mientras prepara el bolo) ✅
+
+- *«ahora no puedo sacarla del repertorio»* → ✅ la ✕ de cada tema se ve también en el móvil, con Deshacer; «Añadir extras» entra con «A extras» marcado; en el selector, un toque en una canción que ya está la saca.
+- *«tendría que clicar encima del nombre y se abriría la canción»* → ✅ el nombre siempre abre la canción (en el ordenador ancho, el panel sale tocando el resto de la fila).
+- *«créame la categoría bolos… sepáramelo de importar, sacar de un audio, completar letras… las tres grandes vistas»* → ✅ Canciones · Repertorios · Bolos (menú del ordenador y baldosas del móvil, `?ver=bolos`); las herramientas, aparte.
+- *«desde la canción dentro de un reper debería poder ir a ver los acordes a cualquiera de las webs»* → ✅ «En webs» junto a «Ver acordes», siempre (`BotonWebs.tsx`); en un mix, cada canción del paréntesis.
+- *«poder editar el texto aquí mismo sin que cambie el formato y se convierta en un editor de texto rudimentario… como en Notion»*, *«esta barbaridad de UI/UX para guardar»* y *«cómo voy a saber si se ve negrita si no puedo verlo»* → ✅ `EditorLetra.tsx` (Tiptap, como las Notas):
+  - se escribe encima de la hoja con su aspecto: acordes en negrita, partes con su color, apuntes en gris, avisos en su baldosa, [Am] en gris;
+  - la **negrita** y el ==resaltado== se ven al ponerlos; el texto sigue siendo plano (`**`, `==`) y lo que no se toca queda igual;
+  - «Listo» guarda (con Deshacer), sin preguntar; «Guardar como versión nueva» y «Descartar», en el ⋯;
+  - «Alinear» pone letra de máquina para colocar un acorde justo encima de su sílaba (se recuerda);
+  - precargado al abrir la canción: en el iPhone el teclado sale al primer toque.
+- *«Ábreme un fork»* para meter canciones y probar partituras → sesión aparte «Musikeeo · canciones al Cancionero y partituras».
+- ⏳ Energía (y todas las píldoras): cambiar el color y añadir valores nuevos desde la píldora, como en Estilo.
+
 ## 22. Datos de la BBDD a corregir ⏳
 
 Artistas mal en la BBDD:

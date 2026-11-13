@@ -14,6 +14,7 @@ import { BotonClaqueta, DameElTono } from '../../components/cancionero/Cantante'
 import { Portada } from '../../components/cancionero/Portada';
 import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
 import { EditarEnSitio } from '../../components/cancionero/EditarEnSitio';
+import { precargarEditorLetra } from '../../components/cancionero/cargarEditorLetra';
 import { Pildora } from '../../components/cancionero/Baldosas';
 import { bloqueDe, estiloBloque, etiquetasDe, ICONO, PASTEL, pastelCanta, sinLoDeLasPildoras } from '../../components/cancionero/estilo';
 import { tonoDe } from '../../components/cancionero/utilidades';
@@ -99,6 +100,8 @@ function Escenario({ nombre, repertorioId, canciones, extrasDesde, inicio }: { n
     const cambiar = (c: Cancion, cambio: Partial<AjustesCancion>) => guardar({ ...c, ajustes: { ...c.ajustes, ...cambio } }, { esperar: true });
     // Editar la letra ahí mismo (lápiz arriba): la canción que suena, sin salir de Tocar
     const [editando, setEditando] = useState<string | null>(null);
+    // El editor de la letra, listo antes de tocar el lápiz (en el iPhone, así se abre el teclado)
+    useEffect(() => { precargarEditorLetra(); }, []);
     const editandoRef = useRef(editando);
     useEffect(() => { editandoRef.current = editando; }, [editando]);
     const guardarTexto = (c: Cancion, texto: string) => {
@@ -460,7 +463,7 @@ function Diapositiva({ cancion, n, total, siguiente, extra, onSiguiente, cambiar
             {!notasVacias(cancion.notas) && <NotasRicas json={cancion.notas} className="mt-3 text-[15px]" />}
             <div ref={zonaRef} data-hoja data-tamano={tamano} className="mt-3">
                 {editando
-                    ? <EditarEnSitio cancion={cancion} onGuardar={onGuardarTexto} onCerrar={onCerrarEdicion} repertorioId={repertorioId} barraArriba="top-[calc(env(safe-area-inset-top)+48px)]" />
+                    ? <EditarEnSitio cancion={cancion} onGuardar={onGuardarTexto} onCerrar={onCerrarEdicion} repertorioId={repertorioId} tamano={tamano} barraArriba="top-[calc(env(safe-area-inset-top)+48px)]" />
                     : <HojaCancion lineas={lineas} opciones={opciones} vista={a.vista} tamano={tamano} columnas={columnas} />}
             </div>
             {/* Copia invisible para medir, solo con «que quepa»: el tamaño y las columnas los pone buscarEncaje */}
