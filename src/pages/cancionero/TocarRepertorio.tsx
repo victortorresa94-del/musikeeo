@@ -1,7 +1,7 @@
 import { startTransition, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
-import { ChevronDown, ChevronLeft, ChevronRight, ListMusic, Loader2, MoreHorizontal, Pause, Play, ScrollText, Shrink, X } from 'lucide-react';
+import { ChevronDown, ChevronLeft, ChevronRight, ListMusic, Loader2, MoreHorizontal, Pause, Pencil, Play, ScrollText, Shrink, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { useMusicaCancion } from '../../hooks/useMusicaCancion';
@@ -13,6 +13,7 @@ import { BotonBarra, Paso } from '../../components/cancionero/Controles';
 import { BotonClaqueta, DameElTono } from '../../components/cancionero/Cantante';
 import { Portada } from '../../components/cancionero/Portada';
 import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
+import { EditarEnSitio } from '../../components/cancionero/EditarEnSitio';
 import { Pildora } from '../../components/cancionero/Baldosas';
 import { bloqueDe, estiloBloque, etiquetasDe, ICONO, pastelCanta, sinLoDeLasPildoras } from '../../components/cancionero/estilo';
 import { tonoDe } from '../../components/cancionero/utilidades';
@@ -92,6 +93,14 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
 
     const cancion = canciones[actual];
     const cambiar = (c: Cancion, cambio: Partial<AjustesCancion>) => guardar({ ...c, ajustes: { ...c.ajustes, ...cambio } }, { esperar: true });
+    // Editar la letra ahí mismo (lápiz arriba): la canción que suena, sin salir de Tocar
+    const [editando, setEditando] = useState<string | null>(null);
+    const editandoRef = useRef(editando);
+    useEffect(() => { editandoRef.current = editando; }, [editando]);
+    const guardarTexto = (c: Cancion, texto: string) => {
+        guardar({ ...c, texto });
+        toast.success('Guardado', { action: { label: 'Deshacer', onClick: () => guardar(c) } });
+    };
 
     // Empieza en la canción pedida y, al girar el móvil, se queda en la misma
     useLayoutEffect(() => {
@@ -194,6 +203,9 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
     // Pedal Bluetooth y teclado: adelante baja la canción y, al final, pasa a la siguiente
     useEffect(() => {
         const f = (e: KeyboardEvent) => {
+            // Escribiendo (editar en sitio): las flechas y el espacio son del texto, no del pedal
+            const t = e.target as HTMLElement | null;
+            if (editandoRef.current || t?.closest('textarea, input, [contenteditable="true"]')) return;
             const el = diapositivas.current[actualRef.current];
             const i = actualRef.current;
             const adelante = ['PageDown', 'ArrowRight', 'ArrowDown'].includes(e.key);
@@ -227,6 +239,7 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
                 className="h-full w-full flex overflow-x-auto overflow-y-hidden snap-x snap-mandatory hide-scrollbar overscroll-x-contain">
                 {canciones.map((c, i) => (
                     <div key={c.id} ref={el => { diapositivas.current[i] = el; }} onClick={e => {
+                        if (editando) return;
                         // Línea a línea: tocar una línea la lleva a la guía (sin parar la hoja)
                         const l = linea && i === actual ? (e.target as HTMLElement).closest<HTMLElement>('[data-hoja] [data-linea]') : null;
                         const el = diapositivas.current[i];
@@ -236,7 +249,8 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
                         className={cn(linea && !c.ajustes.ajustar && 'teleprompter', 'relative h-full w-full shrink-0 snap-start snap-always overflow-y-auto overscroll-contain touch-pan-x touch-pan-y')}>
                         {i === actual || (cerca !== null && Math.abs(i - cerca) <= 1)
                             ? <Diapositiva cancion={c} n={i + 1} total={canciones.length} siguiente={canciones[i + 1]}
-                                onSiguiente={() => ir(i + 1)} cambiar={cambio => cambiar(c, cambio)} />
+                                onSiguiente={() => ir(i + 1)} cambiar={cambio => cambiar(c, cambio)}
+                                editando={editando === c.id} onGuardarTexto={texto => guardarTexto(c, texto)} onCerrarEdicion={() => setEditando(null)} />
                             : null}
                     </div>
                 ))}
@@ -251,12 +265,15 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
                         <span className="truncate"><span className="tabular-nums">{actual + 1} de {canciones.length}</span> · {nombre}</span>
                         <ChevronDown className={cn('h-4 w-4 shrink-0 text-muted-foreground transition-transform', indice && 'rotate-180')} />
                     </button>
+                    <BotonBarra etiqueta="Editar la letra" activo={editando === cancion?.id} onClick={() => { setRodando(false); setEditando(e => (e ? null : cancion?.id ?? null)); }}>
+                        <Pencil className="h-[18px] w-[18px]" />
+                    </BotonBarra>
                     <BotonBarra etiqueta="Lista de canciones" activo={indice} onClick={() => setIndice(v => !v)}><ListMusic className="h-[18px] w-[18px]" /></BotonBarra>
                 </div>
             </div>
 
             {/* Abajo: tono, tamaño, que quepa y desplazar; y «Dame el tono», la cuenta, anterior y siguiente */}
-            <ControlesCancion cancion={cancion} visibles={controles} rodando={rodando} auto={auto} versos={versos} linea={linea} onLinea={alternarLinea} onAuto={alternarAuto}
+            <ControlesCancion cancion={cancion} visibles={controles && !editando} rodando={rodando} auto={auto} versos={versos} linea={linea} onLinea={alternarLinea} onAuto={alternarAuto}
                 tamanoVisto={() => Number(diapositivas.current[actual]?.querySelector('[data-tamano]')?.getAttribute('data-tamano')) || cancion.ajustes.tamano}
                 onRodar={() => setRodando(r => !r)} cambiar={cambio => cambiar(cancion, cambio)}
                 onAnterior={actual > 0 ? () => ir(actual - 1) : undefined}
@@ -350,9 +367,10 @@ function ControlesCancion({ cancion, visibles, rodando, auto, versos, linea, onL
 }
 
 // Una canción del repertorio. Se mide sola para «que quepa» y se agranda con dos dedos.
-function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
+function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar, editando, onGuardarTexto, onCerrarEdicion }: {
     cancion: Cancion; n: number; total: number; siguiente?: Cancion; onSiguiente: () => void;
     cambiar: (c: Partial<AjustesCancion>) => void;
+    editando?: boolean; onGuardarTexto: (texto: string) => void; onCerrarEdicion: () => void;
 }) {
     const a = cancion.ajustes;
     const { leida, opciones } = useMusicaCancion(cancion.texto, a, cancion.ficha?.tono, cancion.ficha?.capo);
@@ -436,7 +454,9 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar }: {
             {/* Las notas con formato de la canción (avisos, entradas…), encima de la hoja */}
             {!notasVacias(cancion.notas) && <NotasRicas json={cancion.notas} className="mt-3 text-[15px]" />}
             <div ref={zonaRef} data-hoja data-tamano={tamano} className="mt-3">
-                <HojaCancion lineas={lineas} opciones={opciones} vista={a.vista} tamano={tamano} columnas={columnas} />
+                {editando
+                    ? <EditarEnSitio cancion={cancion} onGuardar={onGuardarTexto} onCerrar={onCerrarEdicion} className="[&>div:first-child]:top-[calc(env(safe-area-inset-top)+48px)]" />
+                    : <HojaCancion lineas={lineas} opciones={opciones} vista={a.vista} tamano={tamano} columnas={columnas} />}
             </div>
             {/* Copia invisible para medir, solo con «que quepa»: el tamaño y las columnas los pone buscarEncaje */}
             {a.ajustar && (
