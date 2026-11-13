@@ -3,10 +3,11 @@
 // accesos desde la canción, el repertorio y el bolo.
 import type { Bolo, Cancion, PrioridadTarea, Repertorio, Tarea } from '../types/cancionero';
 
-export const PRIORIDADES: { id: PrioridadTarea; nombre: string }[] = [
-    { id: 'alta', nombre: 'Alta' },
-    { id: 'media', nombre: 'Media' },
-    { id: 'baja', nombre: 'Baja' },
+// P1 · P2 · P3 (13-nov, Víctor: «las tareas con el P1 ya vale»)
+export const PRIORIDADES: { id: PrioridadTarea; corto: string; nombre: string }[] = [
+    { id: 'alta', corto: 'P1', nombre: 'Alta' },
+    { id: 'media', corto: 'P2', nombre: 'Media' },
+    { id: 'baja', corto: 'P3', nombre: 'Baja' },
 ];
 const PESO: Record<PrioridadTarea, number> = { alta: 0, media: 1, baja: 2 };
 
@@ -113,6 +114,6 @@ export function agruparPorMadre(tareas: Tarea[], d: Datos, hoy: string): GrupoTa
 
 // Por prioridad: Alta · Media · Baja
 export function agruparPorPrioridad(tareas: Tarea[]): GrupoTareas[] {
-    return PRIORIDADES.map(p => ({ clave: `p:${p.id}`, tipo: 'sueltas' as const, nombre: `Prioridad ${p.nombre.toLowerCase()}`, tareas: tareas.filter(t => t.prioridad === p.id).sort(ordenTareas) }))
+    return PRIORIDADES.map(p => ({ clave: `p:${p.id}`, tipo: 'sueltas' as const, nombre: `${p.corto} · ${p.nombre}`, tareas: tareas.filter(t => t.prioridad === p.id).sort(ordenTareas) }))
         .filter(g => g.tareas.length);
 }

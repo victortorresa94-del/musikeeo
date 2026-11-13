@@ -676,6 +676,8 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
   - tachar no borra: pasa a «Hechas», con Deshacer; tocar una tarea la edita (texto, prioridad, madre, canción, fecha, borrar);
   - desde la canción («Tareas»), el repertorio y el bolo (fila «Tareas · N por hacer») se ven solo las suyas —en el repertorio y el bolo, también las de sus canciones— y lo nuevo se une a él;
   - los nombres van copiados: si se borra e importa el cancionero, las tareas se vuelven a unir por el nombre. «Borrar todo» no las borra. Aún no viajan en la copia .json.
+- *«lo de las tareas ocupa un poquito… podría estar en la misma línea todo, las tareas con el P1 ya vale, al menos máximo 2 líneas»* → ✅ la caja de apuntar en dos líneas: el texto y UNA fila que se desliza (prioridad como P1/P2/P3, que cambia con un toque; madre; canción; los arranques). En la lista, «P1» en vez de «Alta».
+- *«las tareas quiero poderlas arrastrar entre repertorios, bolos o prioridades»* → ✅ cada tarea lleva su asa: se arrastra a otro grupo (en «Por repertorio» cambia la madre; en «Por prioridad», la prioridad), con Deshacer. Mientras se arrastra, abajo sale «Suéltala en…» con los repertorios y bolos (o prioridades) que aún no tienen tareas.
 
 ## 22. Datos de la BBDD a corregir ⏳
 

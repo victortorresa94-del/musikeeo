@@ -1,7 +1,8 @@
-import { useMemo, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { Link, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
-import { Calendar, Check, ChevronDown, ChevronRight, Music2, Plus, Search, Trash2, X } from 'lucide-react';
+import { Calendar, Check, ChevronDown, ChevronRight, GripVertical, Music2, Plus, Search, Trash2, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import {
@@ -71,6 +72,60 @@ export function VistaTareas({ de }: { de?: string }) {
     const [editando, setEditando] = useState<string | null>(null);
     const tareaEditando = tareas.find(t => t.id === editando) ?? null;
 
+    // Arrastrar una tarea a otro grupo (13-nov, Víctor: «las tareas quiero poderlas arrastrar entre
+    // repertorios, bolos o prioridades»): por el asa; el grupo de debajo se ilumina y, abajo, una
+    // bandeja con los repertorios y bolos que aún no tienen tareas
+    const [arrastre, setArrastre] = useState<{ tarea: Tarea; desde: string; x: number; y: number; sobre: string | null } | null>(null);
+    const autoRef = useRef(0);
+    const grupoEn = (x: number, y: number) => document.elementFromPoint(x, y)?.closest<HTMLElement>('[data-grupo-tareas]')?.dataset.grupoTareas ?? null;
+    const empezar = (e: React.PointerEvent, tarea: Tarea, desde: string) => {
+        e.preventDefault();
+        (e.target as HTMLElement).setPointerCapture?.(e.pointerId);
+        setArrastre({ tarea, desde, x: e.clientX, y: e.clientY, sobre: desde });
+    };
+    const moverArrastre = (e: React.PointerEvent) => {
+        if (!arrastre) return;
+        const sobre = grupoEn(e.clientX, e.clientY);
+        setArrastre(a => (a ? { ...a, x: e.clientX, y: e.clientY, sobre } : a));
+        // Cerca de arriba o de abajo, la página se desliza sola
+        cancelAnimationFrame(autoRef.current);
+        const d = e.clientY < 110 ? -10 : e.clientY > window.innerHeight - 190 ? 10 : 0;
+        if (d) { const paso = () => { window.scrollBy(0, d); autoRef.current = requestAnimationFrame(paso); }; autoRef.current = requestAnimationFrame(paso); }
+    };
+    const soltar = () => {
+        cancelAnimationFrame(autoRef.current);
+        const a = arrastre;
+        setArrastre(null);
+        if (!a || !a.sobre || a.sobre === a.desde) return;
+        const t = a.tarea;
+        let cambio: Partial<Tarea> | null = null, nombre = '';
+        if (a.sobre.startsWith('p:')) {
+            const p = PRIORIDADES.find(x => x.id === a.sobre!.slice(2));
+            if (p) { cambio = { prioridad: p.id }; nombre = `${p.corto} · ${p.nombre}`; }
+        } else if (a.sobre.startsWith('r:')) {
+            const r = repertorios.find(x => x.id === a.sobre!.slice(2));
+            if (r) { cambio = camposDeMadre({ tipo: 'repertorio', r }); nombre = r.nombre; }
+        } else if (a.sobre.startsWith('b:')) {
+            const b = bolos.find(x => x.id === a.sobre!.slice(2));
+            if (b) { cambio = camposDeMadre({ tipo: 'bolo', b }); nombre = b.titulo || 'Bolo'; }
+        } else if (a.sobre === 'sueltas') { cambio = camposDeMadre(null); nombre = 'sin repertorio ni bolo'; }
+        if (!cambio) return;
+        guardarTarea(sinVacios({ ...t, ...cambio }));
+        toast(`«${t.texto}» → ${nombre}`, { action: { label: 'Deshacer', onClick: () => guardarTarea(t) } });
+    };
+    // Dónde más se puede soltar: lo que no sale ya como grupo (los bolos y repertorios que vienen primero)
+    const destinosExtra = (() => {
+        if (!arrastre) return [];
+        const ya = new Set(grupos.map(g => g.clave));
+        if (agrupar === 'prioridad') return PRIORIDADES.filter(p => !ya.has(`p:${p.id}`)).map(p => ({ clave: `p:${p.id}`, nombre: `${p.corto} · ${p.nombre}`, icono: null as string | null }));
+        const porFecha = <T extends { fecha: string }>(xs: T[]) => [...xs].sort((a, b) => ((a.fecha >= hoy ? 0 : 1) - (b.fecha >= hoy ? 0 : 1)) || (a.fecha >= hoy ? a.fecha.localeCompare(b.fecha) : b.fecha.localeCompare(a.fecha)));
+        return [
+            ...porFecha(bolos).map(b => ({ clave: `b:${b.id}`, nombre: b.titulo || 'Bolo', icono: ICONO.bolos as string | null })),
+            ...porFecha(repertorios).map(r => ({ clave: `r:${r.id}`, nombre: r.nombre, icono: ICONO.repertorios as string | null })),
+            { clave: 'sueltas', nombre: 'Sin repertorio ni bolo', icono: ICONO.tareas as string | null },
+        ].filter(d => !ya.has(d.clave)).slice(0, 8);
+    })();
+
     const tachar = (t: Tarea) => {
         if (t.hecha) {
             const { hecha: _h, ...resto } = t;
@@ -83,7 +138,7 @@ export function VistaTareas({ de }: { de?: string }) {
     };
 
     return (
-        <div>
+        <div onPointerMove={moverArrastre} onPointerUp={soltar} onPointerCancel={soltar}>
             {contexto && (
                 <div className="mb-3 flex items-center gap-2 flex-wrap">
                     <span className="h-8 pl-3 pr-1 rounded-full bg-fill-strong text-[14px] font-semibold text-foreground flex items-center gap-1.5">
@@ -122,8 +177,34 @@ export function VistaTareas({ de }: { de?: string }) {
             )}
 
             <div className="mt-2 space-y-5">
-                {grupos.map(g => <Grupo key={g.clave} grupo={g} datos={datos} contexto={contexto} onTachar={tachar} onEditar={setEditando} />)}
+                {grupos.map(g => <Grupo key={g.clave} grupo={g} datos={datos} contexto={contexto} onTachar={tachar} onEditar={setEditando}
+                    onArrastrar={(e, t) => empezar(e, t, g.clave)} sobre={arrastre?.sobre === g.clave && arrastre.desde !== g.clave} arrastrando={arrastre?.tarea.id} />)}
             </div>
+
+            {/* Mientras se arrastra: la tarea va con el dedo y, abajo, los otros sitios donde soltarla.
+                En un portal: dentro de la página (que entra con una animación) «fixed» no se queda fijo */}
+            {arrastre && createPortal(
+                <>
+                    <div aria-hidden className="pointer-events-none fixed z-[90] max-w-[280px] -translate-x-1/2 -translate-y-1/2 rounded-xl bg-sheet border border-hairline shadow-e3 px-3 py-2 text-[15px] font-semibold text-foreground truncate"
+                        style={{ left: arrastre.x, top: arrastre.y }}>{arrastre.tarea.texto}</div>
+                    {destinosExtra.length > 0 && (
+                        <div className="fixed left-3 right-3 bottom-[calc(env(safe-area-inset-bottom)+76px)] md:bottom-6 z-[85] mx-auto max-w-2xl rounded-2xl bg-sheet border border-hairline shadow-e3 p-2">
+                            <p className="px-1 pb-1.5 text-[12px] font-bold uppercase tracking-[0.08em] text-muted-foreground">Suéltala en…</p>
+                            <div className="flex flex-wrap gap-1.5">
+                                {destinosExtra.map(d => (
+                                    <span key={d.clave} data-grupo-tareas={d.clave}
+                                        className={cn('h-9 max-w-full pl-1.5 pr-3 rounded-full text-[13px] font-semibold flex items-center gap-1.5 transition-colors',
+                                            arrastre.sobre === d.clave ? 'bg-foreground text-background' : 'bg-fill text-foreground')}>
+                                        {d.icono ? <img src={d.icono} alt="" className="h-6 w-6 object-contain" /> : <span className={cn('ml-1.5 h-2.5 w-2.5 rounded-full', COLOR[d.clave.slice(2) as PrioridadTarea].punto)} />}
+                                        <span className="truncate">{d.nombre}</span>
+                                    </span>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </>,
+                document.body,
+            )}
 
             {hechas.length > 0 && (
                 <section className="mt-7" aria-label="Hechas">
@@ -146,10 +227,13 @@ export function VistaTareas({ de }: { de?: string }) {
     );
 }
 
-function Grupo({ grupo, datos, contexto, onTachar, onEditar }: {
+function Grupo({ grupo, datos, contexto, onTachar, onEditar, onArrastrar, sobre, arrastrando }: {
     grupo: GrupoTareas; datos: { canciones: Cancion[]; repertorios: Repertorio[]; bolos: Bolo[] }; contexto?: string;
     onTachar: (t: Tarea) => void; onEditar: (id: string) => void;
+    onArrastrar: (e: React.PointerEvent, t: Tarea) => void; sobre?: boolean; arrastrando?: string;
 }) {
+    // Una madre que ya no existe (borrada) no recibe tareas: se ve, pero no se suelta ahí
+    const recibe = !grupo.clave.startsWith('n:');
     const fondo = grupo.tipo === 'bolo' ? 'bg-pastel-rosa' : grupo.tipo === 'repertorio' ? 'bg-pastel-lavanda' : 'bg-fill-strong';
     const icono = grupo.tipo === 'bolo' ? ICONO.bolos : grupo.tipo === 'repertorio' ? ICONO.repertorios : ICONO.tareas;
     const porPrioridad = grupo.clave.startsWith('p:');
@@ -169,20 +253,23 @@ function Grupo({ grupo, datos, contexto, onTachar, onEditar }: {
         </span>
     );
     return (
-        <section aria-label={grupo.nombre}>
+        <section aria-label={grupo.nombre} data-grupo-tareas={recibe ? grupo.clave : undefined}
+            className={cn('rounded-[20px] transition-shadow', sobre && 'ring-2 ring-foreground ring-offset-4 ring-offset-background')}>
             {grupo.enlace && !contexto
                 ? <Link to={grupo.enlace} className="flex items-center justify-between gap-2 py-1 active:opacity-60">{cabecera}<ChevronRight className="h-4 w-4 shrink-0 text-muted-foreground" /></Link>
                 : <div className="py-1">{cabecera}</div>}
             <div className="mt-1.5 rounded-2xl bg-fill overflow-hidden divide-y divide-hairline">
-                {grupo.tareas.map(t => <FilaTarea key={t.id} tarea={t} datos={datos} onTachar={() => onTachar(t)} onEditar={() => onEditar(t.id)} mostrarMadre={porPrioridad} />)}
+                {grupo.tareas.map(t => <FilaTarea key={t.id} tarea={t} datos={datos} onTachar={() => onTachar(t)} onEditar={() => onEditar(t.id)} mostrarMadre={porPrioridad}
+                    onArrastrar={e => onArrastrar(e, t)} arrastrada={arrastrando === t.id} />)}
             </div>
         </section>
     );
 }
 
-function FilaTarea({ tarea, datos, onTachar, onEditar, mostrarMadre }: {
+function FilaTarea({ tarea, datos, onTachar, onEditar, mostrarMadre, onArrastrar, arrastrada }: {
     tarea: Tarea; datos: { canciones: Cancion[]; repertorios: Repertorio[]; bolos: Bolo[] };
     onTachar: () => void; onEditar: () => void; mostrarMadre?: boolean;
+    onArrastrar?: (e: React.PointerEvent) => void; arrastrada?: boolean;
 }) {
     const cancion = cancionDe(tarea, datos.canciones);
     const madre = mostrarMadre ? nombreMadre(madreDeTarea(tarea, datos.repertorios, datos.bolos)) || tarea.boloTitulo || tarea.repertorioNombre : '';
@@ -190,7 +277,13 @@ function FilaTarea({ tarea, datos, onTachar, onEditar, mostrarMadre }: {
     const hecha = !!tarea.hecha;
     const tarde = !hecha && tarea.para && tarea.para < hoyISO();
     return (
-        <div className="flex items-start gap-3 pl-3 pr-2 py-2.5">
+        <div className={cn('flex items-start gap-3 pr-2 py-2.5', onArrastrar ? 'pl-0' : 'pl-3', arrastrada && 'opacity-40')}>
+            {onArrastrar && (
+                <button onPointerDown={onArrastrar} aria-label={`Arrastra «${tarea.texto}» a otro grupo`}
+                    className="-mr-2 h-8 w-8 shrink-0 flex items-center justify-center text-muted-foreground touch-none cursor-grab">
+                    <GripVertical className="h-4 w-4" />
+                </button>
+            )}
             <button onClick={onTachar} aria-label={hecha ? `Volver a abrir: ${tarea.texto}` : `Hecha: ${tarea.texto}`} aria-pressed={hecha}
                 className={cn('mt-0.5 h-6 w-6 shrink-0 rounded-full border-2 flex items-center justify-center active:scale-95 transition-transform',
                     hecha ? 'bg-foreground border-foreground text-background' : c.aro)}>
@@ -200,7 +293,7 @@ function FilaTarea({ tarea, datos, onTachar, onEditar, mostrarMadre }: {
                 <span className={cn('block text-[16px] leading-snug', hecha ? 'text-muted-foreground line-through' : 'text-foreground')}>{tarea.texto}</span>
                 {(cancion || tarea.cancionTitulo || tarea.para || madre || tarea.prioridad === 'alta') && (
                     <span className="mt-1 flex flex-wrap items-center gap-1.5">
-                        {tarea.prioridad === 'alta' && !hecha && <span className={cn('h-5 px-2 rounded-full text-[11.5px] font-bold flex items-center', c.pildora)}>Alta</span>}
+                        {tarea.prioridad === 'alta' && !hecha && <span className={cn('h-5 px-2 rounded-full text-[11.5px] font-bold flex items-center', c.pildora)}>P1</span>}
                         {(cancion || tarea.cancionTitulo) && (
                             <span className="h-5 px-2 rounded-full bg-pastel-cielo text-pastel-cielo-ink text-[11.5px] font-semibold flex items-center gap-1 max-w-[220px]">
                                 <Music2 className="h-3 w-3 shrink-0" /><span className="truncate">{cancion?.titulo ?? tarea.cancionTitulo}</span>
@@ -265,40 +358,36 @@ function Apuntar({ contexto, onCrear }: { contexto?: string; onCrear: (t: Partia
                     <Plus className="h-4 w-4" /> Añadir
                 </button>
             </div>
-            {!texto.trim() && (
-                <div className="mt-2 -mx-3 px-3 flex gap-1.5 overflow-x-auto hide-scrollbar">
-                    {TIPOS_TAREA.map(t => (
-                        <button key={t} onClick={() => empezarCon(t)} className="shrink-0 h-8 px-3 rounded-full bg-background text-[13px] font-semibold text-foreground active:opacity-60">{t}…</button>
-                    ))}
-                </div>
-            )}
-            <div className="mt-2 flex flex-wrap items-center gap-1.5">
-                {/* Prioridad */}
-                <div className="flex p-0.5 rounded-full bg-background" role="radiogroup" aria-label="Prioridad">
-                    {PRIORIDADES.map(p => (
-                        <button key={p.id} role="radio" aria-checked={prioridad === p.id} onClick={() => setPrioridad(p.id)}
-                            className={cn('h-8 px-2.5 rounded-full text-[13px] font-semibold flex items-center gap-1.5', prioridad === p.id ? 'bg-foreground text-background' : 'text-muted-foreground')}>
-                            <span className={cn('h-2 w-2 rounded-full', COLOR[p.id].punto)} />{p.nombre}
-                        </button>
-                    ))}
-                </div>
+            {/* Dos líneas como mucho (13-nov, Víctor: «ocupa un poquito… podría estar en la misma línea
+                todo… máximo 2 líneas»): la caja y UNA fila que se desliza con la prioridad, la madre, la
+                canción y, con la caja vacía, los arranques de siempre */}
+            <div className="mt-2 -mx-3 px-3 flex items-center gap-1.5 overflow-x-auto hide-scrollbar">
+                {/* Prioridad: un toque pasa P1 → P2 → P3 */}
+                <button onClick={() => setPrioridad(p => (p === 'alta' ? 'media' : p === 'media' ? 'baja' : 'alta'))}
+                    aria-label={`Prioridad ${PRIORIDADES.find(p => p.id === prioridad)!.nombre.toLowerCase()}: toca para cambiarla`}
+                    className={cn('shrink-0 h-8 px-2.5 rounded-full text-[13px] font-bold flex items-center gap-1.5', COLOR[prioridad].pildora)}>
+                    <span className={cn('h-2 w-2 rounded-full', COLOR[prioridad].punto)} />{PRIORIDADES.find(p => p.id === prioridad)!.corto}
+                </button>
                 {/* Madre */}
-                <button onClick={() => setEligiendo('madre')} className="h-9 max-w-[220px] pl-2.5 pr-3 rounded-full bg-background text-[13px] font-semibold text-foreground flex items-center gap-1.5 active:opacity-60">
+                <button onClick={() => setEligiendo('madre')} className="shrink-0 h-8 max-w-[190px] pl-1.5 pr-3 rounded-full bg-background text-[13px] font-semibold text-foreground flex items-center gap-1.5 active:opacity-60">
                     <img src={madreAhora?.tipo === 'bolo' ? ICONO.bolos : ICONO.repertorios} alt="" aria-hidden className="h-5 w-5 object-contain" />
                     <span className="truncate">{madreAhora ? nombreMadre(madreAhora) : 'Repertorio o bolo'}</span>
                 </button>
                 {/* Canción */}
                 {cancion ? (
-                    <span className="h-9 max-w-[220px] pl-2.5 pr-1 rounded-full bg-pastel-cielo text-pastel-cielo-ink text-[13px] font-semibold flex items-center gap-1">
+                    <span className="shrink-0 h-8 max-w-[180px] pl-2.5 pr-0.5 rounded-full bg-pastel-cielo text-pastel-cielo-ink text-[13px] font-semibold flex items-center gap-1">
                         <Music2 className="h-3.5 w-3.5 shrink-0" />
                         <button onClick={() => setEligiendo('cancion')} className="truncate">{cancion.titulo}</button>
                         {!cancionFija && <button onClick={() => setCancionElegida(null)} aria-label="Quitar la canción" className="h-7 w-7 shrink-0 rounded-full flex items-center justify-center"><X className="h-3.5 w-3.5" /></button>}
                     </span>
                 ) : (
-                    <button onClick={() => setEligiendo('cancion')} className="h-9 px-3 rounded-full bg-background text-[13px] font-semibold text-muted-foreground flex items-center gap-1.5 active:opacity-60">
+                    <button onClick={() => setEligiendo('cancion')} className="shrink-0 h-8 px-3 rounded-full bg-background text-[13px] font-semibold text-muted-foreground flex items-center gap-1.5 active:opacity-60">
                         <Music2 className="h-3.5 w-3.5" /> Canción
                     </button>
                 )}
+                {!texto.trim() && TIPOS_TAREA.map(t => (
+                    <button key={t} onClick={() => empezarCon(t)} className="shrink-0 h-8 px-3 rounded-full border border-dashed border-hairline-strong text-[13px] font-semibold text-muted-foreground active:opacity-60">{t}…</button>
+                ))}
             </div>
             <ElegirMadre abierta={eligiendo === 'madre'} onCerrar={() => setEligiendo(null)} actual={madreAhora}
                 onElegir={m => { setMadre(m); setEligiendo(null); }} />
@@ -329,7 +418,7 @@ function HojaTarea({ tarea, onCerrar, onGuardar, onBorrar }: { tarea: Tarea | nu
                         {PRIORIDADES.map(p => (
                             <button key={p.id} role="radio" aria-checked={tarea.prioridad === p.id} onClick={() => cambiar({ prioridad: p.id })}
                                 className={cn('h-9 px-3.5 rounded-full text-[14px] font-semibold flex items-center gap-1.5', tarea.prioridad === p.id ? 'bg-foreground text-background' : 'text-muted-foreground')}>
-                                <span className={cn('h-2 w-2 rounded-full', COLOR[p.id].punto)} />{p.nombre}
+                                <span className={cn('h-2 w-2 rounded-full', COLOR[p.id].punto)} />{p.corto} · {p.nombre}
                             </button>
                         ))}
                     </div>
