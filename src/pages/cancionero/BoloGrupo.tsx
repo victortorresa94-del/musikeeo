@@ -28,6 +28,8 @@ export default function BoloGrupo() {
     const [datos, setDatos] = useState<BoloCompartido | null>(() => masNuevo(descodificarBolo(window.location.hash), leerCopia(id)));
     const [setAbierto, setSetAbierto] = useState<number | null>(null);
     const [aviso, setAviso] = useState<string | null>(null);
+    // El enlace corto (solo el id) no trae nada: se espera a la nube antes de decir que no se abre
+    const [esperando, setEsperando] = useState(() => !!id);
     const datosRef = useRef(datos);
     useEffect(() => { datosRef.current = datos; }, [datos]);
 
@@ -35,6 +37,7 @@ export default function BoloGrupo() {
     useEffect(() => {
         if (!id) return;
         return escucharCompartido<BoloCompartido>(id, p => {
+            setEsperando(false);
             const antes = datosRef.current;
             if (antes && antes.u && (antes.u ?? '') >= (p.u ?? '')) return;
             try { localStorage.setItem(CLAVE_COPIA + id, codificar(p)); } catch { /* sin almacenamiento */ }
@@ -49,17 +52,25 @@ export default function BoloGrupo() {
                 setAviso('Actualizado con los últimos cambios');
                 setTimeout(() => setAviso(null), 4000);
             }
-        }, undefined, descodificarBolo);
+        }, () => setEsperando(false), descodificarBolo);
     }, [id]);
 
-    // Oscura, como el enlace del repertorio (en el escenario no deslumbra); y sin indexar
+    // Sin respuesta de la nube en 12 s (sin cobertura), se deja de esperar
+    useEffect(() => {
+        if (!esperando) return;
+        const t = setTimeout(() => setEsperando(false), 12000);
+        return () => clearTimeout(t);
+    }, [esperando]);
+
+    // Blanca (13-nov, Víctor: «la página de compartir el bolo al músico, que sea blanca»), aunque
+    // el móvil tenga el oscuro elegido; al salir, vuelve el de la persona. Y sin indexar
     useEffect(() => {
         const root = document.documentElement;
         const antes = root.classList.contains('dark');
-        root.classList.add('dark');
+        root.classList.remove('dark');
         const meta = document.querySelector('meta[name="theme-color"]');
         const color = meta?.getAttribute('content');
-        meta?.setAttribute('content', '#0A0A0A');
+        meta?.setAttribute('content', '#FFFFFF');
         document.title = datos ? `${datos.n} · Bolo · Musikeeo` : 'Bolo · Musikeeo';
         const robots = document.createElement('meta');
         robots.name = 'robots';
@@ -74,6 +85,14 @@ export default function BoloGrupo() {
 
     useEffect(() => { if (setAbierto === null) window.scrollTo(0, 0); }, [setAbierto]);
 
+    if (!datos && esperando) {
+        return (
+            <main className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center px-6 text-center" aria-busy="true">
+                <img src={ICONO.repertorios} alt="" aria-hidden className="h-24 w-24 object-contain animate-pulse" />
+                <p className="mt-4 text-[15px] text-muted-foreground">Abriendo…</p>
+            </main>
+        );
+    }
     if (!datos) {
         return (
             <main className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center px-6 text-center">

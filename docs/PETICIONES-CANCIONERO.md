@@ -618,6 +618,11 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
 - ⏳ Para que se actualice solo: su cuenta y las reglas desplegadas (`bolos` y `compartidos`).
 - ⏳ No se soñó en Aura Studio (prisa por el bolo del 14): sigue el lenguaje del enlace del repertorio.
 
+### 21l. La página del bolo, blanca, y el enlace corto (13-nov, noche) ✅ en la rama
+
+- *«la pagina de compartir el bolo al musico sea blanca»* → ✅ `/bolo/{id}` sale en claro siempre, aunque el móvil del músico tenga el oscuro (`BoloGrupo.tsx`). El enlace del repertorio (`/grupo`) sigue oscuro.
+- *«el enlace de compartir es gigante»* → ✅ con la nube al día, «Compartir» da solo `musikeeo.com/bolo/{id}` (o `/grupo/{id}`) y la página lo lee de `compartidos/{id}`. Mientras dice «Abriendo…» y, si en 12 s no llega, «no se puede abrir». **Hoy en musikeeo.com sigue saliendo largo** porque `compartidos` da permiso denegado: faltan las reglas. Con `firebase deploy --only firestore --project musikeeo-8e766` sale corto solo.
+
 ## 22. Datos de la BBDD a corregir ⏳
 
 Artistas mal en la BBDD:

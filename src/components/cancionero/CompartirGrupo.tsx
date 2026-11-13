@@ -16,9 +16,9 @@ import { BotonHoja, Hoja } from './Hoja';
 const AVISO: Record<EstadoPublicar, string> = {
     'al-dia': 'Se actualiza solo: si cambias algo, tus músicos lo ven con el mismo enlace. Cada uno puede hacerse su versión de una canción sin perder la tuya.',
     'subiendo': 'Subiendo tus cambios…',
-    'sin-cuenta': 'Para que se actualice solo, entra con tu cuenta. Mientras, el enlace lleva todo tal como está ahora.',
-    'sin-permiso': 'Aún no se actualiza solo: falta desplegar las reglas de Firestore (está en tus pendientes). Mientras, el enlace lleva todo tal como está ahora.',
-    'sin-red': 'Sin conexión: tus cambios se suben cuando vuelva la cobertura. El enlace lleva lo de ahora.',
+    'sin-cuenta': 'Para que se actualice solo, entra con tu cuenta. Mientras, el enlace es largo: lleva todo tal como está ahora.',
+    'sin-permiso': 'Aún no se actualiza solo: falta desplegar las reglas de Firestore (está en tus pendientes). Mientras, el enlace es largo: lleva todo tal como está ahora.',
+    'sin-red': 'Sin conexión: tus cambios se suben cuando vuelva la cobertura. Mientras, el enlace es largo: lleva lo de ahora.',
 };
 
 export function CompartirGrupo({ abierta, onCerrar, repertorio, canciones }: {
@@ -65,13 +65,19 @@ function HojaCompartir({ abierta, onCerrar, titulo, nombre, que, explicacion, id
         compartidosService.ahora();
     }, [abierta, id, modo]); // eslint-disable-line react-hooks/exhaustive-deps
     const estado = useSyncExternalStore(compartidosService.suscribir, () => compartidosService.estado(id));
+    const alDia = estado === 'al-dia';
+    // Con la nube al día basta el id (13-nov, Víctor: «el enlace de compartir es gigante»): la
+    // página lo lee de compartidos/{id}. Si no (sin cuenta, sin reglas, sin red), todo tras «#»
+    const enlace = useMemo(() => {
+        if (!abierta) return '';
+        const largo = enlaceDe(conLetra, id);
+        return alDia && id ? largo.slice(0, largo.indexOf('#')) : largo;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-    const enlace = useMemo(() => (abierta ? enlaceDe(conLetra, id) : ''), [abierta, conLetra, id, ...deps]);
+    }, [abierta, conLetra, id, alDia, ...deps]);
     const largo = enlace.length;
     // WhatsApp corta los mensajes de más de ~65 000 caracteres
     const demasiado = largo > 60000;
     const mensaje = `${nombre} · ${que}${conLetra ? ' con letra' : ' (cifrado)'}: ${enlace}`;
-    const alDia = estado === 'al-dia';
 
     const copiar = async () => {
         try {

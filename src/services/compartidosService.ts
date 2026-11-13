@@ -121,6 +121,7 @@ export function escucharCompartido<T = Compartido>(id: string, alLlegar: (p: T) 
             const datos = snap.data()?.datos;
             const p = typeof datos === 'string' ? leer(datos) : null;
             if (p) alLlegar(p);
+            else alFallar?.('no-existe');
         }, e => alFallar?.((e as { code?: string })?.code ?? 'error'));
     } catch {
         alFallar?.('error');

@@ -49,6 +49,8 @@ export default function Grupo() {
     const [datos, setDatos] = useState<Compartido | null>(() => masNuevo(descodificar(window.location.hash), leerCopia(id)));
     const [abierta, setAbierta] = useState<number | null>(null);
     const [aviso, setAviso] = useState<string | null>(null);
+    // El enlace corto (solo el id) no trae nada: se espera a la nube antes de decir que no se abre
+    const [esperando, setEsperando] = useState(() => !!id);
     const datosRef = useRef(datos);
     useEffect(() => { datosRef.current = datos; }, [datos]);
 
@@ -62,6 +64,7 @@ export default function Grupo() {
     useEffect(() => {
         if (!id) return;
         return escucharCompartido(id, p => {
+            setEsperando(false);
             const antes = datosRef.current;
             if (antes && (antes.u ?? '') >= (p.u ?? '') && antes.u) return;
             try { localStorage.setItem(CLAVE_COPIA + id, codificar(p)); } catch { /* sin almacenamiento */ }
@@ -76,8 +79,15 @@ export default function Grupo() {
                 setAviso('Actualizado con los últimos cambios');
                 setTimeout(() => setAviso(null), 4000);
             }
-        });
+        }, () => setEsperando(false));
     }, [id]);
+
+    // Sin respuesta de la nube en 12 s (sin cobertura), se deja de esperar
+    useEffect(() => {
+        if (!esperando) return;
+        const t = setTimeout(() => setEsperando(false), 12000);
+        return () => clearTimeout(t);
+    }, [esperando]);
 
     // Siempre oscura (en el escenario no deslumbra); al salir, vuelve la de la persona
     useEffect(() => {
@@ -100,6 +110,14 @@ export default function Grupo() {
         };
     }, [datos]);
 
+    if (!datos && esperando) {
+        return (
+            <main className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center px-6 text-center" aria-busy="true">
+                <img src={ICONO.repertorios} alt="" aria-hidden className="h-24 w-24 object-contain animate-pulse" />
+                <p className="mt-4 text-[15px] text-muted-foreground">Abriendo…</p>
+            </main>
+        );
+    }
     if (!datos) {
         return (
             <main className="min-h-[100dvh] bg-background text-foreground flex flex-col items-center justify-center px-6 text-center">
