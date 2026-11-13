@@ -63,7 +63,7 @@ const TAMANO_MAX = 44;
 
 function Lector({ cancion }: { cancion: Cancion }) {
     const navigate = useNavigate();
-    const { guardar, borrar } = useCancionero();
+    const { guardar, borrar, repertorios } = useCancionero();
     const [ajustes, setAjustes] = useState<AjustesCancion>(cancion.ajustes);
     // Si los ajustes cambian desde fuera (el tono de la ficha, Deshacer), se siguen
     const [ajustesVistos, setAjustesVistos] = useState(cancion.ajustes);
@@ -360,8 +360,14 @@ function Lector({ cancion }: { cancion: Cancion }) {
             {/* Cabecera */}
             <div className="max-w-5xl mx-auto lg:max-w-none px-4 md:px-0 pt-3 md:pt-6">
                 <div className="flex items-center justify-between gap-3">
-                    <Link to="/cancionero" className="inline-flex items-center -ml-1.5 text-[15px] text-muted-foreground active:opacity-60">
-                        <ChevronLeft className="h-5 w-5" /> Cancionero
+                    {/* Atrás de verdad: a donde estabas (el repertorio, la lista con sus filtros, la búsqueda).
+                        Antes iba siempre al inicio del Cancionero (13-nov, Víctor: «le doy a atrás y me lleva
+                        al menú principal»). Si se entró directo (enlace, recarga), al repertorio o al Cancionero */}
+                    <Link to={desdeRepertorio ? `/cancionero/repertorio/${desdeRepertorio}` : '/cancionero'}
+                        onClick={e => { if ((window.history.state?.idx ?? 0) > 0) { e.preventDefault(); navigate(-1); } }}
+                        className="inline-flex items-center -ml-1.5 min-w-0 max-w-[60%] text-[15px] text-muted-foreground active:opacity-60">
+                        <ChevronLeft className="h-5 w-5 shrink-0" />
+                        <span className="truncate">{(desdeRepertorio && repertorios.find(r => r.id === desdeRepertorio)?.nombre) || 'Atrás'}</span>
                     </Link>
                     <span className="flex items-center gap-2">
                         <button onClick={() => editarEn(0, null)} aria-label="Editar el texto de la canción aquí" disabled={!!editando}
