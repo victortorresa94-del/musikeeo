@@ -86,6 +86,7 @@ git push origin main  # triggers Vercel auto-deploy
 - Explorar = el marketplace (Explorar + Mercado unidos): categorías en `src/config/categorias.ts` (una tabla para hub, vista, buscador), iconos 3D en `public/images/categorias/` recortados del sueño elegido (concepto A + cabecera «por momento» de C). /discover, /artistas, /sonido y /market redirigen. Barra: Feed · Explorar · Bolos · Perfil
 - Requieren cuenta (RequireAuthCompleted → /login con `state.from` y vuelta tras entrar): /messages, /mapa, /market/create, /eventos/crear, /projects, /profile; /publicar requiere sesión (RequireAuthSimple)
 - /cancionero es público y funciona sin cuenta (ver «Cancionero»)
+- /taller (13-nov, bolo de Pallejà): la chuleta del taller «El viaje de la rumba», abierta y sin cuenta. Es `public/paginas/taller-rumba.txt` pintada en un iframe con srcDoc (`pages/Taller.tsx`): no se abre como página suelta porque el service worker guarda cada navegación como /index.html y pisaría la app guardada. Sin letras (no van al repo)
 
 > 📌 **TODO LO QUE HA PEDIDO VÍCTOR DEL CANCIONERO, con sus palabras y su estado → [`docs/PETICIONES-CANCIONERO.md`](docs/PETICIONES-CANCIONERO.md).** Léelo antes de tocar el Cancionero y actualízalo el mismo día: *«que no se escape ni una de mis peticiones»*.
 
