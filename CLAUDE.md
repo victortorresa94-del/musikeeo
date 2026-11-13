@@ -183,6 +183,10 @@ Project is in active development. Architecture is solid, marketplace sprint in p
   - **extras** del repertorio (`Repertorio.extras`, la recámara): fuera del orden y de la duración; al final en Tocar, aparte en el enlace (`x`) y en la copia .json;
   - «Añadir canciones» a pantalla completa (`ElegirParaSet.tsx`), agrupado por estilo, grupo, canta, tono, energía, estado o etiquetas, con «Al set / A extras»;
   - `.github/workflows/reglas-firestore.yml` despliega las reglas solo, cuando exista el secreto `FIREBASE_SERVICE_ACCOUNT`.
+- **Víspera, última hora** (detalle en `docs/PETICIONES-CANCIONERO.md` §21o):
+  - pegar de Cifra Club en el editor en su sitio entra línea a línea (`handlePaste` en `EditorLetra.tsx`; nunca el HTML de la web);
+  - en directo no se recarga ni se sale (`lib/directo.ts`, `DirectoEnVivo.tsx`, `SiFalla.tsx`; el service worker guarda dos versiones; Tocar lleva `?n=` y la app instalada vuelve ahí si el iPhone la cierra);
+  - «Concierto» en el horario del bolo con `hasta`, y la página del músico abre con la hora en grande (`cuandoSeToca`).
 
 **❌ Pendiente:**
 - Víctor: crear el secreto `FIREBASE_SERVICE_ACCOUNT` en GitHub (clave de la cuenta de servicio de Firebase). Así las reglas se despliegan solas y el enlace sale corto.
