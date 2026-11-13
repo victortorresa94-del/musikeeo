@@ -45,7 +45,7 @@ export default function Bolo() {
         };
     }, [canciones]);
 
-    if (!bolo) return listo ? <Navigate to="/cancionero?ver=repertorios" replace /> : null;
+    if (!bolo) return listo ? <Navigate to="/cancionero?ver=bolos" replace /> : null;
 
     const cambiar = (cambio: Partial<TipoBolo>) => guardarBolo({ ...bolo, ...cambio }, { esperar: true });
     const porId = new Map(repertorios.map(r => [r.id, r]));
@@ -62,7 +62,7 @@ export default function Bolo() {
     const borrar = () => {
         void borrarBolo(bolo.id);
         toast('Bolo borrado', { action: { label: 'Deshacer', onClick: () => guardarBolo(bolo) } });
-        navigate('/cancionero?ver=repertorios', { replace: true });
+        navigate('/cancionero?ver=bolos', { replace: true });
     };
     const verComoLoVen = () => {
         const url = enlaceBolo({ ...paqueteBolo(bolo, repertorios, canciones, false), u: new Date().toISOString() }, bolo.compartido?.cifrado);
@@ -77,11 +77,11 @@ export default function Bolo() {
         .sort((a, b) => Number(b.fecha === bolo.fecha) - Number(a.fecha === bolo.fecha) || (b.fecha || '').localeCompare(a.fecha || ''));
 
     return (
-        <ConMenu activo={{ ver: 'repertorios' }}>
+        <ConMenu activo={{ ver: 'bolos' }}>
             <div className="max-w-3xl mx-auto lg:max-w-none lg:mx-0 px-4 md:px-0 pt-3 md:pt-6 pb-16">
                 <div className="flex items-center justify-between gap-2">
-                    <Link to="/cancionero?ver=repertorios" className="inline-flex items-center -ml-1.5 text-[15px] text-muted-foreground active:opacity-60">
-                        <ChevronLeft className="h-5 w-5" /> Repertorios
+                    <Link to="/cancionero?ver=bolos" className="inline-flex items-center -ml-1.5 text-[15px] text-muted-foreground active:opacity-60">
+                        <ChevronLeft className="h-5 w-5" /> Bolos
                     </Link>
                     <button onClick={() => setMenu(true)} aria-label="Más opciones del bolo" className="pulsable h-9 w-9 rounded-full bg-fill flex items-center justify-center text-foreground">
                         <MoreHorizontal className="h-5 w-5" />

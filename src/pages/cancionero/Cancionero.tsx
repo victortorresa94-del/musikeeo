@@ -11,7 +11,7 @@ import { useCancionero } from '../../hooks/useCancionero';
 import { cancioneroService } from '../../services/cancioneroService';
 import { catalogoService } from '../../services/catalogoService';
 import { CANCION_EJEMPLO } from '../../components/cancionero/ejemplo';
-import { Baldosa, TarjetaBolo, TarjetaEscuchar } from '../../components/cancionero/Baldosas';
+import { Baldosa, TarjetaBolo } from '../../components/cancionero/Baldosas';
 import { ICONO, PASTEL, iconoRepertorio, pastelDe } from '../../components/cancionero/estilo';
 import { ImportarCanciones } from '../../components/cancionero/ImportarCanciones';
 import { PonerPortadas } from '../../components/cancionero/PonerPortadas';
@@ -33,7 +33,7 @@ import { temaDe } from '../../lib/compartir';
 import { BarraFiltros } from '../../components/cancionero/Filtros';
 import { useFiltrosGuardados } from '../../hooks/useFiltrosGuardados';
 import { AnadirALista, BotonListas, EditorLista, MenuListas } from '../../components/cancionero/Listas';
-import { ConMenu } from '../../components/cancionero/ConMenu';
+import { ConMenu, type VistaCancionero } from '../../components/cancionero/ConMenu';
 import { AccionesLote } from '../../components/cancionero/AccionesLote';
 import { cambiarGrupo } from '../../lib/grupos';
 import { cancionesDeLista, nombreDeLista } from '../../lib/listas';
@@ -50,11 +50,12 @@ const fechaCorta = (f: string) => {
 // repertorios para tocarlo en el bolo. Un solo buscador: tus canciones y, debajo, las del
 // catálogo (con portada y muestra) para añadirlas
 export default function Cancionero() {
-    const { canciones, repertorios, listas, bolos, listo, nube, conCuenta, crear, crearRepertorio, guardar, guardarLista, borrarLista } = useCancionero();
+    const { canciones, repertorios, listas, bolos, listo, nube, conCuenta, crear, crearRepertorio, crearBolo, guardar, guardarLista, borrarLista } = useCancionero();
     const navigate = useNavigate();
     const location = useLocation();
     const [params, setParams] = useSearchParams();
-    const ver = params.get('ver') === 'repertorios' ? 'repertorios' : 'canciones';
+    // Las tres vistas grandes (13-nov): Canciones · Repertorios · Bolos
+    const ver: VistaCancionero = params.get('ver') === 'repertorios' ? 'repertorios' : params.get('ver') === 'bolos' ? 'bolos' : 'canciones';
     const [q, setQ] = useState('');
     const [importar, setImportar] = useState(false);
     const buscadorRef = useRef<HTMLInputElement>(null);
@@ -147,9 +148,9 @@ export default function Cancionero() {
     const [verArchivados, setVerArchivados] = useState(false);
     const reps = useMemo(() => [...repertorios].sort((a, b) => b.fecha.localeCompare(a.fecha) || b.actualizadaEn.localeCompare(a.actualizadaEn)), [repertorios]);
 
-    const cambiarVer = (v: 'canciones' | 'repertorios') => {
+    const cambiarVer = (v: VistaCancionero) => {
         const p = new URLSearchParams(params);
-        if (v === 'repertorios') p.set('ver', v); else p.delete('ver');
+        if (v !== 'canciones') p.set('ver', v); else p.delete('ver');
         setParams(p, { replace: true });
     };
     const probarEjemplo = () => navigate(`/cancionero/${crear(CANCION_EJEMPLO).id}`);
@@ -251,11 +252,23 @@ export default function Cancionero() {
                 </>
             ) : (
                 <>
-                    <div className="mt-4 grid grid-cols-4 gap-3 lg:hidden">
+                    {/* Las tres vistas grandes; debajo, aparte, las herramientas */}
+                    <div className="mt-4 grid grid-cols-3 gap-3 lg:hidden">
                         <Baldosa icono={ICONO.canciones} etiqueta="Canciones" pastel={PASTEL.cielo} activa={ver === 'canciones'} onClick={() => cambiarVer('canciones')} />
                         <Baldosa icono={ICONO.repertorios} etiqueta="Repertorios" pastel={PASTEL.lavanda} activa={ver === 'repertorios'} onClick={() => cambiarVer('repertorios')} />
-                        <Baldosa icono={ICONO.buscar} etiqueta="Buscar" pastel={PASTEL.menta} onClick={() => buscadorRef.current?.focus()} />
-                        <Baldosa icono={ICONO.importar} etiqueta="Importar" pastel={PASTEL.melocoton} onClick={() => setImportar(true)} />
+                        <Baldosa icono={ICONO.bolos} etiqueta="Bolos" pastel={PASTEL.rosa} activa={ver === 'bolos'} onClick={() => cambiarVer('bolos')} />
+                    </div>
+                    <div className="mt-3 -mx-4 px-4 flex gap-2 overflow-x-auto hide-scrollbar lg:hidden" aria-label="Herramientas">
+                        {([
+                            [ICONO.importar, 'Importar', () => setImportar(true), 0],
+                            [ICONO.escuchar, 'Sacar de un audio', () => navigate('/cancionero/escuchar'), 0],
+                            [null, 'Completar letras', () => setCompletar(true), faltanLetra],
+                        ] as const).map(([icono, t, f, n]) => (
+                            <button key={t} onClick={f} className="pulsable shrink-0 h-10 pl-1 pr-3.5 rounded-full bg-fill flex items-center gap-1.5 text-[14px] font-semibold text-foreground">
+                                {icono ? <img src={icono} alt="" aria-hidden className="h-8 w-8 object-contain" /> : <span className="h-8 w-8 flex items-center justify-center" aria-hidden><FileText className="h-[18px] w-[18px]" /></span>} {t}
+                                {n > 0 && <span className="text-[13px] text-muted-foreground">{n}</span>}
+                            </button>
+                        ))}
                     </div>
 
                     {proximo && (
@@ -263,14 +276,17 @@ export default function Cancionero() {
                             etiqueta={proximo.fecha === hoy ? 'Hoy' : proximo.fecha > hoy ? 'Próximo bolo' : 'Último bolo'}
                             onTocar={() => tocarBolo(proximo.id)} />
                     )}
-                    <TarjetaEscuchar />
 
                     <div className="mt-6 mb-2 flex items-center justify-between gap-3">
                         <h2 className="min-w-0 truncate font-heading text-[20px] font-bold text-foreground whitespace-nowrap">
-                            {ver === 'repertorios' ? 'Repertorios' : listaId === 'todas' ? 'Tus canciones' : nombreDeLista(listaId, listas)}
-                            <span className="ml-1.5 text-[15px] font-semibold text-muted-foreground">{ver === 'repertorios' ? reps.length || '' : enLista.length || ''}</span>
+                            {ver === 'bolos' ? 'Bolos' : ver === 'repertorios' ? 'Repertorios' : listaId === 'todas' ? 'Tus canciones' : nombreDeLista(listaId, listas)}
+                            <span className="ml-1.5 text-[15px] font-semibold text-muted-foreground">{ver === 'bolos' ? bolos.length || '' : ver === 'repertorios' ? reps.length || '' : enLista.length || ''}</span>
                         </h2>
-                        {ver === 'repertorios' ? (
+                        {ver === 'bolos' ? (
+                            <button onClick={() => navigate(`/cancionero/bolo/${crearBolo({ titulo: 'Bolo nuevo' }).id}`)} className="pulsable h-9 pl-3 pr-4 rounded-full bg-primary text-primary-foreground text-[14px] font-semibold flex items-center gap-1">
+                                <Plus className="h-4 w-4" /> Nuevo
+                            </button>
+                        ) : ver === 'repertorios' ? (
                             <button onClick={nuevoRepertorio} className="pulsable h-9 pl-3 pr-4 rounded-full bg-primary text-primary-foreground text-[14px] font-semibold flex items-center gap-1">
                                 <Plus className="h-4 w-4" /> Nuevo
                             </button>
@@ -297,8 +313,7 @@ export default function Cancionero() {
                         )}
                     </div>
 
-                    {ver === 'repertorios' && <ListaBolos />}
-                    {ver === 'repertorios' ? (
+                    {ver === 'bolos' ? <ListaBolos /> : ver === 'repertorios' ? (
                         reps.length === 0 ? (
                             <div className="rounded-[22px] bg-pastel-lavanda p-5 md:p-7">
                                 <img src={ICONO.repertorios} alt="" className="h-16 w-16 object-contain drop-shadow-[0_6px_8px_rgba(0,0,0,0.16)]" />

@@ -2,9 +2,10 @@ import { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { CalendarDays, ChevronRight, Plus } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { ICONO } from './estilo';
 import { useCancionero } from '../../hooks/useCancionero';
 
-// Los bolos, encima de los repertorios (13-nov): los que vienen primero, los pasados plegados
+// Los bolos, su propia vista del Cancionero (13-nov): los que vienen primero, los pasados plegados
 export function ListaBolos() {
     const { bolos, crearBolo } = useCancionero();
     const navigate = useNavigate();
@@ -35,17 +36,16 @@ export function ListaBolos() {
         </Link>
     );
     return (
-        <section className="mb-5" aria-labelledby="titulo-bolos">
-            <div className="mb-2 flex items-center justify-between gap-2">
-                <h3 id="titulo-bolos" className="text-[13px] font-bold uppercase tracking-[0.08em] text-muted-foreground">Bolos</h3>
-                <button onClick={nuevo} className="pulsable h-9 pl-2.5 pr-3.5 rounded-full bg-fill text-[14px] font-semibold text-foreground flex items-center gap-1">
-                    <Plus className="h-4 w-4" /> Nuevo bolo
-                </button>
-            </div>
+        <section aria-label="Bolos">
             {bolos.length === 0 ? (
-                <p className="rounded-2xl bg-fill px-4 py-3 text-[14.5px] text-muted-foreground">
-                    Un bolo junta el repertorio, el horario, el lugar y a quién llamar, en un enlace para tus músicos.
-                </p>
+                <div className="rounded-[22px] bg-pastel-rosa p-5 md:p-7">
+                    <img src={ICONO.bolos} alt="" className="h-16 w-16 object-contain drop-shadow-[0_6px_8px_rgba(0,0,0,0.16)]" />
+                    <p className="mt-3 font-heading text-[20px] font-bold leading-snug text-foreground">Todo el bolo, en un enlace</p>
+                    <p className="mt-1 text-[15px] text-muted-foreground">Junta los sets, el horario, el lugar y a quién llamar. Tus músicos lo abren sin cuenta.</p>
+                    <button onClick={nuevo} className="pulsable mt-4 h-[52px] px-5 rounded-[14px] bg-primary text-primary-foreground text-[16px] font-semibold flex items-center gap-1.5">
+                        <Plus className="h-5 w-5" /> Crear un bolo
+                    </button>
+                </div>
             ) : (
                 <div className="rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
                     {proximos.map(fila)}

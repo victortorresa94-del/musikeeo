@@ -13,13 +13,16 @@ import { ImportarCanciones } from './ImportarCanciones';
 import { CompletarLetras } from './CompletarLetras';
 import type { Lista } from '../../types/cancionero';
 
+// Las tres vistas grandes del Cancionero (13-nov, Víctor: «canciones, repertorios y bolos»)
+export type VistaCancionero = 'canciones' | 'repertorios' | 'bolos';
+
 // En el ordenador (≥ 1024 px), el menú del Cancionero a la izquierda en todas sus páginas, como
 // en un gestor de música. En el móvil no se ve: allí cada página trae su manera de volver
 export function ConMenu({ children, activo, onLista, onVer, onOpcionesLista, className }: {
     children: ReactNode;
-    activo?: { ver: 'canciones' | 'repertorios'; lista?: string } | null;
+    activo?: { ver: VistaCancionero; lista?: string } | null;
     onLista?: (id: string) => void;                  // en la página de Canciones cambia la lista sin navegar
-    onVer?: (v: 'canciones' | 'repertorios') => void;
+    onVer?: (v: VistaCancionero) => void;
     onOpcionesLista?: (l: Lista) => void;
     className?: string;
 }) {
@@ -32,30 +35,40 @@ export function ConMenu({ children, activo, onLista, onVer, onOpcionesLista, cla
     const faltanLetra = useMemo(() => canciones.filter(c => lineasDeLetra(leerCancion(c.texto)) < 8).length, [canciones]);
     const cuantas = (id: string) => cancionesDeLista(id, canciones, listas, c => tonos.get(c.id) ?? null).length;
     const irLista = onLista ?? ((id: string) => navigate(id === 'todas' ? '/cancionero' : `/cancionero?lista=${encodeURIComponent(id)}`));
-    const irVer = onVer ?? ((v: 'canciones' | 'repertorios') => navigate(v === 'repertorios' ? '/cancionero?ver=repertorios' : '/cancionero'));
+    const irVer = onVer ?? ((v: VistaCancionero) => navigate(v === 'canciones' ? '/cancionero' : `/cancionero?ver=${v}`));
 
     return (
         <div className="lg:flex lg:items-start lg:gap-8 lg:max-w-[1360px] lg:mx-auto lg:px-6">
             {listo && (
                 <aside aria-label="Menú del cancionero" className="hidden lg:block w-[240px] shrink-0 sticky top-20 pt-6 pb-10 max-h-[calc(100vh-5rem)] overflow-y-auto hide-scrollbar">
-                    <nav className="space-y-0.5">
+                    {/* Las tres vistas grandes */}
+                    <nav className="space-y-0.5" aria-label="Vistas">
                         {([
                             [ICONO.canciones, 'Canciones', () => irLista('todas'), activo?.ver === 'canciones' && (activo.lista ?? 'todas') === 'todas'],
                             [ICONO.repertorios, 'Repertorios', () => irVer('repertorios'), activo?.ver === 'repertorios'],
-                            [ICONO.importar, 'Importar', () => setImportar(true), false],
-                            [ICONO.escuchar, 'Sacar de un audio', () => navigate('/cancionero/escuchar'), false],
+                            [ICONO.bolos, 'Bolos', () => irVer('bolos'), activo?.ver === 'bolos'],
                         ] as const).map(([icono, t, f, on]) => (
                             <button key={t} onClick={f} aria-current={on ? 'page' : undefined}
-                                className={cn('w-full h-10 px-2 rounded-xl flex items-center gap-2.5 text-left text-[15px] font-semibold text-foreground', on ? 'bg-fill-strong' : 'hover:bg-fill')}>
+                                className={cn('w-full h-11 px-2 rounded-xl flex items-center gap-2.5 text-left text-[16px] font-bold text-foreground', on ? 'bg-fill-strong' : 'hover:bg-fill')}>
+                                <img src={icono} alt="" className="h-8 w-8 object-contain" /> {t}
+                            </button>
+                        ))}
+                    </nav>
+                    {/* Herramientas: aparte de las vistas */}
+                    <p className="mt-5 mb-1 px-2 text-[12px] font-bold uppercase tracking-[0.08em] text-muted-foreground">Herramientas</p>
+                    <nav className="space-y-0.5" aria-label="Herramientas">
+                        {([
+                            [ICONO.importar, 'Importar', () => setImportar(true)],
+                            [ICONO.escuchar, 'Sacar de un audio', () => navigate('/cancionero/escuchar')],
+                        ] as const).map(([icono, t, f]) => (
+                            <button key={t} onClick={f} className="w-full h-10 px-2 rounded-xl flex items-center gap-2.5 text-left text-[15px] font-semibold text-foreground hover:bg-fill">
                                 <img src={icono} alt="" className="h-7 w-7 object-contain" /> {t}
                             </button>
                         ))}
-                        {faltanLetra > 0 && (
-                            <button onClick={() => setCompletar(true)} className="w-full h-10 px-2 rounded-xl flex items-center gap-2.5 text-left text-[15px] font-semibold text-foreground hover:bg-fill">
-                                <span className="h-7 w-7 flex items-center justify-center"><FileText className="h-[18px] w-[18px]" /></span>
-                                <span className="flex-1">Completar letras</span><span className="text-[13px] text-muted-foreground">{faltanLetra}</span>
-                            </button>
-                        )}
+                        <button onClick={() => setCompletar(true)} className="w-full h-10 px-2 rounded-xl flex items-center gap-2.5 text-left text-[15px] font-semibold text-foreground hover:bg-fill">
+                            <span className="h-7 w-7 flex items-center justify-center"><FileText className="h-[18px] w-[18px]" /></span>
+                            <span className="flex-1">Completar letras</span>{faltanLetra > 0 && <span className="text-[13px] text-muted-foreground">{faltanLetra}</span>}
+                        </button>
                     </nav>
                     <p className="mt-5 mb-1 px-2 text-[12px] font-bold uppercase tracking-[0.08em] text-muted-foreground">Listas</p>
                     <MenuListas actual={activo?.ver === 'canciones' ? activo.lista ?? 'todas' : ''} onElegir={irLista} canciones={canciones} listas={listas}

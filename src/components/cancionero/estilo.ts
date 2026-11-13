@@ -54,6 +54,7 @@ export const ICONO = {
     latino: '/images/cancionero/latino.webp',
     boda: '/images/categorias/momento-boda-3d.webp',
     escenario: '/images/categorias/momento-banda-sala-3d.webp',
+    bolos: '/images/3d/calendario.webp',
 } as const;
 
 // Un bloque del setlist («1 · Arranque pop», «Bis», «Banquillo · Rumba») por su nombre
