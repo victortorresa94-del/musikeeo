@@ -421,7 +421,10 @@ function leerCancionSinRecordar(texto: string): CancionLeida {
         if (enLinea) {
             const salto = esLetra(i + 1) ? 1
                 : dobleEspacio && crudas[i + 1]?.trim() === '' && esLetra(i + 2) ? 2 : 0;
-            if (!enLinea.etiqueta && salto) {
+            // Una fila con guiones o barras entre acordes («C – G7 – C», «| G | C |») es el resumen de la
+            // parte: va sola y nunca se reparte sobre la letra de debajo
+            const resumen = enLinea.marcas.some(m => !m.marca.acorde && /^[-–—|]+$/.test(m.marca.texto.trim()));
+            if (!enLinea.etiqueta && salto && !resumen) {
                 meter({ tipo: 'mixta', trozos: combinar(enLinea.marcas, crudas[i + salto]) });
                 i += salto;
             } else {
