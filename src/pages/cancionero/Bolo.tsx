@@ -9,7 +9,7 @@ import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
 import { CompartirBolo } from '../../components/cancionero/CompartirGrupo';
 import { iconoRepertorio, pastelDe } from '../../components/cancionero/estilo';
 import { textoDuracion } from '../../lib/biblioteca';
-import { DURACION_MEDIA, enlaceBolo, enlacesMapa, esHora, minutosDe, paqueteBolo } from '../../lib/compartirBolo';
+import { DURACION_MEDIA, enlaceBolo, enlacesMapa, esHora, horaDe, minutosDe, paqueteBolo } from '../../lib/compartirBolo';
 import type { Bolo as TipoBolo, HoraBolo, Repertorio } from '../../types/cancionero';
 
 // El bolo (13-nov): lo que hay que pasar a los músicos de una actuación, aparte del repertorio.
@@ -17,7 +17,12 @@ import type { Bolo as TipoBolo, HoraBolo, Repertorio } from '../../types/cancion
 // un panel donde puedan ver todo, el título, la duración del concierto». Se guarda al escribir
 // (en el móvil al momento y en la cuenta cuando paras) y el enlace se pone al día solo.
 
-const MOMENTOS = ['Llegada', 'Montaje', 'Prueba de sonido', 'Comida', 'Descanso', 'Recogida'];
+// El concierto, el primero (13-nov, Víctor: «debería salir obviamente concierto»): lleva hora de
+// empezar y de acabar, y en el enlace de los músicos sale grande («de 12:30 a 13:30»)
+const MOMENTOS = ['Concierto', 'Llegada', 'Montaje', 'Prueba de sonido', 'Comida', 'Descanso', 'Recogida'];
+const ES_CONCIERTO = /concierto|actuaci[oó]n|tocamos/i;
+// Sin «hasta» vacío (Firestore no admite huecos sin valor y no hace falta guardarlo)
+const conHasta = (h: HoraBolo): HoraBolo => { const { hasta, ...resto } = h; return hasta ? { ...resto, hasta } : resto; };
 
 function fechaLarga(f: string): string {
     const [a, m, d] = (f || '').split('-').map(Number);
@@ -53,6 +58,14 @@ export default function Bolo() {
     const musica = sets.reduce((t, { r }) => t + duracionDe(r).segundos, 0);
     const aprox = sets.some(({ r }) => duracionDe(r).aprox);
     const ponerHorario = (horario: HoraBolo[]) => cambiar({ horario });
+    // «+ Concierto» ya con la hora del primer set (y su hueco, si lo tiene)
+    const nuevoMomento = (que: string): HoraBolo => {
+        if (!ES_CONCIERTO.test(que)) return { hora: '', que };
+        const primero = sets.filter(({ s }) => esHora(s.hora)).sort((a, b) => minutosDe(a.s.hora!) - minutosDe(b.s.hora!))[0];
+        if (!primero) return { hora: '', que };
+        const desde = primero.s.hora!.trim();
+        return conHasta({ hora: desde, que, hasta: primero.r.hueco ? horaDe(minutosDe(desde) + primero.r.hueco) : undefined });
+    };
     // Por hora al acabar de escribirla (lo que no tiene hora, al final)
     const ordenarHorario = () => {
         const orden = [...bolo.horario].map((h, i) => ({ h, i })).sort((a, b) =>
@@ -157,21 +170,34 @@ export default function Bolo() {
 
                 {/* El horario de cada cosa (los sets salen solos, con su hora) */}
                 <Seccion titulo="Horario" icono={<Clock className="h-4 w-4" />}>
-                    {bolo.horario.map((h, i) => (
-                        <div key={i} className={fila}>
-                            <input type="time" value={h.hora} aria-label={`Hora de ${h.que || 'este momento'}`}
-                                onChange={e => ponerHorario(bolo.horario.map((x, j) => (j === i ? { ...x, hora: e.target.value } : x)))} onBlur={ordenarHorario}
-                                className={horaCampo} />
-                            <input value={h.que} onChange={e => ponerHorario(bolo.horario.map((x, j) => (j === i ? { ...x, que: e.target.value.slice(0, 200) } : x)))}
-                                placeholder="Qué pasa a esa hora" aria-label="Qué pasa a esa hora" className={campo} />
-                            <button onClick={() => ponerHorario(bolo.horario.filter((_, j) => j !== i))} aria-label={`Quitar ${h.que || 'esta hora'}`}
-                                className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-muted-foreground active:bg-fill-strong"><MinusCircle className="h-5 w-5" /></button>
-                        </div>
-                    ))}
+                    {bolo.horario.map((h, i) => {
+                        const poner = (cambio: Partial<HoraBolo>) => ponerHorario(bolo.horario.map((x, j) => (j === i ? conHasta({ ...x, ...cambio }) : x)));
+                        return (
+                            <div key={i} className="border-b border-hairline last:border-b-0">
+                                <div className="flex items-center gap-3 px-4 min-h-[52px]">
+                                    <input type="time" value={h.hora} aria-label={`Hora de ${h.que || 'este momento'}`}
+                                        onChange={e => poner({ hora: e.target.value })} onBlur={ordenarHorario}
+                                        className={horaCampo} />
+                                    <input value={h.que} onChange={e => poner({ que: e.target.value.slice(0, 200) })}
+                                        placeholder="Qué pasa a esa hora" aria-label="Qué pasa a esa hora" className={campo} />
+                                    <button onClick={() => ponerHorario(bolo.horario.filter((_, j) => j !== i))} aria-label={`Quitar ${h.que || 'esta hora'}`}
+                                        className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-muted-foreground active:bg-fill-strong"><MinusCircle className="h-5 w-5" /></button>
+                                </div>
+                                {/* El concierto: hasta qué hora (sale grande en el enlace de los músicos) */}
+                                {(ES_CONCIERTO.test(h.que) || h.hasta) && (
+                                    <div className="flex items-center gap-3 px-4 pb-3 -mt-1">
+                                        <input type="time" value={h.hasta ?? ''} aria-label={`Hasta qué hora: ${h.que || 'este momento'}`}
+                                            onChange={e => poner({ hasta: e.target.value })} className={horaCampo} />
+                                        <span className="text-[14px] text-muted-foreground leading-snug">Hasta esta hora. Los músicos lo ven en grande.</span>
+                                    </div>
+                                )}
+                            </div>
+                        );
+                    })}
                     <div className="px-4 py-3">
                         <div className="flex flex-wrap gap-1.5">
                             {MOMENTOS.filter(m => !bolo.horario.some(h => h.que === m)).map(m => (
-                                <button key={m} onClick={() => ponerHorario([...bolo.horario, { hora: '', que: m }])}
+                                <button key={m} onClick={() => ponerHorario([...bolo.horario, nuevoMomento(m)])}
                                     className="pulsable h-9 pl-2 pr-3 rounded-full bg-fill-strong text-[14px] font-semibold text-foreground flex items-center gap-1">
                                     <Plus className="h-4 w-4" /> {m}
                                 </button>

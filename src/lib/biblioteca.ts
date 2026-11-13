@@ -243,7 +243,7 @@ export interface RepertorioCopia { nombre: string; fecha?: string; canciones: nu
 export interface CatalogoCopia { aspecto?: Record<string, unknown>; campos?: unknown[] }
 export interface BoloCopia {
     titulo: string; fecha?: string; lugar?: string; direccion?: string; contacto?: string; telefono?: string; notas?: string;
-    horario?: { hora: string; que: string }[];
+    horario?: { hora: string; que: string; hasta?: string }[];
     sets: { repertorio: number; hora?: string }[];
 }
 export interface Copia { app: 'musikeeo-cancionero'; version: 1; creada: string; canciones: CancionCopia[]; repertorios: RepertorioCopia[]; catalogo?: CatalogoCopia; bolos?: BoloCopia[] }
@@ -283,7 +283,7 @@ function leerBolos(dato: unknown, repertorios: number): BoloCopia[] | undefined 
         titulo: b.titulo.slice(0, 120), fecha: texto(b.fecha, 10), lugar: texto(b.lugar, 200), direccion: texto(b.direccion, 300),
         contacto: texto(b.contacto, 120), telefono: texto(b.telefono, 40), notas: texto(b.notas, 5000),
         horario: Array.isArray(b.horario) ? b.horario.filter((h: unknown) => h && typeof (h as { que: unknown }).que === 'string')
-            .map((h: { hora?: unknown; que: string }) => ({ hora: typeof h.hora === 'string' ? h.hora.slice(0, 5) : '', que: h.que.slice(0, 200) })).slice(0, 40) : undefined,
+            .map((h: { hora?: unknown; que: string; hasta?: unknown }) => ({ hora: typeof h.hora === 'string' ? h.hora.slice(0, 5) : '', que: h.que.slice(0, 200), ...(typeof h.hasta === 'string' && h.hasta ? { hasta: h.hasta.slice(0, 5) } : {}) })).slice(0, 40) : undefined,
         sets: Array.isArray(b.sets) ? b.sets.filter((s: { repertorio?: unknown }) => s && Number.isInteger(s.repertorio) && (s.repertorio as number) >= 0 && (s.repertorio as number) < repertorios)
             .map((s: { repertorio: number; hora?: unknown }) => ({ repertorio: s.repertorio, ...(typeof s.hora === 'string' ? { hora: s.hora.slice(0, 5) } : {}) })).slice(0, 10) : [],
     }));

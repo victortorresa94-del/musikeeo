@@ -87,7 +87,7 @@ export interface Lista {
 // Un bolo (13-nov): lo que hay que saber de una actuación para pasárselo a los músicos —cuándo,
 // dónde, el horario, los sets (repertorios) con su hora, a quién llamar y las notas—. Aparte del
 // repertorio: uno o varios sets por bolo, y el mismo repertorio puede ir en varios bolos
-export interface HoraBolo { hora: string; que: string }          // «10:30» · «Llegada y montaje»
+export interface HoraBolo { hora: string; que: string; hasta?: string }   // «10:30» · «Llegada y montaje» (hasta: el concierto, «de 12:30 a 13:30»)
 export interface SetBolo { repertorioId: string; hora?: string }  // hora de empezar ese set
 export interface Bolo {
     id: string;

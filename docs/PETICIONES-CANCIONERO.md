@@ -655,6 +655,19 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
 - *«Ábreme un fork»* para meter canciones y probar partituras → sesión aparte «Musikeeo · canciones al Cancionero y partituras».
 - *«quiero poder cambiar el color de las etiquetas de las energías y además poder añadir nuevas… igual que en Fiesta [Estilo]… para todas»* → ✅ Energía y Estado como Estilo: «+ Otro», sus colores y «Colores, renombrar o quitar» (pestañas nuevas en «Grupos y colores»). Las cuatro energías de siempre siguen como 1–4; las nuevas, por su nombre (`Energia` en types, `nombreEnergia`/`energiaDeNombre` en `biblioteca.ts`). Filtros, Tabla, Bloques y agrupar las entienden.
 
+### 21o. La víspera, últimas (13-nov, noche) ✅
+
+- *«acabo de copiar la letra directa de Cifra Club y mira cómo se me ha pegado… es importantísimo»* → ✅ lo pegado de fuera en el editor en su sitio entra como TEXTO, línea a línea y con sus espacios (`handlePaste` en `EditorLetra.tsx`, con `textoPegado` + `limpiarTexto`). El HTML de la web metía la fila de acordes y la de la letra en la misma línea. Probado con su «Baile Inolvidable»: queda igual que lo copiado. Una canción sin vista guardada enseña todo, no solo acordes.
+- *«Es importantísimo que todo esto funcione sin conexión, y que no se me reinicie la app en directo ni se me salga»* → ✅ (`lib/directo.ts`, `DirectoEnVivo.tsx`, `SiFalla.tsx`):
+  - nunca se recarga sola dentro de una canción, un repertorio, Tocar, un bolo o el enlace del grupo;
+  - el service worker guarda la versión de ahora y la anterior (la página abierta sigue teniendo su código sin red);
+  - Tocar lleva la canción en la dirección (`?n=`); si el iPhone cierra la app, al abrirla (instalada) vuelve a esa canción durante 4 h y lo dice («Seguías aquí · Ir al inicio»);
+  - sin «tirar para recargar» en directo;
+  - si una canción no se puede pintar, se ve su texto tal cual y Tocar sigue.
+  - Probado sin red con la versión de publicar en un iPhone simulado.
+- *«en las opciones predeterminadas para el horario del bolo… debería salir obviamente concierto»* → ✅ «+ Concierto», el primero, ya con la hora del primer set y, si tiene hueco, la de acabar; el concierto lleva «hasta» (`HoraBolo.hasta`).
+- *«en la página que comparto a los músicos debería destacar mucho más el horario… que ponga más grande de 12:30 a 13:30»* → ✅ tarjeta negra arriba: «CONCIERTO · 12:30 – 13:30» en grande (`cuandoSeToca`); sin «Concierto» en el horario, cada set con su hora (con hueco, exacta; si no, «acaba hacia esa hora»).
+
 ## 22. Datos de la BBDD a corregir ⏳
 
 Artistas mal en la BBDD:

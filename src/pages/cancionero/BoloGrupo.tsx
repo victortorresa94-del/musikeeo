@@ -4,7 +4,7 @@ import { CalendarDays, ChevronRight, Clock, ListMusic, MapPin, MessageCircle, Ph
 import { escucharCompartido } from '../../services/compartidosService';
 import { cn } from '../../lib/utils';
 import { codificar } from '../../lib/compartir';
-import { descodificarBolo, duracionSet, enlacesMapa, horarioCompleto, nombreEnBolo, telefonoLimpio, type BoloCompartido } from '../../lib/compartirBolo';
+import { cuandoSeToca, descodificarBolo, esConcierto, duracionSet, enlacesMapa, horarioCompleto, nombreEnBolo, telefonoLimpio, type BoloCompartido } from '../../lib/compartirBolo';
 import { textoDuracion } from '../../lib/biblioteca';
 import { ICONO, iconoRepertorio, pastelDe } from '../../components/cancionero/estilo';
 import { VistaSet } from './Grupo';
@@ -122,11 +122,16 @@ export default function BoloGrupo() {
 
 function PanelBolo({ datos, onAbrirSet }: { datos: BoloCompartido; onAbrirSet: (i: number) => void }) {
     const fecha = datos.f ? new Date(`${datos.f}T12:00:00`).toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }) : '';
-    const momentos = horarioCompleto(datos);
+    // El «Concierto» que empieza a la vez que un set no se repite en el horario (ya sale el set)
+    const momentos = horarioCompleto(datos).filter((m, _i, todos) =>
+        !(m.set === undefined && esConcierto(m.que) && todos.some(x => x.set !== undefined && x.hora === m.hora)));
     const duraciones = datos.s.map(duracionSet);
     const musica = duraciones.reduce((s, d) => s + d.segundos, 0);
     const aprox = duraciones.some(d => d.aprox);
     const primerSet = momentos.find(m => m.set !== undefined);
+    // Cuándo se toca, en grande (13-nov, Víctor: «debería destacar mucho más el horario del bolo…
+    // que ponga más grande de 12:30 a 13:30»)
+    const conciertos = cuandoSeToca(datos);
     const dondeIr = datos.di || datos.lu;
     const mapas = dondeIr ? enlacesMapa(dondeIr) : null;
     const tel = datos.te ? telefonoLimpio(datos.te) : null;
@@ -138,9 +143,41 @@ function PanelBolo({ datos, onAbrirSet }: { datos: BoloCompartido; onAbrirSet: (
                 <h1 className="mt-1 font-heading text-[28px] font-bold leading-tight">{datos.n}</h1>
                 {(fecha || datos.lu) && <p className="mt-1 text-[15px] text-muted-foreground first-letter:uppercase">{[fecha, datos.lu].filter(Boolean).join(' · ')}</p>}
 
+                {/* Cuándo se toca: lo primero que se busca, en grande */}
+                {conciertos.length > 0 && (
+                    <section className="mt-5 rounded-[22px] bg-foreground text-background px-5 py-4" aria-label="Cuándo se toca">
+                        <p className="flex items-center gap-1.5 text-[12.5px] font-bold uppercase tracking-[0.08em] opacity-70">
+                            <Clock className="h-4 w-4" /> {conciertos.length > 1 ? 'Cuándo tocamos' : 'Concierto'}
+                        </p>
+                        <div className="mt-1.5 space-y-3">
+                            {conciertos.map((c, i) => {
+                                const nombre = c.set !== undefined ? c.que : conciertos.length > 1 || !/^concierto$/i.test((c.que ?? '').trim()) ? c.que : undefined;
+                                const contenido = (
+                                    <>
+                                        <span className="block font-heading text-[44px] leading-[1.05] font-bold tabular-nums tracking-[-0.02em]"
+                                            aria-label={c.hasta ? `De ${c.desde} a ${c.hasta}` : `A las ${c.desde}`}>
+                                            {c.desde}{c.hasta && <span className="opacity-60"> – </span>}{c.hasta}
+                                        </span>
+                                        {(nombre || c.aprox) && (
+                                            <span className="mt-0.5 block text-[15px] font-semibold opacity-80">
+                                                {[nombre, c.aprox && c.hasta && 'acaba hacia esa hora'].filter(Boolean).join(' · ')}
+                                            </span>
+                                        )}
+                                    </>
+                                );
+                                return c.set !== undefined
+                                    ? <button key={i} onClick={() => onAbrirSet(c.set!)} className="w-full text-left flex items-center gap-2 active:opacity-70">
+                                        <span className="flex-1 min-w-0">{contenido}</span><ChevronRight className="h-6 w-6 shrink-0 opacity-60" />
+                                    </button>
+                                    : <div key={i}>{contenido}</div>;
+                            })}
+                        </div>
+                    </section>
+                )}
+
                 {/* De un vistazo */}
                 <div className="mt-4 flex flex-wrap gap-2">
-                    {primerSet && <Dato icono={<Clock className="h-4 w-4" />}>Empieza {primerSet.hora}</Dato>}
+                    {primerSet && !conciertos.length && <Dato icono={<Clock className="h-4 w-4" />}>Empieza {primerSet.hora}</Dato>}
                     {datos.s.length > 0 && <Dato icono={<Timer className="h-4 w-4" />}>{aprox ? '≈ ' : ''}{textoDuracion(musica)} de música</Dato>}
                     {datos.s.length > 1 && <Dato icono={<ListMusic className="h-4 w-4" />}>{datos.s.length} sets</Dato>}
                     {!fecha && !primerSet && <Dato icono={<CalendarDays className="h-4 w-4" />}>Sin fecha</Dato>}
@@ -185,7 +222,7 @@ function PanelBolo({ datos, onAbrirSet }: { datos: BoloCompartido; onAbrirSet: (
                                         </span>
                                         <span className="flex-1 min-w-0 py-2.5">
                                             <span className="block text-[16px] font-semibold leading-snug">{m.que}</span>
-                                            {m.hasta && <span className="block text-[13.5px] text-muted-foreground">Hasta las {m.hasta} aprox.</span>}
+                                            {m.hasta && <span className="block text-[13.5px] text-muted-foreground">Hasta las {m.hasta}{m.aprox ? ' aprox.' : ''}</span>}
                                         </span>
                                         {esSet && <ChevronRight className="mt-3 h-5 w-5 shrink-0 text-muted-foreground" />}
                                     </>

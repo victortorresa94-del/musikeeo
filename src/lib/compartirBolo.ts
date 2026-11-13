@@ -51,7 +51,7 @@ export function paqueteBolo(bolo: Bolo, repertorios: Repertorio[], canciones: Ca
         sets.push({ ...paquete(r, canciones, conLetra), ...(esHora(s.hora) ? { hi: s.hora.trim() } : {}), ...(r.hueco ? { hu: r.hueco } : {}) });
     }
     const texto = (x?: string) => (x && x.trim() ? x.trim() : undefined);
-    const horario = bolo.horario.filter(h => h.que.trim() || esHora(h.hora)).map(h => ({ hora: h.hora.trim(), que: h.que.trim() }));
+    const horario = bolo.horario.filter(h => h.que.trim() || esHora(h.hora)).map(h => ({ hora: h.hora.trim(), que: h.que.trim(), ...(esHora(h.hasta) ? { hasta: h.hasta.trim() } : {}) }));
     return {
         v: 1,
         tipo: 'bolo',
@@ -81,7 +81,7 @@ export function sanearBolo(dato: unknown): BoloCompartido | null {
         sets.push({ ...limpio, ...(esHora(hi) ? { hi } : {}), ...(typeof hu === 'number' && hu > 0 ? { hu } : {}) });
     }
     const ho = Array.isArray(b.ho)
-        ? b.ho.filter(h => h && typeof h.que === 'string').map(h => ({ hora: typeof h.hora === 'string' ? h.hora.slice(0, 5) : '', que: h.que.slice(0, 200) })).slice(0, 40)
+        ? b.ho.filter(h => h && typeof h.que === 'string').map(h => ({ hora: typeof h.hora === 'string' ? h.hora.slice(0, 5) : '', que: h.que.slice(0, 200), ...(typeof h.hasta === 'string' && esHora(h.hasta) ? { hasta: h.hasta.slice(0, 5) } : {}) })).slice(0, 40)
         : undefined;
     return {
         v: 1, tipo: 'bolo', n: b.n.slice(0, 120), s: sets,
@@ -95,13 +95,14 @@ export const enlaceBolo = (p: BoloCompartido, id?: string, origen = window.locat
     `${origen}/bolo${id ? `/${id}` : ''}#${codificar(p)}`;
 
 // El horario del bolo con los sets dentro, por hora (lo que no tiene hora, al final)
-export interface MomentoBolo { hora: string; que: string; set?: number; hasta?: string }
+export interface MomentoBolo { hora: string; que: string; set?: number; hasta?: string; aprox?: boolean }
 export function horarioCompleto(b: BoloCompartido): MomentoBolo[] {
-    const momentos: MomentoBolo[] = (b.ho ?? []).map(h => ({ hora: h.hora, que: h.que }));
+    const momentos: MomentoBolo[] = (b.ho ?? []).map(h => ({ hora: h.hora, que: h.que, ...(esHora(h.hasta) ? { hasta: h.hasta } : {}) }));
     b.s.forEach((s, i) => {
         if (!esHora(s.hi)) return;
-        const fin = minutosDe(s.hi) + Math.round(duracionSet(s).segundos / 60);
-        momentos.push({ hora: s.hi, que: nombreEnBolo(s.n, b.n), set: i, hasta: horaDe(fin) });
+        // Con hueco, el set acaba cuando acaba su hueco; si no, cuando acaban sus canciones (aprox.)
+        const fin = minutosDe(s.hi) + (s.hu ? s.hu : Math.round(duracionSet(s).segundos / 60));
+        momentos.push({ hora: s.hi, que: nombreEnBolo(s.n, b.n), set: i, hasta: horaDe(fin), aprox: !s.hu });
     });
     return momentos
         .map((m, i) => ({ m, i }))
@@ -146,4 +147,17 @@ export function tituloYHoraDe(nombre: string): { titulo: string; hora?: string }
     const m = /(?:^|\s)([01]?\d|2[0-3])\s*[:h.]\s*([0-5]\d)(?!\d)\s*$/i.exec(nombre.trim());
     if (!m) return { titulo: nombre.trim() };
     return { titulo: nombre.trim().slice(0, m.index).replace(/[\s·,-]+$/, '').trim() || nombre.trim(), hora: `${m[1].padStart(2, '0')}:${m[2]}` };
+}
+
+// Cuándo se toca, para ponerlo GRANDE arriba de la página del músico (13-nov, Víctor: «que ponga
+// más grande de 12:30 a 13:30»). Si en el horario hay un «Concierto» (o «Actuación», «Tocamos»…)
+// manda ese; si no, los sets con su hora
+const ES_CONCIERTO = /concierto|actuaci[oó]n|tocamos|show|directo|\bbolo\b|\bset\b|pase/i;
+export const esConcierto = (que: string) => ES_CONCIERTO.test(que);
+export interface Concierto { desde: string; hasta?: string; aprox?: boolean; que?: string; set?: number }
+export function cuandoSeToca(b: BoloCompartido): Concierto[] {
+    const momentos = horarioCompleto(b);
+    const delHorario = momentos.filter(m => m.set === undefined && esHora(m.hora) && ES_CONCIERTO.test(m.que));
+    if (delHorario.length) return delHorario.map(m => ({ desde: m.hora, hasta: m.hasta, que: m.que }));
+    return momentos.filter(m => m.set !== undefined && esHora(m.hora)).map(m => ({ desde: m.hora, hasta: m.hasta, aprox: m.aprox, que: m.que, set: m.set }));
 }
