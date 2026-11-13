@@ -37,3 +37,8 @@ export function buscarEncaje(hoja: HTMLElement, ancho: number, alto: number, max
 
 // Columnas que tiene sentido probar según el ancho (una columna de menos de ~260 px no se lee)
 export const columnasPosibles = (ancho: number) => Math.max(1, Math.min(4, Math.floor(ancho / 260)));
+
+// Tope de «que quepa» en pantalla: una chuleta de 3 líneas no debe salir a 60 px. En el móvil
+// 30 px de letra; en tablet y ordenador, 40. Va en el cálculo, no en lo guardado: Aa± y el zoom
+// con dos dedos pueden pasar de aquí si se quiere
+export const topeQueQuepa = () => (typeof window !== 'undefined' && window.innerWidth < 768 ? 30 : 40);
