@@ -17,7 +17,21 @@ import { claveTitulo } from '../../lib/buscarCanciones';
 import { cancionDelPapel, partesDeMix, tituloDePapel, tonoDelPapel } from '../../lib/papeles';
 import { leerPortapapeles } from '../../lib/pegado';
 import { norm } from './utilidades';
+import { idDeYouTube, leerMarcas, type Marca } from '../../lib/seguir';
 import type { Cancion } from '../../types/cancionero';
+
+// El vídeo de Escuchar de una copia (si es de YouTube) con sus marcas
+function videoDeCopia(youtube: unknown, marcas: unknown): { youtube?: string; marcas?: Marca[] } {
+    const id = typeof youtube === 'string' ? idDeYouTube(youtube) : null;
+    return id ? { youtube: id, marcas: leerMarcas(marcas) } : {};
+}
+
+// Solo rellena: si ya tenías vídeo se queda el tuyo; las marcas van con su vídeo
+function conVideo(c: Cancion, t: CancionImportada): Partial<Cancion> {
+    if (!t.youtube || (c.youtube && c.youtube !== t.youtube)) return {};
+    const marcas = c.ajustes.marcas?.length || !t.marcas ? null : t.marcas;
+    return { youtube: t.youtube, ...(marcas ? { ajustes: { ...c.ajustes, marcas } } : {}) };
+}
 
 const AYUDA = `Pega el setlist del bolo, una línea por tema:
 
@@ -101,6 +115,7 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
             datos: c.ficha, bpm: c.bpm, duracion: c.duracion, portada: c.portada, version: c.version?.slice(0, 40),
             notas: aNotas(c.notas), favorita: c.favorita || undefined,
             spotify: typeof c.spotify === 'string' && /^https:\/\/open\.spotify\.com\//.test(c.spotify) ? c.spotify.slice(0, 300) : undefined,
+            ...videoDeCopia(c.youtube, c.ajustes?.marcas),
         }));
         // {tono: …} {canta: …} {grupo: …}: a la ficha del tema
         return (leerSetlist(texto) ?? separarCanciones(texto)).map(t => {
@@ -237,6 +252,7 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
             notas: t.notas ? unirNotas(c.notas, t.notas) : c.notas,
             favorita: c.favorita || t.favorita || undefined,
             spotify: c.spotify ?? t.spotify,
+            ...conVideo(c, t),
         });
         try {
             ids = encontradas.map((t, i) => {

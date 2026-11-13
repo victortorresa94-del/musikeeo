@@ -31,6 +31,8 @@ import { FichaEnSitio } from '../../components/cancionero/FichaEnSitio';
 import { BotonWebs } from '../../components/cancionero/BotonWebs';
 import { BotonTareas } from '../../components/cancionero/Tareas';
 import { BotonSpotify } from '../../components/cancionero/Spotify';
+import { BotonEscuchar, ReproductorEscuchar } from '../../components/cancionero/Escuchar';
+import { useEscuchar } from '../../hooks/useEscuchar';
 import { notasVacias } from '../../lib/notas';
 
 export default function LeerCancion() {
@@ -164,6 +166,9 @@ function Lector({ cancion }: { cancion: Cancion }) {
         const nuevo = Math.min(TAMANO_MAX, Math.max(TAMANO_MIN, Math.round(tamano) + d));
         cambiar({ tamano: nuevo, ajustar: false, columnas: ajustada ? (Math.min(3, columnas) as 1 | 2 | 3) : ajustes.columnas });
     };
+
+    // ---- Escuchar con su vídeo de YouTube: la hoja sigue a la canción (no con «que quepa») ----
+    const escuchar = useEscuchar({ cancion, ajustes, cambiar, zonaRef, seguir: !ajustada && !editando && !rodando && !escenario, onSuena: () => setRodando(false) });
 
     // ---- Desplazamiento automático ----
     const duracion = cancion.duracion;
@@ -413,12 +418,13 @@ function Lector({ cancion }: { cancion: Cancion }) {
                     )}
                     <BotonWebs cancion={cancion} />
                     <BotonSpotify cancion={cancion} />
+                    <BotonEscuchar escuchar={escuchar} cancion={cancion} />
                     <BotonTareas de={`c:${cancion.id}`} />
                 </div>
             </div>
 
             {/* La hoja */}
-            <div className="max-w-5xl mx-auto lg:max-w-none px-4 md:px-0 mt-4">
+            <div className={cn('max-w-5xl mx-auto lg:max-w-none px-4 md:px-0 mt-4', escuchar.abierto && !editando && 'teleprompter siguiendo')}>
                 {/* Ficha o chuleta sin letra: buscarla, copiarla y pegarla, y entra en el tono del setlist */}
                 {juntada && (
                     <div className="mb-4 rounded-2xl bg-fill px-4 py-3 flex items-center gap-3">
@@ -440,8 +446,10 @@ function Lector({ cancion }: { cancion: Cancion }) {
                     </p>
                 )}
                 {/* Con «que quepa», la hoja tiene que poder subir hasta la barra aunque la canción sea corta */}
-                <div ref={zonaRef} className={cn(ajustes.ajustar && !editando && 'min-h-[100dvh]')}
-                    onClick={editando || rodando ? undefined : alTocarHoja}>
+                {/* Mientras suena el vídeo, tocar una línea la clava a ese momento (en vez de editar) */}
+                <div ref={zonaRef} data-hoja className={cn(ajustes.ajustar && !editando && 'min-h-[100dvh]')}
+                    onClickCapture={escuchar.sonando && !editando ? escuchar.alTocarHoja : undefined}
+                    onClick={editando || rodando || escuchar.sonando ? undefined : alTocarHoja}>
                     {editando ? (
                         <EditarEnSitio cancion={cancion} lineaInicial={editando.linea} yInicial={editando.y} tamano={tamano} onTamano={cambiarTamano}
                             onGuardar={guardarTexto} onCerrar={cerrarEdicion}
@@ -516,9 +524,12 @@ function Lector({ cancion }: { cancion: Cancion }) {
                 document.body,
             )}
 
+            {/* El vídeo que suena, encima de la barra (sigue sonando al editar) */}
+            <ReproductorEscuchar escuchar={escuchar} titulo={cancion.titulo} conBarra={!escenario && !editando} />
+
             {/* La barra de la canción, abajo y al alcance del pulgar: cada botón abre UNA cosa */}
             {!escenario && !editando && (
-                <div ref={barraRef} className="sticky bottom-0 z-20 mt-6 pb-safe bg-sheet border-t border-hairline">
+                <div ref={barraRef} className={cn('sticky bottom-0 z-20 pb-safe bg-sheet border-t border-hairline', !escuchar.abierto && 'mt-6')}>
                     <div className="max-w-xl mx-auto grid grid-cols-5 h-[60px]">
                         <BotonDeBarra etiqueta="Tono" activo={ajustes.semitonos !== 0} onClick={() => setPanelSeccion('tono')} desactivado={sinAcordes}>
                             <span className="text-[17px] font-bold leading-none">{tonoSuena || '—'}</span>

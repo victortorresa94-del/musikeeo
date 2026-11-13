@@ -239,6 +239,7 @@ export interface CancionCopia {
     notas?: string;          // notas con formato (JSON del editor)
     favorita?: boolean;      // ⭐ la versión que sale por defecto
     spotify?: string;        // su pista en Spotify
+    youtube?: string;        // su vídeo para Escuchar (las marcas van en ajustes.marcas)
 }
 export interface RepertorioCopia { nombre: string; fecha?: string; canciones: number[]; extras?: number[]; notas?: string; hueco?: number }
 export interface CatalogoCopia { aspecto?: Record<string, unknown>; campos?: unknown[] }
@@ -258,7 +259,7 @@ export function crearCopia(canciones: Cancion[], repertorios: Repertorio[], cata
         creada: new Date().toISOString(),
         canciones: canciones.map(c => ({
             titulo: c.titulo, artista: c.artista || undefined, texto: c.texto || undefined, ficha: c.ficha, ajustes: c.ajustes,
-            portada: c.portada, duracion: c.duracion, bpm: c.bpm, version: c.version, notas: c.notas, favorita: c.favorita || undefined, spotify: c.spotify,
+            portada: c.portada, duracion: c.duracion, bpm: c.bpm, version: c.version, notas: c.notas, favorita: c.favorita || undefined, spotify: c.spotify, youtube: c.youtube,
         })),
         repertorios: repertorios.map(r => ({
             nombre: r.nombre, fecha: r.fecha, canciones: r.canciones.map(id => indice.get(id)).filter((i): i is number => i !== undefined),

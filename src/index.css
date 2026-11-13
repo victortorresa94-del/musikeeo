@@ -350,6 +350,8 @@
 .teleprompter [data-hoja] { padding-bottom: 55dvh; }
 .teleprompter [data-hoja] [data-linea] { opacity: 0.38; transition: opacity 220ms ease; }
 .teleprompter [data-hoja] [data-linea][data-ahora] { opacity: 1; -webkit-text-stroke: 0.035em currentColor; }
+/* Escuchar en la canción (la hoja sigue al vídeo): además, la línea que suena con un fondo suave */
+.teleprompter.siguiendo [data-hoja] [data-linea][data-ahora] { background: var(--fill-strong); border-radius: 0.35em; box-shadow: 0 0 0 0.3em var(--fill-strong); }
 
 /* Ilustración pegada a una tarjeta de color: el borde izquierdo se funde con el fondo,
    así no se ve la costura entre el fondo de la imagen y el de la tarjeta. */
