@@ -1,0 +1,52 @@
+# Despliega las reglas y los índices de Firestore de PRODUCCIÓN (musikeeo-8e766) cada vez que
+# cambian en main, sin que Víctor tenga que hacerlo desde su PC (13-nov: «que se desplieguen solas»).
+# Necesita UNA vez el secreto FIREBASE_SERVICE_ACCOUNT (la clave JSON de la cuenta de servicio de
+# Firebase: Consola → Configuración del proyecto → Cuentas de servicio → Generar nueva clave privada).
+# Mientras no esté, no hace nada. Se puede lanzar a mano desde Actions → «Reglas de Firestore».
+name: Reglas de Firestore
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - firestore.rules
+      - firestore.indexes.json
+      - .github/workflows/reglas-firestore.yml
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: reglas-firestore
+  cancel-in-progress: false
+
+jobs:
+  desplegar:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: ¿Está la clave?
+        id: clave
+        run: |
+          if [ -z "${{ secrets.FIREBASE_SERVICE_ACCOUNT != '' && 'si' || '' }}" ]; then
+            echo "Falta el secreto FIREBASE_SERVICE_ACCOUNT: no se despliega nada (ver la cabecera de este archivo)."
+            echo "hay=no" >> "$GITHUB_OUTPUT"
+          else
+            echo "hay=si" >> "$GITHUB_OUTPUT"
+          fi
+      - uses: actions/checkout@v4
+        if: steps.clave.outputs.hay == 'si'
+      - uses: actions/setup-node@v4
+        if: steps.clave.outputs.hay == 'si'
+        with:
+          node-version: 22
+      - name: Desplegar reglas e índices
+        if: steps.clave.outputs.hay == 'si'
+        env:
+          CLAVE: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+        run: |
+          printf '%s' "$CLAVE" > "$RUNNER_TEMP/clave.json"
+          export GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/clave.json"
+          npx --yes firebase-tools@15.36.0 deploy --only firestore --project musikeeo-8e766 --non-interactive
+          rm -f "$RUNNER_TEMP/clave.json"
