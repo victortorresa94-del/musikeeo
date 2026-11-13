@@ -27,6 +27,7 @@ import { NotasRicas } from '../../components/notas/NotasRicas';
 import { EditarEnSitio } from '../../components/cancionero/EditarEnSitio';
 import { VersionesAnteriores } from '../../components/cancionero/VersionesAnteriores';
 import { precargarEditorLetra } from '../../components/cancionero/cargarEditorLetra';
+import { precargarEditarCancion } from '../../components/cancionero/cargarEditarCancion';
 import { FichaEnSitio } from '../../components/cancionero/FichaEnSitio';
 import { BotonWebs } from '../../components/cancionero/BotonWebs';
 import { BotonTareas } from '../../components/cancionero/Tareas';
@@ -80,7 +81,8 @@ function Lector({ cancion }: { cancion: Cancion }) {
     // Editando el texto ahí mismo: la línea donde se tocó y a qué altura de la pantalla estaba
     const [editando, setEditando] = useState<{ linea: number; y: number | null } | null>(null);
     // El editor de la letra, listo antes de tocarla (en el iPhone, así se abre el teclado al momento)
-    useEffect(() => { precargarEditorLetra(); }, []);
+    // y la pantalla de editar (con la ficha): si se publica otra versión mientras tanto, abre igual
+    useEffect(() => { precargarEditorLetra(); precargarEditarCancion(); }, []);
     // Abierta desde un repertorio: «Guardar como canción nueva» la pone en su sitio en ese repertorio
     const [params] = useSearchParams();
     const desdeRepertorio = params.get('repertorio');
