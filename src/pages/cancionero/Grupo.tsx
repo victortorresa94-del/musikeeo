@@ -1,7 +1,9 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { ChevronLeft, ChevronRight, List, Minus, Plus } from 'lucide-react';
+import { useParams } from 'react-router-dom';
+import { ChevronLeft, ChevronRight, Copy, List, Minus, Pencil, Plus, RefreshCw } from 'lucide-react';
+import { escucharCompartido } from '../../services/compartidosService';
 import { cn } from '../../lib/utils';
-import { descodificar, type Compartido, type TemaCompartido } from '../../lib/compartir';
+import { codificar, descodificar, type Compartido, type TemaCompartido } from '../../lib/compartir';
 import { detectarTono, leerCancion, usaBemoles, type OpcionesNombre } from '../../lib/acordes';
 import { textoDuracion } from '../../lib/biblioteca';
 import { notasVacias } from '../../lib/notas';
@@ -17,7 +19,11 @@ import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
 
 // La página del músico: el repertorio que le ha pasado su compañero, sin cuenta y sin la app
 // alrededor. Oscura, letra grande y de una canción a la siguiente deslizando (o con el pedal).
-// Todo viene en el enlace (tras «#»): una vez abierta, funciona sin cobertura.
+// El set viene en el enlace (tras «#») y, con id (/grupo/{id}), lo último de la nube
+// (compartidos/{id}), en directo: siempre la última versión de quien lo comparte. Se guarda una
+// copia en el móvil, así que una vez abierta funciona sin cobertura.
+// Cada músico puede hacerse SU versión de una canción (sus apuntes, su forma de verla): vive en
+// su móvil, no toca el original y avisa si el original cambia después.
 
 const CLAVE_TAMANO = 'musikeeo-grupo-tamano';
 const DURACION_MEDIA = 210;
@@ -27,18 +33,51 @@ function leerTamano(conLetra: boolean) {
         const t = Number(localStorage.getItem(`${CLAVE_TAMANO}${conLetra ? '-letra' : ''}`));
         if (t >= 12 && t <= 48) return t;
     } catch { /* sin almacenamiento */ }
-    return conLetra ? 19 : 24;
+    return conLetra ? 18 : 20;
 }
 
+// La copia del móvil del último set visto de este enlace (para abrirlo sin cobertura)
+const CLAVE_COPIA = 'musikeeo-grupo-copia:';
+function leerCopia(id: string | undefined): Compartido | null {
+    if (!id) return null;
+    try { const t = localStorage.getItem(CLAVE_COPIA + id); return t ? descodificar(t) : null; } catch { return null; }
+}
+const masNuevo = (a: Compartido | null, b: Compartido | null) => (!a ? b : !b ? a : (b.u ?? '') > (a.u ?? '') ? b : a);
+
 export default function Grupo() {
-    const [datos, setDatos] = useState<Compartido | null>(() => descodificar(window.location.hash));
+    const { id } = useParams<{ id?: string }>();
+    const [datos, setDatos] = useState<Compartido | null>(() => masNuevo(descodificar(window.location.hash), leerCopia(id)));
     const [abierta, setAbierta] = useState<number | null>(null);
+    const [aviso, setAviso] = useState<string | null>(null);
+    const datosRef = useRef(datos);
+    useEffect(() => { datosRef.current = datos; }, [datos]);
 
     useEffect(() => {
-        const f = () => { setDatos(descodificar(window.location.hash)); setAbierta(null); };
+        const f = () => { setDatos(masNuevo(descodificar(window.location.hash), leerCopia(id))); setAbierta(null); };
         window.addEventListener('hashchange', f);
         return () => window.removeEventListener('hashchange', f);
-    }, []);
+    }, [id]);
+
+    // Lo último de la nube, en directo. Si cambia con la canción abierta, se sigue en la misma
+    useEffect(() => {
+        if (!id) return;
+        return escucharCompartido(id, p => {
+            const antes = datosRef.current;
+            if (antes && (antes.u ?? '') >= (p.u ?? '') && antes.u) return;
+            try { localStorage.setItem(CLAVE_COPIA + id, codificar(p)); } catch { /* sin almacenamiento */ }
+            setDatos(p);
+            if (antes && antes.u !== p.u) {
+                setAbierta(a => {
+                    if (a === null) return a;
+                    const titulo = antes.c[a]?.t;
+                    const j = p.c.findIndex(t => t.t === titulo);
+                    return j >= 0 ? j : Math.min(a, Math.max(0, p.c.length - 1));
+                });
+                setAviso('Actualizado con los últimos cambios');
+                setTimeout(() => setAviso(null), 4000);
+            }
+        });
+    }, [id]);
 
     // Siempre oscura (en el escenario no deslumbra); al salir, vuelve la de la persona
     useEffect(() => {
@@ -70,12 +109,50 @@ export default function Grupo() {
             </main>
         );
     }
-    return abierta === null
-        ? <ListaSet datos={datos} onAbrir={setAbierta} />
-        : <Escenario datos={datos} inicio={abierta} onLista={() => setAbierta(null)} />;
+    const setKey = id ?? `n:${datos.n}`;
+    return (
+        <>
+            {abierta === null
+                ? <ListaSet datos={datos} setKey={setKey} onAbrir={setAbierta} />
+                : <Escenario key={datos.u ?? 'h'} datos={datos} setKey={setKey} inicio={abierta} onLista={() => setAbierta(null)} />}
+            {aviso && (
+                <div role="status" className="fixed left-1/2 -translate-x-1/2 top-[calc(env(safe-area-inset-top)+60px)] z-30 h-9 px-3.5 rounded-full bg-sheet border border-hairline shadow-e3 text-[13.5px] font-semibold flex items-center gap-1.5">
+                    <RefreshCw className="h-4 w-4" /> {aviso}
+                </div>
+            )}
+        </>
+    );
 }
 
-function ListaSet({ datos, onAbrir }: { datos: Compartido; onAbrir: (i: number) => void }) {
+// ---- La versión de cada músico: en su móvil, por enlace y por canción ----
+interface Mia { x: string; base: string; usar: boolean; cuando: string }
+const claveTema = (t: TemaCompartido) => `${t.t}|${t.v ?? ''}`;
+function leerMias(setKey: string): Record<string, Mia> {
+    try { const t = localStorage.getItem(`musikeeo-grupo-mias:${setKey}`); const o = t ? JSON.parse(t) : {}; return o && typeof o === 'object' ? o : {}; } catch { return {}; }
+}
+function useMias(setKey: string) {
+    const [mias, setMias] = useState<Record<string, Mia>>(() => leerMias(setKey));
+    useEffect(() => {
+        // Otra pestaña (lista y escenario a la vez) o vuelta a la página
+        const f = (e: StorageEvent) => { if (e.key === `musikeeo-grupo-mias:${setKey}`) setMias(leerMias(setKey)); };
+        window.addEventListener('storage', f);
+        return () => window.removeEventListener('storage', f);
+    }, [setKey]);
+    const poner = useCallback((t: TemaCompartido, mia: Mia | null) => {
+        setMias(m => {
+            const n = { ...m };
+            if (mia) n[claveTema(t)] = mia; else delete n[claveTema(t)];
+            try { localStorage.setItem(`musikeeo-grupo-mias:${setKey}`, JSON.stringify(n)); } catch { /* */ }
+            return n;
+        });
+    }, [setKey]);
+    // Lo que se ve de cada tema: el original o la suya, si la tiene puesta
+    const ver = useCallback((t: TemaCompartido) => { const m = mias[claveTema(t)]; return m?.usar ? { ...t, x: m.x } : t; }, [mias]);
+    return { mias, poner, ver, de: (t: TemaCompartido) => mias[claveTema(t)] };
+}
+
+function ListaSet({ datos, setKey, onAbrir }: { datos: Compartido; setKey: string; onAbrir: (i: number) => void }) {
+    const { ver, de } = useMias(setKey);
     // Cifrado: el set entero seguido (con letra, solo si viene); se recuerda en el móvil
     const [vista, setVista] = useState<Vista>(() => { try { return localStorage.getItem('musikeeo-grupo-vista') === 'cifrado' ? 'cifrado' : 'lista'; } catch { return 'lista'; } });
     const [tamano] = useState(() => leerTamano(false));
@@ -110,7 +187,7 @@ function ListaSet({ datos, onAbrir }: { datos: Compartido; onAbrir: (i: number) 
                     <SelectorVista valor={vista} onCambio={cambiarVista} opciones={['lista', 'cifrado']} />
                     {vista === 'cifrado' && datos.c.some(t => t.m) && <SuenaFormas formas={formas} onCambio={setFormas} />}
                 </div>
-                {vista === 'cifrado' && <HojaSet className="mt-2" temas={datos.c} tamano={Math.min(tamano, 22)} formas={formas} onAbrir={onAbrir} />}
+                {vista === 'cifrado' && <HojaSet className="mt-2" temas={datos.c.map(ver)} tamano={Math.min(tamano, 22)} formas={formas} onAbrir={onAbrir} />}
                 <ol className={cn('mt-3', vista === 'cifrado' && 'hidden')}>
                     {datos.c.map((t, i) => {
                         const nuevoBloque = t.g && (i === 0 || t.g !== datos.c[i - 1].g) ? t.g : null;
@@ -129,6 +206,7 @@ function ListaSet({ datos, onAbrir }: { datos: Compartido; onAbrir: (i: number) 
                                         <span className="block text-[17px] font-semibold leading-snug">{t.t}</span>
                                         {(t.v || t.a) && <span className="block truncate text-[13px] text-muted-foreground">{[t.v && `Versión ${t.v}`, t.a].filter(Boolean).join(' · ')}</span>}
                                         <span className="mt-1.5 flex flex-wrap gap-1">
+                                            {de(t)?.usar && <span className="h-6 px-2 rounded-full text-[12px] font-semibold flex items-center bg-pastel-lavanda text-pastel-lavanda-ink">La mía{de(t)!.base !== t.x ? ' · el original cambió' : ''}</span>}
                                             {datosTemaConTono(t).map(p => <span key={p.texto} className={cn('h-6 px-2 rounded-full text-[12px] font-semibold flex items-center', p.clase)}>{p.texto}</span>)}
                                         </span>
                                     </span>
@@ -146,8 +224,10 @@ function ListaSet({ datos, onAbrir }: { datos: Compartido; onAbrir: (i: number) 
     );
 }
 
-function Escenario({ datos, inicio, onLista }: { datos: Compartido; inicio: number; onLista: () => void }) {
+function Escenario({ datos, setKey, inicio, onLista }: { datos: Compartido; setKey: string; inicio: number; onLista: () => void }) {
     const conLetra = !!datos.l;
+    const { ver, de, poner } = useMias(setKey);
+    const [editando, setEditando] = useState<TemaCompartido | null>(null);
     const [tamano, setTamano] = useState(() => leerTamano(conLetra));
     const [soloAcordes, setSoloAcordes] = useState(false);
     const [formas, setFormas] = useFormas();
@@ -196,6 +276,8 @@ function Escenario({ datos, inicio, onLista }: { datos: Compartido; inicio: numb
     // Teclado y pedal: baja la hoja y, al final, pasa a la siguiente
     useEffect(() => {
         const f = (e: KeyboardEvent) => {
+            // Escribiendo su versión: las teclas (el espacio, las flechas) son del texto, no del pedal
+            if ((e.target as HTMLElement | null)?.closest?.('textarea, input, [contenteditable="true"], [role="dialog"]')) return;
             const adelante = ['PageDown', 'ArrowRight', 'ArrowDown', ' '].includes(e.key);
             const atras = ['PageUp', 'ArrowLeft', 'ArrowUp'].includes(e.key);
             if (!adelante && !atras) return;
@@ -222,7 +304,8 @@ function Escenario({ datos, inicio, onLista }: { datos: Compartido; inicio: numb
                 {datos.c.map((t, i) => (
                     <div key={i} data-diapositiva={i} className="relative h-full w-full shrink-0 snap-start snap-always overflow-y-auto overscroll-contain">
                         {Math.abs(i - actual) <= 1
-                            ? <Diapositiva tema={t} n={i + 1} total={datos.c.length} tamano={tamano} delta={tonos[i]} formas={formas} soloAcordes={soloAcordes} siguiente={datos.c[i + 1]} onSiguiente={() => ir(i + 1)} />
+                            ? <Diapositiva tema={ver(t)} n={i + 1} total={datos.c.length} tamano={tamano} delta={tonos[i]} formas={formas} soloAcordes={soloAcordes} siguiente={datos.c[i + 1]} onSiguiente={() => ir(i + 1)}
+                                mia={<MiVersion original={t} mia={de(t)} onUsar={usar => { const m = de(t); if (m) poner(t, { ...m, usar }); }} onEditar={() => setEditando(t)} />} />
                             : <div className="h-full" />}
                     </div>
                 ))}
@@ -266,12 +349,76 @@ function Escenario({ datos, inicio, onLista }: { datos: Compartido; inicio: numb
                 <button onClick={() => ir(actual + 1)} disabled={actual >= datos.c.length - 1} aria-label="Tema siguiente" className={boton}><ChevronRight className="h-5 w-5" /></button>
             </div>
             <span className="sr-only" aria-live="polite">{tema ? `${actual + 1} de ${datos.c.length}: ${tema.t}` : ''}</span>
+            {editando && (
+                <EditorMia original={editando} mia={de(editando)}
+                    onGuardar={x => { poner(editando, { x, base: editando.x, usar: true, cuando: new Date().toISOString() }); setEditando(null); }}
+                    onBorrar={() => { poner(editando, null); setEditando(null); }}
+                    onCerrar={() => setEditando(null)} />
+            )}
         </main>
     );
 }
 
-function Diapositiva({ tema, n, total, tamano, delta, formas, soloAcordes, siguiente, onSiguiente }: {
-    tema: TemaCompartido; n: number; total: number; tamano: number; delta: number; formas: boolean; soloAcordes: boolean; siguiente?: TemaCompartido; onSiguiente: () => void;
+// Debajo de las píldoras: «Hacer mi versión», o «Original · La mía» si ya la tiene
+function MiVersion({ original, mia, onUsar, onEditar }: { original: TemaCompartido; mia?: Mia; onUsar: (usar: boolean) => void; onEditar: () => void }) {
+    if (!mia) {
+        return (
+            <button onClick={onEditar} className="pulsable mt-3 h-9 px-3.5 rounded-full border border-hairline-strong text-[14px] font-semibold flex items-center gap-1.5">
+                <Copy className="h-4 w-4" /> Hacer mi versión
+            </button>
+        );
+    }
+    const cambio = mia.base !== original.x;
+    return (
+        <div className="mt-3 flex flex-wrap items-center gap-2">
+            <div className="inline-flex p-1 rounded-full bg-fill gap-0.5" role="radiogroup" aria-label="Qué versión ver">
+                {([[false, 'Original'], [true, 'La mía']] as const).map(([v, nombre]) => (
+                    <button key={nombre} role="radio" aria-checked={mia.usar === v} onClick={() => onUsar(v)}
+                        className={cn('h-8 px-3 rounded-full text-[13.5px] font-semibold', mia.usar === v ? 'bg-foreground text-background' : 'text-foreground')}>{nombre}</button>
+                ))}
+            </div>
+            <button onClick={onEditar} aria-label="Editar mi versión" className="pulsable h-9 w-9 rounded-full bg-fill flex items-center justify-center"><Pencil className="h-4 w-4" /></button>
+            {cambio && (
+                <span className="h-8 px-3 rounded-full text-[13px] font-semibold flex items-center bg-pastel-mantequilla text-pastel-mantequilla-ink">
+                    El original ha cambiado desde tu versión
+                </span>
+            )}
+        </div>
+    );
+}
+
+// Su versión: el texto tal cual (acordes, partes y formato), en su móvil
+function EditorMia({ original, mia, onGuardar, onBorrar, onCerrar }: { original: TemaCompartido; mia?: Mia; onGuardar: (x: string) => void; onBorrar: () => void; onCerrar: () => void }) {
+    const [texto, setTexto] = useState(mia?.x ?? original.x);
+    const cambio = mia && mia.base !== original.x;
+    return (
+        <div className="fixed inset-0 z-40 bg-background flex flex-col" role="dialog" aria-label={`Mi versión de ${original.t}`}>
+            <div className="shrink-0 pt-[calc(env(safe-area-inset-top)+8px)] px-3 pb-2 border-b border-hairline flex items-center gap-2">
+                <button onClick={onCerrar} className="pulsable h-9 px-3 rounded-full text-[15px] text-muted-foreground">Cancelar</button>
+                <span className="flex-1 min-w-0 truncate text-center text-[15px] font-semibold">Mi versión · {original.t}</span>
+                <button onClick={() => onGuardar(texto)} className="pulsable h-9 px-4 rounded-full bg-primary text-primary-foreground text-[15px] font-semibold">Listo</button>
+            </div>
+            {cambio && (
+                <div className="shrink-0 mx-3 mt-2 rounded-xl bg-pastel-mantequilla text-pastel-mantequilla-ink px-3 py-2 text-[13.5px] font-semibold flex items-center gap-2">
+                    <span className="flex-1">El original ha cambiado desde que hiciste la tuya.</span>
+                    <button onClick={() => setTexto(original.x)} className="underline">Empezar del nuevo</button>
+                </div>
+            )}
+            <textarea value={texto} onChange={e => setTexto(e.target.value)} aria-label="Texto de mi versión"
+                wrap="off" spellCheck={false} autoCapitalize="off" autoCorrect="off"
+                className="flex-1 min-h-0 m-3 p-3 rounded-xl bg-fill font-mono text-[16px] leading-relaxed outline-none resize-none" />
+            <p className="shrink-0 px-4 text-[13px] text-muted-foreground">
+                Solo la ves tú, en este móvil. El original no cambia y sigue al día. Para un apunte, empieza la línea con «&gt; ».
+            </p>
+            <div className="shrink-0 px-3 pt-2 pb-[calc(env(safe-area-inset-bottom)+12px)]">
+                {mia && <button onClick={onBorrar} className="pulsable h-11 w-full rounded-[14px] text-[15px] font-semibold text-destructive">Borrar mi versión</button>}
+            </div>
+        </div>
+    );
+}
+
+function Diapositiva({ tema, n, total, tamano, delta, formas, soloAcordes, siguiente, onSiguiente, mia }: {
+    tema: TemaCompartido; n: number; total: number; tamano: number; delta: number; formas: boolean; soloAcordes: boolean; siguiente?: TemaCompartido; onSiguiente: () => void; mia?: React.ReactNode;
 }) {
     const leida = useMemo(() => leerCancion(tema.x), [tema.x]);
     const lineas = useMemo(() => sinLoDeLasPildoras(leida.lineas, tema.g ?? null), [leida.lineas, tema.g]);
@@ -294,6 +441,7 @@ function Diapositiva({ tema, n, total, tamano, delta, formas, soloAcordes, sigui
                 {formas && !!tema.m && <span className="h-8 px-3 rounded-full text-[13px] font-semibold flex items-center bg-pastel-mantequilla text-pastel-mantequilla-ink">Formas · cejilla {tema.m}</span>}
                 {delta !== 0 && <span className="h-8 px-3 rounded-full text-[13px] font-semibold flex items-center bg-pastel-mantequilla text-pastel-mantequilla-ink">Transportado {delta > 0 ? '+' : ''}{delta}</span>}
             </div>
+            {mia}
             {!notasVacias(tema.o) && <NotasRicas json={tema.o} className="mt-3 text-[16px]" />}
             <div className="mt-4">
                 {lineas.length

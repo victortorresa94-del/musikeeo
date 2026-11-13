@@ -62,7 +62,7 @@
       ]
     },
     {
-      "source": "/grupo",
+      "source": "/grupo/:id*",
       "headers": [
         {
           "key": "X-Robots-Tag",

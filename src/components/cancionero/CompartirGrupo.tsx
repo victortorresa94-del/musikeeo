@@ -1,27 +1,50 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useState, useSyncExternalStore } from 'react';
 import { toast } from 'sonner';
 import { Copy, Eye, QrCode, Send } from 'lucide-react';
 import { CodigoQR } from './CodigoQR';
 import { cn } from '../../lib/utils';
-import { enlaceGrupo, paquete } from '../../lib/compartir';
+import { enlaceGrupo, idCompartido, paquete } from '../../lib/compartir';
+import { compartidosService, type EstadoPublicar } from '../../services/compartidosService';
+import { useCancionero } from '../../hooks/useCancionero';
 import type { Cancion, Repertorio } from '../../types/cancionero';
 import { BotonHoja, Hoja } from './Hoja';
 
-// «Compartir con el grupo»: un enlace que se abre sin cuenta, solo para leer. Cifrado (sin
-// letra) por defecto. Todo va dentro del enlace: si cambias orden o tonos, se manda otro
+// «Compartir con el grupo»: un enlace que se abre sin cuenta. Cifrado (sin letra) por defecto.
+// Lleva el set dentro (tras «#») y un id: con cuenta y las reglas desplegadas, la app sube sola
+// cada cambio (services/compartidosService) y el mismo enlace enseña siempre lo último
+const AVISO: Record<EstadoPublicar, string> = {
+    'al-dia': 'Se actualiza solo: si cambias una canción o el orden, tus músicos lo ven con el mismo enlace. Cada uno puede hacerse su versión de una canción sin perder la tuya.',
+    'subiendo': 'Subiendo tus cambios…',
+    'sin-cuenta': 'Para que se actualice solo, entra con tu cuenta. Mientras, el enlace lleva el set tal como está ahora.',
+    'sin-permiso': 'Aún no se actualiza solo: falta desplegar las reglas de Firestore (está en tus pendientes). Mientras, el enlace lleva el set tal como está ahora.',
+    'sin-red': 'Sin conexión: tus cambios se suben cuando vuelva la cobertura. El enlace lleva el set de ahora.',
+};
+
 export function CompartirGrupo({ abierta, onCerrar, repertorio, canciones }: {
     abierta: boolean; onCerrar: () => void; repertorio: Repertorio; canciones: Cancion[];
 }) {
+    const { guardarRepertorio } = useCancionero();
     const [conLetra, setConLetra] = useState(false);
     const [qr, setQr] = useState(false);
+    const modo = conLetra ? 'letra' : 'cifrado';
+    const id = repertorio.compartido?.[modo];
+    // La primera vez que se comparte (cifrado o con letra), su id; y se sube ya
+    useEffect(() => {
+        if (!abierta) return;
+        if (!id) guardarRepertorio({ ...repertorio, compartido: { ...repertorio.compartido, [modo]: idCompartido() } });
+        compartidosService.ahora();
+    }, [abierta, id, modo]); // eslint-disable-line react-hooks/exhaustive-deps
+    const estado = useSyncExternalStore(compartidosService.suscribir, () => compartidosService.estado(id));
     const enlace = useMemo(
-        () => (abierta ? enlaceGrupo(paquete(repertorio, canciones, conLetra)) : ''),
-        [abierta, repertorio, canciones, conLetra],
+        // Con la hora: si la nube se quedase atrás, un enlace nuevo manda sobre ella
+        () => (abierta ? enlaceGrupo({ ...paquete(repertorio, canciones, conLetra), u: new Date().toISOString() }, id) : ''),
+        [abierta, repertorio, canciones, conLetra, id],
     );
     const largo = enlace.length;
     // WhatsApp corta los mensajes de más de ~65 000 caracteres
     const demasiado = largo > 60000;
     const mensaje = `${repertorio.nombre} · el repertorio${conLetra ? ' con letra' : ' (cifrado)'}: ${enlace}`;
+    const alDia = estado === 'al-dia';
 
     const copiar = async () => {
         try {
@@ -43,7 +66,10 @@ export function CompartirGrupo({ abierta, onCerrar, repertorio, canciones }: {
         <Hoja abierta={abierta} onCerrar={onCerrar} titulo="Compartir con el grupo" derecha={<BotonHoja fuerte onClick={onCerrar}>Listo</BotonHoja>}>
             <div className="px-4 pb-5">
                 <p className="text-[15px] text-muted-foreground">
-                    Tus músicos lo abren sin cuenta: el set en orden con tono, capo, quién canta, tempo, duración, los acordes por partes y tus notas. Solo pueden mirarlo.
+                    Tus músicos lo abren sin cuenta: el set en orden con tono, capo, quién canta, tempo, duración, los acordes por partes y tus notas. Tu versión no la pueden tocar.
+                </p>
+                <p className={cn('mt-3 rounded-xl px-3 py-2 text-[13.5px] font-semibold', alDia ? 'bg-pastel-menta text-pastel-menta-ink' : 'bg-fill text-muted-foreground')} aria-live="polite">
+                    {estado ? AVISO[estado] : 'Preparando el enlace…'}
                 </p>
 
                 <div className="mt-4 rounded-2xl bg-fill p-1 grid grid-cols-2 gap-1" role="radiogroup" aria-label="Qué se comparte">
@@ -91,7 +117,9 @@ export function CompartirGrupo({ abierta, onCerrar, repertorio, canciones }: {
                 <p className={cn('mt-3 text-[13px]', demasiado ? 'text-destructive' : 'text-muted-foreground')}>
                     {demasiado
                         ? 'Con letra es demasiado largo para WhatsApp. Compártelo cifrado o quita algún tema.'
-                        : `Si cambias el orden o los tonos, vuelve aquí y manda el enlace otra vez: el que ya tienen no se actualiza solo. (${largo.toLocaleString('es-ES')} caracteres)`}
+                        : alDia
+                            ? `El enlace no cambia: mándalo una vez. (${largo.toLocaleString('es-ES')} caracteres)`
+                            : `Mientras no se actualice solo, si cambias el orden o los tonos manda el enlace otra vez. (${largo.toLocaleString('es-ES')} caracteres)`}
                 </p>
             </div>
         </Hoja>

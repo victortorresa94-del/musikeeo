@@ -1,7 +1,11 @@
 // «Compartir con el grupo»: el repertorio entero cabe en el enlace, después de «#».
 // Lo que va tras «#» no viaja al servidor (no pasa por Vercel ni por Firebase): funciona sin
-// cuenta, sin reglas desplegadas y, una vez abierto, sin cobertura. Si cambian el orden o los
-// tonos, se manda otro enlace. Sin React: lo usa la hoja de compartir y la página del músico.
+// cuenta, sin reglas desplegadas y, una vez abierto, sin cobertura.
+// Y desde el 13-nov el enlace lleva además un id (/grupo/{id}#…): la app de quien comparte
+// guarda lo último en compartidos/{id} cada vez que cambia una canción o el orden, y la página
+// del músico lo lee de ahí. Víctor: «siempre deben tener mi última versión». Lo de «#» es la
+// red: sirve si aún no hay reglas desplegadas, si no hay cobertura o si el id no existe.
+// Sin React: lo usa la hoja de compartir, la página del músico y services/compartidosService.
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
 import { esApunte, leerCancion, type Linea } from './acordes';
 import { cejillaDeFicha, tonoMostrado } from './biblioteca';
@@ -33,6 +37,7 @@ export interface Compartido {
     f?: string;             // fecha
     h?: string;             // hoja del bolo (JSON del editor)
     l?: 1;                  // lleva letra
+    u?: string;             // cuándo se publicó (ISO): manda el más nuevo entre el «#», la copia del móvil y la nube
     c: TemaCompartido[];
 }
 
@@ -153,6 +158,7 @@ export function descodificar(codigo: string): Compartido | null {
         const texto = (x: unknown) => (typeof x === 'string' ? x : undefined);
         p.f = texto(p.f);
         p.h = texto(p.h);
+        p.u = texto(p.u);
         p.c = p.c.filter(t => t && typeof t.t === 'string' && typeof t.x === 'string').map(t => ({
             t: t.t, x: t.x, a: texto(t.a), k: texto(t.k), p: texto(t.p), c: texto(t.c), e: texto(t.e), o: texto(t.o), g: texto(t.g), v: texto(t.v),
             s: typeof t.s === 'number' ? Math.max(-24, Math.min(24, Math.round(t.s))) : undefined,
@@ -166,4 +172,17 @@ export function descodificar(codigo: string): Compartido | null {
     }
 }
 
-export const enlaceGrupo = (p: Compartido, origen = window.location.origin) => `${origen}/grupo#${codificar(p)}`;
+// Con id, el enlace que se actualiza solo; sin él, el de siempre (todo en el «#»)
+export const enlaceGrupo = (p: Compartido, id?: string, origen = window.location.origin) =>
+    `${origen}/grupo${id ? `/${id}` : ''}#${codificar(p)}`;
+
+// Un id largo y al azar: es lo único que protege el set (quien no tiene el enlace no lo encuentra)
+export function idCompartido(): string {
+    const letras = 'abcdefghijkmnpqrstuvwxyzABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+    const azar = new Uint32Array(22);
+    crypto.getRandomValues(azar);
+    return Array.from(azar, n => letras[n % letras.length]).join('');
+}
+
+// Lo que se compara para saber si hay que volver a publicar: el set sin la hora
+export const huella = (p: Compartido) => codificar({ ...p, u: undefined });

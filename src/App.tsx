@@ -220,6 +220,7 @@ function App() {
               <Route path="/cancionero/repertorio/:id/tocar" element={<TocarRepertorio />} />
               {/* El repertorio que se comparte con el grupo: sin cuenta y sin la app alrededor */}
               <Route path="/grupo" element={<Grupo />} />
+              <Route path="/grupo/:id" element={<Grupo />} />
 
               {/* Onboarding - Protected but no layout */}
               <Route element={<RequireAuthSimple />}>

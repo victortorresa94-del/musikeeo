@@ -1,6 +1,7 @@
 import { useEffect, useSyncExternalStore } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { almacenCanciones, almacenListas, almacenRepertorios, cancioneroService } from '../services/cancioneroService';
+import { compartidosService } from '../services/compartidosService';
 
 // El cancionero y los repertorios de quien está (o del móvil, sin cuenta), siempre al día
 export function useCancionero() {
@@ -10,6 +11,8 @@ export function useCancionero() {
     useEffect(() => {
         if (!loading) cancioneroService.cargar(uid);
     }, [uid, loading]);
+    // Los sets compartidos con el grupo se suben solos al cambiar (una vez por app)
+    useEffect(() => { compartidosService.iniciar(); }, []);
 
     const canciones = useSyncExternalStore(almacenCanciones.suscribir, almacenCanciones.estado);
     const repertorios = useSyncExternalStore(almacenRepertorios.suscribir, almacenRepertorios.estado);

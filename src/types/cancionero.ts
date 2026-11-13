@@ -86,6 +86,9 @@ export interface Repertorio {
     canciones: string[];        // ids de Cancion, en orden
     notas?: string;             // la hoja del bolo, con formato (JSON del editor, en texto)
     hueco?: number;             // minutos que dura el hueco del bolo (para ver si te pasas)
+    // El enlace del grupo que se actualiza solo: id de su copia pública (compartidos/{id}),
+    // una para el cifrado y otra con letra
+    compartido?: { cifrado?: string; letra?: string };
     creadaEn: string;
     actualizadaEn: string;
     sincronizada?: boolean;

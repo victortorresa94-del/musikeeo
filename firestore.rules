@@ -58,7 +58,9 @@ service cloud.firestore {
       match /repertorios/{repertorioId} {
         allow read, delete: if isOwner(userId);
         allow create, update: if isOwner(userId)
-          && request.resource.data.keys().hasOnly(['nombre', 'fecha', 'canciones', 'creadaEn', 'actualizadaEn', 'notas', 'hueco'])
+          && request.resource.data.keys().hasOnly(['nombre', 'fecha', 'canciones', 'creadaEn', 'actualizadaEn', 'notas', 'hueco', 'compartido'])
+          && (!('compartido' in request.resource.data) || (request.resource.data.compartido is map
+               && request.resource.data.compartido.keys().hasOnly(['cifrado', 'letra'])))
           && request.resource.data.nombre is string && request.resource.data.nombre.size() <= 120
           && request.resource.data.canciones is list && request.resource.data.canciones.size() <= 300
           && (!('notas' in request.resource.data) || (request.resource.data.notas is string && request.resource.data.notas.size() <= 30000))
@@ -76,6 +78,29 @@ service cloud.firestore {
           && (!('regla' in request.resource.data) || request.resource.data.regla is map)
           && (!('orden' in request.resource.data) || request.resource.data.orden is number);
       }
+    }
+
+    // El repertorio que se comparte con el grupo (/grupo/{id}): lo lee cualquiera que tenga el
+    // enlace (el id es largo y al azar), nadie puede listarlos y solo su dueño lo escribe.
+    // «datos» es el set comprimido (lib/compartir.ts), el mismo que va tras «#» en el enlace
+    match /compartidos/{compartidoId} {
+      allow get: if true;
+      allow list: if false;
+      allow create: if request.auth != null
+        && compartidoId.size() >= 16 && compartidoId.size() <= 40
+        && request.resource.data.duenio == request.auth.uid
+        && compartidoValido();
+      allow update: if request.auth != null
+        && resource.data.duenio == request.auth.uid
+        && request.resource.data.duenio == request.auth.uid
+        && compartidoValido();
+      allow delete: if request.auth != null && resource.data.duenio == request.auth.uid;
+    }
+    function compartidoValido() {
+      return request.resource.data.keys().hasOnly(['duenio', 'datos', 'nombre', 'actualizado'])
+        && request.resource.data.datos is string && request.resource.data.datos.size() <= 900000
+        && request.resource.data.nombre is string && request.resource.data.nombre.size() <= 120
+        && request.resource.data.actualizado is string && request.resource.data.actualizado.size() <= 40;
     }
 
     // Perfil público (sin email). Lectura abierta; el dueño solo escribe campos permitidos.
