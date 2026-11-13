@@ -275,7 +275,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
             )}
             {ids.length > 0 && vista === 'tabla' ? (
                 <div className="mt-3">
-                    <TablaCanciones canciones={temas} tonoDe={c => tonos[temas.indexOf(c)] ?? null} guardar={c => guardar(c)} onAbrir={c => navigate(`/cancionero/${c.id}`)}
+                    <TablaCanciones canciones={temas} tonoDe={c => tonos[temas.indexOf(c)] ?? null} guardar={c => guardar(c)} onAbrir={c => navigate(`/cancionero/${c.id}?repertorio=${repertorio.id}`)}
                         clave="musikeeo-tabla-set" enSet todas={canciones} />
                 </div>
             ) : ids.length > 0 && vista === 'bloques' ? (
@@ -283,7 +283,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                     <TableroBloques canciones={temas} campo={campoTablero} tonoDe={c => tonos[temas.indexOf(c)] ?? null}
                         onCampo={c => { setCampoTablero(c); try { localStorage.setItem('musikeeo-tablero-set', c); } catch { /* */ } }}
                         campos={['bloque', 'canta', 'estilos', 'tonos', 'energias', 'etiquetas']}
-                        onMover={moverTema} onAbrir={c => navigate(`/cancionero/${c.id}`)} />
+                        onMover={moverTema} onAbrir={c => navigate(`/cancionero/${c.id}?repertorio=${repertorio.id}`)} />
                 </div>
             ) : ids.length > 0 && vista === 'cifrado' ? (
                 <HojaSet temas={temasCifrado} tamano={17} formas={formas} ancho onAbrir={i => abrirDesdeCifrado(i, false)} className="mt-2" />
@@ -297,7 +297,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                         const bloque = bloqueDe(porId.get(id)!);
                         const nuevoBloque = bloque && (i === 0 || bloque !== bloqueDe(porId.get(ids[i - 1])!)) ? bloque : null;
                         return (
-                            <Fila key={id} id={id} n={i + 1} cancion={porId.get(id)!} tono={tonos[i]} bloque={nuevoBloque} mismoTono={repetidos.has(i)}
+                            <Fila key={id} id={id} repertorioId={repertorio.id} n={i + 1} cancion={porId.get(id)!} tono={tonos[i]} bloque={nuevoBloque} mismoTono={repetidos.has(i)}
                                 onQuitar={() => quitar(id)} onTocar={() => tocar(i)}
                                 elegida={enPanel === id} onElegir={() => setPanel(id)} />
                         );
@@ -372,8 +372,8 @@ function Hueco({ minutos: hueco, segundos, estimada, onCambio }: { minutos?: num
     );
 }
 
-function Fila({ id, n, cancion, tono, bloque, mismoTono, onQuitar, onTocar, elegida, onElegir }: {
-    id: string; n: number; cancion: Cancion; tono: string | null; bloque: string | null; mismoTono?: boolean; onQuitar: () => void; onTocar: () => void;
+function Fila({ id, repertorioId, n, cancion, tono, bloque, mismoTono, onQuitar, onTocar, elegida, onElegir }: {
+    id: string; repertorioId: string; n: number; cancion: Cancion; tono: string | null; bloque: string | null; mismoTono?: boolean; onQuitar: () => void; onTocar: () => void;
     elegida?: boolean; onElegir?: () => void;
 }) {
     const arrastre = useDragControls();
@@ -397,7 +397,7 @@ function Fila({ id, n, cancion, tono, bloque, mismoTono, onQuitar, onTocar, eleg
             {/* El número arranca el bolo desde este tema */}
             <button onClick={onTocar} aria-label={`Tocar desde ${cancion.titulo}`}
                 className="h-9 w-7 shrink-0 rounded-full text-[13px] font-semibold text-muted-foreground tabular-nums active:bg-fill">{n}</button>
-            <Link to={`/cancionero/${cancion.id}`}
+            <Link to={`/cancionero/${cancion.id}?repertorio=${repertorioId}`}
                 onClick={e => { if (onElegir && window.matchMedia('(min-width: 1280px)').matches) { e.preventDefault(); onElegir(); } }}
                 className={cn('flex-1 min-w-0 py-2.5 flex items-center gap-3 active:opacity-60', elegida && 'xl:rounded-xl xl:bg-fill xl:-my-px xl:px-2')}>
                 {/* En el móvil sin portada: el número ya dice cuál es y el título necesita el sitio */}

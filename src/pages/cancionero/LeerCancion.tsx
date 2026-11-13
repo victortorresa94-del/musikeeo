@@ -1,7 +1,7 @@
 import { useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { ConMenu } from '../../components/cancionero/ConMenu';
 import { createPortal } from 'react-dom';
-import { Link, useNavigate, useParams } from 'react-router-dom';
+import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ChevronLeft, ChevronRight, Eye, Guitar, Loader2, Maximize, MoreHorizontal, Pause, Pencil, Play, Shrink, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
@@ -68,6 +68,9 @@ function Lector({ cancion }: { cancion: Cancion }) {
     const [versionando, setVersionando] = useState(false);
     // Editando el texto ahí mismo: la línea donde se tocó y a qué altura de la pantalla estaba
     const [editando, setEditando] = useState<{ linea: number; y: number | null } | null>(null);
+    // Abierta desde un repertorio: «Guardar como canción nueva» la pone en su sitio en ese repertorio
+    const [params] = useSearchParams();
+    const desdeRepertorio = params.get('repertorio');
     const [rodando, setRodando] = useState(false);
     const [escenario, setEscenario] = useState(false);
     const [controles, setControles] = useState(true);
@@ -438,7 +441,10 @@ function Lector({ cancion }: { cancion: Cancion }) {
                     onClick={editando || rodando ? undefined : alTocarHoja}>
                     {editando ? (
                         <EditarEnSitio cancion={cancion} lineaInicial={editando.linea}
-                            onGuardar={guardarTexto} onCerrar={cerrarEdicion} />
+                            onGuardar={guardarTexto} onCerrar={cerrarEdicion}
+                            repertorioId={desdeRepertorio ?? undefined}
+                            onNueva={n => navigate(`/cancionero/${n.id}${desdeRepertorio ? `?repertorio=${desdeRepertorio}` : ''}`, { replace: true })}
+                            onNuevaDeshecha={() => navigate(`/cancionero/${cancion.id}${desdeRepertorio ? `?repertorio=${desdeRepertorio}` : ''}`, { replace: true })} />
                     ) : !escenario && hoja()}
                 </div>
                 {/* Ficha o chuleta sin letra: primero la canción; buscar y pegar la letra, plegado debajo */}
