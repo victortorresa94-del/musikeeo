@@ -1,6 +1,6 @@
 # Pendientes de Víctor
 
-> Actualizado el 11 de noviembre de 2026. Lo que solo puedes hacer tú, ordenado por urgencia. Lo demás lo puede hacer Claude.
+> Actualizado el 13 de noviembre de 2026. Lo que solo puedes hacer tú, ordenado por urgencia. Lo demás lo puede hacer Claude.
 > Todo el trabajo hasta hoy está en `main` y en musikeeo.com (el Cancionero nuevo, con ficha, filtros y repertorios, desde el 11-nov).
 
 ## 1. Esta semana (sin esto, musikeeo.com va a medias)
@@ -14,9 +14,17 @@
    - Sin esto, en musikeeo.com no funcionan:
      - las publicaciones del Feed (dan «permiso denegado»), los me gusta y los comentarios;
      - el Cancionero guardado en la cuenta;
+     - el enlace del grupo que se actualiza solo (`compartidos`);
+     - tus colores, logos y columnas propias en otros dispositivos (`catalogo`);
      - el mapa de musikeers.
+   - **Y entra con tu cuenta en el Cancionero**: sin cuenta, el enlace del grupo no se publica en la nube (los músicos ven el que les mandaste, pero no los cambios).
    - Mientras tanto el mapa dice «No se ha podido guardar» y el Cancionero solo se guarda en el móvil (funciona igual, pero no pasa al ordenador).
-2. **Antes del bolo del sábado 14:** importar tu copia `.json` del cancionero en el móvil (Cancionero → Importar) y repasar tonos y orden del repertorio. Tus canciones no van al repo.
+2. **Antes del bolo del sábado 14 (RTF Pallejà: Lady Jarana 12:30 · Cataleya 19:00):**
+   - Cancionero → ⋯ → «Borrar todo y empezar de cero» (descarga antes una copia) e importar `Mi-cancionero.json` (396 canciones, mandado en el chat). Tus canciones no van al repo.
+   - Si tenías el orden de los sets a tu gusto: Importar → la copia que descargó «Borrar todo» → «Solo el orden de los repertorios».
+   - Comparte el set con los músicos desde el repertorio («Compartir»): el enlace es `/grupo/…` y se pone al día solo cuando estés con cuenta y las reglas desplegadas.
+   - Pon el logo de Lady Jarana y de Cataleya: Tabla → «Grupos y colores» → el grupo → «Tu logo».
+   - Repasa tonos y orden del repertorio.
    - Pulsa «Poner tempo y duración» en el Cancionero y prueba el botón «Auto» de Tocar con una canción.
    - Las «versión Víctor / Cataleya / Mafe»: «Hacer mi versión» y ponle tu duración.
    - Dime qué versión tocáis de «El toro y la luna» y «La Marina està morena», y si «Marcha» es de Rosario.

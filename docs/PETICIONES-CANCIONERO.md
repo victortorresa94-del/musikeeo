@@ -508,23 +508,24 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
   - **Probado:** en producción, 397 canciones, 2 repertorios y nada duplicado.
 - **Editar en el móvil y la cabecera de la canción** 🔧 (sesión 1): «Editar» a la vista, que «Editar ficha» funcione en el iPhone, las píldoras en una línea y «Falta la letra» plegado.
 
-## 21e. Tocar con todo a la vista y editar la canción ahí mismo (13-nov, víspera del bolo) 🔧
+## 21e. Tocar con todo a la vista y editar la canción ahí mismo (13-nov, víspera del bolo) ✅
 
 *«Los botones que me importan son los del tamaño de letra, que quepa en la pantalla y todo eso. Lo de línea a línea… lo quisiera tener en la pantalla principal. Y lo de dame el tono puede ser un botón más pequeño. Me gustaría tenerlo todo en una misma pantalla. Igual que lo de bajar sola, que es un botón súper grande… para no tener que ir a los tres botoncitos. Y por defecto, en móvil, salen todas las letras y acordes súper gigantes. Y sigo sin poder editar: quiero hacer clic encima y editarla, como una nota, sin ir a otro menú, en vivo o no. Quiero darle a "Tono G" y cambiarle el tono, darle a "Lady Jarana" y cambiarla de grupo, que salga un desplegable, o a "Pop-rock"… Lo más importante para mí es poder editar todo el texto desde la misma vista principal, sin ir a otro menú y sin que se pierda el contexto ni el formato.»*
 
-- **Tocar, una sola barra** 🔧 (sesión 1): anterior · Aa− · Aa+ · que quepa · Línea a línea · Bajar sola · siguiente, más Tono ± y «Dame el tono» pequeño. En ⋯ solo lo que se toca poco.
-- **Tamaño por defecto en el móvil** 🔧 (sesión 1): «que quepa» con tope (unos 30 px en el móvil y 40 en tablet/PC), puesto en el cálculo para que valga también para lo ya guardado. Letra de 17-18 px al empezar.
+- **Tocar, una sola barra** ✅ (probado en producción): dos filas, Tono ± · «Dame el tono» pequeño · A− · A+ · que quepa · ⋯ / anterior · Línea · Auto · Bajar · siguiente. Ya no se esconde al bajar, y el lápiz de arriba edita la letra sin salir.
+- **Tamaño por defecto en el móvil** ✅: *«Pero ves que en móvil sale gigante, tío. O sea, no tiene que salir tan grande de primeras.»* «Que quepa» con tope de 19 px en el móvil y 28 en tablet/PC, y suelo de 14 px en el móvil (`components/cancionero/medir.ts`: `topeQueQuepa`, `sueloQueQuepa`), en la canción y en Tocar. Vale también para lo ya guardado.
+- *«¿Y por qué has usado otra sesión? Tienes que hacerlo tú todo.»* ✅ Desde el 13-nov a mediodía, una sola sesión hace todo el trabajo del Cancionero; no se reparte en otras.
 - **Editar el texto ahí mismo** ✅ en la canción (sesión 2, 400ef37; en Tocar 🔧 lo monta la sesión 1): `components/cancionero/EditarEnSitio.tsx`. Tocar la letra (no un acorde) o «Editar» abre el texto tal cual (acordes, partes y formato intactos) en el mismo sitio, con el cursor en la línea tocada y a la altura del dedo. «Listo» guarda con Deshacer y vuelve a pintarla a la misma altura; «Cancelar» pregunta si hay cambios. Sin red, sin la barra de abajo mientras se edita, y la app no se recarga sola con una edición a medias. Props: `{ cancion, onGuardar(texto), onCerrar, lineaInicial? }`.
 - **La ficha en su sitio** ✅ (sesión 2, 400ef37): `components/cancionero/FichaEnSitio.tsx`. Cada píldora abre un desplegable junto a ella y se guarda al elegir, con Deshacer. Tono: 12 notas, mayor o menor, y los acordes se mueven a ese tono. Grupo: casillas y «+ Nuevo». Canta, Estilo, Estado y Energía: uno, con «+ Otro». Capo: 0-9 con las formas calculadas. Lo que falta sale como «+ Tono / + Canta / + Grupo / + Estilo». El lápiz sigue llevando a la ficha entera. Probado en un iPhone 13 simulado y sin red.
 
-### 21f. Más del 13-nov (mediodía) 🔧
+### 21f. Más del 13-nov (mediodía) ✅
 
 - *«Yo ya me había ordenado el repertorio que tengo cargado y se ha cambiado el orden.»*
   - **Causa:** importar una copia con un repertorio del mismo nombre le ponía el orden del fichero (`ImportarCanciones.tsx`).
-  - **Arreglo** 🔧 (sesión 2): manda el suyo; si los órdenes no coinciden, elegir; y «Solo el orden», para recuperarlo desde una copia sin tocar las fichas.
-- *«Una vez editada una canción del reper quiero poder guardarla como "guardar como canción" o "sustituir la canción guardada".»* 🔧 (sesión 2): «Guardar» o «Guardar como canción nueva» (una versión que la sustituye en ese repertorio).
-- *«A todos estos atributos, si no les ponemos un icono, son dificilísimos de identificar.»* 🔧 (sesión 2): un icono en cada píldora.
-- *«Quiero poder quitar canciones de un grupo y tener un listado de todas.»* 🔧 (sesión 1): en «Elegir», quitar o poner un grupo y borrar en lote; cada lista de grupo con su número.
+  - **Arreglo** ✅: manda el suyo; si los órdenes no coinciden, elegir; y «Solo el orden», para recuperarlo desde una copia sin tocar las fichas.
+- *«Una vez editada una canción del reper quiero poder guardarla como "guardar como canción" o "sustituir la canción guardada".»* ✅: «Guardar» o «Guardar como canción nueva» (una versión que la sustituye en ese repertorio).
+- *«A todos estos atributos, si no les ponemos un icono, son dificilísimos de identificar.»* ✅: un icono en cada píldora.
+- *«Quiero poder quitar canciones de un grupo y tener un listado de todas.»* ✅: en «Elegir», quitar o poner un grupo y borrar en lote; cada lista de grupo con su número.
 - *«No tengo 500 canciones, tío, nos hemos flipado… de Lady Jarana tendré como 50 máximo.»*
   - **Página para revisarlas:** https://claude.ai/artifact/4GKkapTqsopXqJ825N2eJf (privada). Están las 397 por origen y la propuesta es quedarse con 194:
     - las 167 del Drive, sin «Orgullo», que es la misma que «Los Barrieros»;
@@ -534,7 +535,7 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
   - Lo que marca se guarda en la base de la página (`revision/actual`) y desde ahí descarga el archivo limpio.
   - Lady Jarana sale con 33. En su móvil salen más porque sigue con los grupos viejos.
 - *«Si te paso letras y canciones, ¿me lo puedes organizar como necesito?»* Sí. «Los Barrieros»: estrofa 1 (aviso «sin guitarra»), pre-coro G – C, coro C – G7 – G7 – C, estrofa 2, pre-coro y coro. Va dentro del archivo limpio y en el chat para pegarla.
-  - «Rueda 2: G – C» no se lee como parte con acordes (sí «Rueda:» y «Pre-coro:»); arreglo pedido a la sesión 2.
+  - «Rueda 2: G – C» ya se lee como parte con acordes ✅ (`lib/acordes.ts`).
 
 ### 21g. Su cancionero entero, limpio (13-nov, 12:45) ✅
 
@@ -564,7 +565,7 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
 - ✅ Sin red, el enlace abre con la última copia que vio.
 - ⏳ Para que se actualice de verdad: entrar con su cuenta y desplegar las reglas (`compartidos`).
 
-### 21i. Iconos, logos y colores de cada cosa, y columnas propias (13-nov, tarde) ✅ en local
+### 21i. Iconos, logos y colores de cada cosa, y columnas propias (13-nov, tarde) ✅ en musikeeo.com (d055a70)
 
 > *«debería poder añadir un icono a cada grupo y proyecto musical. tanto algunos variados de la app como personalizado, para ponerle mi logo»*
 > *«debería poder añadir desde aquí nuevas etiquetas, estilos, colores de cada cosa etc»*
@@ -583,6 +584,14 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
 - ✅ De paso: «Capo 2» salía dos veces en las filas.
 - ⏳ La ficha entera (Editar → ficha) aún no enseña las columnas propias: se cambian en las píldoras y en la Tabla.
 - ⏳ Desplegar las reglas (`catalogo` y `ficha.extra`).
+- Probado en producción (iPhone 13 simulado, sin cuenta): logo y color de Lady Jarana, columna «Ensayada», y sigue todo al recargar sin red.
+
+### 21j. Guardarlo todo (13-nov, noche) ✅
+
+> *«Guarda todas estas sesiones, prompts y pendientes en brain y repo.»*
+
+- Repo: este documento, `docs/PENDIENTES-VICTOR.md` y el registro de la sesión en `CLAUDE.md`.
+- aura Brain: `musikeeo/cancionero` (contexto de las peticiones y decisiones), la bitácora de la sesión y la nota «2026-11-13 · cancionero musikeeo» en la libreta «Claude Code».
 
 ## 22. Datos de la BBDD a corregir ⏳
 
@@ -606,6 +615,7 @@ Se corrige en la próxima copia y en la BBDD maestra del Drive.
 
 ## Pendientes de Víctor 👤
 
+- **Hoy, 13-nov (bolo del 14):** Borrar todo e importar `Mi-cancionero.json`; recuperar el orden con «Solo el orden» si hace falta; entrar con su cuenta; poner los logos de los grupos; compartir el set con los músicos.
 - **Desplegar las reglas de Firestore** desde su PC (ver §5). Sin esto el mapa no guarda y el cancionero no pasa a la cuenta.
 - **Borrar el repertorio** que se llenó con las 166 canciones e importar los dos archivos de los sets desde Cancionero → Importar.
 - **Importar sus papeles del Drive** (§18): ya caen en su tono. Se descargan de las carpetas de Drive y se suben por Importar → Abrir archivos (Word/PDF).
