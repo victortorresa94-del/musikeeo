@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { ChevronRight, Copy, ExternalLink, Loader2 } from 'lucide-react';
+import { ChevronRight, Copy, ExternalLink, Loader2, Send } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { crearPlaylist, enlaceEscuchar, irASpotify, pedidoDe, spotifyListo, tokenVivo } from '../../lib/spotify';
 import { useApuntarSpotify } from '../../hooks/useApuntarSpotify';
@@ -56,6 +56,17 @@ export function FilaSpotify({ repertorio, canciones, className }: { repertorio: 
             toast.error((e as Error).message);
         } finally { setHaciendo(null); }
     };
+    // Los músicos no conectan Spotify (en desarrollo solo deja 5 cuentas): escuchan con el enlace
+    const enviarPlaylist = async () => {
+        const url = repertorio.spotify;
+        if (!url) return;
+        if (navigator.share) {
+            try { await navigator.share({ title: repertorio.nombre, text: `${repertorio.nombre} · la playlist en Spotify`, url }); return; } catch (e) {
+                if ((e as Error)?.name === 'AbortError') return;
+            }
+        }
+        try { await navigator.clipboard.writeText(url); toast.success('Enlace de la playlist copiado. Pégalo en el grupo.'); } catch { toast('No se pudo copiar'); }
+    };
     const copiarLista = async () => {
         const texto = lista.map((c, i) => `${i + 1}. ${c.titulo}${c.artista ? ` — ${c.artista}` : ''}`).join('\n');
         try { await navigator.clipboard.writeText(texto); toast.success('Lista copiada'); } catch { toast('No se pudo copiar'); }
@@ -79,6 +90,12 @@ export function FilaSpotify({ repertorio, canciones, className }: { repertorio: 
                             className="pulsable w-full h-[52px] rounded-[14px] bg-foreground text-background text-[16px] font-semibold flex items-center justify-center gap-2">
                             <LogoSpotify className="h-5 w-5" /> Abrir su playlist
                         </a>
+                    )}
+                    {repertorio.spotify && (
+                        <button onClick={() => void enviarPlaylist()}
+                            className="pulsable w-full h-[52px] rounded-[14px] bg-fill text-foreground text-[16px] font-semibold flex items-center justify-center gap-2">
+                            <Send className="h-5 w-5" /> Enviar a los músicos
+                        </button>
                     )}
                     {spotifyListo() ? (
                         <>

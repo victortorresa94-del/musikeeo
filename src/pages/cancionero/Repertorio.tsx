@@ -260,9 +260,9 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                     <Play className="h-5 w-5 fill-current" /> Tocar
                     <img src={ICONO.canciones} alt="" aria-hidden className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 h-[54px] w-[54px] object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.18)]" />
                 </button>
-                <button onClick={() => setCompartir(true)} disabled={!ids.length} aria-label="Compartir con el grupo"
-                    className="pulsable h-[60px] w-[60px] shrink-0 rounded-[18px] bg-fill text-foreground flex items-center justify-center disabled:opacity-40">
-                    <Share2 className="h-5 w-5" />
+                <button onClick={() => setCompartir(true)} disabled={!ids.length} aria-label="Enviar al grupo"
+                    className="pulsable h-[60px] px-4 shrink-0 rounded-[18px] bg-fill text-foreground text-[16px] font-semibold flex items-center justify-center gap-2 disabled:opacity-40">
+                    <Share2 className="h-5 w-5" /> Enviar
                 </button>
             </div>
 
