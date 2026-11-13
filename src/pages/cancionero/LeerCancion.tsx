@@ -517,7 +517,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                         <BotonDeBarra etiqueta={ajustes.cejilla ? `Cejilla ${ajustes.cejilla}` : 'Cejilla'} activo={ajustes.cejilla > 0} onClick={() => setPanelSeccion('cejilla')} desactivado={sinAcordes}>
                             <Guitar className="h-5 w-5" />
                         </BotonDeBarra>
-                        <BotonDeBarra etiqueta="Ver" activo={ajustes.ajustar || ajustes.vista !== 'completa'} onClick={() => setPanelSeccion('ver')}>
+                        <BotonDeBarra etiqueta="Ver" activo={ajustes.ajustar || ajustes.vista === 'letra' || ajustes.vista === 'acordes'} onClick={() => setPanelSeccion('ver')}>
                             <Eye className="h-5 w-5" />
                         </BotonDeBarra>
                         <BotonDeBarra etiqueta={rodando ? 'Parar' : 'Bajar'} activo={rodando} onClick={() => setRodando(r => !r)}>

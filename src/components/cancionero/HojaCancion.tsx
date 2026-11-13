@@ -17,7 +17,9 @@ type Vista = AjustesCancion['vista'];
 
 // Solo letra (para quien canta) o solo acordes (para quien se sabe la letra)
 function segunVista(lineas: Linea[], vista: Vista): Linea[] {
-    if (vista === 'completa') return lineas;
+    // Sin vista guardada (copias viejas, una canción a medio guardar) se ve TODO: perder la letra
+    // en mitad del bolo porque falte un ajuste no puede pasar
+    if (vista !== 'letra' && vista !== 'acordes') return lineas;
     const salida: Linea[] = [];
     for (const l of lineas) {
         if (vista === 'letra') {

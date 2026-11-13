@@ -3,10 +3,11 @@ import { EditorContent, Extension, useEditor, type Editor } from '@tiptap/react'
 import StarterKit from '@tiptap/starter-kit';
 import Highlight from '@tiptap/extension-highlight';
 import { Placeholder } from '@tiptap/extensions';
-import { Plugin, PluginKey } from '@tiptap/pm/state';
+import { Plugin, PluginKey, TextSelection } from '@tiptap/pm/state';
 import { Decoration, DecorationSet } from '@tiptap/pm/view';
 import { Fragment, Slice, type Node as NodoPM, type Schema } from '@tiptap/pm/model';
-import { RE_AVISO, esApunte, esSeccion, esTab, formatear, leerAcorde, leerLineaAcordes } from '../../lib/acordes';
+import { RE_AVISO, esApunte, esSeccion, esTab, formatear, leerAcorde, leerLineaAcordes, limpiarTexto } from '../../lib/acordes';
+import { textoPegado } from '../../lib/pegado';
 import { cn } from '../../lib/utils';
 import { estiloSeccion } from './estilo';
 
@@ -116,11 +117,26 @@ const PintaLetra = Extension.create({
     },
 });
 
-// Pegar texto: cada línea, un párrafo, también las vacías (ProseMirror las juntaba)
+// Pegar texto: cada línea, un párrafo, también las vacías (ProseMirror las juntaba), y con su
+// **negrita** y ==resaltado== si los trae
 function pegarTexto(texto: string, schema: Schema): Slice {
-    const lineas = texto.replace(/\r\n?/g, '\n').split('\n');
-    const nodos = lineas.map(l => schema.nodes.paragraph.create(null, l ? schema.text(l) : null));
+    const doc = aDocumento(texto);
+    const nodos = doc.content.map(p => schema.nodeFromJSON(p));
     return new Slice(Fragment.from(nodos), 1, 1);
+}
+
+// Lo que se pega de FUERA (Cifra Club, LaCuerda, una nota, WhatsApp) entra como TEXTO, línea a
+// línea y con sus espacios: el HTML de esas webs metía la fila de acordes y la de la letra en la
+// misma línea («D No, no te puedo olvidar») y se comía los espacios que colocan cada acorde
+// (13-nov, Víctor: «acabo de copiar la letra directa de Cifra Club y mira cómo se me ha pegado»).
+// Lo copiado dentro del propio editor (lleva data-pm-slice) sigue el camino normal: guarda sus marcas
+function textoDeFuera(datos: DataTransfer | null): string | null {
+    if (!datos) return null;
+    if (datos.getData('text/html').includes('data-pm-slice')) return null;
+    const crudo = textoPegado(datos);
+    if (!crudo) return null;
+    // Varias líneas: tabuladores a espacios, fuera lo que no es la canción y como mucho un blanco seguido
+    return crudo.includes('\n') ? limpiarTexto(crudo) : crudo.replace(/[\r\n]+/g, '');
 }
 
 export interface EditorLetraProps {
@@ -151,6 +167,24 @@ export const EditorLetra = forwardRef<EditorLetraApi, EditorLetraProps>(({ texto
         editorProps: {
             attributes: { 'aria-label': 'Letra y acordes de la canción', spellcheck: 'false', autocapitalize: 'off', autocorrect: 'off' },
             clipboardTextParser: (t, _ctx, _plain, view) => pegarTexto(t, view.state.schema),
+            handlePaste: (view, event) => {
+                const t = textoDeFuera(event.clipboardData);
+                if (t === null) return false;
+                event.preventDefault();
+                view.dispatch(view.state.tr.replaceSelection(pegarTexto(t, view.state.schema)).scrollIntoView());
+                return true;
+            },
+            // Arrastrar texto de otra app: igual que pegar
+            handleDrop: (view, event, _slice, moved) => {
+                if (moved) return false;
+                const t = textoDeFuera(event.dataTransfer);
+                if (t === null) return false;
+                const donde = view.posAtCoords({ left: event.clientX, top: event.clientY });
+                if (!donde) return false;
+                event.preventDefault();
+                view.dispatch(view.state.tr.setSelection(TextSelection.create(view.state.doc, donde.pos)).replaceSelection(pegarTexto(t, view.state.schema)));
+                return true;
+            },
             clipboardTextSerializer: slice => {
                 const lineas: string[] = [];
                 slice.content.forEach(p => { lineas.push(p.isTextblock ? p.textContent : p.textBetween(0, p.content.size, '\n')); });
