@@ -17,19 +17,22 @@ self.addEventListener("install", (event) => {
     );
 });
 
-// Las versiones guardadas, de la más nueva a la más vieja. Se quedan DOS: la de ahora y la
-// anterior. Una página que se abrió con la anterior (Tocar en mitad del bolo) sigue pidiendo SUS
-// trozos de código; si al llegar la nueva se borraran, sin red esa pantalla fallaría y la app se
-// recargaría en directo (13-nov, Víctor: «que no se me reinicie la app en directo»)
+// Las versiones guardadas, de la más nueva a la más vieja. Se quedan CINCO. Una página que se
+// abrió con una versión anterior (Tocar en mitad del bolo) sigue pidiendo SUS trozos de código; si
+// al llegar las nuevas se borraran, sin red esa pantalla fallaría y la app se recargaría en
+// directo (13-nov, Víctor: «que no se me reinicie la app en directo»). Eran dos, pero la noche
+// del 13-nov se publicó cinco veces en una hora y una página abierta se quedó sin el editor de
+// la ficha («se ha caído por completo»)
+const VERSIONES = 5;
 const META = "musikeeo-meta";
-async function quedarseConDos() {
+async function quedarseConVarias() {
     const meta = await caches.open(META);
     const antes = await meta.match("/versiones").then((r) => (r ? r.json() : [])).catch(() => []);
     const orden = [CACHE_NAME, ...antes.filter((n) => n !== CACHE_NAME)];
-    const quedan = orden.slice(0, 2);
+    const quedan = orden.slice(0, VERSIONES);
     await meta.put("/versiones", new Response(JSON.stringify(quedan), { headers: { "Content-Type": "application/json" } }));
     const nombres = await caches.keys();
-    // Se borra lo que no es de las dos (y lo de antes de este sistema, salvo la anterior si la hay)
+    // Se borra lo que no es de las que se quedan (y lo de antes de este sistema, salvo la anterior si la hay)
     const sinLista = !antes.length;
     const previa = sinLista ? nombres.filter((n) => n.startsWith("musikeeo-") && n !== CACHE_NAME && n !== META).slice(-1) : [];
     await Promise.all(nombres.filter((n) => n !== META && !quedan.includes(n) && !previa.includes(n)).map((n) => caches.delete(n)));
@@ -38,7 +41,7 @@ async function quedarseConDos() {
 
 self.addEventListener("activate", (event) => {
     // Tomar el control de las pestañas abiertas sin esperar a recargar
-    event.waitUntil(Promise.all([self.clients.claim(), quedarseConDos().catch(() => {})]));
+    event.waitUntil(Promise.all([self.clients.claim(), quedarseConVarias().catch(() => {})]));
 });
 
 // Por si acaso: como mucho 400 ficheros, se van los más viejos
