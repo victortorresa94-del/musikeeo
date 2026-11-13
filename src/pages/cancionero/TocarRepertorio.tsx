@@ -247,7 +247,7 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
                         {i === actual || (cerca !== null && Math.abs(i - cerca) <= 1)
                             ? <Diapositiva cancion={c} n={i + 1} total={canciones.length} siguiente={canciones[i + 1]}
                                 onSiguiente={() => ir(i + 1)} cambiar={cambio => cambiar(c, cambio)}
-                                editando={editando === c.id} onGuardarTexto={texto => guardarTexto(c, texto)} onCerrarEdicion={() => setEditando(null)} />
+                                editando={editando === c.id} onGuardarTexto={texto => guardarTexto(c, texto)} onCerrarEdicion={() => setEditando(null)} repertorioId={repertorioId} />
                             : null}
                     </div>
                 ))}
@@ -364,10 +364,10 @@ function ControlesCancion({ cancion, visibles, rodando, auto, versos, linea, onL
 }
 
 // Una canción del repertorio. Se mide sola para «que quepa» y se agranda con dos dedos.
-function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar, editando, onGuardarTexto, onCerrarEdicion }: {
+function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar, editando, onGuardarTexto, onCerrarEdicion, repertorioId }: {
     cancion: Cancion; n: number; total: number; siguiente?: Cancion; onSiguiente: () => void;
     cambiar: (c: Partial<AjustesCancion>) => void;
-    editando?: boolean; onGuardarTexto: (texto: string) => void; onCerrarEdicion: () => void;
+    editando?: boolean; onGuardarTexto: (texto: string) => void; onCerrarEdicion: () => void; repertorioId?: string;
 }) {
     const a = cancion.ajustes;
     const { leida, opciones } = useMusicaCancion(cancion.texto, a, cancion.ficha?.tono, cancion.ficha?.capo);
@@ -452,7 +452,7 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar, edita
             {!notasVacias(cancion.notas) && <NotasRicas json={cancion.notas} className="mt-3 text-[15px]" />}
             <div ref={zonaRef} data-hoja data-tamano={tamano} className="mt-3">
                 {editando
-                    ? <EditarEnSitio cancion={cancion} onGuardar={onGuardarTexto} onCerrar={onCerrarEdicion} barraArriba="top-[calc(env(safe-area-inset-top)+48px)]" />
+                    ? <EditarEnSitio cancion={cancion} onGuardar={onGuardarTexto} onCerrar={onCerrarEdicion} repertorioId={repertorioId} barraArriba="top-[calc(env(safe-area-inset-top)+48px)]" />
                     : <HojaCancion lineas={lineas} opciones={opciones} vista={a.vista} tamano={tamano} columnas={columnas} />}
             </div>
             {/* Copia invisible para medir, solo con «que quepa»: el tamaño y las columnas los pone buscarEncaje */}
