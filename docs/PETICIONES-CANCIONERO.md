@@ -514,8 +514,8 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
 
 - **Tocar, una sola barra** 🔧 (sesión 1): anterior · Aa− · Aa+ · que quepa · Línea a línea · Bajar sola · siguiente, más Tono ± y «Dame el tono» pequeño. En ⋯ solo lo que se toca poco.
 - **Tamaño por defecto en el móvil** 🔧 (sesión 1): «que quepa» con tope (unos 30 px en el móvil y 40 en tablet/PC), puesto en el cálculo para que valga también para lo ya guardado. Letra de 17-18 px al empezar.
-- **Editar el texto ahí mismo** 🔧 (sesión 2): `components/cancionero/EditarEnSitio.tsx`. El texto tal cual (acordes, partes y formato intactos), en el mismo sitio, con «Listo» y «Cancelar». Sirve sin red, y también desde Tocar (lo monta la sesión 1).
-- **La ficha en su sitio** 🔧 (sesión 2): tocar una píldora (Tono, Grupo, Estilo, Canta, Estado, Energía, Capo) abre un desplegable junto a ella, se guarda al elegir y se puede deshacer.
+- **Editar el texto ahí mismo** ✅ en la canción (sesión 2, 400ef37; en Tocar 🔧 lo monta la sesión 1): `components/cancionero/EditarEnSitio.tsx`. Tocar la letra (no un acorde) o «Editar» abre el texto tal cual (acordes, partes y formato intactos) en el mismo sitio, con el cursor en la línea tocada y a la altura del dedo. «Listo» guarda con Deshacer y vuelve a pintarla a la misma altura; «Cancelar» pregunta si hay cambios. Sin red, sin la barra de abajo mientras se edita, y la app no se recarga sola con una edición a medias. Props: `{ cancion, onGuardar(texto), onCerrar, lineaInicial? }`.
+- **La ficha en su sitio** ✅ (sesión 2, 400ef37): `components/cancionero/FichaEnSitio.tsx`. Cada píldora abre un desplegable junto a ella y se guarda al elegir, con Deshacer. Tono: 12 notas, mayor o menor, y los acordes se mueven a ese tono. Grupo: casillas y «+ Nuevo». Canta, Estilo, Estado y Energía: uno, con «+ Otro». Capo: 0-9 con las formas calculadas. Lo que falta sale como «+ Tono / + Canta / + Grupo / + Estilo». El lápiz sigue llevando a la ficha entera. Probado en un iPhone 13 simulado y sin red.
 
 ## 22. Datos de la BBDD a corregir ⏳
 

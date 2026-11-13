@@ -187,6 +187,8 @@ Project is in active development. Architecture is solid, marketplace sprint in p
     - `/grupo` sin indexar (meta robots y `X-Robots-Tag` en `vercel.json`);
     - probado en producción con 18 temas (1.723 caracteres).
   - **Legal**: `/avisos-derechos` (`pages/legal/AvisosDerechos.tsx`) y el apartado «7 bis. Cancionero» de los términos.
+  - **13-nov, víspera del bolo — editar en su sitio** (`components/cancionero/EditarEnSitio.tsx` y `FichaEnSitio.tsx`, en `LeerCancion`): tocar la letra la edita ahí mismo (texto tal cual, cursor en la línea tocada, «Listo» con Deshacer, sin red); cada píldora de la ficha abre su desplegable (el tono mueve los acordes con `ajustes.semitonos`). `useAutoUpdate` no recarga si hay `[data-editar-en-sitio]`. En Tocar lo monta la sesión 1.
+  - **Enlace del grupo, 12-nov**: sin los apuntes de Víctor (`esApunte` de `lib/acordes.ts`), partes con coletilla y, en las chuletas, las indicaciones como apunte; ningún acorde se pierde (comprobado con los dos sets enteros de Pallejà: 2.372 y 2.126 caracteres).
   - **Ordenador**: el Cifrado sale en una cuadrícula de 2-3 columnas (`HojaSet ancho`), y Tabla, Bloques y Cifrado van a lo ancho con `xl:-mx-24 min-[1400px]:-mx-40 2xl:-mx-44` (medido a 1280, 1366, 1400 y 1536 px: ya no se meten bajo la barra lateral). La hoja de Importar se ensancha en el PC (`lg:max-w-2xl`). Importar y abrir sin red, probado el 12-nov.
 
 **❌ Pendiente:**
