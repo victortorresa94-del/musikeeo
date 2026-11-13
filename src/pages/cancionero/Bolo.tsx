@@ -7,6 +7,7 @@ import { useCancionero } from '../../hooks/useCancionero';
 import { ConMenu } from '../../components/cancionero/ConMenu';
 import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
 import { CompartirBolo } from '../../components/cancionero/CompartirGrupo';
+import { FilaTareas } from '../../components/cancionero/Tareas';
 import { iconoRepertorio, pastelDe } from '../../components/cancionero/estilo';
 import { textoDuracion } from '../../lib/biblioteca';
 import { DURACION_MEDIA, enlaceBolo, enlacesMapa, esHora, horaDe, minutosDe, paqueteBolo } from '../../lib/compartirBolo';
@@ -112,6 +113,8 @@ export default function Bolo() {
                     className="pulsable mt-4 w-full h-[60px] rounded-[18px] bg-primary text-primary-foreground font-bold text-[18px] flex items-center justify-center gap-2">
                     <Send className="h-5 w-5" /> Compartir el bolo
                 </button>
+                {/* Lo que queda por preparar del bolo, de sus sets y de sus canciones */}
+                <FilaTareas de={`b:${bolo.id}`} className="mt-3" />
 
                 {/* Cuándo y dónde */}
                 <Seccion titulo="Cuándo y dónde" icono={<MapPin className="h-4 w-4" />}>

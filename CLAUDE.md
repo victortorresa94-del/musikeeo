@@ -188,6 +188,7 @@ Project is in active development. Architecture is solid, marketplace sprint in p
   - en directo no se recarga ni se sale (`lib/directo.ts`, `DirectoEnVivo.tsx`, `SiFalla.tsx`; el service worker guarda dos versiones; Tocar lleva `?n=` y la app instalada vuelve ahí si el iPhone la cierra);
   - «Concierto» en el horario del bolo con `hasta`, y la página del músico abre con la hora en grande (`cuandoSeToca`).
   - entre titulares y extras se mueve arrastrando o con la flecha de cada fila; A−/A+ en el editor en su sitio y letra más pequeña de serie;
+  - **Tareas** (cuarta vista, `?ver=tareas`; `components/cancionero/Tareas.tsx`, `lib/tareas.ts`, almacén `musikeeo-tareas-v1` / `users/{uid}/tareas`, regla `tareas`): ensayar, aprender letra… con prioridad, canción (se une sola al nombrarla) y madre (repertorio o bolo); agrupadas por madre o prioridad; tachadas a «Hechas»; accesos desde canción, repertorio y bolo (`BotonTareas`, `FilaTareas`). Falta llevarlas en la copia .json.
   - **Mi perfil** (sueño A, «Baldosas», `pages/profile/Profile.tsx`): baldosa grande del Cancionero con sus números y el próximo bolo, y seis baldosas pastel con objeto 3D (Mensajes, Calendario, Musikeers cerca, Mis bolos, Editar perfil, Ajustes; iconos en `public/images/perfil/` y `public/images/3d/`). «Mis bolos» es su pantalla (`/profile?ver=bolos`: los del Cancionero y los publicados); las pestañas quedan en Publicaciones y Anuncios.
 
 **❌ Pendiente:**

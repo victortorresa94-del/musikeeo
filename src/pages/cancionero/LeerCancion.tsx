@@ -28,6 +28,7 @@ import { EditarEnSitio } from '../../components/cancionero/EditarEnSitio';
 import { precargarEditorLetra } from '../../components/cancionero/cargarEditorLetra';
 import { FichaEnSitio } from '../../components/cancionero/FichaEnSitio';
 import { BotonWebs } from '../../components/cancionero/BotonWebs';
+import { BotonTareas } from '../../components/cancionero/Tareas';
 import { notasVacias } from '../../lib/notas';
 
 export default function LeerCancion() {
@@ -408,6 +409,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                             className="pulsable h-9 px-3.5 rounded-full bg-fill text-[14px] font-semibold text-foreground">Ver acordes</button>
                     )}
                     <BotonWebs cancion={cancion} />
+                    <BotonTareas de={`c:${cancion.id}`} />
                 </div>
             </div>
 

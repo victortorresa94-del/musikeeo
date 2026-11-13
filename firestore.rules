@@ -81,6 +81,23 @@ service cloud.firestore {
           && (!('orden' in request.resource.data) || request.resource.data.orden is number);
       }
 
+      // Las tareas del cancionero: ensayar, aprender letra… con prioridad, canción y madre (repertorio o bolo)
+      match /tareas/{tareaId} {
+        allow read, delete: if isOwner(userId);
+        allow create, update: if isOwner(userId)
+          && request.resource.data.keys().hasOnly(['texto', 'prioridad', 'hecha', 'cancionId', 'cancionTitulo', 'repertorioId', 'repertorioNombre', 'boloId', 'boloTitulo', 'para', 'creadaEn', 'actualizadaEn'])
+          && request.resource.data.texto is string && request.resource.data.texto.size() <= 300
+          && request.resource.data.prioridad in ['alta', 'media', 'baja']
+          && (!('hecha' in request.resource.data) || (request.resource.data.hecha is string && request.resource.data.hecha.size() <= 40))
+          && (!('cancionId' in request.resource.data) || (request.resource.data.cancionId is string && request.resource.data.cancionId.size() <= 60))
+          && (!('cancionTitulo' in request.resource.data) || (request.resource.data.cancionTitulo is string && request.resource.data.cancionTitulo.size() <= 200))
+          && (!('repertorioId' in request.resource.data) || (request.resource.data.repertorioId is string && request.resource.data.repertorioId.size() <= 60))
+          && (!('repertorioNombre' in request.resource.data) || (request.resource.data.repertorioNombre is string && request.resource.data.repertorioNombre.size() <= 200))
+          && (!('boloId' in request.resource.data) || (request.resource.data.boloId is string && request.resource.data.boloId.size() <= 60))
+          && (!('boloTitulo' in request.resource.data) || (request.resource.data.boloTitulo is string && request.resource.data.boloTitulo.size() <= 200))
+          && (!('para' in request.resource.data) || (request.resource.data.para is string && request.resource.data.para.size() <= 10));
+      }
+
       // Los bolos del cancionero: fecha, lugar, horario, sets (repertorios), contacto y notas
       match /bolos/{boloId} {
         allow read, delete: if isOwner(userId);

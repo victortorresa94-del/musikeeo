@@ -669,6 +669,13 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
 - *«en la página que comparto a los músicos debería destacar mucho más el horario… que ponga más grande de 12:30 a 13:30»* → ✅ tarjeta negra arriba: «CONCIERTO · 12:30 – 13:30» en grande (`cuandoSeToca`); sin «Concierto» en el horario, cada set con su hora (con hueco, exacta; si no, «acaba hacia esa hora»).
 - *«quiero poder mover de extras a titulares y viceversa»* → ✅ en la vista Lista, titulares y extras son UNA lista que se arrastra por el asa: lo que se suelta debajo de la raya «Extras» pasa a la recámara y lo de encima, a titulares. Cada fila lleva además su flecha a la vista (↓ a extras, ↑ a titulares) con Deshacer. Los extras van sin número (no son del orden) y con ▷ para tocar desde ahí.
 - *«quisiera poder hacer más pequeña la letra desde aquí, y de serie… está como muy grande el texto de las canciones en todas»* → ✅ A− / A+ en la barra del editor en su sitio (en la canción y en Tocar; cambian el tamaño de la canción y quitan «que quepa»); «que quepa» llega como mucho a 18 px en el móvil y 21 en el ordenador (antes 19 y 28), y las canciones nuevas empiezan en 16 / 18 (antes 17 / 19).
+- *«necesito un apartado de tareas, tipo ensayar x canción, aprender letra tal… con prioridades»*, *«y poder relacionar tareas con canciones o bolos»*, *«un listado de tareas y que la madre sea "repertorio Pallejà Lady"»* → ✅ cuarta vista **Tareas** (`?ver=tareas`, baldosa menta con su libreta 3D, en el menú del ordenador con cuántas quedan; `components/cancionero/Tareas.tsx`, lógica en `lib/tareas.ts`, `Tarea` en types, almacén `musikeeo-tareas-v1` / `users/{uid}/tareas`, regla `tareas`):
+  - se apunta escribiendo; los arranques de siempre a un toque (Ensayar…, Aprender la letra de…, Aprender los acordes de…, Sacar el tono de…, Repasar); «Ensayar Bamboléo» se une sola a la canción;
+  - prioridad Alta · Media · Baja; para cuándo (opcional, en rojo si se pasa);
+  - cada tarea cuelga de su **madre**, un repertorio o un bolo, y la lista sale agrupada por ella (los que vienen primero) o por prioridad;
+  - tachar no borra: pasa a «Hechas», con Deshacer; tocar una tarea la edita (texto, prioridad, madre, canción, fecha, borrar);
+  - desde la canción («Tareas»), el repertorio y el bolo (fila «Tareas · N por hacer») se ven solo las suyas —en el repertorio y el bolo, también las de sus canciones— y lo nuevo se une a él;
+  - los nombres van copiados: si se borra e importa el cancionero, las tareas se vuelven a unir por el nombre. «Borrar todo» no las borra. Aún no viajan en la copia .json.
 
 ## 22. Datos de la BBDD a corregir ⏳
 

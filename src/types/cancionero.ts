@@ -84,6 +84,29 @@ export interface Lista {
     sincronizada?: boolean;
 }
 
+// Una tarea del músico (13-nov, Víctor: «un apartado de tareas, tipo ensayar x canción, aprender
+// letra tal… con prioridades», «relacionar tareas con canciones o bolos», «un listado de tareas y que
+// la madre sea "repertorio Pallejà Lady"»). La madre es un repertorio o un bolo (agrupan la lista);
+// además puede ir unida a una canción. Los nombres van copiados: si se borra y se vuelve a importar
+// el cancionero (ids nuevos), la tarea se vuelve a unir por el nombre
+export type PrioridadTarea = 'alta' | 'media' | 'baja';
+export interface Tarea {
+    id: string;
+    texto: string;
+    prioridad: PrioridadTarea;
+    hecha?: string;             // cuándo se tachó (sin esto, pendiente). Tachada no se borra
+    cancionId?: string;
+    cancionTitulo?: string;
+    repertorioId?: string;      // madre: un repertorio…
+    repertorioNombre?: string;
+    boloId?: string;            // …o un bolo
+    boloTitulo?: string;
+    para?: string;              // AAAA-MM-DD, para cuándo
+    creadaEn: string;
+    actualizadaEn: string;
+    sincronizada?: boolean;
+}
+
 // Un bolo (13-nov): lo que hay que saber de una actuación para pasárselo a los músicos —cuándo,
 // dónde, el horario, los sets (repertorios) con su hora, a quién llamar y las notas—. Aparte del
 // repertorio: uno o varios sets por bolo, y el mismo repertorio puede ir en varios bolos

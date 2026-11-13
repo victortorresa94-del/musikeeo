@@ -14,7 +14,7 @@ import { CompletarLetras } from './CompletarLetras';
 import type { Lista } from '../../types/cancionero';
 
 // Las tres vistas grandes del Cancionero (13-nov, Víctor: «canciones, repertorios y bolos»)
-export type VistaCancionero = 'canciones' | 'repertorios' | 'bolos';
+export type VistaCancionero = 'canciones' | 'repertorios' | 'bolos' | 'tareas';
 
 // En el ordenador (≥ 1024 px), el menú del Cancionero a la izquierda en todas sus páginas, como
 // en un gestor de música. En el móvil no se ve: allí cada página trae su manera de volver
@@ -27,7 +27,8 @@ export function ConMenu({ children, activo, onLista, onVer, onOpcionesLista, cla
     className?: string;
 }) {
     const navigate = useNavigate();
-    const { canciones, listas, listo } = useCancionero();
+    const { canciones, listas, listo, tareas } = useCancionero();
+    const porHacer = tareas.filter(t => !t.hecha).length;
     const [importar, setImportar] = useState(false);
     const [completar, setCompletar] = useState(false);
     const [nueva, setNueva] = useState(false);
@@ -47,10 +48,12 @@ export function ConMenu({ children, activo, onLista, onVer, onOpcionesLista, cla
                             [ICONO.canciones, 'Canciones', () => irLista('todas'), activo?.ver === 'canciones' && (activo.lista ?? 'todas') === 'todas'],
                             [ICONO.repertorios, 'Repertorios', () => irVer('repertorios'), activo?.ver === 'repertorios'],
                             [ICONO.bolos, 'Bolos', () => irVer('bolos'), activo?.ver === 'bolos'],
+                            [ICONO.tareas, 'Tareas', () => irVer('tareas'), activo?.ver === 'tareas'],
                         ] as const).map(([icono, t, f, on]) => (
                             <button key={t} onClick={f} aria-current={on ? 'page' : undefined}
                                 className={cn('w-full h-11 px-2 rounded-xl flex items-center gap-2.5 text-left text-[16px] font-bold text-foreground', on ? 'bg-fill-strong' : 'hover:bg-fill')}>
-                                <img src={icono} alt="" className="h-8 w-8 object-contain" /> {t}
+                                <img src={icono} alt="" className="h-8 w-8 object-contain" /> <span className="flex-1">{t}</span>
+                                {t === 'Tareas' && porHacer > 0 && <span className="text-[13px] font-semibold text-muted-foreground">{porHacer}</span>}
                             </button>
                         ))}
                     </nav>

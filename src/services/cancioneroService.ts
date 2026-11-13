@@ -1,7 +1,7 @@
 import { collection, deleteDoc, doc, getDocs, limit, query, setDoc } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { datosDelPegado, leerCancion } from '../lib/acordes';
-import type { AjustesCancion, Bolo, Cancion, Lista, Repertorio } from '../types/cancionero';
+import type { AjustesCancion, Bolo, Cancion, Lista, Repertorio, Tarea } from '../types/cancionero';
 
 // El cancionero vive primero en el móvil (funciona sin cuenta y sin cobertura, en el bolo)
 // y, con cuenta, se copia a users/{uid}/canciones y users/{uid}/repertorios para tenerlo
@@ -233,6 +233,11 @@ export const almacenBolos = crearAlmacen<Bolo>('musikeeo-bolos-v1', 'bolos', b =
     ...siHay({ lugar: b.lugar, direccion: b.direccion, contacto: b.contacto, telefono: b.telefono, notas: b.notas, compartido: b.compartido && siHay(b.compartido) }),
 }));
 
+export const almacenTareas = crearAlmacen<Tarea>('musikeeo-tareas-v1', 'tareas', t => ({
+    texto: t.texto, prioridad: t.prioridad, creadaEn: t.creadaEn, actualizadaEn: t.actualizadaEn,
+    ...siHay({ hecha: t.hecha, cancionId: t.cancionId, cancionTitulo: t.cancionTitulo, repertorioId: t.repertorioId, repertorioNombre: t.repertorioNombre, boloId: t.boloId, boloTitulo: t.boloTitulo, para: t.para }),
+}));
+
 export const AJUSTES_INICIALES: AjustesCancion = {
     semitonos: 0,
     cejilla: 0,
@@ -294,6 +299,20 @@ function crearBolo(datos: Partial<Omit<Bolo, 'id' | 'creadaEn' | 'actualizadaEn'
     });
 }
 
+// Una tarea nueva, guardada (sin campos vacíos: Firestore no admite undefined)
+function crearTarea(datos: Partial<Omit<Tarea, 'id' | 'creadaEn' | 'actualizadaEn'>> & { texto: string }): Tarea {
+    const ahora = new Date().toISOString();
+    const limpio = Object.fromEntries(Object.entries(datos).filter(([, v]) => v !== undefined && v !== '')) as Partial<Tarea>;
+    return almacenTareas.guardar({
+        ...limpio,
+        id: nuevoId(),
+        texto: datos.texto.trim().slice(0, 300) || 'Tarea',
+        prioridad: datos.prioridad ?? 'media',
+        creadaEn: ahora,
+        actualizadaEn: ahora,
+    });
+}
+
 // Al borrar una canción, sale también de los repertorios
 async function borrarCancion(id: string) {
     for (const r of almacenRepertorios.estado().items) {
@@ -337,6 +356,7 @@ function cargar(uid: string | null) {
     almacenRepertorios.cargar(uid);
     almacenListas.cargar(uid);
     almacenBolos.cargar(uid);
+    almacenTareas.cargar(uid);
     try { localStorage.setItem(CLAVE_ULTIMO, uid || INVITADO); } catch { /* sin almacenamiento */ }
 }
 
@@ -349,6 +369,7 @@ function cargarPrevio() {
     almacenRepertorios.cargarPrevio(ultimo);
     almacenListas.cargarPrevio(ultimo);
     almacenBolos.cargarPrevio(ultimo);
+    almacenTareas.cargarPrevio(ultimo);
 }
 if (typeof window !== 'undefined') cargarPrevio();
 
@@ -368,6 +389,9 @@ export const cancioneroService = {
     crearBolo,
     guardarBolo: almacenBolos.guardar,
     borrarBolo: almacenBolos.borrar,
+    crearTarea,
+    guardarTarea: almacenTareas.guardar,
+    borrarTarea: almacenTareas.borrar,
     // Borrar todo el cancionero (canciones, repertorios, listas y bolos) para empezar de cero
     vaciarTodo: async () => { await Promise.all([almacenCanciones.vaciar(), almacenRepertorios.vaciar(), almacenListas.vaciar(), almacenBolos.vaciar()]); },
 };

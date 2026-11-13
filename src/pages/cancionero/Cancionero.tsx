@@ -5,6 +5,7 @@ import { Link, useLocation, useNavigate, useSearchParams } from 'react-router-do
 import { CheckSquare, MinusCircle, ChevronRight, Cloud, Download, FileText, FileUp, ListPlus, Loader2, MoreHorizontal, Palette, Pencil, Plus, Search, Smartphone, Table2, Trash2, X } from 'lucide-react';
 import { GestionarCatalogo } from '../../components/cancionero/Catalogo';
 import { ListaBolos } from '../../components/cancionero/ListaBolos';
+import { VistaTareas } from '../../components/cancionero/Tareas';
 import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
@@ -50,12 +51,13 @@ const fechaCorta = (f: string) => {
 // repertorios para tocarlo en el bolo. Un solo buscador: tus canciones y, debajo, las del
 // catálogo (con portada y muestra) para añadirlas
 export default function Cancionero() {
-    const { canciones, repertorios, listas, bolos, listo, nube, conCuenta, crear, crearRepertorio, crearBolo, guardar, guardarLista, borrarLista } = useCancionero();
+    const { canciones, repertorios, listas, bolos, tareas, listo, nube, conCuenta, crear, crearRepertorio, crearBolo, guardar, guardarLista, borrarLista } = useCancionero();
+    const porHacer = tareas.filter(t => !t.hecha).length;
     const navigate = useNavigate();
     const location = useLocation();
     const [params, setParams] = useSearchParams();
     // Las tres vistas grandes (13-nov): Canciones · Repertorios · Bolos
-    const ver: VistaCancionero = params.get('ver') === 'repertorios' ? 'repertorios' : params.get('ver') === 'bolos' ? 'bolos' : 'canciones';
+    const ver: VistaCancionero = params.get('ver') === 'repertorios' ? 'repertorios' : params.get('ver') === 'bolos' ? 'bolos' : params.get('ver') === 'tareas' ? 'tareas' : 'canciones';
     const [q, setQ] = useState('');
     const [importar, setImportar] = useState(false);
     const buscadorRef = useRef<HTMLInputElement>(null);
@@ -151,6 +153,7 @@ export default function Cancionero() {
     const cambiarVer = (v: VistaCancionero) => {
         const p = new URLSearchParams(params);
         if (v !== 'canciones') p.set('ver', v); else p.delete('ver');
+        p.delete('de');
         setParams(p, { replace: true });
     };
     const probarEjemplo = () => navigate(`/cancionero/${crear(CANCION_EJEMPLO).id}`);
@@ -253,10 +256,11 @@ export default function Cancionero() {
             ) : (
                 <>
                     {/* Las tres vistas grandes; debajo, aparte, las herramientas */}
-                    <div className="mt-4 grid grid-cols-3 gap-3 lg:hidden">
+                    <div className="mt-4 grid grid-cols-4 gap-2.5 lg:hidden">
                         <Baldosa icono={ICONO.canciones} etiqueta="Canciones" pastel={PASTEL.cielo} activa={ver === 'canciones'} onClick={() => cambiarVer('canciones')} />
                         <Baldosa icono={ICONO.repertorios} etiqueta="Repertorios" pastel={PASTEL.lavanda} activa={ver === 'repertorios'} onClick={() => cambiarVer('repertorios')} />
                         <Baldosa icono={ICONO.bolos} etiqueta="Bolos" pastel={PASTEL.rosa} activa={ver === 'bolos'} onClick={() => cambiarVer('bolos')} />
+                        <Baldosa icono={ICONO.tareas} etiqueta={porHacer ? `Tareas · ${porHacer}` : 'Tareas'} pastel={PASTEL.menta} activa={ver === 'tareas'} onClick={() => cambiarVer('tareas')} />
                     </div>
                     <div className="mt-3 -mx-4 px-4 flex gap-2 overflow-x-auto hide-scrollbar lg:hidden" aria-label="Herramientas">
                         {([
@@ -279,10 +283,10 @@ export default function Cancionero() {
 
                     <div className="mt-6 mb-2 flex items-center justify-between gap-3">
                         <h2 className="min-w-0 truncate font-heading text-[20px] font-bold text-foreground whitespace-nowrap">
-                            {ver === 'bolos' ? 'Bolos' : ver === 'repertorios' ? 'Repertorios' : listaId === 'todas' ? 'Tus canciones' : nombreDeLista(listaId, listas)}
-                            <span className="ml-1.5 text-[15px] font-semibold text-muted-foreground">{ver === 'bolos' ? bolos.length || '' : ver === 'repertorios' ? reps.length || '' : enLista.length || ''}</span>
+                            {ver === 'tareas' ? 'Tareas' : ver === 'bolos' ? 'Bolos' : ver === 'repertorios' ? 'Repertorios' : listaId === 'todas' ? 'Tus canciones' : nombreDeLista(listaId, listas)}
+                            <span className="ml-1.5 text-[15px] font-semibold text-muted-foreground">{ver === 'tareas' ? porHacer || '' : ver === 'bolos' ? bolos.length || '' : ver === 'repertorios' ? reps.length || '' : enLista.length || ''}</span>
                         </h2>
-                        {ver === 'bolos' ? (
+                        {ver === 'tareas' ? null : ver === 'bolos' ? (
                             <button onClick={() => navigate(`/cancionero/bolo/${crearBolo({ titulo: 'Bolo nuevo' }).id}`)} className="pulsable h-9 pl-3 pr-4 rounded-full bg-primary text-primary-foreground text-[14px] font-semibold flex items-center gap-1">
                                 <Plus className="h-4 w-4" /> Nuevo
                             </button>
@@ -313,7 +317,7 @@ export default function Cancionero() {
                         )}
                     </div>
 
-                    {ver === 'bolos' ? <ListaBolos /> : ver === 'repertorios' ? (
+                    {ver === 'tareas' ? <VistaTareas key={params.get('de') ?? ''} de={params.get('de') ?? undefined} /> : ver === 'bolos' ? <ListaBolos /> : ver === 'repertorios' ? (
                         reps.length === 0 ? (
                             <div className="rounded-[22px] bg-pastel-lavanda p-5 md:p-7">
                                 <img src={ICONO.repertorios} alt="" className="h-16 w-16 object-contain drop-shadow-[0_6px_8px_rgba(0,0,0,0.16)]" />

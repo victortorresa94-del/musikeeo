@@ -16,6 +16,7 @@ import { minutos } from '../../lib/cantar';
 import { duracionDe, mismoTonoSeguido, reparto, textoDuracion, tonoMostrado } from '../../lib/biblioteca';
 import type { Cancion, Repertorio as TipoRepertorio } from '../../types/cancionero';
 import { CompartirGrupo } from '../../components/cancionero/CompartirGrupo';
+import { FilaTareas } from '../../components/cancionero/Tareas';
 import { BotonDesplegar, PanelAcordes } from '../../components/cancionero/FilaDesplegable';
 import { ConMenu } from '../../components/cancionero/ConMenu';
 import { SelectorVista, type Vista } from '../../components/cancionero/SelectorVista';
@@ -277,6 +278,8 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                     </button>
                 )}
             </section>
+            {/* Lo que queda por preparar de este repertorio y de sus canciones */}
+            <FilaTareas de={`r:${repertorio.id}`} className="mt-2" />
 
             {/* ⋯: fecha, hueco, compartir, hoja del bolo y borrar */}
             <Hoja abierta={menu} onCerrar={() => setMenu(false)} titulo="El repertorio" derecha={<BotonHoja fuerte onClick={() => setMenu(false)}>Listo</BotonHoja>}>
