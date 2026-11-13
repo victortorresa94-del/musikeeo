@@ -173,6 +173,22 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
         }
     }
 
+    // Varias de golpe (borrar en lote): una sola escritura en el móvil; en la nube, una a una
+    async function borrarVarias(ids: string[]) {
+        if (!ids.length) return;
+        const duenio = estado.duenio || INVITADO;
+        const fuera = new Set(ids);
+        fuera.forEach(id => clearTimeout(esperando.get(id)));
+        const lista = estado.items.filter(x => !fuera.has(x.id));
+        escribirLocal(duenio, lista);
+        avisar({ items: lista });
+        if (esUid(duenio) && estado.nube !== 'sin-permiso') {
+            for (const id of ids) {
+                try { await deleteDoc(doc(coleccion(duenio), id)); } catch (e) { fallo(e); break; }
+            }
+        }
+    }
+
     // Empezar de cero: el móvil se vacía al momento y, con cuenta, se borra también lo de la nube
     // (lo que el móvil sabía y lo que hubiera allí). Sin permiso en la nube, solo el móvil
     async function vaciar() {
@@ -191,7 +207,7 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
     }
 
     const suscribir = (f: () => void) => { oyentes.add(f); return () => { oyentes.delete(f); }; };
-    return { suscribir, estado: () => estado, cargarPrevio, cargar, guardar, guardarVarias, borrar, vaciar };
+    return { suscribir, estado: () => estado, cargarPrevio, cargar, guardar, guardarVarias, borrar, borrarVarias, vaciar };
 }
 
 // Firestore no admite undefined: los datos opcionales solo van si están
@@ -268,6 +284,29 @@ async function borrarCancion(id: string) {
     await almacenCanciones.borrar(id);
 }
 
+// Borrar varias canciones de una vez. Si alguna está en un repertorio: con quitarDeRepertorios
+// sale también de ahí; si no, las de los repertorios NO se borran. Devuelve lo necesario para
+// Deshacer (las canciones y los repertorios y listas como estaban)
+function borrarCanciones(ids: string[], quitarDeRepertorios: boolean) {
+    const enRep = new Set(almacenRepertorios.estado().items.flatMap(r => r.canciones));
+    const aBorrar = quitarDeRepertorios ? ids : ids.filter(id => !enRep.has(id));
+    const fuera = new Set(aBorrar);
+    const canciones = almacenCanciones.estado().items.filter(c => fuera.has(c.id));
+    const repertorios = almacenRepertorios.estado().items.filter(r => r.canciones.some(c => fuera.has(c)));
+    const listas = almacenListas.estado().items.filter(l => l.canciones.some(c => fuera.has(c)));
+    almacenRepertorios.guardarVarias(repertorios.map(r => ({ ...r, canciones: r.canciones.filter(c => !fuera.has(c)) })));
+    almacenListas.guardarVarias(listas.map(l => ({ ...l, canciones: l.canciones.filter(c => !fuera.has(c)) })));
+    void almacenCanciones.borrarVarias(aBorrar);
+    return {
+        borradas: aBorrar.length,
+        deshacer: () => {
+            almacenCanciones.guardarVarias(canciones);
+            almacenRepertorios.guardarVarias(repertorios);
+            almacenListas.guardarVarias(listas);
+        },
+    };
+}
+
 // Quién usó el cancionero la última vez en este dispositivo (uid o 'invitado'): solo una pista
 // para enseñar sus canciones al momento, sin esperar a Firebase (en el bolo puede no haber red)
 const CLAVE_ULTIMO = 'musikeeo-cancionero-ultimo';
@@ -297,6 +336,7 @@ export const cancioneroService = {
     guardar: almacenCanciones.guardar,
     guardarVarias: almacenCanciones.guardarVarias,
     borrar: borrarCancion,
+    borrarCanciones,
     crearRepertorio,
     guardarRepertorio: almacenRepertorios.guardar,
     borrarRepertorio: almacenRepertorios.borrar,

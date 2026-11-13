@@ -14,7 +14,7 @@ const nuevoId = () => (typeof crypto !== 'undefined' && 'randomUUID' in crypto ?
 // El dibujo de cada lista: icono en su círculo de color
 function IconoLista({ e, className }: { e: EntradaLista; className?: string }) {
     const caja = 'h-8 w-8 shrink-0 rounded-[10px] flex items-center justify-center';
-    if (e.clase === 'grupo') {
+    if (e.clase === 'grupo' && e.id !== 'sin-grupo') {
         return <span className={cn(caja, pastelDe(`grupo:${e.nombre}`).fondo, className)}><img src={ICONO.rumba} alt="" className="h-7 w-7 object-contain" /></span>;
     }
     const p = pastelDeColor(e.color);

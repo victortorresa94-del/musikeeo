@@ -20,8 +20,13 @@ export const COLORES_LISTA = ['mantequilla', 'cielo', 'menta', 'lavanda', 'meloc
 export function gruposDe(canciones: Cancion[]): EntradaLista[] {
     const n = new Map<string, number>();
     for (const c of canciones) for (const g of c.ficha?.proyectos ?? []) if (g.trim()) n.set(g.trim(), (n.get(g.trim()) ?? 0) + 1);
-    return [...n.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'es'))
+    const grupos: EntradaLista[] = [...n.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0], 'es'))
         .map(([g]) => ({ id: `grupo:${g}`, nombre: g, clase: 'grupo' }));
+    // Las que no son de ningún grupo, para repasarlas y ponérselo
+    if (grupos.length && canciones.some(c => !(c.ficha?.proyectos ?? []).some(g => g.trim()))) {
+        grupos.push({ id: 'sin-grupo', nombre: 'Sin grupo', clase: 'grupo' });
+    }
+    return grupos;
 }
 
 export function entradasPropias(listas: Lista[]): EntradaLista[] {
@@ -46,6 +51,7 @@ export function cancionesDeLista(id: string, canciones: Cancion[], listas: Lista
     if (id === 'aprender') return canciones.filter(c => c.ficha?.estado === 'aprender');
     if (id === 'ensayar') return canciones.filter(c => c.ficha?.estado === 'ensayar');
     if (id === 'favoritas') return canciones.filter(c => c.favorita);
+    if (id === 'sin-grupo') return canciones.filter(c => !(c.ficha?.proyectos ?? []).some(g => g.trim()));
     if (id.startsWith('grupo:')) {
         const g = id.slice(6);
         return canciones.filter(c => (c.ficha?.proyectos ?? []).some(p => p.trim() === g));
@@ -60,6 +66,7 @@ export function cancionesDeLista(id: string, canciones: Cancion[], listas: Lista
 export function nombreDeLista(id: string, listas: Lista[]): string {
     const fija = LISTAS_FIJAS.find(l => l.id === id);
     if (fija) return fija.nombre;
+    if (id === 'sin-grupo') return 'Sin grupo';
     if (id.startsWith('grupo:')) return id.slice(6);
     return listas.find(l => l.id === id)?.nombre ?? 'Todas';
 }
