@@ -6,7 +6,7 @@
 // En directo = dentro de una canción, un repertorio, Tocar, un bolo o la página del grupo.
 // La lista del cancionero no cuenta: recargarla no pierde nada
 export function enDirecto(ruta: string): boolean {
-    return /^\/cancionero\/.+/.test(ruta) || /^\/(grupo|bolo)(\/|$)/.test(ruta);
+    return /^\/cancionero\/.+/.test(ruta) || /^\/(grupo|bolo|taller)(\/|$)/.test(ruta);
 }
 
 // Las rutas a las que merece la pena volver si el iPhone cierra la app a mitad del bolo

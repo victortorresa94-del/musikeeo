@@ -78,6 +78,15 @@
           "value": "noindex, nofollow"
         }
       ]
+    },
+    {
+      "source": "/taller",
+      "headers": [
+        {
+          "key": "X-Robots-Tag",
+          "value": "noindex, nofollow"
+        }
+      ]
     }
   ]
 }

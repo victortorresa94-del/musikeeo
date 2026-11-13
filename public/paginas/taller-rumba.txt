@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Taller El viaje de la rumba</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="robots" content="noindex">
+</head>
+<body>
+<style>
+/* Musikeeo, claro y sobrio: blanco, grises de la casa, baldosas pastel con objeto 3D por bloque, amarillo solo para la acción principal. Letra del iPhone. */
+:root{
+  color-scheme:light;
+  --bg:#FFFFFF; --ink:#0E0E11; --soft:#61616B; --fill:rgba(14,14,20,.045); --fill-2:rgba(14,14,20,.08); --line:rgba(14,14,20,.08);
+  --primary:#FFD60A; --primary-ink:#8A6A00; --rojo:#C8261F;
+  --mantequilla:#FDEEB9; --mantequilla-ink:#6B5000;
+  --cielo:#CEE8FD; --cielo-ink:#1B4F7A;
+  --menta:#D8F1DD; --menta-ink:#245C33;
+  --lavanda:#E0D7FD; --lavanda-ink:#4B3A99;
+  --melocoton:#FDD6C8; --melocoton-ink:#8A3A1C;
+  --rosa:#FDDCEC; --rosa-ink:#8E2F5C;
+  --e1:0 1px 2px rgba(14,14,20,.06),0 1px 1px rgba(14,14,20,.04);
+  --e2:0 8px 24px rgba(14,14,20,.10),0 2px 6px rgba(14,14,20,.06);
+  --sans:-apple-system,BlinkMacSystemFont,"SF Pro Text",Inter,system-ui,sans-serif;
+}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%;background:var(--bg)}
+body{margin:0;background:var(--bg);color:var(--ink);font-family:var(--sans);font-size:16px;line-height:1.45;font-weight:500;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:12px 120px;
+  touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+body.escenario{font-size:18px}
+body.escenario .ensayo{display:none!important}
+b,strong{font-weight:750}
+.wrap{max-width:680px;margin:0 auto;display:flex;flex-direction:column;gap:20px}
+button{font:inherit;color:inherit}
+button:focus-visible,a:focus-visible{outline:3px solid var(--ink);outline-offset:2px}
+
+/* cabecera */
+.cab{display:flex;flex-direction:column;gap:10px;padding-top:8px}
+.cab .fila{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
+.eyebrow{font-size:13px;color:var(--soft);font-weight:600}
+h1{font-size:28px;line-height:1.1;font-weight:750;letter-spacing:-.02em;margin:0}
+.meta{color:var(--soft);font-size:15px}
+.seg{display:inline-flex;background:var(--fill-2);border-radius:999px;padding:3px}
+.seg button{border:0;background:transparent;border-radius:999px;min-height:36px;padding:0 16px;font-size:14px;font-weight:650;cursor:pointer;color:var(--soft)}
+.seg button[aria-pressed="true"]{background:#fff;color:var(--ink);box-shadow:var(--e1)}
+.empezar{border:0;background:var(--primary);color:var(--ink);font-weight:750;font-size:16px;height:52px;border-radius:14px;width:100%;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px}
+.empezar:active{transform:scale(.98)}
+.regla{font-size:14px;color:var(--soft);text-align:center;margin:0}
+
+/* barra de bloques */
+nav.ruta{position:sticky;top:env(safe-area-inset-top,0px);z-index:15;background:rgba(255,255,255,.92);-webkit-backdrop-filter:saturate(180%) blur(16px);backdrop-filter:saturate(180%) blur(16px);
+  display:flex;gap:6px;overflow-x:auto;scrollbar-width:none;margin:0 calc(-1 * max(16px,env(safe-area-inset-left,0px)));padding:8px max(16px,env(safe-area-inset-left,0px));border-bottom:1px solid var(--line)}
+nav.ruta::-webkit-scrollbar{display:none}
+nav.ruta a{flex:0 0 auto;display:flex;align-items:center;gap:6px;text-decoration:none;color:var(--ink);background:var(--fill);border-radius:999px;padding:0 12px 0 4px;min-height:36px;font-size:14px;font-weight:650;white-space:nowrap}
+nav.ruta a span{width:26px;height:26px;border-radius:50%;display:grid;place-items:center;background:var(--p);color:var(--pi);font-size:12px;font-weight:750}
+nav.ruta a.aqui{background:var(--ink);color:#fff}
+nav.ruta a.ya{opacity:.45}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:16;background:#fff}
+
+/* bloque */
+.bloque{border-radius:20px;background:#fff;box-shadow:var(--e1);border:1px solid var(--line);overflow:hidden;scroll-margin-top:64px}
+.b-head{background:var(--p);color:var(--pi);display:flex;align-items:center;gap:8px;padding:16px 12px 16px 18px;min-height:112px}
+.b-txt{flex:1;min-width:0;display:flex;flex-direction:column;gap:4px}
+.b-num{font-size:13px;font-weight:750;opacity:.8}
+.b-head h2{margin:0;font-size:22px;line-height:1.15;font-weight:750;letter-spacing:-.01em;color:var(--ink);text-wrap:balance}
+.b-meta{font-size:13px;font-weight:650;line-height:1.4}
+.b-head img{width:88px;height:88px;object-fit:contain;flex:none;max-width:100%;filter:drop-shadow(0 6px 10px rgba(14,14,20,.15))}
+.b-body{padding:6px 18px 18px;display:flex;flex-direction:column}
+.sec{padding:14px 0;border-top:1px solid var(--line);display:flex;flex-direction:column;gap:8px}
+.sec:first-child{border-top:0}
+.sec h3{margin:0;font-size:12px;font-weight:750;letter-spacing:.06em;text-transform:uppercase;color:var(--soft)}
+.s-pend h3{color:var(--rojo)}
+
+/* decimos */
+ul.dice{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:10px}
+ul.dice li{font-size:17px;line-height:1.4}
+ul.dice li b{background:linear-gradient(transparent 62%,var(--p) 62%)}
+body.escenario ul.dice li{font-size:20px}
+.cuando{display:block;font-size:12px;font-weight:700;color:var(--soft);text-transform:uppercase;letter-spacing:.05em;margin-bottom:2px}
+
+/* canciones */
+.cancion{background:var(--fill);border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
+.cancion + .cancion{margin-top:2px}
+.c-top{display:flex;align-items:flex-start;gap:12px}
+.c-tt{flex:1;min-width:0}
+.c-tt b{display:block;font-size:17px;line-height:1.25}
+.c-tt small{display:block;color:var(--soft);font-size:14px;line-height:1.35;margin-top:2px}
+.tono{flex:none;background:var(--ink);color:#fff;font-weight:750;border-radius:10px;min-width:42px;height:36px;display:grid;place-items:center;padding:0 10px;font-size:17px}
+.c-links{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.c-links:empty{display:none}
+.lk{font-size:14px;font-weight:650;text-decoration:none;border-radius:999px;min-height:34px;display:inline-flex;align-items:center;padding:0 12px}
+.lk-sp{background:#fff;color:var(--ink);box-shadow:inset 0 0 0 1px var(--line)}
+.lk-sp::before{content:"";width:9px;height:9px;border-radius:50%;background:#1DB954;margin-right:7px}
+.lk-mk{background:var(--primary);color:var(--ink)}
+.lk[hidden]{display:none!important}
+.falta{font-size:13px;font-weight:700;color:var(--rojo)}
+.cancion.pend{background:transparent;box-shadow:inset 0 0 0 1.5px rgba(200,38,31,.35)}
+.acordes{display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.acordes span{background:#fff;box-shadow:inset 0 0 0 1px var(--line);border-radius:10px;min-width:44px;height:38px;display:grid;place-items:center;padding:0 10px;font-weight:750;font-size:17px}
+.acordes em{font-style:normal;color:var(--soft);font-size:13px;font-weight:600}
+.letra{margin:0;font-size:15px;line-height:1.6;color:var(--ink)}
+
+/* historia */
+.hitos{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:8px}
+.hito{background:var(--fill);border-radius:12px;padding:10px 12px;font-size:14px;line-height:1.3;font-weight:600}
+.hito span{display:block;font-size:12px;font-weight:750;color:var(--pi);margin-bottom:2px}
+.texto{margin:4px 0 0;font-size:16px;line-height:1.6;color:#2A2A30}
+.nota{margin:0;font-size:14px;color:var(--soft)}
+.profundo{background:var(--fill);border-radius:12px;padding:12px 14px}
+.profundo summary{font-weight:700;cursor:pointer;min-height:24px}
+.profundo p{margin:.7em 0 0;line-height:1.6;font-size:15px}
+
+/* pasos */
+ol.pasos{list-style:none;margin:0;padding:0;display:flex;flex-direction:column;gap:12px}
+ol.pasos li{display:grid;grid-template-columns:36px 1fr;gap:12px;align-items:start}
+ol.pasos li > div{min-width:0;font-size:16px;line-height:1.4}
+.ic{width:36px;height:36px;border-radius:50%;background:var(--p);color:var(--pi);display:grid;place-items:center}
+.ic svg{width:20px;height:20px;fill:none;stroke:currentColor;stroke-width:1.9;stroke-linecap:round;stroke-linejoin:round}
+.t{color:var(--soft);font-size:14px;font-weight:600;white-space:nowrap}
+.celdas{display:grid;grid-template-columns:repeat(var(--n),minmax(0,34px));gap:4px;margin-top:8px}
+.celdas i{font-style:normal;aspect-ratio:1/1;max-width:100%;border-radius:8px;background:var(--fill);display:grid;place-items:center;font-weight:700;font-size:13px;color:var(--soft)}
+.celdas i.on{background:var(--ink);color:#fff}
+.celdas.pie i.on{background:var(--pi);color:#fff}
+ul.lista{margin:0;padding-left:18px;display:flex;flex-direction:column;gap:6px;font-size:15px}
+.s-apc ul.lista li::marker{color:var(--pi)}
+
+/* reloj */
+.reloj{position:fixed;left:0;right:0;bottom:0;z-index:20;background:rgba(255,255,255,.96);-webkit-backdrop-filter:blur(16px);backdrop-filter:blur(16px);border-top:1px solid var(--line);box-shadow:var(--e2);
+  padding:10px max(16px,env(safe-area-inset-right,0px)) calc(10px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center}
+.reloj .ahora{border:0;background:none;padding:0;text-align:left;font-weight:750;font-size:17px;cursor:pointer;display:flex;align-items:center;gap:8px}
+.reloj .ahora i{width:12px;height:12px;border-radius:50%;background:var(--c);box-shadow:inset 0 0 0 1px rgba(14,14,20,.15)}
+.reloj .queda{font-size:14px;color:var(--soft);font-variant-numeric:tabular-nums}
+.reloj .total{font-weight:750;font-size:26px;font-variant-numeric:tabular-nums}
+.reloj .prog{grid-column:1/-1;height:4px;border-radius:2px;background:var(--fill-2);overflow:hidden}
+.reloj .prog i{display:block;height:100%;background:var(--ink);width:0}
+.reloj .bts{grid-column:1/-1;display:flex;gap:6px}
+.reloj .bts button{border:0;background:var(--fill-2);border-radius:999px;min-height:38px;padding:0 14px;font-size:14px;font-weight:650;cursor:pointer}
+footer{color:var(--soft);font-size:13px;text-align:center}
+@media (prefers-reduced-motion:no-preference){html{scroll-behavior:smooth}}
+</style>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <symbol id="i-palmas" viewBox="0 0 24 24"><path d="M8 20c-2.5-1.5-4-4-4-7l1-6c.2-1 1.6-1 1.8 0L7.5 11"/><path d="M7.5 11 9 4.5c.2-1 1.7-1 1.8 0L11 11"/><path d="M16 20c2.5-1.5 4-4 4-7l-1-6c-.2-1-1.6-1-1.8 0L16.5 11"/><path d="M16.5 11 15 4.5c-.2-1-1.7-1-1.8 0L13 11"/></symbol>
+  <symbol id="i-muslo" viewBox="0 0 24 24"><rect x="3" y="15" width="18" height="5" rx="2.5"/><path d="M9 12.5V6.5a1.2 1.2 0 0 1 2.4 0V11M11.4 10.5V5a1.2 1.2 0 0 1 2.4 0v5.5M13.8 10V6a1.2 1.2 0 0 1 2.4 0v5.5"/></symbol>
+  <symbol id="i-pies" viewBox="0 0 24 24"><path d="M9 21c-2 0-3.2-1.6-3-3.5.3-2.5 1.4-4.4 1.6-7C7.8 8 9.5 7 11 7.6c1.6.6 1.8 2.6 1.3 4.6-.6 2.4-.2 3.6.2 5 .6 2-1.3 3.8-3.5 3.8z"/><circle cx="9.6" cy="4.6" r="1.1"/><circle cx="12.2" cy="4.8" r=".9"/><circle cx="14.2" cy="5.8" r=".8"/></symbol>
+  <symbol id="i-voz" viewBox="0 0 24 24"><rect x="9" y="2.5" width="6" height="11" rx="3"/><path d="M5.5 11a6.5 6.5 0 0 0 13 0M12 17.5V21M8.5 21h7"/></symbol>
+  <symbol id="i-baile" viewBox="0 0 24 24"><circle cx="13" cy="4" r="2"/><path d="M12.5 7.5 11 13l4 3 1 5M11 13l-3.5 2-1.5 5M12.5 7.5 17 10l2-2.5M12.5 7.5 8.5 9 6 7"/></symbol>
+  <symbol id="i-sube" viewBox="0 0 24 24"><path d="M2.5 20.5h19M4 20.5v-4h16v4"/><circle cx="12" cy="4.5" r="1.8"/><path d="M12 7v5.5M9 9.5 12 7l3 2.5M10 16.5l2-4 2 4"/></symbol>
+  <symbol id="i-oye" viewBox="0 0 24 24"><path d="M4 14v-2a8 8 0 0 1 16 0v2"/><rect x="2.5" y="14" width="4.5" height="7" rx="2"/><rect x="17" y="14" width="4.5" height="7" rx="2"/></symbol>
+  <symbol id="i-guit" viewBox="0 0 24 24"><path d="M14.5 9.5 20 4M18 2.5 21.5 6"/><path d="M13 11a3.5 3.5 0 0 0-5 0c-.6.6-.8 1.4-1.6 1.6C4.5 13 3 14.5 3 16.5 3 19 5 21 7.5 21c2 0 3.5-1.5 3.9-3.4.2-.8 1-1 1.6-1.6a3.5 3.5 0 0 0 0-5z"/><circle cx="8.5" cy="15.5" r="1.2"/></symbol>
+</svg>
+<div class="wrap">
+<div class="cab">
+  <div class="fila"><span class="eyebrow">RTF Pallejà · sábado 14 · 17:15</span>
+    <div class="seg" role="group" aria-label="Modo"><button type="button" id="b-ensayo" aria-pressed="true">Ensayo</button><button type="button" id="b-escena" aria-pressed="false">Escenario</button></div></div>
+  <h1>El viaje de la rumba</h1>
+  <div class="meta">Taller de rumba catalana · 30 min (hasta 45) · Mafe, Víctor y Bowo</div>
+</div>
+<nav class="ruta" aria-label="Bloques"><a href="#p1" style="--p:var(--mantequilla);--pi:var(--mantequilla-ink)"><span>1</span>Intro</a><a href="#p2" style="--p:var(--cielo);--pi:var(--cielo-ink)"><span>2</span>Cuba</a><a href="#p3" style="--p:var(--cielo);--pi:var(--cielo-ink)"><span>3</span>Ritmo</a><a href="#p4" style="--p:var(--lavanda);--pi:var(--lavanda-ink)"><span>4</span>EE. UU.</a><a href="#p5" style="--p:var(--lavanda);--pi:var(--lavanda-ink)"><span>5</span>Baile</a><a href="#p6" style="--p:var(--melocoton);--pi:var(--melocoton-ink)"><span>6</span>España</a><a href="#p7" style="--p:var(--melocoton);--pi:var(--melocoton-ink)"><span>7</span>Palmas</a><a href="#p8" style="--p:var(--rosa);--pi:var(--rosa-ink)"><span>8</span>Cantar</a><a href="#p9" style="--p:var(--mantequilla);--pi:var(--mantequilla-ink)"><span>9</span>Catalana</a></nav>
+<button type="button" class="empezar" id="reloj-empezar">Empezar el reloj del taller</button>
+<p class="regla">Con el público, siempre: lento → paramos → «ahora a tiempo».</p>
+<section class="bloque" id="p1" style="--p:var(--mantequilla);--pi:var(--mantequilla-ink)"><header class="b-head"><div class="b-txt"><span class="b-num">1</span><h2>Intro</h2><div class="b-meta">0–3 min · Canción · Mafe · Víctor · Bowo</div></div><img src="images/cancionero/micro.webp" alt="" loading="lazy"></header><div class="b-body"><div class="sec s-canta"><h3>Lo que cantamos</h3><div class="cancion" data-mk="marcha"><div class="c-top"><div class="c-tt"><b>Marcha</b><small>Abre el taller, antes de saludar</small></div><span class="tono">E</span></div><div class="c-links"><a class="lk lk-mk" target="_blank" rel="noopener" hidden>Abrir en Musikeeo</a></div></div></div><div class="sec s-apc"><h3>Apuntes de la canción</h3><ul class="lista"><li><b>«Marcha, marcha» se grita</b>, entre todos y lejos del micro. Lo grita más Mafe.</li><li>Repasar la entrada.</li></ul></div><div class="sec s-dice"><h3>Lo que decimos</h3><ul class="dice"><li><span class="cuando">Al acabar Marcha</span>«Somos <b>Cataleya</b> y <b>Lady Jarana Band</b>.»</li><li>«Vamos a <b>viajar con la rumba</b>: de donde nació hasta donde se hizo grande.»</li><li>«No hace falta saber música: <b>manos, muslos, pies y voz</b>.»</li><li>«Primera parada: <b>Cuba</b>.» Bowo arranca.</li></ul></div><div class="sec s-pend"><h3>Pendiente</h3><ul class="lista"><li>¿Bajar el tono para poder gritar el «marcha» sin quedarte sin voz?</li></ul></div></div></section>
+<section class="bloque" id="p2" style="--p:var(--cielo);--pi:var(--cielo-ink)"><header class="b-head"><div class="b-txt"><span class="b-num">2</span><h2>De dónde viene: Cuba</h2><div class="b-meta">3–5 min · Historia · Mafe · Bowo</div></div><img src="images/cancionero/latino.webp" alt="" loading="lazy"></header><div class="b-body"><div class="sec s-dice"><h3>Lo que decimos</h3><ul class="dice"><li>«Empezamos por las raíces: <b>Cuba</b>.»</li><li>«Es <b>prima</b> de la rumba flamenca, pero no es la misma música.»</li><li>«Todo se sostiene sobre un patrón: <b>la clave</b>. Vamos a tocarla.»</li></ul></div><div class="sec s-hist"><h3>Historia</h3><div class="hitos"><div class="hito"><span>s. XIX</span>La Habana y Matanzas</div><div class="hito"><span>Quién</span>afrocubanos, fiesta de patio</div><div class="hito"><span>Estilos</span>guaguancó · columbia · yambú</div><div class="hito"><span>2016</span>UNESCO</div></div><p class="texto ensayo">La rumba nace en Cuba en el siglo XIX, en los barrios humildes y los puertos de La Habana y Matanzas. La hacían las comunidades afrocubanas, descendientes de esclavos africanos, con lo que tenían a mano: cajones de madera, cucharas, palmas y voz. Era una fiesta de patio en la que se tocaba, se cantaba y se bailaba a la vez. De ahí salen tres estilos, guaguancó, columbia y yambú, y en 2016 la UNESCO la declaró Patrimonio de la Humanidad.</p></div><div class="sec s-hace"><h3>Qué hacemos</h3><ol class="pasos"><li><span class="ic"><svg><use href="#i-oye"/></svg></span><div><b>Bowo, base de son cubano mientras habláis.</b> Para que el público lo vaya metiendo en el cuerpo.</div></li></ol></div></div></section>
+<section class="bloque" id="p3" style="--p:var(--cielo);--pi:var(--cielo-ink)"><header class="b-head"><div class="b-txt"><span class="b-num">3</span><h2>Actividad 1 · Ritmo</h2><div class="b-meta">5–9 min · Actividad · Mafe · Bowo</div></div><img src="images/cancionero/claqueta.webp" alt="" loading="lazy"></header><div class="b-body"><div class="sec s-dice"><h3>Lo que decimos</h3><ul class="dice"><li>«Mano en el muslo: <b>un golpe en cada tiempo</b>, como un reloj.»</li><li>«Ahora la clave: <b>uno-dos-tres, uno-dos-tres, uno-dos</b>.»</li><li>«¿Quién se anima a subir?»</li><li><span class="cuando">Al acabar</span>«Esta clave la vamos a volver a encontrar debajo de la rumba flamenca.»</li></ul></div><div class="sec s-hace"><h3>Qué hacemos</h3><ol class="pasos"><li><span class="ic"><svg><use href="#i-muslo"/></svg></span><div><b>Pulso: muslo y luego pies</b> <span class="t">30 s</span></div></li><li><span class="ic"><svg><use href="#i-palmas"/></svg></span><div><b>Clave: palmas y luego pies</b> <span class="t">1 min · 4 vueltas</span><div class="celdas " style="--n:8"><i class="on">●</i><i class=""></i><i class=""></i><i class="on">●</i><i class=""></i><i class=""></i><i class="on">●</i><i class=""></i></div></div></li><li><span class="ic"><svg><use href="#i-sube"/></svg></span><div><b>Suben 2: campana y caja china.</b> Tocan la clave. No tiene que sonar bien: que lo vivan.</div></li><li><span class="ic"><svg><use href="#i-voz"/></svg></span><div><b>Con ellos arriba, Chan Chan.</b> Que se sientan parte de la banda.</div></li></ol></div><div class="sec s-canta"><h3>Lo que cantamos</h3><div class="cancion" data-mk="chanchan"><div class="c-top"><div class="c-tt"><b>Chan Chan</b><small>Compay Segundo · son cubano · la canta Mafe</small></div></div><div class="c-links"><a class="lk lk-mk" target="_blank" rel="noopener" hidden>Abrir en Musikeeo</a><a class="lk lk-sp" target="_blank" rel="noopener" href="https://open.spotify.com/track/3bxZhauuIU4ubctdRZwPYW">Spotify</a></div></div></div><div class="sec s-apc"><h3>Apuntes de la canción</h3><ul class="lista"><li>La canta Mafe. Tú puedes no tocarla: son unos segundos.</li><li>Acordes de LaCuerda: compruébalos con la guitarra.</li></ul></div><div class="sec s-pend"><h3>Pendiente</h3><ul class="lista"><li>Qué trozo de Chan Chan y cuánto dura.</li><li>Que Bowo lleve la campana y la caja china.</li></ul></div></div></section>
+<section class="bloque" id="p4" style="--p:var(--lavanda);--pi:var(--lavanda-ink)"><header class="b-head"><div class="b-txt"><span class="b-num">4</span><h2>Estados Unidos</h2><div class="b-meta">9–11 min · Historia y canción · Víctor · Mafe</div></div><img src="images/3d/tocadiscos.webp" alt="" loading="lazy"></header><div class="b-body"><div class="sec s-dice"><h3>Lo que decimos</h3><ul class="dice"><li>«La música cubana <b>no se quedó en la isla</b>.»</li><li>«Llegó a <b>Nueva York</b> y se mezcló con el jazz y el soul.»</li><li>«Eso es la <b>fusión</b>: lo latino más lo americano da algo nuevo.»</li></ul></div><div class="sec s-canta"><h3>Lo que cantamos</h3><div class="cancion" data-mk="newyork"><div class="c-top"><div class="c-tt"><b>New York, New York</b><small>Un trozo, de 30 s a 1 min, de fondo mientras cuentas</small></div></div><div class="c-links"><a class="lk lk-mk" target="_blank" rel="noopener" hidden>Abrir en Musikeeo</a></div></div></div><div class="sec s-hist"><h3>Historia</h3><div class="hitos"><div class="hito"><span>Destino</span>Nueva York</div><div class="hito"><span>Años 50</span>mambo y cha-cha-chá</div><div class="hito"><span>Años 60</span>bugalú</div><div class="hito"><span>Palabra</span>fusión</div></div><p class="texto ensayo">Con los barcos, la radio y los discos, la música cubana llegó a Estados Unidos. En Nueva York, donde vivían miles de cubanos y puertorriqueños, se juntó con el jazz, el soul y el rhythm and blues. En los años 50 arrasan el mambo y el cha-cha-chá en las salas de baile, y en los 60 sale el bugalú. De ahí bebe casi todo lo latino que vino después, hasta la salsa.</p></div></div></section>
+<section class="bloque" id="p5" style="--p:var(--lavanda);--pi:var(--lavanda-ink)"><header class="b-head"><div class="b-txt"><span class="b-num">5</span><h2>Actividad 2 · Baile</h2><div class="b-meta">11–14 min · Actividad · Mafe · Bowo</div></div><img src="images/3d/cantante.webp" alt="" loading="lazy"></header><div class="b-body"><div class="sec s-dice"><h3>Lo que decimos</h3><ul class="dice"><li>«Ahora, a bailar: <b>adelante</b> con el tempo, <b>atrás</b> con el tempo.»</li><li>«No es una rumba: es un <b>cha-cha-chá de Tito Puente</b>, del mismo viaje.»</li></ul></div><div class="sec s-hace"><h3>Qué hacemos</h3><ol class="pasos"><li><span class="ic"><svg><use href="#i-baile"/></svg></span><div><b>Paso básico sin música</b> <span class="t">30 s</span> Lo guía Mafe, con paso de salsa. Bowo marca.</div></li><li><span class="ic"><svg><use href="#i-baile"/></svg></span><div><b>Con la canción</b> <span class="t">~1 min</span> Desde abajo, suben unos cuantos o Mafe saca a alguien en pareja.</div></li></ol></div><div class="sec s-canta"><h3>Lo que cantamos</h3><div class="cancion" data-mk="oye"><div class="c-top"><div class="c-tt"><b>Oye cómo va</b><small>Tito Puente; Santana la hizo famosa</small></div></div><div class="c-links"><a class="lk lk-mk" target="_blank" rel="noopener" hidden>Abrir en Musikeeo</a><a class="lk lk-sp" target="_blank" rel="noopener" href="https://open.spotify.com/track/0uGESC7TQxBhzrOIvK4a1u">Spotify</a></div></div></div></div></section>
+<section class="bloque" id="p6" style="--p:var(--melocoton);--pi:var(--melocoton-ink)"><header class="b-head"><div class="b-txt"><span class="b-num">6</span><h2>España</h2><div class="b-meta">14–17 min · Historia y canción · Víctor · Bowo</div></div><img src="images/cancionero/rumba.webp" alt="" loading="lazy"></header><div class="b-body"><div class="sec s-dice"><h3>Lo que decimos</h3><ul class="dice"><li>«La rumba flamenca es un <b>cante de ida y vuelta</b>.»</li><li>«La primera que la grabó fue <b>La Niña de los Peines</b>, hace unos <b>110 años</b>.»</li><li>«En los 70 y 80 llega la fusión y la rumba sale <b>a la calle</b>.»</li></ul></div><div class="sec s-hist"><h3>Historia</h3><div class="hitos"><div class="hito"><span>s. XIX</span>Cádiz y Sevilla, ida y vuelta</div><div class="hito"><span>Años 10</span>La Niña de los Peines graba</div><div class="hito"><span>1973</span>Entre dos aguas</div><div class="hito"><span>70 y 80</span>fusión y a la calle</div></div><p class="texto ensayo">En el siglo XIX los barcos unían Cádiz y Sevilla con La Habana. Los ritmos cubanos, sobre todo la guaracha de los teatros, cruzaron el mar; los gitanos andaluces los hicieron suyos con su guitarra y sus palmas, y nació la rumba flamenca. La primera que la grabó fue La Niña de los Peines, en los años 10 del siglo XX.</p><p class="texto ensayo">En los años 70 y 80 llega otra vez la fusión y la rumba se hace popular de verdad. Paco de Lucía la lleva a la guitarra con Entre dos aguas (1973), Camarón la mezcla con todo, y Los Chichos y Los Chunguitos la sacan a la calle: a los bares, a las radios y a los coches. Los Gipsy Kings, gitanos del sur de Francia, la llevan a todo el mundo con Bamboleo (1987).</p><p class="nota ensayo">Ojo: La Niña de los Peines es rumba flamenca, no catalana. Camarón, Los Chichos y los Gipsy Kings son la rumba moderna; la catalana es la del bloque 9.</p></div><div class="sec s-canta"><h3>Lo que cantamos</h3><div class="cancion" data-mk="quierolibre"><div class="c-top"><div class="c-tt"><b>Quiero ser libre</b><small>Los Chichos (1973) · la rumba que sale a la calle</small></div></div><div class="c-links"><a class="lk lk-mk" target="_blank" rel="noopener" hidden>Abrir en Musikeeo</a><a class="lk lk-sp" target="_blank" rel="noopener" href="https://open.spotify.com/track/2A3hwBr9x6iNigBYCSYqoz">Spotify</a></div></div><div class="cancion pend" data-mk="juana"><div class="c-top"><div class="c-tt"><b>«Vente mi… Juana»</b><small>Título y autor por confirmar</small></div></div><div class="c-links"><span class="falta">Por decidir</span><a class="lk lk-mk" target="_blank" rel="noopener" hidden>Abrir en Musikeeo</a></div></div></div><div class="sec s-pend"><h3>Pendiente</h3><ul class="lista"><li>«Vente mi… Juana»: ¿cómo se llama exactamente y de quién es?</li></ul></div></div></section>
+<section class="bloque" id="p7" style="--p:var(--melocoton);--pi:var(--melocoton-ink)"><header class="b-head"><div class="b-txt"><span class="b-num">7</span><h2>Actividad 3 · Palmas</h2><div class="b-meta">17–21 min · Actividad · Víctor · Bowo</div></div><img src="images/categorias/bateria.webp" alt="" loading="lazy"></header><div class="b-body"><div class="sec s-dice"><h3>Lo que decimos</h3><ul class="dice"><li>«Primero <b>sin guitarra</b>: esto es percusión.»</li><li>«Lento… paramos… <b>y ahora a tiempo</b>.»</li></ul></div><div class="sec s-hace"><h3>Qué hacemos</h3><ol class="pasos"><li><span class="ic"><svg><use href="#i-palmas"/></svg></span><div><b>El tiempo básico.</b> Una palma en cada tiempo.<div class="celdas " style="--n:8"><i class="on">1</i><i class="">y</i><i class="on">2</i><i class="">y</i><i class="on">3</i><i class="">y</i><i class="on">4</i><i class="">y</i></div></div></li><li><span class="ic"><svg><use href="#i-pies"/></svg></span><div><b>Tiempo y contratiempo.</b> Pie en el tiempo, palma en la «y».<div class="celdas pie" style="--n:8"><i class="on">1</i><i class="">y</i><i class="on">2</i><i class="">y</i><i class="on">3</i><i class="">y</i><i class="on">4</i><i class="">y</i></div><div class="celdas " style="--n:8"><i class="">1</i><i class="on">y</i><i class="">2</i><i class="on">y</i><i class="">3</i><i class="on">y</i><i class="">4</i><i class="on">y</i></div></div></li><li><span class="ic"><svg><use href="#i-palmas"/></svg></span><div><b>Solo el contratiempo.</b> Fuera el pie.<div class="celdas " style="--n:8"><i class="">1</i><i class="on">y</i><i class="">2</i><i class="on">y</i><i class="">3</i><i class="on">y</i><i class="">4</i><i class="on">y</i></div></div></li><li><span class="ic"><svg><use href="#i-palmas"/></svg></span><div><b>Redoble.</b> Dos palmas rápidas: «pa-pa».</div></li><li><span class="ic"><svg><use href="#i-sube"/></svg></span><div><b>Opcional: suben 3.</b> Uno el básico, otro el contra, otro el redoble.</div></li></ol></div><div class="sec s-canta"><h3>Lo que cantamos</h3><div class="cancion" data-mk="entredos"><div class="c-top"><div class="c-tt"><b>1. Entre dos aguas</b><small>Ritmo suave, el más fácil para empezar</small></div></div><div class="c-links"><a class="lk lk-mk" target="_blank" rel="noopener" hidden>Abrir en Musikeeo</a><a class="lk lk-sp" target="_blank" rel="noopener" href="https://open.spotify.com/track/19rp5hhL5Rf8JxQvohamAt">Spotify</a></div></div><div class="cancion" data-mk="bamboleo"><div class="c-top"><div class="c-tt"><b>2. Bamboleo</b><small>Muy lenta primero, luego a tiempo · tu versión</small></div><span class="tono">Em</span></div><div class="c-links"><a class="lk lk-mk" target="_blank" rel="noopener" hidden>Abrir en Musikeeo</a><a class="lk lk-sp" target="_blank" rel="noopener" href="https://open.spotify.com/track/3iB8eciGU9vZkaDYkz7Ir9">Spotify</a></div></div></div><div class="sec s-apc"><h3>Apuntes de la canción</h3><ul class="lista"><li>Bamboleo: cambiarle el ritmo, muy lenta al principio.</li></ul></div><div class="sec s-pend"><h3>Pendiente</h3><ul class="lista"><li>Qué trozo de Entre dos aguas y en qué tono.</li></ul></div></div></section>
+<section class="bloque" id="p8" style="--p:var(--rosa);--pi:var(--rosa-ink)"><header class="b-head"><div class="b-txt"><span class="b-num">8</span><h2>Cantar la rumba</h2><div class="b-meta">21–25 min · Actividad · Víctor · Mafe</div></div><img src="images/3d/microfono.webp" alt="" loading="lazy"></header><div class="b-body"><div class="sec s-dice"><h3>Lo que decimos</h3><ul class="dice"><li>«La rumba se canta como viene del <b>flamenco</b>: un poco nasal, de dentro, con <b>quejío</b> y <b>dejes</b>.»</li><li>«Pero es de fiesta: <b>se canta como te salga</b>. ¡Todos!»</li></ul></div><div class="sec s-canta"><h3>Lo que cantamos</h3><div class="cancion" data-mk="comoelagua"><div class="c-top"><div class="c-tt"><b>Como el agua</b><small>Camarón (1981) · para enseñar el quejío</small></div></div><div class="c-links"><a class="lk lk-mk" target="_blank" rel="noopener" hidden>Abrir en Musikeeo</a></div></div><div class="cancion pend" data-mk="caramelo"><div class="c-top"><div class="c-tt"><b>Caramelo</b><small>De las primeras, bastante vieja</small></div></div><div class="c-links"><span class="falta">Por decidir</span><a class="lk lk-mk" target="_blank" rel="noopener" hidden>Abrir en Musikeeo</a></div></div><div class="cancion pend" data-mk="aliali"><div class="c-top"><div class="c-tt"><b>Ali ali oh</b><small>Rumba de calle: que la cante todo el mundo</small></div></div><div class="c-links"><span class="falta">Por decidir</span><a class="lk lk-mk" target="_blank" rel="noopener" hidden>Abrir en Musikeeo</a></div></div></div><div class="sec s-apc"><h3>Apuntes de la canción</h3><ul class="lista"><li>Ali ali y Caramelo van aquí, no en España.</li><li>Lo del cante, corto o fuera: no te obsesiones.</li></ul></div><div class="sec s-pend"><h3>Pendiente</h3><ul class="lista"><li>¿Caramelo, de quién?</li><li>¿Ali ali oh es esa? LaCuerda la tiene en «Rumbas», sin autor.</li><li>Rumba catalana con quejío: «No tiene perdón de Dios» no la encuentro como rumba. Propuesta: <b>Gitana hechicera</b> (Peret).</li></ul></div></div></section>
+<section class="bloque" id="p9" style="--p:var(--mantequilla);--pi:var(--mantequilla-ink)"><header class="b-head"><div class="b-txt"><span class="b-num">9</span><h2>La rumba catalana</h2><div class="b-meta">25–30 min · Historia y actividad · Víctor · Mafe · Bowo</div></div><img src="images/3d/guitarra.webp" alt="" loading="lazy"></header><div class="b-body"><div class="sec s-dice"><h3>Lo que decimos</h3><ul class="dice"><li>«Llegamos a <b>Barcelona</b>: años 50 y 60, los gitanos de <b>Gràcia, Hostafrancs y el Raval</b>.»</li><li>«La empieza <b>El Pescaílla</b>; la lleva por el mundo <b>Peret</b>.»</li><li>«Su sello: <b>el ventilador</b>. Mirad.»</li><li><span class="cuando">Al final</span>«¡Gracias!»</li></ul></div><div class="sec s-hist"><h3>Historia</h3><div class="hitos"><div class="hito"><span>Años 50 y 60</span>Gràcia, Hostafrancs, Raval</div><div class="hito"><span>La base</span>El Pescaílla</div><div class="hito"><span>1935–2014</span>Peret, de Mataró</div><div class="hito"><span>Años 70</span>Gato Pérez</div></div><p class="texto ensayo">En los años 50 y 60, en los barrios gitanos de Barcelona, los gitanos catalanes mezclan el flamenco con lo que suena en la ciudad: mambo, cha-cha-chá, rock and roll y las orquestas latinas. El que pone la base es El Pescaílla, y el que la lleva por todo el mundo es Peret, de Mataró. Los dos se atribuyen el ventilador. En los 70, Gato Pérez la rescata para los jóvenes.</p><details class="profundo ensayo"><summary>Para profundizar esta noche</summary>
+<p><b>Los gitanos catalanes</b> llevan siglos en Barcelona y hablan catalán, a diferencia de los andaluces. La calle de la Cera, en el Raval, se considera la cuna de la rumba catalana; allí y en la plaza del Raval de Gràcia era la música de las bodas y las fiestas.</p>
+<p><b>El Pescaílla</b> (Antonio González, Barcelona, 1925–1999) fue el primero en tocar la guitarra flamenca con aire de mambo y de son. Se casó con Lola Flores. Muchos le llaman el padre de la rumba catalana.</p>
+<p><b>Peret</b> (Pere Pubill, Mataró, 1935–2014) la hizo famosa en toda España y fuera: Borriquito (1971) y El muerto vivo, una canción cubana que él hizo rumba (otra vez la ida y vuelta). En 1992 cantó en la clausura de los Juegos Olímpicos de Barcelona.</p>
+<p><b>Gato Pérez</b> (Buenos Aires, 1951 – Barcelona, 1990) llegó de adolescente y en los 70 y 80 la mezcló con salsa y rock para una generación nueva.</p>
+<p><b>El ventilador</b>: rasgueo y golpe sobre la tapa a la vez; la guitarra hace de percusión y suena como un abanico abriéndose.</p>
+<p><b>Hoy</b> la siguen mezclando Estopa, Ojos de Brujo, Manu Chao o Dusminguet.</p>
+<p class="nota">Las fechas de El Pescaílla, Gato Pérez y El muerto vivo son de memoria: compruébalas antes de decirlas.</p></details></div><div class="sec s-hace"><h3>Qué hacemos</h3><ol class="pasos"><li><span class="ic"><svg><use href="#i-guit"/></svg></span><div><b>Enseñas el ventilador muy lento: «pa-pa».</b> Despacio no se te va. Nadie sube a la guitarra.</div></li><li><span class="ic"><svg><use href="#i-muslo"/></svg></span><div><b>Media sala, golpe en el muslo; la otra media, palmas.</b> Luego se cambian.</div></li><li><span class="ic"><svg><use href="#i-voz"/></svg></span><div><b>No estaba muerto, todos juntos.</b> Palmas, golpe y voz. Y cerramos.</div></li></ol></div><div class="sec s-canta"><h3>Lo que cantamos</h3><div class="cancion" data-mk="muerto"><div class="c-top"><div class="c-tt"><b>No estaba muerto</b><small>El muerto vivo · Peret · todo junto</small></div><span class="tono">Am</span></div><div class="c-links"><a class="lk lk-mk" target="_blank" rel="noopener" hidden>Abrir en Musikeeo</a><a class="lk lk-sp" target="_blank" rel="noopener" href="https://open.spotify.com/track/1ng5k5f8j0hjlM7nTnzSe6">Spotify</a></div></div></div><div class="sec s-pend"><h3>Pendiente</h3><ul class="lista"><li>Aprenderte los datos (es el bloque que más pesa) y practicar el ventilador lento.</li></ul></div></div></section>
+<footer>Guion del 11-nov, reunión con Mafe del 13-nov y tus notas. Lo que marques se guarda en este móvil.</footer>
+</div>
+<script>
+(function(){
+  var MK={/* enlaces de Musikeeo: marcha, chanchan, oye */};
+  document.querySelectorAll('.cancion[data-mk]').forEach(function(t){var u=MK[t.getAttribute('data-mk')];var a=t.querySelector('.lk-mk');if(u&&a){a.href=u;a.hidden=false}});
+  var KEY='taller-rumba-v3', st={};
+  try{st=JSON.parse(localStorage.getItem(KEY)||'{}')||{}}catch(e){st={}}
+  function save(){try{localStorage.setItem(KEY,JSON.stringify(st))}catch(e){}}
+  var lock=null;
+  function wake(on){try{if(on&&navigator.wakeLock){navigator.wakeLock.request('screen').then(function(l){lock=l}).catch(function(){})}else if(lock){lock.release().catch(function(){});lock=null}}catch(e){}}
+  var be=document.getElementById('b-ensayo'),bs=document.getElementById('b-escena');
+  function modo(esc){document.body.classList.toggle('escenario',esc);be.setAttribute('aria-pressed',String(!esc));bs.setAttribute('aria-pressed',String(esc));st.esc=esc;save();wake(esc||!!st.r)}
+  be.addEventListener('click',function(){modo(false)});
+  bs.addEventListener('click',function(){modo(true)});
+  document.addEventListener('visibilitychange',function(){if(document.visibilityState==='visible'&&(st.esc||st.r))wake(true)});
+  modo(!!st.esc);
+  var P=[[0,'Intro','mantequilla'],[3,'Cuba','cielo'],[5,'Ritmo','cielo'],[9,'Estados Unidos','lavanda'],[11,'Baile','lavanda'],[14,'España','melocoton'],[17,'Palmas','melocoton'],[21,'Cantar','rosa'],[25,'Rumba catalana','mantequilla']];
+  var FIN=30*60,R=null,nav=document.querySelectorAll('nav.ruta a'),ult=-1;
+  function mmss(x){x=Math.max(0,Math.round(x));return Math.floor(x/60)+':'+String(x%60).padStart(2,'0')}
+  function elapsed(){if(!st.r)return 0;return (st.r.pausa!=null?st.r.pausa:Date.now()-st.r.ini)/1000}
+  function idx(){var m=elapsed()/60,i=0;for(var k=0;k<P.length;k++){if(m>=P[k][0])i=k}return i}
+  function pinta(){
+    if(!st.r){if(R)R.hidden=true;nav.forEach(function(n){n.classList.remove('ya','aqui')});return}
+    if(!R)crea();R.hidden=false;
+    var e=elapsed(),i=idx(),fin=(i+1<P.length?P[i+1][0]:30)*60;
+    R.style.setProperty('--c','var(--'+P[i][2]+')');
+    R.querySelector('.ahora span').textContent=(i+1)+' · '+P[i][1];
+    R.querySelector('.queda').textContent=(e>=FIN?'Pasados '+mmss(e-FIN)+' de los 30 min':'Quedan '+mmss(fin-e)+(i+1<P.length?' · luego '+P[i+1][1]:' · y cerramos'));
+    R.querySelector('.total').textContent=mmss(e);
+    R.querySelector('.prog i').style.width=Math.min(100,e/FIN*100)+'%';
+    R.querySelector('[data-a=pausa]').textContent=st.r.pausa!=null?'Seguir':'Pausa';
+    nav.forEach(function(n,k){n.classList.toggle('ya',k<i);n.classList.toggle('aqui',k===i)});
+    if(ult!==i){ult=i;try{nav[i].scrollIntoView({inline:'center',block:'nearest'})}catch(x){}}
+  }
+  function crea(){
+    R=document.createElement('div');R.className='reloj';R.setAttribute('role','status');
+    R.innerHTML='<div><button type="button" class="ahora"><i></i><span></span></button><div class="queda"></div></div><div class="total"></div><div class="prog"><i></i></div><div class="bts"><button type="button" data-a="pausa"></button><button type="button" data-a="menos">−1 min</button><button type="button" data-a="mas">+1 min</button><button type="button" data-a="parar">Parar</button></div>';
+    document.body.appendChild(R);
+    R.querySelector('.ahora').addEventListener('click',function(){var el=document.getElementById('p'+(idx()+1));if(el)el.scrollIntoView({block:'start'})});
+    R.addEventListener('click',function(ev){var b=ev.target.closest&&ev.target.closest('[data-a]');if(!b)return;var a=b.getAttribute('data-a');
+      if(a==='pausa'){if(st.r.pausa!=null){st.r.ini=Date.now()-st.r.pausa;st.r.pausa=null}else{st.r.pausa=Date.now()-st.r.ini}}
+      if(a==='mas'||a==='menos'){var d=(a==='mas'?60000:-60000);if(st.r.pausa!=null)st.r.pausa=Math.max(0,st.r.pausa+d);else st.r.ini=Math.min(Date.now(),st.r.ini-d)}
+      if(a==='parar'){st.r=null}
+      save();pinta();});
+  }
+  document.getElementById('reloj-empezar').addEventListener('click',function(){st.r={ini:Date.now(),pausa:null};save();pinta();wake(true)});
+  setInterval(function(){if(st.r)pinta()},1000);
+  pinta();
+})();
+</script>
+</body>
+</html>

@@ -52,6 +52,7 @@ const TocarRepertorio = lazy(() => import('./pages/cancionero/TocarRepertorio'))
 const SacarAcordes = lazy(() => import('./pages/cancionero/SacarAcordes'));
 const Grupo = lazy(() => import('./pages/cancionero/Grupo'));
 const BoloGrupo = lazy(() => import('./pages/cancionero/BoloGrupo'));
+const Taller = lazy(() => import('./pages/Taller'));
 const SpotifyVuelta = lazy(() => import('./pages/cancionero/SpotifyVuelta'));
 const BoloEditar = lazy(() => import('./pages/cancionero/Bolo'));
 // Musikeers cerca: Leaflet solo se descarga al abrir el mapa
@@ -227,6 +228,8 @@ function App() {
               <Route path="/grupo/:id" element={<Grupo />} />
               <Route path="/bolo" element={<BoloGrupo />} />
               <Route path="/bolo/:id" element={<BoloGrupo />} />
+              {/* La chuleta del taller de rumba (Pallejà): abierta, sin cuenta y sin la app alrededor */}
+              <Route path="/taller" element={<Taller />} />
               {/* La vuelta de Spotify: crea la playlist del repertorio (fuera del layout) */}
               <Route path="/spotify" element={<SpotifyVuelta />} />
 
