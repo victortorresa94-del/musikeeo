@@ -536,6 +536,25 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
 - *«Si te paso letras y canciones, ¿me lo puedes organizar como necesito?»* Sí. «Los Barrieros»: estrofa 1 (aviso «sin guitarra»), pre-coro G – C, coro C – G7 – G7 – C, estrofa 2, pre-coro y coro. Va dentro del archivo limpio y en el chat para pegarla.
   - «Rueda 2: G – C» no se lee como parte con acordes (sí «Rueda:» y «Pre-coro:»); arreglo pedido a la sesión 2.
 
+### 21g. Su cancionero entero, limpio (13-nov, 12:45) ✅
+
+*«Sí, tengo muchísimas, pero es eso: hay muchas duplicadas. Mejor dame un JSON de todas mis canciones. Las de El Juergueo son canciones que me sé, que no toco con el grupo, pero que tengo en la recámara, y Víctor Luna es cuando toco yo solo, más acústico. La gracia de pedirte el formato de Barrieros es que me salga ya con negritas, colores y eso.»*
+
+- **Archivo:** `Mi-cancionero.json`, mandado en el chat: 396 canciones.
+  - Grupos: Lady Jarana 33, Cataleya 116, Víctor Luna 164, El Juergueo 83; 91 sin grupo.
+  - Las 69 de setlists antiguos llevan la etiqueta «Setlist antiguo».
+  - Las etiquetas «Víctor Luna» y «El Juergueo» pasan a ser grupos.
+  - «Orgullo» se junta con «Los Barrieros» (El Barrio, tono A).
+  - Lleva los dos sets de Pallejà.
+- **Duplicadas:** en los datos solo había una de verdad (Orgullo = Los Barrieros). Las que él ve en el móvil vienen de importar varias veces encima. Por eso: Borrar todo y subir el archivo.
+- **«Los Barrieros» con formato:**
+  - partes de color (Estrofa en azul, Pre-coro en rosa, Coro en su baldosa amarilla) y, debajo de cada parte, una fila con sus acordes;
+  - el aviso «Sin guitarra» en melocotón, los coros de la banda ==resaltados== y lo que se grita en **negrita**.
+  - En A, su tono (su chuleta de Orgullo decía «Tu tono es A»; lo que pegó estaba en C).
+- **Arreglo de la app (sesión 2):** una fila de acordes con guiones o barras es el resumen de la parte y ya no se reparte sobre la letra.
+- **Probado en producción:** datos viejos → Borrar todo → importar → 396, grupos y sets correctos, sin palabras partidas.
+- **Formato para las letras que mande:** `Parte:` en su línea, debajo los acordes de la parte con guiones, la letra, `> aviso`, `==coros==` y `**negrita**`.
+
 ## 22. Datos de la BBDD a corregir ⏳
 
 Artistas mal en la BBDD:
