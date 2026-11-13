@@ -186,8 +186,11 @@ function useMias(setKey: string) {
 
 function ListaSet({ datos, setKey, onAbrir, onVolver, volver }: { datos: Compartido; setKey: string; onAbrir: (i: number) => void; onVolver?: () => void; volver?: string }) {
     const { ver, de } = useMias(setKey);
-    // Cifrado: el set entero seguido (con letra, solo si viene); se recuerda en el móvil
-    const [vista, setVista] = useState<Vista>(() => { try { return localStorage.getItem('musikeeo-grupo-vista') === 'cifrado' ? 'cifrado' : 'lista'; } catch { return 'lista'; } });
+    // Cifrado: la chuleta rápida (cada parte con sus acordes y el orden); Detalle: la canción entera
+    // con la letra, solo si el enlace la trae. Se recuerda en el móvil
+    const [elegida, setVista] = useState<Vista>(() => { try { const v = localStorage.getItem('musikeeo-grupo-vista'); return v === 'cifrado' || v === 'detalle' ? v : 'lista'; } catch { return 'lista'; } });
+    const vista: Vista = elegida === 'detalle' && !datos.l ? 'cifrado' : elegida;
+    const enHoja = vista === 'cifrado' || vista === 'detalle';
     const [tamano] = useState(() => leerTamano(false));
     const [formas, setFormas] = useFormas();
     const cambiarVista = (v: Vista) => { setVista(v); try { localStorage.setItem('musikeeo-grupo-vista', v); } catch { /* */ } };
@@ -228,11 +231,11 @@ function ListaSet({ datos, setKey, onAbrir, onVolver, volver }: { datos: Compart
                 )}
 
                 <div className="mt-5 flex flex-wrap items-center gap-2">
-                    <SelectorVista valor={vista} onCambio={cambiarVista} opciones={['lista', 'cifrado']} />
-                    {vista === 'cifrado' && datos.c.some(t => t.m) && <SuenaFormas formas={formas} onCambio={setFormas} />}
+                    <SelectorVista valor={vista} onCambio={cambiarVista} opciones={datos.l ? ['lista', 'cifrado', 'detalle'] : ['lista', 'cifrado']} />
+                    {enHoja && datos.c.some(t => t.m) && <SuenaFormas formas={formas} onCambio={setFormas} />}
                 </div>
-                {vista === 'cifrado' && <HojaSet className="mt-2" temas={conExtras(datos).map(ver)} tamano={Math.min(tamano, 22)} formas={formas} onAbrir={onAbrir} />}
-                <ol className={cn('mt-3', vista === 'cifrado' && 'hidden')}>
+                {enHoja && <HojaSet className="mt-2" temas={conExtras(datos).map(ver)} tamano={Math.min(tamano, 22)} formas={formas} detalle={vista === 'detalle'} onAbrir={onAbrir} />}
+                <ol className={cn('mt-3', enHoja && 'hidden')}>
                     {datos.c.map((t, i) => {
                         const nuevoBloque = t.g && (i === 0 || t.g !== datos.c[i - 1].g) ? t.g : null;
                         const estilo = nuevoBloque ? estiloBloque(nuevoBloque) : null;

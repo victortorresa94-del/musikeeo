@@ -135,7 +135,8 @@ export default function Cancionero() {
     const directo = params.get('directo') === '1';
     const [formas, setFormas] = useFormas();
     const ordenadas = useMemo(() => grupos.flatMap(g => g.canciones).filter((c, i, l) => l.indexOf(c) === i), [grupos]);
-    const temasCifrado = useMemo(() => (vista === 'cifrado' || directo ? ordenadas.map(c => temaDe(c, false)) : []), [vista, directo, ordenadas]);
+    // Con la letra: el Cifrado saca de ella la estructura (estrofa, estribillo…), sin enseñarla
+    const temasCifrado = useMemo(() => (vista === 'cifrado' || directo ? ordenadas.map(c => temaDe(c, true)) : []), [vista, directo, ordenadas]);
     const cambiarParam = (k: string, v: string | null) => {
         const p = new URLSearchParams(params);
         if (v) p.set(k, v); else p.delete(k);

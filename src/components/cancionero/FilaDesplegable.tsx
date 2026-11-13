@@ -18,7 +18,7 @@ export function BotonDesplegar({ abierta, onClick, titulo }: { abierta: boolean;
 }
 
 export function PanelAcordes({ cancion }: { cancion: Cancion }) {
-    const tema = useMemo(() => temaDe(cancion, false), [cancion]);
+    const tema = useMemo(() => temaDe(cancion, true), [cancion]);   // el cifrado rápido saca la estructura de la letra
     return (
         <div className="px-4 pb-3 pt-1">
             <TemaCifrado tema={tema} n={0} tamano={15} sinBorde sinCabecera />

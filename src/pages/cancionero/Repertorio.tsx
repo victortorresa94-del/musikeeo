@@ -48,7 +48,9 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     const { canciones, guardar, guardarRepertorio, borrarRepertorio, bolos, crearBolo } = useCancionero();
     const [campoTablero, setCampoTablero] = useState<CampoTablero>(() => { try { return (localStorage.getItem('musikeeo-tablero-set') as CampoTablero) || 'bloque'; } catch { return 'bloque'; } });
     // La vista va en la dirección: al volver de una canción se queda donde estaba
-    const vista: Vista = params.get('vista') === 'cifrado' ? 'cifrado' : params.get('vista') === 'bloques' ? 'bloques' : params.get('vista') === 'tabla' ? 'tabla' : 'lista';
+    const vista: Vista = (['cifrado', 'detalle', 'bloques', 'tabla'] as const).find(v => v === params.get('vista')) ?? 'lista';
+    // Cifrado (la chuleta rápida) y Detalle (la canción entera) son la misma hoja seguida
+    const enHoja = vista === 'cifrado' || vista === 'detalle';
     const directo = params.get('directo') === '1';
     const cambiarParams = (cambio: Record<string, string | null>) => {
         const p = new URLSearchParams(params);
@@ -103,7 +105,8 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     const voces = reparto(temas);
     // ¿Se pasa del hueco del bolo? (la barra y la duración se ponen en rojo)
     const pasa = !!repertorio.hueco && ids.length > 0 && segundos / 60 > repertorio.hueco + 1;
-    const temasCifrado = useMemo(() => (vista === 'cifrado' || directo ? temas.map(c => temaDe(c, false)) : []), [vista, directo, temas]);
+    // Con la letra: el Cifrado saca de ella la estructura (estrofa, estribillo…) y el Detalle la enseña entera
+    const temasCifrado = useMemo(() => (enHoja || directo ? temas.map(c => temaDe(c, true)) : []), [enHoja, directo, temas]);
     // Bloques: pasar un tema a otro bloque del set le cambia el bloque y lo lleva detrás del
     // último de ese bloque; con otro campo, cambia ese dato de su ficha
     const moverTema = (c: Cancion, desde: string, hacia: string) => {
@@ -124,11 +127,11 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     };
     // Al volver de una canción abierta desde el cifrado, la hoja vuelve a donde estaba
     useEffect(() => {
-        if (vista !== 'cifrado' || directo) return;
+        if (!enHoja || directo) return;
         let y = 0;
         try { y = Number(sessionStorage.getItem(claveScroll)) || 0; sessionStorage.removeItem(claveScroll); } catch { /* */ }
         if (y) requestAnimationFrame(() => window.scrollTo({ top: y }));
-    }, [vista, directo, claveScroll]);
+    }, [enHoja, directo, claveScroll]);
 
     const cambiar = (cambio: Partial<TipoRepertorio>) => guardarRepertorio({ ...repertorio, ...cambio });
     const quitar = (id: string) => {
@@ -338,9 +341,9 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                             <Play className="h-4 w-4 fill-current" />
                         </button>
                     )}
-                    <SelectorVista valor={vista} onCambio={v => cambiarParams({ vista: v === 'lista' ? null : v })} />
-                    {vista === 'cifrado' && temasCifrado.some(t => t.m) && <SuenaFormas formas={formas} onCambio={setFormas} />}
-                    {vista === 'cifrado' && (
+                    <SelectorVista valor={vista} onCambio={v => cambiarParams({ vista: v === 'lista' ? null : v })} opciones={['lista', 'cifrado', 'detalle', 'bloques', 'tabla']} />
+                    {enHoja && temasCifrado.some(t => t.m) && <SuenaFormas formas={formas} onCambio={setFormas} />}
+                    {enHoja && (
                         <button onClick={() => cambiarParams({ directo: '1' })} className="pulsable ml-auto h-9 px-3.5 rounded-full bg-foreground text-background text-[14px] font-semibold">
                             En directo
                         </button>
@@ -359,8 +362,8 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                         campos={['bloque', 'canta', 'estilos', 'tonos', 'energias', 'etiquetas']}
                         onMover={moverTema} onAbrir={c => navigate(`/cancionero/${c.id}?repertorio=${repertorio.id}`)} />
                 </div>
-            ) : ids.length > 0 && vista === 'cifrado' ? (
-                <HojaSet temas={temasCifrado} tamano={17} formas={formas} ancho onAbrir={i => abrirDesdeCifrado(i, false)} className="mt-2" />
+            ) : ids.length > 0 && enHoja ? (
+                <HojaSet temas={temasCifrado} tamano={17} formas={formas} ancho detalle={vista === 'detalle'} onAbrir={i => abrirDesdeCifrado(i, false)} className="mt-2" />
             ) : vista === 'lista' && ids.length + extras.length > 0 ? (
                 // En un ordenador ancho (≥ 1280 px), al lado de la lista va el panel de la canción elegida
                 <div className="xl:grid xl:grid-cols-[minmax(0,1fr)_minmax(340px,420px)] xl:gap-6 xl:items-start">

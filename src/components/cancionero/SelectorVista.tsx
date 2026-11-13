@@ -1,17 +1,19 @@
 import type { ReactNode } from 'react';
-import { Columns3, List, Music2, Table2 } from 'lucide-react';
+import { Columns3, FileText, List, Music2, Table2 } from 'lucide-react';
 import { cn } from '../../lib/utils';
 
-export type Vista = 'lista' | 'cifrado' | 'bloques' | 'tabla';
+export type Vista = 'lista' | 'cifrado' | 'detalle' | 'bloques' | 'tabla';
 
 const OPCIONES: Record<Vista, { nombre: string; icono: ReactNode }> = {
     lista: { nombre: 'Lista', icono: <List className="h-4 w-4" /> },
     cifrado: { nombre: 'Cifrado', icono: <Music2 className="h-4 w-4" /> },
+    detalle: { nombre: 'Detalle', icono: <FileText className="h-4 w-4" /> },
     bloques: { nombre: 'Bloques', icono: <Columns3 className="h-4 w-4" /> },
     tabla: { nombre: 'Tabla', icono: <Table2 className="h-4 w-4" /> },
 };
 
-// Cómo ver las canciones: la lista (para ordenar), el cifrado seguido (para tocar) o en bloques
+// Cómo ver las canciones: la lista (para ordenar), el cifrado rápido (cada parte con sus acordes),
+// el detalle (la canción entera, con letra) o en bloques
 export function SelectorVista({ valor, onCambio, opciones = ['lista', 'cifrado', 'bloques', 'tabla'], className }: {
     valor: Vista; onCambio: (v: Vista) => void; opciones?: Vista[]; className?: string;
 }) {

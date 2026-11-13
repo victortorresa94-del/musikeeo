@@ -37,7 +37,7 @@ const filaResumen = (l: Extract<Linea, { tipo: 'acordes' }>) => {
     return l.coletilla ? `${base}  ${l.coletilla.startsWith('(') ? l.coletilla : `· ${l.coletilla}`}` : base;
 };
 
-function bloquesDe(texto: string): Bloque[] {
+function bloquesDe(lineas: Linea[]): Bloque[] {
     const bloques: Bloque[] = [];
     let actual: Bloque = { acordes: [], resumen: [], letra: [], notas: [] };
     let etiquetaSiguiente: string | undefined;
@@ -47,7 +47,7 @@ function bloquesDe(texto: string): Bloque[] {
         actual = { acordes: [], resumen: [], letra: [], notas: [], etiqueta: etiquetaSiguiente };
         etiquetaSiguiente = undefined;
     };
-    for (const l of leerCancion(texto).lineas) {
+    for (const l of lineas) {
         if (l.tipo === 'seccion') { etiquetaSiguiente = l.texto; cerrar(); continue; }
         if (l.tipo === 'vacia') { if (tiene(actual)) cerrar(); continue; }
         if (l.tipo === 'nota') { actual.notas.push(l.aviso ? `> ${l.texto}` : `{c: ${l.texto}}`); continue; }
@@ -106,12 +106,14 @@ function nombrar(bloques: Bloque[]): string[] {
 
 // Si casi no tiene letra (una chuleta ya hecha a mano), se deja como está
 // (cuenta la letra suelta y la que lleva los acordes encima)
-const esChuleta = (texto: string) => leerCancion(texto).lineas
+const esChuleta = (lineas: Linea[]) => lineas
     .filter(l => l.tipo === 'letra' || (l.tipo === 'mixta' && l.trozos.some(t => t.texto.trim()))).length < 8;
 
 export function cifradoRapido(texto: string): string {
-    if (!texto.trim() || esChuleta(texto)) return texto;
-    const bloques = bloquesDe(texto);
+    if (!texto.trim()) return texto;
+    const lineas = leerCancion(texto).lineas;
+    if (esChuleta(lineas)) return texto;
+    const bloques = bloquesDe(lineas);
     const nombres = nombrar(bloques);
     const salida: string[] = [];
     // Una parte que vuelve más corta o más larga (el último estribillo una vez en vez de dos) es la misma

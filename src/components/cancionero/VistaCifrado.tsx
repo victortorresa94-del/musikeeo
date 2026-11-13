@@ -5,6 +5,7 @@ import { cn } from '../../lib/utils';
 import { detectarTono, leerCancion, usaBemoles, type OpcionesNombre } from '../../lib/acordes';
 import { notasVacias } from '../../lib/notas';
 import type { TemaCompartido } from '../../lib/compartir';
+import { cifradoRapido } from '../../lib/estructura';
 import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
 import { NotasRicas } from '../notas/NotasRicas';
 import { HojaCancion } from './HojaCancion';
@@ -15,8 +16,10 @@ import { estiloBloque, sinLoDeLasPildoras } from './estilo';
 // debajo sus acordes por partes y sus avisos (sin letra). Para tocar en directo sin entrar en
 // cada canción. La misma hoja sale en el repertorio, en la biblioteca y en el enlace del grupo
 
-export const TemaCifrado = memo(function Tema({ tema, n, tamano, onAbrir, sinBorde, sinCabecera, formas }: { tema: TemaCompartido; n: number; tamano: number; onAbrir?: () => void; sinBorde?: boolean; sinCabecera?: boolean; formas?: boolean }) {
-    const leida = useMemo(() => leerCancion(tema.x), [tema.x]);
+// detalle: la canción entera (con la letra si la trae); si no, la chuleta rápida: cada parte en
+// una línea con sus acordes y el orden (lib/estructura.ts)
+export const TemaCifrado = memo(function Tema({ tema, n, tamano, onAbrir, sinBorde, sinCabecera, formas, detalle }: { tema: TemaCompartido; n: number; tamano: number; onAbrir?: () => void; sinBorde?: boolean; sinCabecera?: boolean; formas?: boolean; detalle?: boolean }) {
+    const leida = useMemo(() => leerCancion(detalle ? tema.x : cifradoRapido(tema.x)), [tema.x, detalle]);
     const lineas = useMemo(() => sinLoDeLasPildoras(leida.lineas, tema.g ?? null), [leida.lineas, tema.g]);
     const opciones: OpcionesNombre = useMemo(() => {
         // «Formas»: con la cejilla puesta, los acordes que se tocan; si no, los que suenan
@@ -57,8 +60,8 @@ export const TemaCifrado = memo(function Tema({ tema, n, tamano, onAbrir, sinBor
 });
 
 // ancho: en el ordenador, los temas en 2 o 3 columnas (se leen de izquierda a derecha y hacia abajo)
-export function HojaSet({ temas, tamano = 17, onAbrir, className, formas, ancho }: {
-    temas: TemaCompartido[]; tamano?: number; onAbrir?: (i: number) => void; className?: string; formas?: boolean; ancho?: boolean;
+export function HojaSet({ temas, tamano = 17, onAbrir, className, formas, ancho, detalle }: {
+    temas: TemaCompartido[]; tamano?: number; onAbrir?: (i: number) => void; className?: string; formas?: boolean; ancho?: boolean; detalle?: boolean;
 }) {
     return (
         <div className={cn('text-foreground', ancho && 'md:grid md:grid-cols-2 2xl:grid-cols-3 md:gap-x-10 md:items-start', className)} style={{ fontSize: tamano }}>
@@ -73,7 +76,7 @@ export function HojaSet({ temas, tamano = 17, onAbrir, className, formas, ancho 
                                 <img src={estilo.icono} alt="" aria-hidden className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-[52px] w-[72px] object-contain" />
                             </div>
                         )}
-                        <TemaCifrado tema={t} n={i + 1} tamano={tamano} formas={formas} onAbrir={onAbrir ? () => onAbrir(i) : undefined} />
+                        <TemaCifrado tema={t} n={i + 1} tamano={tamano} formas={formas} detalle={detalle} onAbrir={onAbrir ? () => onAbrir(i) : undefined} />
                     </div>
                 );
             })}
