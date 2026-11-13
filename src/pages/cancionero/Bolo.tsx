@@ -11,7 +11,7 @@ import { FilaTareas } from '../../components/cancionero/Tareas';
 import { iconoDeRepertorio, pastelDe } from '../../components/cancionero/estilo';
 import { textoDuracion } from '../../lib/biblioteca';
 import { DURACION_MEDIA, enlaceBolo, enlacesMapa, esHora, horaDe, minutosDe, paqueteBolo } from '../../lib/compartirBolo';
-import type { Bolo as TipoBolo, HoraBolo, Repertorio } from '../../types/cancionero';
+import type { Bolo as TipoBolo, HoraBolo, Repertorio, SetBolo } from '../../types/cancionero';
 
 // El bolo (13-nov): lo que hay que pasar a los músicos de una actuación, aparte del repertorio.
 // Víctor: «crear un bolo y compartir bolo… el repertorio, el horario de cada cosa, la ubicación…
@@ -24,6 +24,7 @@ const MOMENTOS = ['Concierto', 'Llegada', 'Montaje', 'Prueba de sonido', 'Comida
 const ES_CONCIERTO = /concierto|actuaci[oó]n|tocamos/i;
 // Sin «hasta» vacío (Firestore no admite huecos sin valor y no hace falta guardarlo)
 const conHasta = (h: HoraBolo): HoraBolo => { const { hasta, ...resto } = h; return hasta ? { ...resto, hasta } : resto; };
+const sinHastaVacio = (s: SetBolo): SetBolo => { const { hasta, hora, ...resto } = s; return { ...resto, ...(hora ? { hora } : {}), ...(hasta ? { hasta } : {}) }; };
 
 function fechaLarga(f: string): string {
     const [a, m, d] = (f || '').split('-').map(Number);
@@ -65,7 +66,7 @@ export default function Bolo() {
         const primero = sets.filter(({ s }) => esHora(s.hora)).sort((a, b) => minutosDe(a.s.hora!) - minutosDe(b.s.hora!))[0];
         if (!primero) return { hora: '', que };
         const desde = primero.s.hora!.trim();
-        return conHasta({ hora: desde, que, hasta: primero.r.hueco ? horaDe(minutosDe(desde) + primero.r.hueco) : undefined });
+        return conHasta({ hora: desde, que, hasta: esHora(primero.s.hasta) ? primero.s.hasta : primero.r.hueco ? horaDe(minutosDe(desde) + primero.r.hueco) : undefined });
     };
     // Por hora al acabar de escribirla (lo que no tiene hora, al final)
     const ordenarHorario = () => {
@@ -156,12 +157,27 @@ export default function Bolo() {
                                     <button onClick={() => cambiar({ sets: bolo.sets.filter(x => x !== s) })} aria-label={`Quitar ${r.nombre} del bolo`}
                                         className="-mr-1.5 h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-muted-foreground active:bg-fill-strong"><MinusCircle className="h-5 w-5" /></button>
                                 </div>
-                                <label className="mt-2 ml-[52px] flex items-center gap-2 text-[14px] font-semibold text-muted-foreground">
-                                    Empieza a las
-                                    <input type="time" value={s.hora ?? ''} aria-label={`Hora de ${r.nombre}`}
-                                        onChange={e => cambiar({ sets: bolo.sets.map(x => (x === s ? { ...x, hora: e.target.value || undefined } : x)) })}
-                                        className={horaCampo} />
-                                </label>
+                                <div className="mt-2 ml-[52px] flex flex-wrap items-center gap-x-3 gap-y-2">
+                                    <label className="flex items-center gap-2 text-[14px] font-semibold text-muted-foreground">
+                                        De
+                                        <input type="time" value={s.hora ?? ''} aria-label={`Hora de empezar ${r.nombre}`}
+                                            onChange={e => cambiar({ sets: bolo.sets.map(x => (x === s ? { ...x, hora: e.target.value || undefined } : x)) })}
+                                            className={horaCampo} />
+                                    </label>
+                                    {/* A qué hora acaba (13-nov, Víctor: «falta poder elegir a qué hora termina»). Vacío:
+                                        la calcula sola con lo que duran las canciones (o el hueco del repertorio) */}
+                                    <label className="flex items-center gap-2 text-[14px] font-semibold text-muted-foreground">
+                                        a
+                                        <input type="time" value={s.hasta ?? ''} aria-label={`Hora de acabar ${r.nombre}`}
+                                            onChange={e => cambiar({ sets: bolo.sets.map(x => (x === s ? sinHastaVacio({ ...x, hasta: e.target.value || undefined }) : x)) })}
+                                            className={horaCampo} />
+                                    </label>
+                                    {!s.hasta && esHora(s.hora) && (
+                                        <span className="basis-full text-[13px] text-muted-foreground">
+                                            Sin hora de acabar: ≈ {horaDe(minutosDe(s.hora!) + (r.hueco ? r.hueco : Math.round(d.segundos / 60)))}, {r.hueco ? 'con el hueco del repertorio' : 'con lo que duran las canciones'}.
+                                        </span>
+                                    )}
+                                </div>
                             </div>
                         );
                     })}

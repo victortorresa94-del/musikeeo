@@ -12,6 +12,7 @@ export const DURACION_MEDIA = 210;   // una canción sin duración: 3:30
 
 export interface SetCompartido extends Compartido {
     hi?: string;            // hora a la que empieza
+    hf?: string;            // hora a la que acaba (si se puso a mano)
     hu?: number;            // hueco del set, en minutos
     ic?: string;            // el icono elegido para el repertorio (/images/…)
 }
@@ -49,7 +50,7 @@ export function paqueteBolo(bolo: Bolo, repertorios: Repertorio[], canciones: Ca
     for (const s of bolo.sets) {
         const r = porId.get(s.repertorioId);
         if (!r) continue;
-        sets.push({ ...paquete(r, canciones, conLetra), ...(esHora(s.hora) ? { hi: s.hora.trim() } : {}), ...(r.hueco ? { hu: r.hueco } : {}), ...(r.icono ? { ic: r.icono } : {}) });
+        sets.push({ ...paquete(r, canciones, conLetra), ...(esHora(s.hora) ? { hi: s.hora.trim() } : {}), ...(esHora(s.hasta) ? { hf: s.hasta.trim() } : {}), ...(r.hueco ? { hu: r.hueco } : {}), ...(r.icono ? { ic: r.icono } : {}) });
     }
     const texto = (x?: string) => (x && x.trim() ? x.trim() : undefined);
     const horario = bolo.horario.filter(h => h.que.trim() || esHora(h.hora)).map(h => ({ hora: h.hora.trim(), que: h.que.trim(), ...(esHora(h.hasta) ? { hasta: h.hasta.trim() } : {}) }));
@@ -79,7 +80,8 @@ export function sanearBolo(dato: unknown): BoloCompartido | null {
         if (!limpio) continue;
         const hi = texto((s as SetCompartido).hi, 5);
         const hu = (s as SetCompartido).hu;
-        const set: SetCompartido = { ...limpio, ...(esHora(hi) ? { hi } : {}), ...(typeof hu === 'number' && hu > 0 ? { hu } : {}) };
+        const hf = texto((s as SetCompartido).hf, 5);
+        const set: SetCompartido = { ...limpio, ...(esHora(hi) ? { hi } : {}), ...(esHora(hf) ? { hf } : {}), ...(typeof hu === 'number' && hu > 0 ? { hu } : {}) };
         // El icono solo si es la ruta de un icono de la app (lo de fuera no se pinta a ciegas)
         const ic = (s as SetCompartido).ic;
         if (typeof ic === 'string' && ic.length <= 200 && /^\/images\/[\w/-]+\.(webp|png|jpe?g|svg)$/i.test(ic)) set.ic = ic;
@@ -106,9 +108,9 @@ export function horarioCompleto(b: BoloCompartido): MomentoBolo[] {
     const momentos: MomentoBolo[] = (b.ho ?? []).map(h => ({ hora: h.hora, que: h.que, ...(esHora(h.hasta) ? { hasta: h.hasta } : {}) }));
     b.s.forEach((s, i) => {
         if (!esHora(s.hi)) return;
-        // Con hueco, el set acaba cuando acaba su hueco; si no, cuando acaban sus canciones (aprox.)
+        // La hora de acabar puesta a mano manda; si no, la del hueco; si no, cuando acaban sus canciones (aprox.)
         const fin = minutosDe(s.hi) + (s.hu ? s.hu : Math.round(duracionSet(s).segundos / 60));
-        momentos.push({ hora: s.hi, que: nombreEnBolo(s.n, b.n), set: i, hasta: horaDe(fin), aprox: !s.hu });
+        momentos.push({ hora: s.hi, que: nombreEnBolo(s.n, b.n), set: i, hasta: esHora(s.hf) ? s.hf : horaDe(fin), aprox: !esHora(s.hf) && !s.hu });
     });
     return momentos
         .map((m, i) => ({ m, i }))

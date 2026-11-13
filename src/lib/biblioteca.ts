@@ -246,7 +246,7 @@ export interface CatalogoCopia { aspecto?: Record<string, unknown>; campos?: unk
 export interface BoloCopia {
     titulo: string; fecha?: string; lugar?: string; direccion?: string; contacto?: string; telefono?: string; notas?: string;
     horario?: { hora: string; que: string; hasta?: string }[];
-    sets: { repertorio: number; hora?: string }[];
+    sets: { repertorio: number; hora?: string; hasta?: string }[];
 }
 export interface Copia { app: 'musikeeo-cancionero'; version: 1; creada: string; canciones: CancionCopia[]; repertorios: RepertorioCopia[]; catalogo?: CatalogoCopia; bolos?: BoloCopia[] }
 
@@ -271,7 +271,7 @@ export function crearCopia(canciones: Cancion[], repertorios: Repertorio[], cata
             bolos: bolos.map(b => ({
                 titulo: b.titulo, fecha: b.fecha || undefined, lugar: b.lugar, direccion: b.direccion, contacto: b.contacto, telefono: b.telefono, notas: b.notas,
                 horario: b.horario.length ? b.horario : undefined,
-                sets: b.sets.map(s => ({ repertorio: posRep.get(s.repertorioId) ?? -1, ...(s.hora ? { hora: s.hora } : {}) })).filter(s => s.repertorio >= 0),
+                sets: b.sets.map(s => ({ repertorio: posRep.get(s.repertorioId) ?? -1, ...(s.hora ? { hora: s.hora } : {}), ...(s.hasta ? { hasta: s.hasta } : {}) })).filter(s => s.repertorio >= 0),
             })),
         } : {}),
     };

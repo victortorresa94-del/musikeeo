@@ -114,7 +114,7 @@ export interface Tarea {
 // dónde, el horario, los sets (repertorios) con su hora, a quién llamar y las notas—. Aparte del
 // repertorio: uno o varios sets por bolo, y el mismo repertorio puede ir en varios bolos
 export interface HoraBolo { hora: string; que: string; hasta?: string }   // «10:30» · «Llegada y montaje» (hasta: el concierto, «de 12:30 a 13:30»)
-export interface SetBolo { repertorioId: string; hora?: string }  // hora de empezar ese set
+export interface SetBolo { repertorioId: string; hora?: string; hasta?: string }  // hora de empezar y de acabar ese set
 export interface Bolo {
     id: string;
     titulo: string;             // «RTF Pallejà»

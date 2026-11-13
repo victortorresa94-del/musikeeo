@@ -355,7 +355,7 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
         // Los bolos de la copia: el que ya existe (mismo nombre y fecha) se pone al día; si no, se crea
         const importarBolos = (idsRep: string[]) => {
             for (const b of copia?.bolos ?? []) {
-                const sets = b.sets.map(s => ({ repertorioId: idsRep[s.repertorio], ...(s.hora ? { hora: s.hora } : {}) })).filter(s => s.repertorioId);
+                const sets = b.sets.map(s => ({ repertorioId: idsRep[s.repertorio], ...(s.hora ? { hora: s.hora } : {}), ...(s.hasta ? { hasta: s.hasta } : {}) })).filter(s => s.repertorioId);
                 const datos = { titulo: b.titulo, fecha: b.fecha ?? '', lugar: b.lugar, direccion: b.direccion, contacto: b.contacto, telefono: b.telefono, notas: b.notas, horario: b.horario ?? [], sets };
                 const ya = bolos.find(x => norm(x.titulo) === norm(b.titulo) && x.fecha === (b.fecha ?? ''));
                 if (ya) guardarBolo({ ...ya, ...Object.fromEntries(Object.entries(datos).filter(([, v]) => v !== undefined)) });
