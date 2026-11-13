@@ -171,7 +171,15 @@ export function leerLineaAcordes(linea: string): LineaDeAcordes | null {
     if (!palabra) return null;
     let siguiente = palabras.exec(linea);
     let etiqueta: string | undefined;
-    if (siguiente && esEtiqueta(palabra[0])) {
+    // «Estrofa 2: G – C», «Rueda II G – C»: la parte con su número va junta
+    if (siguiente && /^(?:\d{1,2}|[IVX]{1,4}):?$/.test(siguiente[0]) && esEtiqueta(`${palabra[0].replace(/:$/, '')} ${siguiente[0]}`)) {
+        const tras = palabras.exec(linea);
+        if (tras) {
+            etiqueta = `${palabra[0].replace(/:$/, '')} ${siguiente[0].replace(/:$/, '')}`;
+            palabra = tras;
+            siguiente = palabras.exec(linea);
+        }
+    } else if (siguiente && esEtiqueta(palabra[0])) {
         etiqueta = palabra[0].replace(/^\[|\]$|:$/g, '');
         palabra = siguiente;
         siguiente = palabras.exec(linea);

@@ -121,6 +121,60 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
     const [meterEnDestino, setMeterEnDestino] = useState(false);
     const aDestino = !!destino && !copia && (!muchas || meterEnDestino);
 
+    // ---- Los repertorios de una copia que ya tienes: su orden manda, salvo que elijas el del archivo ----
+    const [soloOrden, setSoloOrden] = useState(false);
+    const [ordenArchivo, setOrdenArchivo] = useState<Set<string>>(new Set());
+    // La canción tuya que corresponde al tema i de la copia (dentro de un repertorio, también por título)
+    const tuyaDe = (i: number, dentro?: string[]): string | undefined => {
+        const p = parejas[i];
+        const id = p?.ya?.id ?? p?.rellena?.id;
+        if (id && (!dentro || dentro.includes(id))) return id;
+        const t = encontradas[i];
+        if (!t || !dentro) return id;
+        return canciones.find(c => dentro.includes(c.id) && norm(c.titulo) === norm(t.titulo) && norm(c.version ?? '') === norm(t.version ?? ''))?.id ?? id;
+    };
+    const conOtroOrden = useMemo(() => {
+        if (!copia) return [];
+        return copia.repertorios.flatMap(r => {
+            const ya = repertorios.find(x => norm(x.nombre) === norm(r.nombre));
+            if (!ya) return [];
+            const delArchivo = [...new Set(r.canciones.map(i => tuyaDe(i, ya.canciones)).filter((id): id is string => !!id && ya.canciones.includes(id)))];
+            const mio = ya.canciones.filter(id => delArchivo.includes(id));
+            return delArchivo.join('|') !== mio.join('|') ? [ya] : [];
+        });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [copia, repertorios, parejas, encontradas, canciones]);
+
+    // «Solo el orden»: no toca canciones ni fichas; reordena tus repertorios como en la copia
+    const soloReordenar = () => {
+        if (!copia) return;
+        let hechos = 0;
+        const sinEncontrar: string[] = [];
+        for (const r of copia.repertorios) {
+            const ya = repertorios.find(x => norm(x.nombre) === norm(r.nombre));
+            if (!ya) continue;
+            const orden: string[] = [];
+            for (const i of r.canciones) {
+                const id = tuyaDe(i, ya.canciones);
+                if (id && ya.canciones.includes(id)) { if (!orden.includes(id)) orden.push(id); }
+                else if (encontradas[i]) sinEncontrar.push(encontradas[i].titulo);
+            }
+            // Las tuyas que no están en la copia, al final (no se quita nada)
+            const resto = ya.canciones.filter(id => !orden.includes(id));
+            const nuevo = [...orden, ...resto];
+            if (nuevo.join('|') !== ya.canciones.join('|')) { guardarRepertorio({ ...ya, canciones: nuevo }); hechos++; }
+        }
+        setTexto('');
+        onCerrar();
+        toast.success(hechos ? `Orden puesto en ${hechos} ${hechos === 1 ? 'repertorio' : 'repertorios'}` : 'Ya estaban en ese orden', {
+            description: [
+                'Canciones y fichas, sin tocar.',
+                sinEncontrar.length && `No están en tu repertorio (no las he añadido): ${[...new Set(sinEncontrar)].join(', ')}.`,
+            ].filter(Boolean).join(' '),
+            duration: sinEncontrar.length ? 12000 : 5000,
+        });
+    };
+
     const pegar = async () => {
         try {
             const t = await leerPortapapeles();
@@ -165,6 +219,7 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
     };
 
     const importar = () => {
+        if (copia && soloOrden) { soloReordenar(); return; }
         const corta = (t: CancionImportada) => t.ficha || t.texto.split('\n').length <= 25;
         let nuevas = 0, rellenas = 0, conFicha = 0, conNotas = 0;
         const aGuardar: Cancion[] = [];
@@ -280,7 +335,14 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
                 const lista = [...new Set(r.canciones.map(i => ids[i]).filter(Boolean))];
                 const ya = repertorios.find(x => norm(x.nombre) === norm(r.nombre));
                 const extraRep = { ...(r.notas ? { notas: unirNotas(ya?.notas, r.notas) } : {}), ...(r.hueco ? { hueco: r.hueco } : {}) };
-                if (ya) guardarRepertorio({ ...ya, ...extraRep, canciones: lista, fecha: r.fecha || ya.fecha });
+                if (ya) {
+                    // Tu orden manda: lo nuevo de la copia va al final. Con «Usar el del archivo», al revés.
+                    // Nunca se quita nada de tu repertorio
+                    const canciones = ordenArchivo.has(ya.id)
+                        ? [...lista, ...ya.canciones.filter(id => !lista.includes(id))]
+                        : [...ya.canciones, ...lista.filter(id => !ya.canciones.includes(id))];
+                    guardarRepertorio({ ...ya, ...extraRep, canciones, fecha: r.fecha || ya.fecha });
+                }
                 else {
                     const nuevo = crearRepertorio(r.nombre, lista);
                     // Sin fecha: no es de hoy, es uno antiguo (va a «Archivados», no a «Próximo bolo»)
@@ -346,6 +408,32 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
 
                             {encontradas.length > 0 && (
                                 <>
+                                    {copia && copia.repertorios.some(r => repertorios.some(x => norm(x.nombre) === norm(r.nombre))) && (
+                                        <div className="mt-3 rounded-2xl bg-fill px-4 py-3">
+                                            <div className="flex items-center justify-between gap-3">
+                                                <p className="text-[15px] font-semibold text-foreground">Solo el orden de los repertorios</p>
+                                                <Switch checked={soloOrden} onCheckedChange={setSoloOrden} aria-label="Solo el orden de los repertorios" />
+                                            </div>
+                                            <p className="mt-1 text-[13px] text-muted-foreground">
+                                                {soloOrden ? 'No toca canciones ni fichas: solo pone tus repertorios en el orden de la copia.' : 'Para recuperar el orden de un repertorio sin cambiar las fichas.'}
+                                            </p>
+                                        </div>
+                                    )}
+                                    {!soloOrden && conOtroOrden.map(r => (
+                                        <div key={r.id} className="mt-3 rounded-2xl bg-pastel-mantequilla px-4 py-3">
+                                            <p className="text-[14px] font-semibold text-pastel-mantequilla-ink">«{r.nombre}» ya lo tienes con otro orden</p>
+                                            <div className="mt-2 p-1 rounded-full bg-sheet grid grid-cols-2 gap-1" role="radiogroup" aria-label={`Orden de ${r.nombre}`}>
+                                                {([[false, 'Mantener el mío'], [true, 'Usar el del archivo']] as const).map(([v, n]) => {
+                                                    const activo = ordenArchivo.has(r.id) === v;
+                                                    return (
+                                                        <button key={n} role="radio" aria-checked={activo}
+                                                            onClick={() => setOrdenArchivo(o => { const x = new Set(o); if (v) x.add(r.id); else x.delete(r.id); return x; })}
+                                                            className={cn('h-9 rounded-full text-[14px] font-semibold', activo ? 'bg-foreground text-background' : 'text-foreground')}>{n}</button>
+                                                    );
+                                                })}
+                                            </div>
+                                        </div>
+                                    ))}
                                     <p className="mt-3 text-[13px] font-semibold text-muted-foreground">
                                         {encontradas.length === 1 ? '1 canción' : `${encontradas.length} ${esSetlist ? 'fichas del setlist' : 'canciones'}`}
                                     </p>
@@ -393,7 +481,7 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
 
                             <button onClick={importar} disabled={!encontradas.length || leyendo}
                                 className="pulsable mt-4 w-full h-[52px] rounded-[14px] bg-primary text-primary-foreground font-semibold text-[16px] disabled:opacity-40">
-                                {encontradas.length > 1 ? `Importar ${encontradas.length} canciones` : 'Importar'}
+                                {copia && soloOrden ? 'Poner el orden' : encontradas.length > 1 ? `Importar ${encontradas.length} canciones` : 'Importar'}
                             </button>
                         </div>
                     </motion.div>

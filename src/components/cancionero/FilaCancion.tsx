@@ -4,6 +4,7 @@ import { Check, ChevronRight } from 'lucide-react';
 import { cn } from '../../lib/utils';
 import { etiquetasTema } from './estilo';
 import { Portada } from './Portada';
+import { ICONO_CAMPO } from './iconosFicha';
 import { minutos } from '../../lib/cantar';
 import type { Cancion } from '../../types/cancionero';
 
@@ -29,10 +30,15 @@ export function FilaCancion({ cancion, tono, elegida, onElegir, href, derecha, c
                 {sub && <span className="block truncate text-[13.5px] text-muted-foreground">{sub}</span>}
                 {etiquetas.length > 0 && (
                     <span className="mt-1 flex gap-1 overflow-hidden">
-                        {etiquetas.slice(0, 3).map(e => (
-                            <span key={e.texto} className={cn('h-5 px-2 shrink-0 rounded-full text-[11.5px] font-semibold flex items-center',
-                                e.pastel ? cn(e.pastel.fondo, e.pastel.tinta) : 'bg-fill-strong text-muted-foreground')}>{e.texto}</span>
-                        ))}
+                        {etiquetas.slice(0, 3).map(e => {
+                            const Icono = e.tipo ? ICONO_CAMPO[e.tipo] : null;
+                            return (
+                                <span key={e.texto} className={cn('h-5 px-2 shrink-0 rounded-full text-[11.5px] font-semibold flex items-center',
+                                    e.pastel ? cn(e.pastel.fondo, e.pastel.tinta) : 'bg-fill-strong text-muted-foreground')}>
+                                    {Icono && <Icono className="h-3 w-3 mr-0.5 shrink-0" aria-hidden />}{e.texto}
+                                </span>
+                            );
+                        })}
                     </span>
                 )}
             </span>

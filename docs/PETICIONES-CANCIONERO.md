@@ -517,6 +517,25 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
 - **Editar el texto ahí mismo** ✅ en la canción (sesión 2, 400ef37; en Tocar 🔧 lo monta la sesión 1): `components/cancionero/EditarEnSitio.tsx`. Tocar la letra (no un acorde) o «Editar» abre el texto tal cual (acordes, partes y formato intactos) en el mismo sitio, con el cursor en la línea tocada y a la altura del dedo. «Listo» guarda con Deshacer y vuelve a pintarla a la misma altura; «Cancelar» pregunta si hay cambios. Sin red, sin la barra de abajo mientras se edita, y la app no se recarga sola con una edición a medias. Props: `{ cancion, onGuardar(texto), onCerrar, lineaInicial? }`.
 - **La ficha en su sitio** ✅ (sesión 2, 400ef37): `components/cancionero/FichaEnSitio.tsx`. Cada píldora abre un desplegable junto a ella y se guarda al elegir, con Deshacer. Tono: 12 notas, mayor o menor, y los acordes se mueven a ese tono. Grupo: casillas y «+ Nuevo». Canta, Estilo, Estado y Energía: uno, con «+ Otro». Capo: 0-9 con las formas calculadas. Lo que falta sale como «+ Tono / + Canta / + Grupo / + Estilo». El lápiz sigue llevando a la ficha entera. Probado en un iPhone 13 simulado y sin red.
 
+### 21f. Más del 13-nov (mediodía) 🔧
+
+- *«Yo ya me había ordenado el repertorio que tengo cargado y se ha cambiado el orden.»*
+  - **Causa:** importar una copia con un repertorio del mismo nombre le ponía el orden del fichero (`ImportarCanciones.tsx`).
+  - **Arreglo** 🔧 (sesión 2): manda el suyo; si los órdenes no coinciden, elegir; y «Solo el orden», para recuperarlo desde una copia sin tocar las fichas.
+- *«Una vez editada una canción del reper quiero poder guardarla como "guardar como canción" o "sustituir la canción guardada".»* 🔧 (sesión 2): «Guardar» o «Guardar como canción nueva» (una versión que la sustituye en ese repertorio).
+- *«A todos estos atributos, si no les ponemos un icono, son dificilísimos de identificar.»* 🔧 (sesión 2): un icono en cada píldora.
+- *«Quiero poder quitar canciones de un grupo y tener un listado de todas.»* 🔧 (sesión 1): en «Elegir», quitar o poner un grupo y borrar en lote; cada lista de grupo con su número.
+- *«No tengo 500 canciones, tío, nos hemos flipado… de Lady Jarana tendré como 50 máximo.»*
+  - **Página para revisarlas:** https://claude.ai/artifact/4GKkapTqsopXqJ825N2eJf (privada). Están las 397 por origen y la propuesta es quedarse con 194:
+    - las 167 del Drive, sin «Orgullo», que es la misma que «Los Barrieros»;
+    - 12 de la BBDD de Cataleya;
+    - sus 16 propias.
+  - **Fuera de entrada:** el tardeo de Víctor Luna (63), la lista de deseos de El Juergueo (70) y los títulos de setlists antiguos (69).
+  - Lo que marca se guarda en la base de la página (`revision/actual`) y desde ahí descarga el archivo limpio.
+  - Lady Jarana sale con 33. En su móvil salen más porque sigue con los grupos viejos.
+- *«Si te paso letras y canciones, ¿me lo puedes organizar como necesito?»* Sí. «Los Barrieros»: estrofa 1 (aviso «sin guitarra»), pre-coro G – C, coro C – G7 – G7 – C, estrofa 2, pre-coro y coro. Va dentro del archivo limpio y en el chat para pegarla.
+  - «Rueda 2: G – C» no se lee como parte con acordes (sí «Rueda:» y «Pre-coro:»); arreglo pedido a la sesión 2.
+
 ## 22. Datos de la BBDD a corregir ⏳
 
 Artistas mal en la BBDD:
