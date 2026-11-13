@@ -684,6 +684,22 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
   - ⏳ **Víctor: conectar Spotify una vez** (5 min): developer.spotify.com/dashboard → Create app → Redirect URIs `https://www.musikeeo.com/spotify` y `https://musikeeo.com/spotify` → API: Web API → guardar; copiar el **Client ID** a Vercel como `VITE_SPOTIFY_CLIENT_ID` y volver a desplegar; en la app de Spotify, «User Management», añadir su correo de Spotify (y el de quien vaya a usarlo). Probado con un Spotify simulado.
 - *«también quiero que aparezcan las búsquedas recientes cuando busque una canción nueva»* → ✅ al tocar el buscador vacío (el del Cancionero y el de «Añadir canciones» del repertorio) salen las últimas 8: un toque la repite, la ✕ la quita, «Borrar» las borra todas. Cuenta lo que se deja escrito 1,5 s o con Intro (`hooks/useBusquedasRecientes.ts`, `components/cancionero/BusquedasRecientes.tsx`; en el móvil, por buscador).
 
+### 21p. Que no se borre nada, y lo que pidió en la víspera, de madrugada (13-nov, noche) 🔧
+
+- *«yo había puesto unos apuntes en mi canción de Marcha y ahora he entrado y se han borrado la mitad»* → ✅ en musikeeo.com (84cceee). La causa, reproducida con dos aparatos:
+  - un aparato abierto desde hacía rato guardaba su copia vieja ENTERA, letra incluida, al tocar cualquier ajuste (tono, A−/A+, zoom, «que quepa»);
+  - eso pisaba lo escrito en el otro.
+  - Ahora el cancionero se pone al día al volver a la app, al recuperar la red y cada minuto (`refrescar` en `crearAlmacen`, solo lo cambiado).
+  - Cada letra que se reemplaza (al editar, al llegar de otro aparato o al importar) queda guardada en el aparato (`services/versionesService.ts`, IndexedDB): Más → «Versiones anteriores de la letra», con lo que ahora no está en verde y «Recuperar esta» (`components/cancionero/VersionesAnteriores.tsx`).
+  - Lo perdido ANTES de esto no tiene copia: si escribió parte en el otro aparato, puede que siga allí.
+- *«4dfe10b3356a419d995f1fcd74207b0f client id»* → ✅ `VITE_SPOTIFY_CLIENT_ID` puesto en Vercel (producción y pruebas).
+  - *«yo quiero que mis músicos puedan hacerlo»*: Spotify solo deja 5 cuentas en modo desarrollo, así que los músicos no conectan nada. Escuchan con el enlace de la playlist, que va en la página del grupo y del bolo (🔧 agente).
+- *«Quiero poder enviar también un repertorio o una canción, aunque no sea bolo… una pantalla solo para reper o X canciones, y otra para enviar solo una canción a alguien con quien vas a cantar»* → 🔧 agente.
+- *«quiero poder elegir los iconos del reper»* → 🔧 agente.
+- *«cuando en un reper nuevo quiero añadir una canción nueva… desaparece el menú y todo»* (PC) y *«cuando busco deberían diferenciarse "mis canciones" o todas»* → 🔧 agente.
+- La caída al editar la ficha de «Oye Cómo Va» abierta desde el catálogo y el *«pedazo de formulario gigante»* (con su skill de Aura Storage) → 🔧 agente.
+- *«que se reproduzcan y vaya con los acordes bajando»* (como GuitarTuna) → 🔧 agente (YouTube en la canción, motor en `lib/seguir.ts`).
+
 ## 22. Datos de la BBDD a corregir ⏳
 
 Artistas mal en la BBDD:
