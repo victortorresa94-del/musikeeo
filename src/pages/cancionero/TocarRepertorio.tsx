@@ -3,6 +3,7 @@ import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom'
 import { toast } from 'sonner';
 import { ChevronDown, ChevronLeft, ChevronRight, ListMusic, Loader2, MoreHorizontal, Pause, Pencil, Play, ScrollText, Shrink, X } from 'lucide-react';
 import { cn } from '../../lib/utils';
+import { recordarDirecto } from '../../lib/directo';
 import { useCancionero } from '../../hooks/useCancionero';
 import { useMusicaCancion } from '../../hooks/useMusicaCancion';
 import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
@@ -14,6 +15,7 @@ import { BotonClaqueta, DameElTono } from '../../components/cancionero/Cantante'
 import { Portada } from '../../components/cancionero/Portada';
 import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
 import { EditarEnSitio } from '../../components/cancionero/EditarEnSitio';
+import { SiFalla } from '../../components/cancionero/SiFalla';
 import { precargarEditorLetra } from '../../components/cancionero/cargarEditorLetra';
 import { Pildora } from '../../components/cancionero/Baldosas';
 import { bloqueDe, estiloBloque, etiquetasDe, ICONO, PASTEL, pastelCanta, sinLoDeLasPildoras } from '../../components/cancionero/estilo';
@@ -50,7 +52,9 @@ export default function TocarRepertorio() {
             </div>
         );
     }
-    const inicio = Math.min(lista.length - 1, Math.max(0, Number(params.get('n')) || 0));
+    // ?n= de la dirección de VERDAD: Tocar la va poniendo al día sin el router (ver Escenario)
+    const n = (() => { try { return new URLSearchParams(window.location.search).get('n'); } catch { return params.get('n'); } })();
+    const inicio = Math.min(lista.length - 1, Math.max(0, Number(n) || 0));
     return <Escenario nombre={repertorio.nombre} repertorioId={repertorio.id} canciones={lista} extrasDesde={set.length} inicio={inicio} />;
 }
 
@@ -81,6 +85,17 @@ function Escenario({ nombre, repertorioId, canciones, extrasDesde, inicio }: { n
     useEffect(() => { lineaRef.current = linea; }, [linea]);
     const actualRef = useRef(inicio);
     useEffect(() => { actualRef.current = actual; }, [actual]);
+    // La canción en la que vas, en la dirección (?n=): si el iPhone cierra la app o algo la recarga,
+    // vuelve a esta canción y no a la primera. Sin pasar por el router (no repinta nada al deslizar)
+    useEffect(() => {
+        try {
+            const url = new URL(window.location.href);
+            if (url.searchParams.get('n') === String(actual)) return;
+            url.searchParams.set('n', String(actual));
+            window.history.replaceState(window.history.state, '', url.pathname + url.search + url.hash);
+            recordarDirecto(url.pathname, url.search);
+        } catch { /* se queda sin recordar */ }
+    }, [actual]);
     const autoRef = useRef(auto), rodandoRef = useRef(rodando);
     useEffect(() => { autoRef.current = auto; rodandoRef.current = rodando; }, [auto, rodando]);
     // Montadas: la que suena y sus vecinas. Las vecinas cambian cuando el carrusel se para:
@@ -252,9 +267,11 @@ function Escenario({ nombre, repertorioId, canciones, extrasDesde, inicio }: { n
                     }} data-diapositiva
                         className={cn(linea && !c.ajustes.ajustar && 'teleprompter', 'relative h-full w-full shrink-0 snap-start snap-always overflow-y-auto overscroll-contain touch-pan-x touch-pan-y')}>
                         {i === actual || (cerca !== null && Math.abs(i - cerca) <= 1)
-                            ? <Diapositiva cancion={c} n={i + 1} total={canciones.length} siguiente={canciones[i + 1]} extra={i >= extrasDesde}
-                                onSiguiente={() => ir(i + 1)} cambiar={cambio => cambiar(c, cambio)}
-                                editando={editando === c.id} onGuardarTexto={texto => guardarTexto(c, texto)} onCerrarEdicion={() => setEditando(null)} repertorioId={repertorioId} />
+                            ? <SiFalla texto={c.texto} className="px-5 pt-[calc(env(safe-area-inset-top)+72px)] pb-24">
+                                <Diapositiva cancion={c} n={i + 1} total={canciones.length} siguiente={canciones[i + 1]} extra={i >= extrasDesde}
+                                    onSiguiente={() => ir(i + 1)} cambiar={cambio => cambiar(c, cambio)}
+                                    editando={editando === c.id} onGuardarTexto={texto => guardarTexto(c, texto)} onCerrarEdicion={() => setEditando(null)} repertorioId={repertorioId} />
+                            </SiFalla>
                             : null}
                     </div>
                 ))}

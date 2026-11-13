@@ -17,14 +17,28 @@ self.addEventListener("install", (event) => {
     );
 });
 
+// Las versiones guardadas, de la más nueva a la más vieja. Se quedan DOS: la de ahora y la
+// anterior. Una página que se abrió con la anterior (Tocar en mitad del bolo) sigue pidiendo SUS
+// trozos de código; si al llegar la nueva se borraran, sin red esa pantalla fallaría y la app se
+// recargaría en directo (13-nov, Víctor: «que no se me reinicie la app en directo»)
+const META = "musikeeo-meta";
+async function quedarseConDos() {
+    const meta = await caches.open(META);
+    const antes = await meta.match("/versiones").then((r) => (r ? r.json() : [])).catch(() => []);
+    const orden = [CACHE_NAME, ...antes.filter((n) => n !== CACHE_NAME)];
+    const quedan = orden.slice(0, 2);
+    await meta.put("/versiones", new Response(JSON.stringify(quedan), { headers: { "Content-Type": "application/json" } }));
+    const nombres = await caches.keys();
+    // Se borra lo que no es de las dos (y lo de antes de este sistema, salvo la anterior si la hay)
+    const sinLista = !antes.length;
+    const previa = sinLista ? nombres.filter((n) => n.startsWith("musikeeo-") && n !== CACHE_NAME && n !== META).slice(-1) : [];
+    await Promise.all(nombres.filter((n) => n !== META && !quedan.includes(n) && !previa.includes(n)).map((n) => caches.delete(n)));
+    if (previa.length) await meta.put("/versiones", new Response(JSON.stringify([CACHE_NAME, ...previa]), { headers: { "Content-Type": "application/json" } }));
+}
+
 self.addEventListener("activate", (event) => {
     // Tomar el control de las pestañas abiertas sin esperar a recargar
-    event.waitUntil(
-        Promise.all([
-            self.clients.claim(),
-            caches.keys().then((names) => Promise.all(names.filter((n) => n !== CACHE_NAME).map((n) => caches.delete(n)))),
-        ])
-    );
+    event.waitUntil(Promise.all([self.clients.claim(), quedarseConDos().catch(() => {})]));
 });
 
 // Por si acaso: como mucho 400 ficheros, se van los más viejos
@@ -52,7 +66,10 @@ async function navegar(req) {
         return res;
     });
     red.catch(() => {}); // si pierde la carrera y luego falla, que no salte un error suelto
-    const guardada = () => caches.match("/index.html").then((r) => r || caches.match("/"));
+    // La de ESTA versión primero (ahora se guardan dos versiones y la vieja no debe ganar)
+    const guardada = () => caches.open(CACHE_NAME)
+        .then((c) => c.match("/index.html").then((r) => r || c.match("/")))
+        .then((r) => r || caches.match("/index.html").then((x) => x || caches.match("/")));
     let espera;
     try {
         const tarde = new Promise((res) => { espera = setTimeout(res, ESPERA_RED); });

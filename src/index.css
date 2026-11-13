@@ -429,3 +429,10 @@
     .editor-letra-alinear .ProseMirror p { white-space: pre; }
     .editor-letra-alinear .ProseMirror { overflow-x: auto; }
 }
+
+/* En directo (canción, repertorio, Tocar, bolo, grupo): un dedo que baja de más no recarga la
+   página (Chrome en Android y Safari) — DirectoEnVivo pone la clase */
+html.sin-tirar,
+html.sin-tirar body {
+    overscroll-behavior-y: none;
+}

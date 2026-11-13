@@ -22,6 +22,7 @@ const RodrigoFloatingChat = lazy(() =>
 import { ErrorBoundary } from './components/layout/ErrorBoundary';
 import { Toaster } from 'sonner';
 import AvisoPruebas from './components/AvisoPruebas';
+import DirectoEnVivo from './components/cancionero/DirectoEnVivo';
 
 // Lazy Imports
 const Login = lazy(() => import('./pages/auth/Login'));
@@ -318,6 +319,7 @@ function App() {
           </Suspense>
           <Toaster position="top-center" richColors />
           <AvisoPruebas />
+          <DirectoEnVivo />
         </Router>
       </AuthProvider>
     </ErrorBoundary>

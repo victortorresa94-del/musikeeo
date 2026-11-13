@@ -4,8 +4,11 @@ import App from './App.tsx'
 import './index.css'
 import { ErrorBoundary } from './components/ErrorBoundary.tsx'
 import { initSentry } from './lib/sentry'
+import { volverSiHaceFalta } from './lib/directo'
 
 initSentry();
+// Si el iPhone cerró la app en mitad del bolo, al abrirla se vuelve a la misma canción
+volverSiHaceFalta();
 
 ReactDOM.createRoot(document.getElementById('root')!).render(
   <React.StrictMode>

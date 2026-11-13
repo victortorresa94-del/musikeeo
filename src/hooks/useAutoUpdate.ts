@@ -1,4 +1,5 @@
 import { useEffect } from 'react';
+import { enDirecto } from '../lib/directo';
 
 // Una PWA en iPhone vuelve de segundo plano sin recargar y se queda con el
 // código viejo. Al volver a la app (y cada 5 min) comprobamos si el index.html
@@ -12,8 +13,10 @@ export function useAutoUpdate() {
         let checking = false;
         const check = async () => {
             if (checking || document.visibilityState !== 'visible') return;
-            // En mitad del bolo no se recarga: ya se mirará al salir de Tocar o del escenario
-            if (/\/tocar$/.test(window.location.pathname) || document.fullscreenElement) return;
+            // En directo NUNCA se recarga (canción, repertorio, Tocar, bolo, grupo, pantalla completa):
+            // ya se mirará al volver a la lista o a otra parte de la app (13-nov, Víctor: «que no se
+            // me reinicie la app en directo»)
+            if (enDirecto(window.location.pathname) || document.fullscreenElement) return;
             // Ni con una canción a medio editar en su sitio (se perdería lo escrito)
             if (document.querySelector('[data-editar-en-sitio]')) return;
             checking = true;

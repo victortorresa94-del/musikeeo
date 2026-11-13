@@ -11,6 +11,7 @@ import { useCancionero } from '../../hooks/useCancionero';
 import { useMusicaCancion } from '../../hooks/useMusicaCancion';
 import { usePantallaEncendida } from '../../hooks/usePantallaEncendida';
 import { HojaCancion } from '../../components/cancionero/HojaCancion';
+import { SiFalla } from '../../components/cancionero/SiFalla';
 import { PanelAjustes, type SeccionAjustes } from '../../components/cancionero/PanelAjustes';
 import { AnadirLetra } from '../../components/cancionero/AnadirLetra';
 import { HacerVersion } from '../../components/cancionero/HacerVersion';
@@ -316,8 +317,10 @@ function Lector({ cancion }: { cancion: Cancion }) {
     };
 
     const hoja = (ref?: React.Ref<HTMLDivElement>, className?: string) => (
-        <HojaCancion ref={ref} lineas={leida.lineas} opciones={opciones} vista={ajustes.vista}
-            tamano={tamano} columnas={columnas} className={className} />
+        <SiFalla texto={cancion.texto} className={className}>
+            <HojaCancion ref={ref} lineas={leida.lineas} opciones={opciones} vista={ajustes.vista}
+                tamano={tamano} columnas={columnas} className={className} />
+        </SiFalla>
     );
     const datosTono = tonoSuena && (
         <>Tono <b className="font-semibold text-foreground">{tonoSuena}</b>{ajustes.cejilla > 0 && <> · Cejilla {ajustes.cejilla}{posturas && ` (posturas de ${posturas})`}</>}</>
