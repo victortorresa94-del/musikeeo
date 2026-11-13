@@ -2,22 +2,18 @@ import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRe
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Reorder, useDragControls } from 'framer-motion';
 import { toast } from 'sonner';
-import { CalendarDays, ChevronLeft, ChevronRight, FileText, GripVertical, Loader2, MoreHorizontal, Play, Plus, Search, Share2, Trash2, X } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpToLine, CalendarDays, ChevronLeft, ChevronRight, FileText, GripVertical, Loader2, MoreHorizontal, Play, Plus, Share2, Trash2, X } from 'lucide-react';
 import { tituloYHoraDe } from '../../lib/compartirBolo';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
-import { norm, pedirPantallaCompleta, tonoDe } from '../../components/cancionero/utilidades';
+import { pedirPantallaCompleta, tonoDe } from '../../components/cancionero/utilidades';
 import { Portada } from '../../components/cancionero/Portada';
 import { ICONO, PASTEL, bloqueDe, estiloBloque, etiquetasTema, pastelCanta } from '../../components/cancionero/estilo';
 import { ICONO_CAMPO } from '../../components/cancionero/iconosFicha';
-import { FilaCancion } from '../../components/cancionero/FilaCancion';
-import { BarraFiltros } from '../../components/cancionero/Filtros';
-import { useFiltrosGuardados } from '../../hooks/useFiltrosGuardados';
 import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
-import { ImportarCanciones } from '../../components/cancionero/ImportarCanciones';
-import { ResultadosCatalogo } from '../../components/cancionero/ResultadosCatalogo';
+import { ElegirParaSet } from '../../components/cancionero/ElegirParaSet';
 import { minutos } from '../../lib/cantar';
-import { pesoVersion, duracionDe, filtrar, mismoTitulo, mismoTonoSeguido, reparto, textoDuracion, tonoMostrado } from '../../lib/biblioteca';
+import { duracionDe, mismoTonoSeguido, reparto, textoDuracion, tonoMostrado } from '../../lib/biblioteca';
 import type { Cancion, Repertorio as TipoRepertorio } from '../../types/cancionero';
 import { CompartirGrupo } from '../../components/cancionero/CompartirGrupo';
 import { BotonDesplegar, PanelAcordes } from '../../components/cancionero/FilaDesplegable';
@@ -132,9 +128,21 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
 
     const cambiar = (cambio: Partial<TipoRepertorio>) => guardarRepertorio({ ...repertorio, ...cambio });
     const quitar = (id: string) => cambiar({ canciones: repertorio.canciones.filter(c => c !== id) });
-    const alternar = (id: string) => cambiar({
-        canciones: repertorio.canciones.includes(id) ? repertorio.canciones.filter(c => c !== id) : [...repertorio.canciones, id],
-    });
+    // Extras (la recámara): fuera del orden y de la duración; se pasan al set y vuelven
+    const extras = (repertorio.extras ?? []).filter(id => porId.has(id) && !repertorio.canciones.includes(id));
+    const aExtras = (id: string) => {
+        cambiar({ canciones: repertorio.canciones.filter(c => c !== id), extras: [...(repertorio.extras ?? []).filter(c => c !== id), id] });
+        toast(`«${porId.get(id)?.titulo}» a extras`, { action: { label: 'Deshacer', onClick: () => guardarRepertorio(repertorio) } });
+    };
+    const alSet = (id: string) => {
+        cambiar({ canciones: [...repertorio.canciones.filter(c => c !== id), id], extras: (repertorio.extras ?? []).filter(c => c !== id) });
+        toast(`«${porId.get(id)?.titulo}» al final del set`, { action: { label: 'Deshacer', onClick: () => guardarRepertorio(repertorio) } });
+    };
+    const quitarExtra = (id: string) => {
+        cambiar({ extras: (repertorio.extras ?? []).filter(c => c !== id) });
+        toast(`«${porId.get(id)?.titulo}» fuera de extras`, { action: { label: 'Deshacer', onClick: () => guardarRepertorio(repertorio) } });
+    };
+    const cerrarAnadir = useCallback(() => setAnadir(false), []);
 
     const tocar = (n = 0) => {
         pedirPantallaCompleta();
@@ -312,7 +320,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                         const nuevoBloque = bloque && (i === 0 || bloque !== bloqueDe(porId.get(ids[i - 1])!)) ? bloque : null;
                         return (
                             <Fila key={id} id={id} repertorioId={repertorio.id} n={i + 1} cancion={porId.get(id)!} tono={tonos[i]} bloque={nuevoBloque} mismoTono={repetidos.has(i)}
-                                onQuitar={() => quitar(id)} onTocar={() => tocar(i)}
+                                onQuitar={() => quitar(id)} onAExtras={() => aExtras(id)} onTocar={() => tocar(i)}
                                 elegida={enPanel === id} onElegir={() => setPanel(id)} />
                         );
                     })}
@@ -335,6 +343,50 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                 </Link>
             </div>
 
+            {/* Extras: las canciones en la recámara. A mano en el bolo, fuera del orden y de la duración */}
+            <section className="mt-8" aria-label="Extras">
+                <div className="relative min-h-[68px] rounded-[18px] overflow-hidden flex items-center pl-4 pr-[96px] py-2 bg-pastel-cielo">
+                    <span className="min-w-0">
+                        <span className="block font-heading text-[19px] font-bold leading-tight text-foreground">Extras{extras.length ? ` · ${extras.length}` : ''}</span>
+                        <span className="block text-[13px] font-semibold text-pastel-cielo-ink">En la recámara · no cuentan en la duración</span>
+                    </span>
+                    <img src={ICONO.repertorios} alt="" aria-hidden draggable={false}
+                        className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-[64px] w-[84px] object-contain drop-shadow-[0_6px_8px_rgba(0,0,0,0.16)]" />
+                </div>
+                {extras.length > 0 ? (
+                    <div className="mt-1">
+                        {extras.map((id, j) => {
+                            const c = porId.get(id)!;
+                            const t = tonoMostrado(c, tonoDe(c));
+                            return (
+                                <div key={id} className="flex items-center gap-1 pr-1 min-h-[60px] border-b border-hairline">
+                                    <button onClick={() => tocar(ids.length + j)} aria-label={`Tocar ${c.titulo}`}
+                                        className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-muted-foreground active:bg-fill"><Play className="h-4 w-4" /></button>
+                                    <Link to={`/cancionero/${c.id}?repertorio=${repertorio.id}`} className="flex-1 min-w-0 py-2 active:opacity-60">
+                                        <span className="block truncate text-[16px] font-semibold leading-snug text-foreground">{c.titulo}</span>
+                                        {(c.version || c.artista || c.duracion) && (
+                                            <span className="block truncate text-[13px] text-muted-foreground">{[c.version && `Versión ${c.version}`, c.artista, c.duracion && minutos(c.duracion)].filter(Boolean).join(' · ')}</span>
+                                        )}
+                                    </Link>
+                                    {t && <span className="shrink-0 min-w-[36px] h-7 px-2.5 rounded-full bg-fill-strong text-[13px] font-bold text-foreground flex items-center justify-center">{t}</span>}
+                                    <button onClick={() => alSet(id)} aria-label={`Pasar ${c.titulo} al set`}
+                                        className="shrink-0 h-8 px-2.5 rounded-full bg-fill text-[13px] font-semibold text-foreground flex items-center gap-1 active:opacity-60">
+                                        <ArrowUpToLine className="h-4 w-4" /> Al set
+                                    </button>
+                                    <button onClick={() => quitarExtra(id)} aria-label={`Quitar ${c.titulo} de extras`}
+                                        className="h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-muted-foreground active:bg-fill"><X className="h-4 w-4" /></button>
+                                </div>
+                            );
+                        })}
+                    </div>
+                ) : (
+                    <p className="mt-2 px-1 text-[14px] text-muted-foreground">Las que tienes por si acaso: salen al final en Tocar y en el enlace del grupo.</p>
+                )}
+                <button onClick={() => setAnadir(true)} className="pulsable mt-3 h-9 px-4 rounded-full bg-fill text-foreground text-[14px] font-semibold flex items-center gap-1.5">
+                    <Plus className="h-4 w-4" /> Añadir extras
+                </button>
+            </section>
+
             <button onClick={borrar} className="mt-10 h-11 px-1 flex items-center gap-2 text-[15px] text-destructive active:opacity-60">
                 <Trash2 className="h-4 w-4" /> Borrar repertorio
             </button>
@@ -344,8 +396,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                 scrollInicial={(() => { try { return Number(sessionStorage.getItem(`${claveScroll}:directo`)) || 0; } catch { return 0; } })()}
                 onScroll={y => { try { sessionStorage.setItem(`${claveScroll}:directo`, String(Math.round(y))); } catch { /* */ } }} />
             <CompartirGrupo abierta={compartir} onCerrar={() => setCompartir(false)} repertorio={repertorio} canciones={canciones} />
-            <ElegirCanciones abierto={anadir} onCerrar={() => setAnadir(false)} canciones={canciones}
-                elegidas={repertorio.canciones} onAlternar={alternar} repertorio={repertorio} />
+            <ElegirParaSet abierto={anadir} onCerrar={cerrarAnadir} repertorio={repertorio} />
         </div>
         </ConMenu>
     );
@@ -386,8 +437,8 @@ function Hueco({ minutos: hueco, segundos, estimada, onCambio }: { minutos?: num
     );
 }
 
-function Fila({ id, repertorioId, n, cancion, tono, bloque, mismoTono, onQuitar, onTocar, elegida, onElegir }: {
-    id: string; repertorioId: string; n: number; cancion: Cancion; tono: string | null; bloque: string | null; mismoTono?: boolean; onQuitar: () => void; onTocar: () => void;
+function Fila({ id, repertorioId, n, cancion, tono, bloque, mismoTono, onQuitar, onAExtras, onTocar, elegida, onElegir }: {
+    id: string; repertorioId: string; n: number; cancion: Cancion; tono: string | null; bloque: string | null; mismoTono?: boolean; onQuitar: () => void; onAExtras: () => void; onTocar: () => void;
     elegida?: boolean; onElegir?: () => void;
 }) {
     const arrastre = useDragControls();
@@ -446,118 +497,18 @@ function Fila({ id, repertorioId, n, cancion, tono, bloque, mismoTono, onQuitar,
             {abierta && (
                 <div className="border-b border-hairline">
                     <PanelAcordes cancion={cancion} />
-                    {/* En el móvil, la ✕ vive aquí: siempre a la vista robaba el sitio del título */}
-                    <button onClick={onQuitar} className="sm:hidden mx-3 mb-3 h-9 px-3.5 rounded-full bg-fill text-[14px] font-semibold text-destructive flex items-center gap-1.5">
-                        <X className="h-4 w-4" /> Quitar del repertorio
-                    </button>
+                    <div className="mx-3 mb-3 flex flex-wrap gap-2">
+                        <button onClick={onAExtras} className="h-9 px-3.5 rounded-full bg-pastel-cielo text-pastel-cielo-ink text-[14px] font-semibold flex items-center gap-1.5">
+                            <ArrowDownToLine className="h-4 w-4" /> Pasar a extras
+                        </button>
+                        {/* En el móvil, la ✕ vive aquí: siempre a la vista robaba el sitio del título */}
+                        <button onClick={onQuitar} className="sm:hidden h-9 px-3.5 rounded-full bg-fill text-[14px] font-semibold text-destructive flex items-center gap-1.5">
+                            <X className="h-4 w-4" /> Quitar del repertorio
+                        </button>
+                    </div>
                 </div>
             )}
         </Reorder.Item>
-    );
-}
-
-// Añadir canciones al repertorio, rápido: busca en tu cancionero (con los filtros de la
-// ficha), y si no la tienes, créala con ese título aquí mismo (también sin cobertura), cógela
-// del catálogo con su portada, o importa sus papeles (PDF, Word) directos a este repertorio
-function ElegirCanciones({ abierto, onCerrar, canciones, elegidas, onAlternar, repertorio }: {
-    abierto: boolean; onCerrar: () => void; canciones: Cancion[]; elegidas: string[]; onAlternar: (id: string) => void; repertorio: TipoRepertorio;
-}) {
-    const { crear, guardarRepertorio } = useCancionero();
-    const [q, setQ] = useState('');
-    const [importar, setImportar] = useState(false);
-    const [filtros, setFiltros] = useFiltrosGuardados('musikeeo-cancionero-elegir');
-    const tonos = useMemo(() => new Map(canciones.map(c => [c.id, tonoMostrado(c, tonoDe(c))])), [canciones]);
-    const tonoDeCancion = useCallback((c: Cancion) => tonos.get(c.id) ?? null, [tonos]);
-    const termino = q.trim();
-    const lista = useMemo(() => {
-        const t = norm(termino);
-        const base = filtrar(canciones, filtros, tonoDeCancion);
-        const l = t ? base.filter(c => norm(`${c.titulo} ${c.version ?? ''} ${c.artista} ${c.ficha?.canta ?? ''} ${c.ficha?.estilo ?? ''}`).includes(t) || norm(tonos.get(c.id) ?? '') === t) : base;
-        // Por título y, con el mismo título, tus versiones antes que la original
-        return [...l].sort((a, b) => a.titulo.localeCompare(b.titulo, 'es') || pesoVersion(a) - pesoVersion(b));
-    }, [canciones, termino, filtros, tonoDeCancion, tonos]);
-    // ¿Ya está con ese título? Entonces no se ofrece crearla otra vez
-    const yaEsta = !!termino && canciones.some(c => mismoTitulo(c.titulo, termino));
-
-    // Al final del repertorio (si ya estaba no se mueve)
-    const meter = (c: Cancion) => {
-        const actual = repertorio.canciones;
-        if (!actual.includes(c.id)) guardarRepertorio({ ...repertorio, canciones: [...actual, c.id] });
-        toast.success(`«${c.titulo}» añadida`);
-        setQ('');
-    };
-    // Solo el título: sale como ficha y luego se le pega la letra (o se le pone el tono)
-    const crearConTitulo = () => {
-        if (!termino) return;
-        const c = crear({ titulo: termino.slice(0, 120), artista: '', texto: '' });
-        meter(c);
-    };
-
-    return (
-        <>
-            <Hoja abierta={abierto} onCerrar={onCerrar} titulo="Añadir canciones" alta
-                derecha={<BotonHoja fuerte onClick={onCerrar}>Listo</BotonHoja>}
-                pie={(
-                    <div className="grid grid-cols-2 gap-2">
-                        <button onClick={() => setImportar(true)} className="pulsable h-[60px] rounded-[16px] bg-pastel-melocoton pl-1.5 pr-3 flex items-center gap-1.5 text-left">
-                            <img src={ICONO.importar} alt="" aria-hidden className="h-12 w-12 shrink-0 object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.14)]" />
-                            <span className="text-[14px] font-semibold leading-tight text-foreground">Importar PDF o Word</span>
-                        </button>
-                        <Link to={`/cancionero/nueva?repertorio=${repertorio.id}`} className="pulsable h-[60px] rounded-[16px] bg-pastel-lavanda pl-1.5 pr-3 flex items-center gap-1.5">
-                            <img src={ICONO.repertorios} alt="" aria-hidden className="h-12 w-12 shrink-0 object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.14)]" />
-                            <span className="text-[14px] font-semibold leading-tight text-foreground">Pegar letra y acordes</span>
-                        </Link>
-                    </div>
-                )}>
-                <div className="px-4 pb-3">
-                    <label className="relative block">
-                        <Search className="absolute left-4 top-1/2 -translate-y-1/2 h-5 w-5 text-muted-foreground" />
-                        <input value={q} onChange={e => setQ(e.target.value)} placeholder="Busca o escribe el título" aria-label="Buscar o escribir el título" enterKeyHint="done"
-                            onKeyDown={e => { if (e.key === 'Enter' && termino && !yaEsta && !lista.length) crearConTitulo(); }}
-                            className="w-full h-11 rounded-2xl bg-fill pl-12 pr-10 text-[16px] text-foreground placeholder:text-muted-foreground focus:outline-none" />
-                        {q && (
-                            <button onClick={() => setQ('')} aria-label="Borrar" className="absolute right-2 top-1/2 -translate-y-1/2 h-7 w-7 rounded-full flex items-center justify-center text-muted-foreground">
-                                <X className="h-4 w-4" />
-                            </button>
-                        )}
-                    </label>
-                    <BarraFiltros className="mt-2.5" canciones={canciones} tonoDe={tonoDeCancion} filtros={filtros} onCambio={setFiltros} />
-                </div>
-
-                {/* No la tienes: créala con ese título y entra ya en el repertorio */}
-                {termino && !yaEsta && (
-                    <div className="px-4 pb-3">
-                        <button onClick={crearConTitulo} className="pulsable w-full min-h-[60px] rounded-[16px] bg-pastel-mantequilla pl-1.5 pr-4 py-2 flex items-center gap-2 text-left">
-                            <img src={ICONO.canciones} alt="" aria-hidden className="h-12 w-12 shrink-0 object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.14)]" />
-                            <span className="flex-1 min-w-0">
-                                <span className="block truncate text-[15.5px] font-bold text-foreground">Añadir «{termino}»</span>
-                                <span className="block text-[13px] text-muted-foreground">Entra ya; la letra y el tono se los pones luego</span>
-                            </span>
-                            <Plus className="h-5 w-5 shrink-0 text-pastel-mantequilla-ink" />
-                        </button>
-                    </div>
-                )}
-
-                <div className="divide-y divide-hairline border-t border-hairline">
-                    {lista.map(c => (
-                        <FilaCancion key={c.id} cancion={c} tono={tonos.get(c.id) ?? null} compacta
-                            elegida={elegidas.includes(c.id)} onElegir={() => onAlternar(c.id)} />
-                    ))}
-                    {lista.length === 0 && !termino && (
-                        <p className="px-4 py-8 text-center text-[15px] text-muted-foreground">
-                            {canciones.length ? 'Ninguna canción con estos filtros.' : 'Escribe arriba el título de una canción y añádela aquí mismo.'}
-                        </p>
-                    )}
-                </div>
-                {/* Del catálogo, con su portada y su muestra (con cobertura) */}
-                {termino.length >= 2 && (
-                    <div className="px-4 pb-4">
-                        <ResultadosCatalogo q={termino} onElegida={meter} />
-                    </div>
-                )}
-            </Hoja>
-            <ImportarCanciones abierto={importar} onCerrar={() => setImportar(false)} repertorioId={repertorio.id} />
-        </>
     );
 }
 

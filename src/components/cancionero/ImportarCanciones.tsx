@@ -348,7 +348,11 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
             for (const r of copia.repertorios) {
                 const lista = [...new Set(r.canciones.map(i => ids[i]).filter(Boolean))];
                 const ya = repertorios.find(x => norm(x.nombre) === norm(r.nombre));
-                const extraRep = { ...(r.notas ? { notas: unirNotas(ya?.notas, r.notas) } : {}), ...(r.hueco ? { hueco: r.hueco } : {}) };
+                // Los extras (la recámara): se suman a los tuyos, sin repetir ni pisar el set
+                const extrasCopia = [...new Set((r.extras ?? []).map(i => ids[i]).filter(Boolean))];
+                const setFinal = ya ? [...ya.canciones, ...lista] : lista;
+                const extras = [...new Set([...(ya?.extras ?? []), ...extrasCopia])].filter(id => !setFinal.includes(id));
+                const extraRep = { ...(r.notas ? { notas: unirNotas(ya?.notas, r.notas) } : {}), ...(r.hueco ? { hueco: r.hueco } : {}), ...(extras.length ? { extras } : {}) };
                 if (ya) {
                     // Tu orden manda: lo nuevo de la copia va al final. Con «Usar el del archivo», al revés.
                     // Nunca se quita nada de tu repertorio

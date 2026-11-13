@@ -108,6 +108,9 @@ export interface Repertorio {
     nombre: string;
     fecha: string;              // AAAA-MM-DD
     canciones: string[];        // ids de Cancion, en orden
+    // Extras: «canciones que tengo en la recámara» (13-nov). A mano en el bolo, pero fuera del
+    // orden y de la duración. Nunca a la vez en `canciones`
+    extras?: string[];
     notas?: string;             // la hoja del bolo, con formato (JSON del editor, en texto)
     hueco?: number;             // minutos que dura el hueco del bolo (para ver si te pasas)
     // El enlace del grupo que se actualiza solo: id de su copia pública (compartidos/{id}),

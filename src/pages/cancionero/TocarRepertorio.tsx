@@ -1,4 +1,4 @@
-import { startTransition, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
+import { Fragment, startTransition, useCallback, useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { Link, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { toast } from 'sonner';
 import { ChevronDown, ChevronLeft, ChevronRight, ListMusic, Loader2, MoreHorizontal, Pause, Pencil, Play, ScrollText, Shrink, X } from 'lucide-react';
@@ -15,7 +15,7 @@ import { Portada } from '../../components/cancionero/Portada';
 import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
 import { EditarEnSitio } from '../../components/cancionero/EditarEnSitio';
 import { Pildora } from '../../components/cancionero/Baldosas';
-import { bloqueDe, estiloBloque, etiquetasDe, ICONO, pastelCanta, sinLoDeLasPildoras } from '../../components/cancionero/estilo';
+import { bloqueDe, estiloBloque, etiquetasDe, ICONO, PASTEL, pastelCanta, sinLoDeLasPildoras } from '../../components/cancionero/estilo';
 import { tonoDe } from '../../components/cancionero/utilidades';
 import { esperaDeIntro, minutos, RITMO_MAX, RITMO_MIN, segundosAuto, velocidadAlDesplazar, versosDe } from '../../lib/cantar';
 import { aLaGuia, marcar, vecina } from '../../lib/teleprompter';
@@ -32,7 +32,11 @@ export default function TocarRepertorio() {
     const [params] = useSearchParams();
     const { repertorios, canciones, listo, nube } = useCancionero();
     const repertorio = repertorios.find(r => r.id === id);
-    const lista = repertorio ? repertorio.canciones.map(c => canciones.find(x => x.id === c)).filter((c): c is Cancion => !!c) : [];
+    const deIds = (ids: string[]) => ids.map(c => canciones.find(x => x.id === c)).filter((c): c is Cancion => !!c);
+    const set = repertorio ? deIds(repertorio.canciones) : [];
+    // Los extras (la recámara) van detrás del último tema, marcados
+    const extras = repertorio ? deIds((repertorio.extras ?? []).filter(x => !repertorio.canciones.includes(x))) : [];
+    const lista = [...set, ...extras];
 
     // Lo que no está en el móvil puede llegar de la cuenta: se espera a que acabe de mirar
     if (!listo || (!lista.length && nube === 'sincronizando')) return <div className="h-[100dvh] flex items-center justify-center bg-background"><Loader2 className="h-7 w-7 animate-spin text-muted-foreground" /></div>;
@@ -46,10 +50,10 @@ export default function TocarRepertorio() {
         );
     }
     const inicio = Math.min(lista.length - 1, Math.max(0, Number(params.get('n')) || 0));
-    return <Escenario nombre={repertorio.nombre} repertorioId={repertorio.id} canciones={lista} inicio={inicio} />;
+    return <Escenario nombre={repertorio.nombre} repertorioId={repertorio.id} canciones={lista} extrasDesde={set.length} inicio={inicio} />;
 }
 
-function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string; repertorioId: string; canciones: Cancion[]; inicio: number }) {
+function Escenario({ nombre, repertorioId, canciones, extrasDesde, inicio }: { nombre: string; repertorioId: string; canciones: Cancion[]; extrasDesde: number; inicio: number }) {
     const navigate = useNavigate();
     const { guardar } = useCancionero();
     const carruselRef = useRef<HTMLDivElement>(null);
@@ -245,7 +249,7 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
                     }} data-diapositiva
                         className={cn(linea && !c.ajustes.ajustar && 'teleprompter', 'relative h-full w-full shrink-0 snap-start snap-always overflow-y-auto overscroll-contain touch-pan-x touch-pan-y')}>
                         {i === actual || (cerca !== null && Math.abs(i - cerca) <= 1)
-                            ? <Diapositiva cancion={c} n={i + 1} total={canciones.length} siguiente={canciones[i + 1]}
+                            ? <Diapositiva cancion={c} n={i + 1} total={canciones.length} siguiente={canciones[i + 1]} extra={i >= extrasDesde}
                                 onSiguiente={() => ir(i + 1)} cambiar={cambio => cambiar(c, cambio)}
                                 editando={editando === c.id} onGuardarTexto={texto => guardarTexto(c, texto)} onCerrarEdicion={() => setEditando(null)} repertorioId={repertorioId} />
                             : null}
@@ -259,7 +263,7 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
                 <div className="h-12 px-2 flex items-center gap-2">
                     <button onClick={salir} aria-label="Salir" className="pulsable h-9 w-9 shrink-0 rounded-full flex items-center justify-center text-foreground"><X className="h-5 w-5" /></button>
                     <button onClick={() => setIndice(v => !v)} className="flex-1 min-w-0 flex items-center justify-center gap-1 text-[14px] font-semibold text-foreground active:opacity-60">
-                        <span className="truncate"><span className="tabular-nums">{actual + 1} de {canciones.length}</span> · {nombre}</span>
+                        <span className="truncate">{actual >= extrasDesde ? <span>Extra</span> : <span className="tabular-nums">{actual + 1} de {extrasDesde}</span>} · {nombre}</span>
                         <ChevronDown className={cn('h-4 w-4 shrink-0 text-muted-foreground transition-transform', indice && 'rotate-180')} />
                     </button>
                     <BotonBarra etiqueta="Editar la letra" activo={editando === cancion?.id} onClick={() => { setRodando(false); setEditando(e => (e ? null : cancion?.id ?? null)); }}>
@@ -282,11 +286,14 @@ function Escenario({ nombre, repertorioId, canciones, inicio }: { nombre: string
                     <div onClick={e => e.stopPropagation()}
                         className="absolute left-2 right-2 md:left-auto md:right-4 md:w-[380px] top-[calc(env(safe-area-inset-top)+52px)] max-h-[70dvh] overflow-y-auto rounded-2xl bg-sheet border border-hairline shadow-e3 divide-y divide-hairline">
                         {canciones.map((c, i) => (
-                            <button key={c.id} onClick={() => ir(i)}
+                            <Fragment key={c.id}>
+                            {i === extrasDesde && <p className="px-4 pt-3 pb-1.5 text-[12px] font-bold uppercase tracking-[0.08em] text-pastel-cielo-ink">Extras · en la recámara</p>}
+                            <button onClick={() => ir(i)}
                                 className={cn('w-full h-12 px-4 flex items-center gap-3 text-left active:bg-fill', i === actual && 'bg-fill')}>
-                                <span className="w-6 text-[13px] font-semibold text-muted-foreground tabular-nums">{i + 1}</span>
+                                <span className="w-6 text-[13px] font-semibold text-muted-foreground tabular-nums">{i < extrasDesde ? i + 1 : '·'}</span>
                                 <span className="flex-1 truncate text-[15px] text-foreground">{c.titulo}</span>
                             </button>
+                            </Fragment>
                         ))}
                     </div>
                 </div>
@@ -364,8 +371,8 @@ function ControlesCancion({ cancion, visibles, rodando, auto, versos, linea, onL
 }
 
 // Una canción del repertorio. Se mide sola para «que quepa» y se agranda con dos dedos.
-function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar, editando, onGuardarTexto, onCerrarEdicion, repertorioId }: {
-    cancion: Cancion; n: number; total: number; siguiente?: Cancion; onSiguiente: () => void;
+function Diapositiva({ cancion, n, total, siguiente, extra, onSiguiente, cambiar, editando, onGuardarTexto, onCerrarEdicion, repertorioId }: {
+    cancion: Cancion; n: number; total: number; siguiente?: Cancion; extra?: boolean; onSiguiente: () => void;
     cambiar: (c: Partial<AjustesCancion>) => void;
     editando?: boolean; onGuardarTexto: (texto: string) => void; onCerrarEdicion: () => void; repertorioId?: string;
 }) {
@@ -378,8 +385,9 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar, edita
         const e = etiquetasDe(cancion);
         const canta = cancion.ficha?.canta?.trim();
         if (canta && !e.some(x => /^canta /i.test(x.texto))) e.unshift({ texto: `Canta ${canta}`, pastel: pastelCanta(canta), icono: ICONO.canciones });
+        if (extra) e.unshift({ texto: 'Extra', pastel: PASTEL.cielo, icono: ICONO.repertorios });
         return e;
-    }, [cancion]);
+    }, [cancion, extra]);
     const tonoSiguiente = siguiente ? tonoDe(siguiente) : null;
     const lineas = useMemo(() => sinLoDeLasPildoras(leida.lineas, bloque), [leida.lineas, bloque]);
 

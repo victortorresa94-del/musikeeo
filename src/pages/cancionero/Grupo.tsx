@@ -3,7 +3,7 @@ import { useParams } from 'react-router-dom';
 import { ChevronLeft, ChevronRight, Copy, List, Minus, Pencil, Plus, RefreshCw } from 'lucide-react';
 import { escucharCompartido } from '../../services/compartidosService';
 import { cn } from '../../lib/utils';
-import { codificar, descodificar, type Compartido, type TemaCompartido } from '../../lib/compartir';
+import { codificar, conExtras, descodificar, type Compartido, type TemaCompartido } from '../../lib/compartir';
 import { detectarTono, leerCancion, usaBemoles, type OpcionesNombre } from '../../lib/acordes';
 import { textoDuracion } from '../../lib/biblioteca';
 import { notasVacias } from '../../lib/notas';
@@ -132,7 +132,7 @@ export default function Grupo() {
         <>
             {abierta === null
                 ? <ListaSet datos={datos} setKey={setKey} onAbrir={setAbierta} />
-                : <Escenario key={datos.u ?? 'h'} datos={datos} setKey={setKey} inicio={abierta} onLista={() => setAbierta(null)} />}
+                : <Escenario key={datos.u ?? 'h'} datos={{ ...datos, c: conExtras(datos) }} setKey={setKey} inicio={abierta} onLista={() => setAbierta(null)} />}
             {aviso && (
                 <div role="status" className="fixed left-1/2 -translate-x-1/2 top-[calc(env(safe-area-inset-top)+60px)] z-30 h-9 px-3.5 rounded-full bg-sheet border border-hairline shadow-e3 text-[13.5px] font-semibold flex items-center gap-1.5">
                     <RefreshCw className="h-4 w-4" /> {aviso}
@@ -148,7 +148,7 @@ export function VistaSet({ datos, setKey, onVolver, volver }: { datos: Compartid
     useEffect(() => { window.scrollTo(0, 0); }, [abierta]);
     return abierta === null
         ? <ListaSet datos={datos} setKey={setKey} onAbrir={setAbierta} onVolver={onVolver} volver={volver} />
-        : <Escenario key={datos.u ?? 'h'} datos={datos} setKey={setKey} inicio={abierta} onLista={() => setAbierta(null)} />;
+        : <Escenario key={datos.u ?? 'h'} datos={{ ...datos, c: conExtras(datos) }} setKey={setKey} inicio={abierta} onLista={() => setAbierta(null)} />;
 }
 
 // ---- La versión de cada músico: en su móvil, por enlace y por canción ----
@@ -219,7 +219,7 @@ function ListaSet({ datos, setKey, onAbrir, onVolver, volver }: { datos: Compart
                     <SelectorVista valor={vista} onCambio={cambiarVista} opciones={['lista', 'cifrado']} />
                     {vista === 'cifrado' && datos.c.some(t => t.m) && <SuenaFormas formas={formas} onCambio={setFormas} />}
                 </div>
-                {vista === 'cifrado' && <HojaSet className="mt-2" temas={datos.c.map(ver)} tamano={Math.min(tamano, 22)} formas={formas} onAbrir={onAbrir} />}
+                {vista === 'cifrado' && <HojaSet className="mt-2" temas={conExtras(datos).map(ver)} tamano={Math.min(tamano, 22)} formas={formas} onAbrir={onAbrir} />}
                 <ol className={cn('mt-3', vista === 'cifrado' && 'hidden')}>
                     {datos.c.map((t, i) => {
                         const nuevoBloque = t.g && (i === 0 || t.g !== datos.c[i - 1].g) ? t.g : null;
@@ -248,6 +248,35 @@ function ListaSet({ datos, setKey, onAbrir, onVolver, volver }: { datos: Compart
                         );
                     })}
                 </ol>
+                {/* Extras: la recámara, fuera del orden y de la duración */}
+                {!!datos.x?.length && vista === 'lista' && (
+                    <section className="mt-6" aria-label="Extras">
+                        <div className="relative h-[60px] rounded-[18px] overflow-hidden flex items-center pl-4 pr-[90px] bg-pastel-cielo">
+                            <span>
+                                <span className="block font-heading text-[18px] font-bold leading-tight text-foreground">Extras</span>
+                                <span className="block text-[13px] font-semibold text-pastel-cielo-ink">En la recámara · no cuentan en la duración</span>
+                            </span>
+                            <img src={ICONO.repertorios} alt="" aria-hidden className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-[56px] w-[76px] object-contain" />
+                        </div>
+                        <ol>
+                            {datos.x.map((t, j) => (
+                                <li key={j}>
+                                    <button onClick={() => onAbrir(datos.c.length + j)} className="w-full text-left py-3 border-b border-hairline flex items-start gap-3 active:opacity-60">
+                                        <span className="w-6 shrink-0 pt-0.5 text-[14px] font-semibold text-muted-foreground">·</span>
+                                        <span className="flex-1 min-w-0">
+                                            <span className="block text-[17px] font-semibold leading-snug">{t.t}</span>
+                                            {(t.v || t.a) && <span className="block truncate text-[13px] text-muted-foreground">{[t.v && `Versión ${t.v}`, t.a].filter(Boolean).join(' · ')}</span>}
+                                            <span className="mt-1.5 flex flex-wrap gap-1">
+                                                {datosTemaConTono(t).map(p => <span key={p.texto} className={cn('h-6 px-2 rounded-full text-[12px] font-semibold flex items-center', p.clase)}>{p.texto}</span>)}
+                                            </span>
+                                        </span>
+                                        <ChevronRight className="mt-1 h-5 w-5 shrink-0 text-muted-foreground" />
+                                    </button>
+                                </li>
+                            ))}
+                        </ol>
+                    </section>
+                )}
                 <p className="mt-8 text-center text-[13px] text-muted-foreground">
                     Hecho con <a href="/cancionero" className="font-semibold text-foreground">el Cancionero de Musikeeo</a>. No hace falta cuenta.
                 </p>

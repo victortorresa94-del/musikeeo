@@ -623,6 +623,23 @@ Víctor aún no ha elegido; mientras tanto se queda como está.
 - *«la pagina de compartir el bolo al musico sea blanca»* → ✅ `/bolo/{id}` sale en claro siempre, aunque el móvil del músico tenga el oscuro (`BoloGrupo.tsx`). El enlace del repertorio (`/grupo`) sigue oscuro.
 - *«el enlace de compartir es gigante»* → ✅ con la nube al día, «Compartir» da solo `musikeeo.com/bolo/{id}` (o `/grupo/{id}`) y la página lo lee de `compartidos/{id}`. Mientras dice «Abriendo…» y, si en 12 s no llega, «no se puede abrir». **Hoy en musikeeo.com sigue saliendo largo** porque `compartidos` da permiso denegado: faltan las reglas. Con `firebase deploy --only firestore --project musikeeo-8e766` sale corto solo.
 
+### 21m. Extras (la recámara) y añadir canciones por categorías (13-nov, noche) ✅
+
+- *«necesito poder ponerme en el repertorio, extras. canciones que tengo en la recámara»* → ✅ `Repertorio.extras`:
+  - sección «Extras» debajo del set: «Al set», ✕ y «Añadir extras»;
+  - en cada tema del set, al desplegarlo, «Pasar a extras», con Deshacer;
+  - no cuentan en la duración ni en el hueco;
+  - en Tocar van al final con la píldora «Extra», y en la lista de Tocar bajo «Extras · en la recámara»;
+  - en el enlace del grupo y del bolo, aparte (campo `x`); en la copia .json, también;
+  - regla de `repertorios` con `extras`.
+- *«cuando voy a añadir canciones al reper quiero una vista mucho mejor que ese popup… por categorías… a ver qué rumbas meto»* → ✅ `ElegirParaSet.tsx`, a pantalla completa:
+  - arriba, lo que dura el set frente al hueco, y «Al set / A extras»;
+  - «Por» Estilo · Grupo · Canta · Tono · Energía · Estado · Etiquetas · A–Z, que se recuerda;
+  - cada grupo es una baldosa de color con su icono que se abre al tocarla;
+  - un toque mete la canción en el set o en extras, y otro la saca;
+  - se mantienen los filtros, el buscador, «Añadir "…"», el catálogo, Importar y Pegar.
+- Lo de Feed, perfil e instalar la app va **después** del bolo (Víctor: *«lo primordial hoy es poderme hacer el reper bien que mañana tengo el concierto»*).
+
 ## 22. Datos de la BBDD a corregir ⏳
 
 Artistas mal en la BBDD:

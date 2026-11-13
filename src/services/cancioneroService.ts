@@ -220,7 +220,7 @@ export const almacenCanciones = crearAlmacen<Cancion>('musikeeo-cancionero-v1', 
 
 export const almacenRepertorios = crearAlmacen<Repertorio>('musikeeo-repertorios-v1', 'repertorios', r => ({
     nombre: r.nombre, fecha: r.fecha, canciones: r.canciones, creadaEn: r.creadaEn, actualizadaEn: r.actualizadaEn,
-    ...siHay({ notas: r.notas, hueco: r.hueco, compartido: r.compartido && siHay(r.compartido) }),
+    ...siHay({ notas: r.notas, hueco: r.hueco, compartido: r.compartido && siHay(r.compartido), extras: r.extras?.length ? r.extras : undefined }),
 }));
 
 export const almacenListas = crearAlmacen<Lista>('musikeeo-listas-v1', 'listas', l => ({
@@ -297,7 +297,7 @@ function crearBolo(datos: Partial<Omit<Bolo, 'id' | 'creadaEn' | 'actualizadaEn'
 // Al borrar una canción, sale también de los repertorios
 async function borrarCancion(id: string) {
     for (const r of almacenRepertorios.estado().items) {
-        if (r.canciones.includes(id)) almacenRepertorios.guardar({ ...r, canciones: r.canciones.filter(c => c !== id) });
+        if (r.canciones.includes(id) || r.extras?.includes(id)) almacenRepertorios.guardar({ ...r, canciones: r.canciones.filter(c => c !== id), extras: r.extras?.filter(c => c !== id) });
     }
     for (const l of almacenListas.estado().items) {
         if (l.canciones.includes(id)) almacenListas.guardar({ ...l, canciones: l.canciones.filter(c => c !== id), actualizadaEn: new Date().toISOString() });
@@ -309,13 +309,13 @@ async function borrarCancion(id: string) {
 // sale también de ahí; si no, las de los repertorios NO se borran. Devuelve lo necesario para
 // Deshacer (las canciones y los repertorios y listas como estaban)
 function borrarCanciones(ids: string[], quitarDeRepertorios: boolean) {
-    const enRep = new Set(almacenRepertorios.estado().items.flatMap(r => r.canciones));
+    const enRep = new Set(almacenRepertorios.estado().items.flatMap(r => [...r.canciones, ...(r.extras ?? [])]));
     const aBorrar = quitarDeRepertorios ? ids : ids.filter(id => !enRep.has(id));
     const fuera = new Set(aBorrar);
     const canciones = almacenCanciones.estado().items.filter(c => fuera.has(c.id));
-    const repertorios = almacenRepertorios.estado().items.filter(r => r.canciones.some(c => fuera.has(c)));
+    const repertorios = almacenRepertorios.estado().items.filter(r => [...r.canciones, ...(r.extras ?? [])].some(c => fuera.has(c)));
     const listas = almacenListas.estado().items.filter(l => l.canciones.some(c => fuera.has(c)));
-    almacenRepertorios.guardarVarias(repertorios.map(r => ({ ...r, canciones: r.canciones.filter(c => !fuera.has(c)) })));
+    almacenRepertorios.guardarVarias(repertorios.map(r => ({ ...r, canciones: r.canciones.filter(c => !fuera.has(c)), extras: r.extras?.filter(c => !fuera.has(c)) })));
     almacenListas.guardarVarias(listas.map(l => ({ ...l, canciones: l.canciones.filter(c => !fuera.has(c)) })));
     void almacenCanciones.borrarVarias(aBorrar);
     return {

@@ -39,7 +39,11 @@ export interface Compartido {
     l?: 1;                  // lleva letra
     u?: string;             // cuándo se publicó (ISO): manda el más nuevo entre el «#», la copia del móvil y la nube
     c: TemaCompartido[];
+    x?: TemaCompartido[];   // extras: la recámara (fuera del orden y de la duración)
 }
+
+// El set y, detrás, los extras con su bloque: para el escenario y el cifrado
+export const conExtras = (p: Compartido): TemaCompartido[] => [...p.c, ...(p.x ?? []).map(t => ({ ...t, g: 'Extras' }))];
 
 // Sin letra: las partes, los avisos y los acordes de cada línea. Las filas iguales seguidas
 // se juntan en una con «(x2)»: el verso que repite los mismos acordes ocupa una línea
@@ -124,6 +128,7 @@ export function temaDe(c: Cancion, conLetra: boolean): TemaCompartido {
 export function paquete(repertorio: Repertorio, canciones: Cancion[], conLetra: boolean): Compartido {
     const porId = new Map(canciones.map(c => [c.id, c]));
     const temas = repertorio.canciones.map(id => porId.get(id)).filter((c): c is Cancion => !!c);
+    const extras = (repertorio.extras ?? []).filter(id => !repertorio.canciones.includes(id)).map(id => porId.get(id)).filter((c): c is Cancion => !!c);
     return {
         v: 1,
         n: repertorio.nombre,
@@ -131,6 +136,7 @@ export function paquete(repertorio: Repertorio, canciones: Cancion[], conLetra: 
         ...(!notasVacias(repertorio.notas) ? { h: repertorio.notas } : {}),
         ...(conLetra ? { l: 1 as const } : {}),
         c: temas.map(c => temaDe(c, conLetra)),
+        ...(extras.length ? { x: extras.map(c => temaDe(c, conLetra)) } : {}),
     };
 }
 
@@ -172,13 +178,16 @@ export function sanear(dato: unknown): Compartido | null {
         p.f = texto(p.f);
         p.h = texto(p.h);
         p.u = texto(p.u);
-        p.c = p.c.filter(t => t && typeof t.t === 'string' && typeof t.x === 'string').map(t => ({
+        const temas = (l: TemaCompartido[]) => l.filter(t => t && typeof t.t === 'string' && typeof t.x === 'string').map(t => ({
             t: t.t, x: t.x, a: texto(t.a), k: texto(t.k), p: texto(t.p), c: texto(t.c), e: texto(t.e), o: texto(t.o), g: texto(t.g), v: texto(t.v),
             s: typeof t.s === 'number' ? Math.max(-24, Math.min(24, Math.round(t.s))) : undefined,
             b: typeof t.b === 'number' ? t.b : undefined,
             d: typeof t.d === 'number' ? t.d : undefined,
             m: typeof t.m === 'number' ? t.m : undefined,
         }));
+        p.c = temas(p.c);
+        p.x = Array.isArray(p.x) ? temas(p.x) : undefined;
+        if (!p.x?.length) delete p.x;
         return p;
     } catch {
         return null;
