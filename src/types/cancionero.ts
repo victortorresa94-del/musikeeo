@@ -141,6 +141,7 @@ export interface Repertorio {
     spotify?: string;           // la playlist de este repertorio en Spotify
     notas?: string;             // la hoja del bolo, con formato (JSON del editor, en texto)
     hueco?: number;             // minutos que dura el hueco del bolo (para ver si te pasas)
+    icono?: string;             // el icono 3D elegido (/images/…); sin él, el de su nombre
     // El enlace del grupo que se actualiza solo: id de su copia pública (compartidos/{id}),
     // una para el cifrado y otra con letra
     compartido?: { cifrado?: string; letra?: string };

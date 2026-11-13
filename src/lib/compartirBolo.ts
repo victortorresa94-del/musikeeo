@@ -13,6 +13,7 @@ export const DURACION_MEDIA = 210;   // una canción sin duración: 3:30
 export interface SetCompartido extends Compartido {
     hi?: string;            // hora a la que empieza
     hu?: number;            // hueco del set, en minutos
+    ic?: string;            // el icono elegido para el repertorio (/images/…)
 }
 
 export interface BoloCompartido {
@@ -48,7 +49,7 @@ export function paqueteBolo(bolo: Bolo, repertorios: Repertorio[], canciones: Ca
     for (const s of bolo.sets) {
         const r = porId.get(s.repertorioId);
         if (!r) continue;
-        sets.push({ ...paquete(r, canciones, conLetra), ...(esHora(s.hora) ? { hi: s.hora.trim() } : {}), ...(r.hueco ? { hu: r.hueco } : {}) });
+        sets.push({ ...paquete(r, canciones, conLetra), ...(esHora(s.hora) ? { hi: s.hora.trim() } : {}), ...(r.hueco ? { hu: r.hueco } : {}), ...(r.icono ? { ic: r.icono } : {}) });
     }
     const texto = (x?: string) => (x && x.trim() ? x.trim() : undefined);
     const horario = bolo.horario.filter(h => h.que.trim() || esHora(h.hora)).map(h => ({ hora: h.hora.trim(), que: h.que.trim(), ...(esHora(h.hasta) ? { hasta: h.hasta.trim() } : {}) }));
@@ -78,7 +79,12 @@ export function sanearBolo(dato: unknown): BoloCompartido | null {
         if (!limpio) continue;
         const hi = texto((s as SetCompartido).hi, 5);
         const hu = (s as SetCompartido).hu;
-        sets.push({ ...limpio, ...(esHora(hi) ? { hi } : {}), ...(typeof hu === 'number' && hu > 0 ? { hu } : {}) });
+        const set: SetCompartido = { ...limpio, ...(esHora(hi) ? { hi } : {}), ...(typeof hu === 'number' && hu > 0 ? { hu } : {}) };
+        // El icono solo si es la ruta de un icono de la app (lo de fuera no se pinta a ciegas)
+        const ic = (s as SetCompartido).ic;
+        if (typeof ic === 'string' && ic.length <= 200 && /^\/images\/[\w/-]+\.(webp|png|jpe?g|svg)$/i.test(ic)) set.ic = ic;
+        else delete set.ic;
+        sets.push(set);
     }
     const ho = Array.isArray(b.ho)
         ? b.ho.filter(h => h && typeof h.que === 'string').map(h => ({ hora: typeof h.hora === 'string' ? h.hora.slice(0, 5) : '', que: h.que.slice(0, 200), ...(typeof h.hasta === 'string' && esHora(h.hasta) ? { hasta: h.hasta.slice(0, 5) } : {}) })).slice(0, 40)

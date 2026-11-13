@@ -240,7 +240,7 @@ export interface CancionCopia {
     favorita?: boolean;      // ⭐ la versión que sale por defecto
     spotify?: string;        // su pista en Spotify
 }
-export interface RepertorioCopia { nombre: string; fecha?: string; canciones: number[]; extras?: number[]; notas?: string; hueco?: number }
+export interface RepertorioCopia { nombre: string; fecha?: string; canciones: number[]; extras?: number[]; notas?: string; hueco?: number; icono?: string }
 export interface CatalogoCopia { aspecto?: Record<string, unknown>; campos?: unknown[] }
 export interface BoloCopia {
     titulo: string; fecha?: string; lugar?: string; direccion?: string; contacto?: string; telefono?: string; notas?: string;
@@ -263,7 +263,7 @@ export function crearCopia(canciones: Cancion[], repertorios: Repertorio[], cata
         repertorios: repertorios.map(r => ({
             nombre: r.nombre, fecha: r.fecha, canciones: r.canciones.map(id => indice.get(id)).filter((i): i is number => i !== undefined),
             ...(r.extras?.length ? { extras: r.extras.map(id => indice.get(id)).filter((i): i is number => i !== undefined) } : {}),
-            notas: r.notas, hueco: r.hueco,
+            notas: r.notas, hueco: r.hueco, icono: r.icono,
         })),
         ...(catalogo && (Object.keys(catalogo.aspecto ?? {}).length || catalogo.campos?.length) ? { catalogo } : {}),
         ...(bolos.length ? {

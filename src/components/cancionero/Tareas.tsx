@@ -10,7 +10,7 @@ import {
     PRIORIDADES, repertorioDe, tareaEnContexto, TIPOS_TAREA, type GrupoTareas,
 } from '../../lib/tareas';
 import { BotonHoja, Hoja } from './Hoja';
-import { ICONO } from './estilo';
+import { ICONO, iconoDeRepertorio } from './estilo';
 import type { Bolo, Cancion, PrioridadTarea, Repertorio, Tarea } from '../../types/cancionero';
 
 // Las tareas del Cancionero (13-nov, Víctor: «un apartado de tareas, tipo ensayar x canción,
@@ -121,7 +121,7 @@ export function VistaTareas({ de }: { de?: string }) {
         const porFecha = <T extends { fecha: string }>(xs: T[]) => [...xs].sort((a, b) => ((a.fecha >= hoy ? 0 : 1) - (b.fecha >= hoy ? 0 : 1)) || (a.fecha >= hoy ? a.fecha.localeCompare(b.fecha) : b.fecha.localeCompare(a.fecha)));
         return [
             ...porFecha(bolos).map(b => ({ clave: `b:${b.id}`, nombre: b.titulo || 'Bolo', icono: ICONO.bolos as string | null })),
-            ...porFecha(repertorios).map(r => ({ clave: `r:${r.id}`, nombre: r.nombre, icono: ICONO.repertorios as string | null })),
+            ...porFecha(repertorios).map(r => ({ clave: `r:${r.id}`, nombre: r.nombre, icono: iconoDeRepertorio(r) as string | null })),
             { clave: 'sueltas', nombre: 'Sin repertorio ni bolo', icono: ICONO.tareas as string | null },
         ].filter(d => !ya.has(d.clave)).slice(0, 8);
     })();
@@ -235,7 +235,8 @@ function Grupo({ grupo, datos, contexto, onTachar, onEditar, onArrastrar, sobre,
     // Una madre que ya no existe (borrada) no recibe tareas: se ve, pero no se suelta ahí
     const recibe = !grupo.clave.startsWith('n:');
     const fondo = grupo.tipo === 'bolo' ? 'bg-pastel-rosa' : grupo.tipo === 'repertorio' ? 'bg-pastel-lavanda' : 'bg-fill-strong';
-    const icono = grupo.tipo === 'bolo' ? ICONO.bolos : grupo.tipo === 'repertorio' ? ICONO.repertorios : ICONO.tareas;
+    const repDelGrupo = grupo.tipo === 'repertorio' ? datos.repertorios.find(r => `r:${r.id}` === grupo.clave) : undefined;
+    const icono = grupo.tipo === 'bolo' ? ICONO.bolos : grupo.tipo === 'repertorio' ? iconoDeRepertorio(repDelGrupo ?? { nombre: grupo.nombre }) : ICONO.tareas;
     const porPrioridad = grupo.clave.startsWith('p:');
     const cabecera = (
         <span className="flex items-center gap-2.5 min-w-0">
@@ -370,7 +371,7 @@ function Apuntar({ contexto, onCrear }: { contexto?: string; onCrear: (t: Partia
                 </button>
                 {/* Madre */}
                 <button onClick={() => setEligiendo('madre')} className="shrink-0 h-8 max-w-[190px] pl-1.5 pr-3 rounded-full bg-background text-[13px] font-semibold text-foreground flex items-center gap-1.5 active:opacity-60">
-                    <img src={madreAhora?.tipo === 'bolo' ? ICONO.bolos : ICONO.repertorios} alt="" aria-hidden className="h-5 w-5 object-contain" />
+                    <img src={madreAhora?.tipo === 'bolo' ? ICONO.bolos : madreAhora?.tipo === 'repertorio' ? iconoDeRepertorio(madreAhora.r) : ICONO.repertorios} alt="" aria-hidden className="h-5 w-5 object-contain" />
                     <span className="truncate">{madreAhora ? nombreMadre(madreAhora) : 'Repertorio o bolo'}</span>
                 </button>
                 {/* Canción */}
@@ -481,7 +482,7 @@ function ElegirMadre({ abierta, onCerrar, actual, onElegir }: { abierta: boolean
             {bolos.length > 0 && <p className="px-4 pt-4 pb-1 text-[12px] font-bold uppercase tracking-[0.08em] text-muted-foreground">Bolos</p>}
             {porFecha(bolos).map(b => fila(actual?.tipo === 'bolo' && actual.b.id === b.id, ICONO.bolos, b.titulo || 'Bolo', b.fecha, () => onElegir({ tipo: 'bolo', b }), b.id))}
             {repertorios.length > 0 && <p className="px-4 pt-4 pb-1 text-[12px] font-bold uppercase tracking-[0.08em] text-muted-foreground">Repertorios</p>}
-            {porFecha(repertorios).map(r => fila(actual?.tipo === 'repertorio' && actual.r.id === r.id, ICONO.repertorios, r.nombre, r.fecha, () => onElegir({ tipo: 'repertorio', r }), r.id))}
+            {porFecha(repertorios).map(r => fila(actual?.tipo === 'repertorio' && actual.r.id === r.id, iconoDeRepertorio(r), r.nombre, r.fecha, () => onElegir({ tipo: 'repertorio', r }), r.id))}
         </Hoja>
     );
 }

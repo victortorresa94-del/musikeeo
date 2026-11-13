@@ -2,13 +2,14 @@ import { Suspense, lazy, useCallback, useEffect, useLayoutEffect, useMemo, useRe
 import { Link, Navigate, useNavigate, useParams, useSearchParams } from 'react-router-dom';
 import { Reorder, useDragControls } from 'framer-motion';
 import { toast } from 'sonner';
-import { ArrowDownToLine, ArrowUpToLine, CalendarDays, ChevronLeft, ChevronRight, FileText, GripVertical, Loader2, MoreHorizontal, Play, Plus, Share2, Trash2, X } from 'lucide-react';
+import { ArrowDownToLine, ArrowUpToLine, CalendarDays, ChevronLeft, ChevronRight, FileText, GripVertical, Loader2, MoreHorizontal, Pencil, Play, Plus, Share2, Trash2, X } from 'lucide-react';
 import { tituloYHoraDe } from '../../lib/compartirBolo';
 import { cn } from '../../lib/utils';
 import { useCancionero } from '../../hooks/useCancionero';
 import { pedirPantallaCompleta, tonoDe } from '../../components/cancionero/utilidades';
 import { Portada } from '../../components/cancionero/Portada';
-import { ICONO, PASTEL, bloqueDe, estiloBloque, etiquetasTema, pastelCanta } from '../../components/cancionero/estilo';
+import { ICONO, PASTEL, bloqueDe, estiloBloque, etiquetasTema, iconoDeRepertorio, pastelCanta, pastelDe } from '../../components/cancionero/estilo';
+import { ElegirIcono } from '../../components/cancionero/ElegirIcono';
 import { ICONO_CAMPO } from '../../components/cancionero/iconosFicha';
 import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
 import { ElegirParaSet } from '../../components/cancionero/ElegirParaSet';
@@ -61,6 +62,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     const [compartir, setCompartir] = useState(false);
     const [editandoHoja, setEditandoHoja] = useState(false);
     const [menu, setMenu] = useState(false);
+    const [eligiendoIcono, setEligiendoIcono] = useState(false);
     // ¿Se ve el botón grande de «Tocar»? Si no, sale uno pequeño en la barra fija
     const tocarRef = useRef<HTMLButtonElement>(null);
     const [tocarALaVista, setTocarALaVista] = useState(true);
@@ -158,6 +160,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
         toast(`«${porId.get(id)?.titulo}» fuera de extras`, { action: { label: 'Deshacer', onClick: () => guardarRepertorio(repertorio) } });
     };
     const cerrarAnadir = useCallback(() => setAnadir(false), []);
+    const cerrarIcono = useCallback(() => setEligiendoIcono(false), []);
     // En la vista Lista, titulares y extras van en una sola lista que se arrastra
     const listaUnida = vista === 'lista' && ids.length + extras.length > 0;
     const botonesAnadir = (
@@ -207,12 +210,21 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                     <MoreHorizontal className="h-5 w-5" />
                 </button>
             </div>
-            {/* Un nombre largo salta a dos líneas, nunca se corta («Cataleya · RTF Pallejà 19:00») */}
-            <textarea ref={tituloRef} value={nombre} onChange={e => setNombre(e.target.value.replace(/\n/g, ' ').slice(0, 120))}
-                onBlur={() => nombre.trim() && nombre !== repertorio.nombre && cambiar({ nombre: nombre.trim() })}
-                onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } }}
-                rows={1} aria-label="Nombre del repertorio" placeholder="Nombre del repertorio"
-                className="mt-1 w-full resize-none overflow-hidden bg-transparent font-heading !text-[28px] font-bold leading-tight text-foreground placeholder:text-muted-foreground focus:outline-none" />
+            {/* Su icono (tocarlo lo cambia) y el nombre: uno largo salta a dos líneas, nunca se corta («Cataleya · RTF Pallejà 19:00») */}
+            <div className="mt-2 flex items-center gap-3">
+                <button onClick={() => setEligiendoIcono(true)} aria-label="Cambiar el icono del repertorio"
+                    className={cn('pulsable relative h-14 w-14 shrink-0 rounded-[16px] flex items-center justify-center', pastelDe(repertorio.id).fondo)}>
+                    <img src={iconoDeRepertorio(repertorio)} alt="" aria-hidden draggable={false} className="h-11 w-11 object-contain drop-shadow-[0_4px_6px_rgba(0,0,0,0.16)]" />
+                    <span className="absolute -bottom-1 -right-1 h-6 w-6 rounded-full bg-sheet border border-hairline shadow-e1 flex items-center justify-center text-foreground" aria-hidden>
+                        <Pencil className="h-3 w-3" />
+                    </span>
+                </button>
+                <textarea ref={tituloRef} value={nombre} onChange={e => setNombre(e.target.value.replace(/\n/g, ' ').slice(0, 120))}
+                    onBlur={() => nombre.trim() && nombre !== repertorio.nombre && cambiar({ nombre: nombre.trim() })}
+                    onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); e.currentTarget.blur(); } }}
+                    rows={1} aria-label="Nombre del repertorio" placeholder="Nombre del repertorio"
+                    className="flex-1 min-w-0 resize-none overflow-hidden bg-transparent font-heading !text-[28px] font-bold leading-tight text-foreground placeholder:text-muted-foreground focus:outline-none" />
+            </div>
 
             {/* Una línea con lo que hay que saber: cuándo, cuántos, cuánto y si cabe en el hueco */}
             <button onClick={() => setMenu(true)} className="mt-1 w-full text-left" aria-label="Fecha y hueco del bolo">
@@ -296,6 +308,9 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                         <Hueco minutos={repertorio.hueco} segundos={ids.length ? segundos : 0} estimada={estimada} onCambio={h => cambiar({ hueco: h })} />
                     </div>
                     <div className="rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
+                        <button onClick={() => { setMenu(false); setEligiendoIcono(true); }} className="w-full h-12 px-4 flex items-center gap-3 text-[15px] text-foreground active:bg-fill-strong">
+                            <img src={iconoDeRepertorio(repertorio)} alt="" aria-hidden className="h-[22px] w-[22px] -mx-0.5 object-contain" /> Cambiar el icono
+                        </button>
                         <button onClick={() => { setMenu(false); setCompartir(true); }} disabled={!ids.length} className="w-full h-12 px-4 flex items-center gap-3 text-[15px] text-foreground active:bg-fill-strong disabled:opacity-40">
                             <Share2 className="h-[18px] w-[18px]" /> Compartir con el grupo
                         </button>
@@ -311,6 +326,9 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                     </div>
                 </div>
             </Hoja>
+
+            <ElegirIcono abierta={eligiendoIcono} onCerrar={cerrarIcono} repertorio={repertorio}
+                onElegir={icono => icono !== repertorio.icono && cambiar({ icono })} />
 
             {ids.length > 0 && (
                 <div className="sticky top-[calc(env(safe-area-inset-top)+3.5rem)] md:top-14 z-10 -mx-4 px-4 md:mx-0 md:px-0 mt-4 py-2 bg-background flex items-center gap-2">

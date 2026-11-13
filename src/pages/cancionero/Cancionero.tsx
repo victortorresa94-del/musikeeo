@@ -13,7 +13,7 @@ import { cancioneroService } from '../../services/cancioneroService';
 import { catalogoService } from '../../services/catalogoService';
 import { CANCION_EJEMPLO } from '../../components/cancionero/ejemplo';
 import { Baldosa, TarjetaBolo } from '../../components/cancionero/Baldosas';
-import { ICONO, PASTEL, iconoRepertorio, pastelDe } from '../../components/cancionero/estilo';
+import { ICONO, PASTEL, iconoDeRepertorio, pastelDe } from '../../components/cancionero/estilo';
 import { ImportarCanciones } from '../../components/cancionero/ImportarCanciones';
 import { PonerPortadas } from '../../components/cancionero/PonerPortadas';
 import { PonerTempo } from '../../components/cancionero/PonerTempo';
@@ -345,7 +345,7 @@ export default function Cancionero() {
                                 {reps.filter(r => r.fecha || verArchivados).map(r => (
                                     <Link key={r.id} to={`/cancionero/repertorio/${r.id}`} className="flex items-center gap-3 px-4 min-h-[68px] py-2.5 active:bg-fill">
                                         <span className={cn('h-11 w-11 shrink-0 rounded-[12px] flex items-center justify-center', pastelDe(r.id).fondo)}>
-                                            <img src={iconoRepertorio(r.nombre)} alt="" loading="lazy" className="h-9 w-9 object-contain" />
+                                            <img src={iconoDeRepertorio(r)} alt="" loading="lazy" className="h-9 w-9 object-contain" />
                                         </span>
                                         <span className="flex-1 min-w-0">
                                             <span className="block truncate text-[16px] font-semibold text-foreground">{r.nombre}</span>

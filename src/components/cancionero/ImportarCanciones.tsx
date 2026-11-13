@@ -17,6 +17,7 @@ import { claveTitulo } from '../../lib/buscarCanciones';
 import { cancionDelPapel, partesDeMix, tituloDePapel, tonoDelPapel } from '../../lib/papeles';
 import { leerPortapapeles } from '../../lib/pegado';
 import { norm } from './utilidades';
+import { esIconoDeApp } from './estilo';
 import type { Cancion } from '../../types/cancionero';
 
 const AYUDA = `Pega el setlist del bolo, una línea por tema:
@@ -354,7 +355,9 @@ export function ImportarCanciones({ abierto, onCerrar, repertorioId, textoInicia
                 const extrasCopia = [...new Set((r.extras ?? []).map(i => ids[i]).filter(Boolean))];
                 const setFinal = ya ? [...ya.canciones, ...lista] : lista;
                 const extras = [...new Set([...(ya?.extras ?? []), ...extrasCopia])].filter(id => !setFinal.includes(id));
-                const extraRep = { ...(r.notas ? { notas: unirNotas(ya?.notas, r.notas) } : {}), ...(r.hueco ? { hueco: r.hueco } : {}), ...(extras.length ? { extras } : {}) };
+                // El icono de la copia, solo si es uno de la app y el tuyo no tiene ya uno elegido
+                const icono = esIconoDeApp(r.icono) && !ya?.icono ? r.icono : undefined;
+                const extraRep = { ...(r.notas ? { notas: unirNotas(ya?.notas, r.notas) } : {}), ...(r.hueco ? { hueco: r.hueco } : {}), ...(extras.length ? { extras } : {}), ...(icono ? { icono } : {}) };
                 if (ya) {
                     // Tu orden manda: lo nuevo de la copia va al final. Con «Usar el del archivo», al revés.
                     // Nunca se quita nada de tu repertorio

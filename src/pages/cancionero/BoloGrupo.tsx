@@ -6,7 +6,7 @@ import { cn } from '../../lib/utils';
 import { codificar } from '../../lib/compartir';
 import { cuandoSeToca, descodificarBolo, esConcierto, duracionSet, enlacesMapa, horarioCompleto, nombreEnBolo, telefonoLimpio, type BoloCompartido } from '../../lib/compartirBolo';
 import { textoDuracion } from '../../lib/biblioteca';
-import { ICONO, iconoRepertorio, pastelDe } from '../../components/cancionero/estilo';
+import { ICONO, iconoDeRepertorio, pastelDe } from '../../components/cancionero/estilo';
 import { VistaSet } from './Grupo';
 
 // La página del bolo para los músicos (13-nov): sin cuenta y sin la app alrededor. Víctor: «un
@@ -250,7 +250,7 @@ function PanelBolo({ datos, onAbrirSet }: { datos: BoloCompartido; onAbrirSet: (
                                 return (
                                     <button key={i} onClick={() => onAbrirSet(i)} className="pulsable w-full rounded-2xl bg-fill p-3 flex items-center gap-3 text-left">
                                         <span className={cn('h-14 w-14 shrink-0 rounded-[14px] flex items-center justify-center', pastelDe(s.n).fondo)}>
-                                            <img src={iconoRepertorio(s.n)} alt="" aria-hidden className="h-11 w-11 object-contain" />
+                                            <img src={iconoDeRepertorio({ nombre: s.n, icono: s.ic })} alt="" aria-hidden className="h-11 w-11 object-contain" />
                                         </span>
                                         <span className="flex-1 min-w-0">
                                             <span className="block text-[16.5px] font-semibold leading-snug">{nombreEnBolo(s.n, datos.n)}</span>

@@ -284,7 +284,7 @@ export const almacenCanciones = crearAlmacen<Cancion>('musikeeo-cancionero-v1', 
 
 export const almacenRepertorios = crearAlmacen<Repertorio>('musikeeo-repertorios-v1', 'repertorios', r => ({
     nombre: r.nombre, fecha: r.fecha, canciones: r.canciones, creadaEn: r.creadaEn, actualizadaEn: r.actualizadaEn,
-    ...siHay({ notas: r.notas, hueco: r.hueco, compartido: r.compartido && siHay(r.compartido), extras: r.extras?.length ? r.extras : undefined, spotify: r.spotify }),
+    ...siHay({ notas: r.notas, hueco: r.hueco, compartido: r.compartido && siHay(r.compartido), extras: r.extras?.length ? r.extras : undefined, spotify: r.spotify, icono: r.icono }),
 }));
 
 export const almacenListas = crearAlmacen<Lista>('musikeeo-listas-v1', 'listas', l => ({

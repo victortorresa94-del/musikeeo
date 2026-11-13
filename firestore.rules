@@ -60,8 +60,9 @@ service cloud.firestore {
       match /repertorios/{repertorioId} {
         allow read, delete: if isOwner(userId);
         allow create, update: if isOwner(userId)
-          && request.resource.data.keys().hasOnly(['nombre', 'fecha', 'canciones', 'creadaEn', 'actualizadaEn', 'notas', 'hueco', 'compartido', 'extras', 'spotify'])
+          && request.resource.data.keys().hasOnly(['nombre', 'fecha', 'canciones', 'creadaEn', 'actualizadaEn', 'notas', 'hueco', 'compartido', 'extras', 'spotify', 'icono'])
           && (!('spotify' in request.resource.data) || (request.resource.data.spotify is string && request.resource.data.spotify.size() <= 300))
+          && (!('icono' in request.resource.data) || (request.resource.data.icono is string && request.resource.data.icono.size() <= 200 && request.resource.data.icono.matches('/images/.+')))
           && (!('compartido' in request.resource.data) || (request.resource.data.compartido is map
                && request.resource.data.compartido.keys().hasOnly(['cifrado', 'letra'])))
           && request.resource.data.nombre is string && request.resource.data.nombre.size() <= 120

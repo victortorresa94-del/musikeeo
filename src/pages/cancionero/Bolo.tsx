@@ -8,7 +8,7 @@ import { ConMenu } from '../../components/cancionero/ConMenu';
 import { BotonHoja, Hoja } from '../../components/cancionero/Hoja';
 import { CompartirBolo } from '../../components/cancionero/CompartirGrupo';
 import { FilaTareas } from '../../components/cancionero/Tareas';
-import { iconoRepertorio, pastelDe } from '../../components/cancionero/estilo';
+import { iconoDeRepertorio, pastelDe } from '../../components/cancionero/estilo';
 import { textoDuracion } from '../../lib/biblioteca';
 import { DURACION_MEDIA, enlaceBolo, enlacesMapa, esHora, horaDe, minutosDe, paqueteBolo } from '../../lib/compartirBolo';
 import type { Bolo as TipoBolo, HoraBolo, Repertorio } from '../../types/cancionero';
@@ -146,7 +146,7 @@ export default function Bolo() {
                                 <div className="flex items-start gap-3">
                                     <Link to={`/cancionero/repertorio/${r.id}`} className="flex-1 min-w-0 flex items-start gap-3 active:opacity-60">
                                         <span className={cn('h-10 w-10 shrink-0 rounded-[11px] flex items-center justify-center', pastelDe(r.id).fondo)}>
-                                            <img src={iconoRepertorio(r.nombre)} alt="" className="h-8 w-8 object-contain" />
+                                            <img src={iconoDeRepertorio(r)} alt="" className="h-8 w-8 object-contain" />
                                         </span>
                                         <span className="min-w-0">
                                             <span className="block text-[15.5px] font-semibold leading-snug text-foreground">{r.nombre}</span>
@@ -243,7 +243,7 @@ export default function Bolo() {
                             <button key={r.id} onClick={() => { setEligiendoSet(false); cambiar({ sets: [...bolo.sets, { repertorioId: r.id }] }); }}
                                 className="w-full flex items-center gap-3 px-4 min-h-[60px] py-2 text-left active:bg-fill-strong">
                                 <span className={cn('h-10 w-10 shrink-0 rounded-[11px] flex items-center justify-center', pastelDe(r.id).fondo)}>
-                                    <img src={iconoRepertorio(r.nombre)} alt="" className="h-8 w-8 object-contain" />
+                                    <img src={iconoDeRepertorio(r)} alt="" className="h-8 w-8 object-contain" />
                                 </span>
                                 <span className="min-w-0">
                                     <span className="block truncate text-[15.5px] font-semibold text-foreground">{r.nombre}</span>
