@@ -39,7 +39,8 @@ const ESPERA_OTRA_VEZ = 8000;   // si Apple pide una pausa, se vuelve a probar s
 // Debajo de tus canciones, las del catálogo de Apple: portada, título, artista y duración, la
 // muestra de 30 s, «Añadir» y dónde buscar los acordes. Sin cobertura se queda en tus canciones
 // Con onElegida (desde un repertorio) la canción no se abre: se le da a quien la pidió
-export function ResultadosCatalogo({ q, onElegida }: { q: string; onElegida?: (c: Cancion) => void }) {
+// etiquetaElegir: el texto del botón cuando se elige para un repertorio («Al set», «A extras»)
+export function ResultadosCatalogo({ q, onElegida, etiquetaElegir }: { q: string; onElegida?: (c: Cancion) => void; etiquetaElegir?: string }) {
     const navigate = useNavigate();
     const { canciones, nuevaCancion, guardar } = useCancionero();
     const termino = q.trim().replace(/\s+/g, ' ');
@@ -185,7 +186,7 @@ export function ResultadosCatalogo({ q, onElegida }: { q: string; onElegida?: (c
                 <>
                     <div className={cn('rounded-2xl bg-fill divide-y divide-hairline overflow-hidden transition-opacity', busqueda.termino !== termino && 'opacity-60')}>
                         {busqueda.resultados.map(c => (
-                            <FilaCatalogo key={c.id} cancion={c} ya={enTuCancionero.get(c.id)?.ficha === false} onAnadir={() => anadir(c)} />
+                            <FilaCatalogo key={c.id} cancion={c} ya={enTuCancionero.get(c.id)?.ficha === false} alSet={onElegida ? etiquetaElegir || 'Añadir' : undefined} onAnadir={() => anadir(c)} />
                         ))}
                     </div>
                     <p className="mt-2 px-1 text-[13px] text-muted-foreground">
@@ -197,7 +198,8 @@ export function ResultadosCatalogo({ q, onElegida }: { q: string; onElegida?: (c
     );
 }
 
-function FilaCatalogo({ cancion, ya, onAnadir }: { cancion: CancionCatalogo; ya: boolean; onAnadir: () => void }) {
+// alSet: desde «Añadir a un repertorio» el botón la mete en el set (aunque ya la tengas), no la abre
+function FilaCatalogo({ cancion, ya, alSet, onAnadir }: { cancion: CancionCatalogo; ya: boolean; alSet?: string; onAnadir: () => void }) {
     const [abierta, setAbierta] = useState(false);
     // Se busca sin «(Remastered 2011)» ni «(feat. …)», que en las webs de acordes no salen
     const titulo = tituloLimpio(cancion.titulo);
@@ -216,9 +218,10 @@ function FilaCatalogo({ cancion, ya, onAnadir }: { cancion: CancionCatalogo; ya:
                         <ChevronDown className={cn('ml-1 h-3.5 w-3.5 shrink-0 transition-transform', abierta && 'rotate-180')} />
                     </span>
                 </button>
-                <button type="button" onClick={onAnadir} aria-label={ya ? `Abrir ${cancion.titulo}, ya está en tu cancionero` : `Añadir ${cancion.titulo} al cancionero`}
+                <button type="button" onClick={onAnadir}
+                    aria-label={alSet ? `${alSet}: ${cancion.titulo}${ya ? ' (ya está en tu cancionero)' : ''}` : ya ? `Abrir ${cancion.titulo}, ya está en tu cancionero` : `Añadir ${cancion.titulo} al cancionero`}
                     className="pulsable h-9 pl-2.5 pr-3.5 shrink-0 rounded-full bg-fill-strong text-[14px] font-semibold text-foreground flex items-center gap-1">
-                    {ya ? <><Check className="h-4 w-4" /> Abrir</> : <><Plus className="h-4 w-4" /> Añadir</>}
+                    {alSet ? <><Plus className="h-4 w-4" /> {alSet}</> : ya ? <><Check className="h-4 w-4" /> Abrir</> : <><Plus className="h-4 w-4" /> Añadir</>}
                 </button>
             </div>
             <AnimatePresence initial={false}>

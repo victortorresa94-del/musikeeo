@@ -304,7 +304,7 @@ export function ElegirParaSet({ abierto, onCerrar, repertorio, destinoInicial = 
                     {canciones.length ? 'Ninguna canción con estos filtros.' : 'Escribe arriba el título de una canción y añádela aquí mismo.'}
                 </p>
             )}
-            {termino.length >= 2 && <div className="mt-2"><ResultadosCatalogo q={termino} onElegida={meter} /></div>}
+            {termino.length >= 2 && <div className="mt-2"><ResultadosCatalogo q={termino} onElegida={meter} etiquetaElegir={destino === 'set' ? 'Al set' : 'A extras'} /></div>}
 
             <div className="mt-4 grid grid-cols-2 gap-2 lg:max-w-xl">
                 <button onClick={() => setImportar(true)} className="pulsable h-[60px] rounded-[16px] bg-pastel-melocoton pl-1.5 pr-3 flex items-center gap-1.5 text-left">
