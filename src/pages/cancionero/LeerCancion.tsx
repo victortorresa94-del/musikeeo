@@ -25,6 +25,7 @@ import { cn as unir } from '../../lib/utils';
 import { cejillaDeFicha, versionesDe } from '../../lib/biblioteca';
 import { NotasRicas } from '../../components/notas/NotasRicas';
 import { EditarEnSitio } from '../../components/cancionero/EditarEnSitio';
+import { VersionesAnteriores } from '../../components/cancionero/VersionesAnteriores';
 import { precargarEditorLetra } from '../../components/cancionero/cargarEditorLetra';
 import { FichaEnSitio } from '../../components/cancionero/FichaEnSitio';
 import { BotonWebs } from '../../components/cancionero/BotonWebs';
@@ -71,6 +72,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
     const [panel, setPanelSeccion] = useState<SeccionAjustes | null>(null);
     const setPanel = (v: false) => { if (!v) setPanelSeccion(null); };
     const [versionando, setVersionando] = useState(false);
+    const [historial, setHistorial] = useState(0);   // abierto: la marca de cuándo (para montarlo de nuevo)
     // Editando el texto ahí mismo: la línea donde se tocó y a qué altura de la pantalla estaba
     const [editando, setEditando] = useState<{ linea: number; y: number | null } | null>(null);
     // El editor de la letra, listo antes de tocarla (en el iPhone, así se abre el teclado al momento)
@@ -538,6 +540,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
             )}
 
             <HacerVersion cancion={cancion} abierta={versionando} onCerrar={() => setVersionando(false)} />
+            {historial > 0 && <VersionesAnteriores key={historial} cancion={cancion} abierta onCerrar={() => setHistorial(0)} />}
             <PanelAjustes
                 seccion={panel ?? undefined} abierto={panel !== null} onCerrar={() => setPanel(false)}
                 onEscenario={() => { setPanel(false); entrarEscenario(); }}
@@ -548,6 +551,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
                 onEditar={() => navigate(`/cancionero/${cancion.id}/editar`)}
                 onBorrar={borrarCancion}
                 onVersion={() => { setPanel(false); setVersionando(true); }}
+                onVersiones={() => { setPanel(false); setHistorial(Date.now()); }}
                 duracion={duracion} cantante={<AjustesCantante cancion={cancion} ajustes={ajustes} leida={leida} />}
             />
         </div>

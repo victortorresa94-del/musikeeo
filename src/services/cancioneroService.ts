@@ -1,6 +1,7 @@
-import { collection, deleteDoc, doc, getDocs, limit, query, setDoc } from 'firebase/firestore';
+import { collection, deleteDoc, doc, getDocs, limit, query, setDoc, where } from 'firebase/firestore';
 import { db } from '../lib/firebase';
 import { datosDelPegado, leerCancion } from '../lib/acordes';
+import { apuntarVersion, type MotivoVersion } from './versionesService';
 import type { AjustesCancion, Bolo, Cancion, Lista, Repertorio, Tarea } from '../types/cancionero';
 
 // El cancionero vive primero en el móvil (funciona sin cuenta y sin cobertura, en el bolo)
@@ -22,8 +23,19 @@ export interface EstadoAlmacen<T> {
 
 const esUid = (duenio: string | null): duenio is string => !!duenio && duenio !== INVITADO;
 
-function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, paraNube: (x: T) => Record<string, unknown>) {
+// `alReemplazar`: avisa cuando una versión de algo deja paso a otra (las canciones guardan su letra
+// de antes, ver versionesService)
+function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, paraNube: (x: T) => Record<string, unknown>,
+    alReemplazar?: (viejo: T, nuevo: T, motivo: MotivoVersion) => void) {
     let estado: EstadoAlmacen<T> = { duenio: null, items: [], nube: 'local' };
+    // Lo más reciente que se ha visto en la nube (para pedir solo lo cambiado después) y lo que se
+    // acaba de borrar aquí (que un refresco a medio borrar no lo traiga de vuelta)
+    let marca = '';
+    const borradas = new Set<string>();
+    const reemplazar = (viejo: T | undefined, nuevo: T, motivo: MotivoVersion) => {
+        if (viejo && alReemplazar) { try { alReemplazar(viejo, nuevo, motivo); } catch { /* la copia no frena el guardado */ } }
+    };
+    const masReciente = (xs: T[]) => xs.reduce((m, x) => (x.actualizadaEn > m ? x.actualizadaEn : m), marca);
     const oyentes = new Set<() => void>();
     const avisar = (cambio: Partial<EstadoAlmacen<T>>) => {
         estado = { ...estado, ...cambio };
@@ -83,8 +95,13 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
             } else if (local.actualizadaEn > remoto.actualizadaEn) {
                 lista[lista.indexOf(remoto)] = local;
                 pendientes.push(local);
+            } else {
+                // Gana la de la cuenta: lo que había aquí se queda como versión anterior
+                reemplazar(local, remoto, 'otro');
             }
         }
+        // Sin nada en la cuenta todavía, desde ahora (con el margen de refrescar)
+        marca = masReciente(enNube) || new Date().toISOString();
         const ordenada = ordenar(lista);
         escribirLocal(uid, ordenada);
         avisar({ items: ordenada, nube: 'nube' });
@@ -123,12 +140,15 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
     function guardar(x: T, opciones: { esperar?: boolean } = {}): T {
         const duenio = estado.duenio || INVITADO;
         const actual: T = { ...x, actualizadaEn: new Date().toISOString() };
+        reemplazar(estado.items.find(y => y.id === x.id), actual, 'editar');
+        borradas.delete(x.id);
         const lista = ordenar([actual, ...estado.items.filter(y => y.id !== x.id)]);
         escribirLocal(duenio, lista);
         avisar({ items: lista });
         if (!esUid(duenio)) return actual;
         // Los ajustes cambian a cada toque: a la cuenta se sube cuando la persona para
         clearTimeout(esperando.get(x.id));
+        esperando.delete(x.id);
         if (opciones.esperar) esperando.set(x.id, setTimeout(() => { esperando.delete(x.id); void subir(duenio, actual); }, 1500));
         else void subir(duenio, actual);
         return actual;
@@ -142,6 +162,8 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
         const duenio = estado.duenio || INVITADO;
         const ahora = new Date().toISOString();
         const nuevos = xs.map(x => ({ ...x, actualizadaEn: ahora }));
+        const antes = new Map(estado.items.map(y => [y.id, y]));
+        nuevos.forEach(x => { reemplazar(antes.get(x.id), x, 'importar'); borradas.delete(x.id); });
         const ids = new Set(nuevos.map(x => x.id));
         const lista = ordenar([...nuevos, ...estado.items.filter(y => !ids.has(y.id))]);
         escribirLocal(duenio, lista);
@@ -165,6 +187,8 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
     async function borrar(id: string) {
         const duenio = estado.duenio || INVITADO;
         clearTimeout(esperando.get(id));
+        esperando.delete(id);
+        borradas.add(id);
         const lista = estado.items.filter(x => x.id !== id);
         escribirLocal(duenio, lista);
         avisar({ items: lista });
@@ -178,7 +202,7 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
         if (!ids.length) return;
         const duenio = estado.duenio || INVITADO;
         const fuera = new Set(ids);
-        fuera.forEach(id => clearTimeout(esperando.get(id)));
+        fuera.forEach(id => { clearTimeout(esperando.get(id)); esperando.delete(id); borradas.add(id); });
         const lista = estado.items.filter(x => !fuera.has(x.id));
         escribirLocal(duenio, lista);
         avisar({ items: lista });
@@ -196,6 +220,7 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
         esperando.forEach(t => clearTimeout(t));
         esperando.clear();
         const antes = estado.items.map(x => x.id);
+        antes.forEach(id => borradas.add(id));
         escribirLocal(duenio, []);
         avisar({ items: [] });
         if (!esUid(duenio) || estado.nube === 'sin-permiso') return;
@@ -206,8 +231,47 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
         } catch (e) { fallo(e); }
     }
 
+    // Al volver a la app (o cada poco mientras se mira): lo cambiado en la cuenta desde otro aparato.
+    // Sin esto, el móvil que llevaba horas abierto guardaba su copia vieja ENTERA al tocar un ajuste
+    // (tono, tamaño, zoom) y pisaba la letra escrita en el PC. Solo pide lo cambiado (barato) y,
+    // de paso, sube lo que se quedó sin subir por falta de red
+    let refrescando = false;
+    async function refrescar() {
+        const uid = estado.duenio;
+        if (!esUid(uid) || estado.provisional || estado.nube === 'sin-permiso' || refrescando || !marca) return;
+        refrescando = true;
+        try {
+            // Con margen: los relojes de dos aparatos no van iguales
+            const desde = new Date(Date.parse(marca) - 10 * 60_000).toISOString();
+            const snap = await getDocs(query(coleccion(uid), where('actualizadaEn', '>', desde), limit(300)));
+            if (estado.duenio !== uid) return;
+            const remotos = snap.docs.map(d => ({ ...(d.data() as Omit<T, 'id'>), id: d.id, sincronizada: true }) as T);
+            const porId = new Map(estado.items.map(x => [x.id, x]));
+            let cambio = false;
+            const lista = [...estado.items];
+            for (const remoto of remotos) {
+                if (borradas.has(remoto.id)) continue;
+                const local = porId.get(remoto.id);
+                if (!local) { lista.push(remoto); cambio = true; continue; }
+                if (remoto.actualizadaEn > local.actualizadaEn && !esperando.has(local.id)) {
+                    reemplazar(local, remoto, 'otro');
+                    lista[lista.indexOf(local)] = remoto;
+                    cambio = true;
+                }
+            }
+            marca = masReciente(remotos);
+            if (cambio) {
+                const ordenada = ordenar(lista);
+                escribirLocal(uid, ordenada);
+                avisar({ items: ordenada });
+            }
+            const sinSubir = estado.items.filter(x => !x.sincronizada && !esperando.has(x.id)).slice(0, 50);
+            await Promise.all(sinSubir.map(x => subir(uid, x)));
+        } catch { /* sin red: ya se hará al volver */ } finally { refrescando = false; }
+    }
+
     const suscribir = (f: () => void) => { oyentes.add(f); return () => { oyentes.delete(f); }; };
-    return { suscribir, estado: () => estado, cargarPrevio, cargar, guardar, guardarVarias, borrar, borrarVarias, vaciar };
+    return { suscribir, estado: () => estado, cargarPrevio, cargar, guardar, guardarVarias, borrar, borrarVarias, vaciar, refrescar };
 }
 
 // Firestore no admite undefined: los datos opcionales solo van si están
@@ -216,7 +280,7 @@ const siHay = <T extends object>(o: T) => Object.fromEntries(Object.entries(o).f
 export const almacenCanciones = crearAlmacen<Cancion>('musikeeo-cancionero-v1', 'canciones', c => ({
     titulo: c.titulo, artista: c.artista, texto: c.texto, ajustes: c.ajustes, creadaEn: c.creadaEn, actualizadaEn: c.actualizadaEn,
     ...siHay({ portada: c.portada, duracion: c.duracion, muestra: c.muestra, bpm: c.bpm, ficha: c.ficha && siHay(c.ficha), version: c.version, original: c.original, notas: c.notas, favorita: c.favorita || undefined, spotify: c.spotify }),
-}));
+}), (viejo, nuevo, motivo) => { if (viejo.texto !== nuevo.texto) apuntarVersion(viejo.id, viejo.texto, motivo); });
 
 export const almacenRepertorios = crearAlmacen<Repertorio>('musikeeo-repertorios-v1', 'repertorios', r => ({
     nombre: r.nombre, fecha: r.fecha, canciones: r.canciones, creadaEn: r.creadaEn, actualizadaEn: r.actualizadaEn,
@@ -373,8 +437,33 @@ function cargarPrevio() {
 }
 if (typeof window !== 'undefined') cargarPrevio();
 
+// Ponerse al día con la cuenta al volver a la app, al recuperar la red y cada minuto mientras se
+// mira: así un aparato abierto desde hace horas no guarda su copia vieja encima de lo escrito en
+// otro (ver refrescar en crearAlmacen). Como mucho una vez cada 15 s
+let ultimoRefresco = 0;
+function refrescarTodo() {
+    if (typeof document !== 'undefined' && document.visibilityState !== 'visible') return;
+    if (Date.now() - ultimoRefresco < 15_000) return;
+    ultimoRefresco = Date.now();
+    void almacenCanciones.refrescar();
+    void almacenRepertorios.refrescar();
+    void almacenListas.refrescar();
+    void almacenBolos.refrescar();
+    void almacenTareas.refrescar();
+}
+let refrescoIniciado = false;
+function iniciarRefresco() {
+    if (refrescoIniciado || typeof window === 'undefined') return;
+    refrescoIniciado = true;
+    document.addEventListener('visibilitychange', refrescarTodo);
+    window.addEventListener('focus', refrescarTodo);
+    window.addEventListener('online', refrescarTodo);
+    window.setInterval(refrescarTodo, 60_000);
+}
+
 export const cancioneroService = {
     cargar,
+    iniciarRefresco,
     crear,
     nuevaCancion,
     guardar: almacenCanciones.guardar,

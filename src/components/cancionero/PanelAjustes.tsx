@@ -1,7 +1,7 @@
 import { useEffect } from 'react';
 import { createPortal } from 'react-dom';
 import { AnimatePresence, motion } from 'framer-motion';
-import { CopyPlus, Maximize, Pencil, Play, Printer, RotateCcw, Trash2 } from 'lucide-react';
+import { CopyPlus, History, Maximize, Pencil, Play, Printer, RotateCcw, Trash2 } from 'lucide-react';
 import { Switch } from '../ui/switch';
 import { Paso, Segmentado } from './Controles';
 import { INTRO, minutos, segundosAlRitmo } from '../../lib/cantar';
@@ -27,6 +27,7 @@ interface Props {
     onEditar: () => void;
     onBorrar: () => void;
     onVersion?: () => void;
+    onVersiones?: () => void;           // las letras de antes (versionesService)
     duracion?: number;                  // segundos de la canción: para bajar la hoja a su ritmo
     cantante?: React.ReactNode;         // dar el tono y el tempo (Cantante.tsx)
     tamano?: React.ReactNode;           // el tamaño de la letra (± que vive en la pantalla)
@@ -42,7 +43,7 @@ const Fila = ({ titulo, children, nota }: { titulo: string; children: React.Reac
     </div>
 );
 
-export function PanelAjustes({ seccion, onEscenario, abierto, onCerrar, ajustes: a, cambiar, tonoSuena, posturas, recomendada, formasRecomendadas, dificilesAhora, onImprimir, onEditar, onBorrar, onVersion, duracion, cantante, tamano }: Props) {
+export function PanelAjustes({ seccion, onEscenario, abierto, onCerrar, ajustes: a, cambiar, tonoSuena, posturas, recomendada, formasRecomendadas, dificilesAhora, onImprimir, onEditar, onBorrar, onVersion, onVersiones, duracion, cantante, tamano }: Props) {
     const sugerir = recomendada && recomendada.cejilla !== a.cejilla && recomendada.dificiles < dificilesAhora;
     const ritmo = segundosAlRitmo(duracion, a);
     const intro = a.intro ?? INTRO;
@@ -164,6 +165,7 @@ export function PanelAjustes({ seccion, onEscenario, abierto, onCerrar, ajustes:
                             {onEscenario && <Accion icono={Maximize} texto="Modo escenario (pantalla completa)" onClick={onEscenario} />}
                             <Accion icono={Printer} texto="Imprimir o guardar en PDF" onClick={onImprimir} />
                             <Accion icono={Pencil} texto="Editar el texto" onClick={onEditar} />
+                            {onVersiones && <Accion icono={History} texto="Versiones anteriores de la letra" onClick={onVersiones} />}
                             {onVersion && <Accion icono={CopyPlus} texto="Hacer mi versión" onClick={onVersion} />}
                             <Accion icono={Trash2} texto="Borrar la canción" onClick={onBorrar} peligro />
                         </div>}

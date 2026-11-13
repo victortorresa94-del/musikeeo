@@ -16,7 +16,7 @@ export function useCancionero() {
     // Colores, iconos y columnas propias: quien usa el cancionero se repinta si cambian
     const catalogo = useCatalogo();
     // Los sets compartidos con el grupo se suben solos al cambiar (una vez por app)
-    useEffect(() => { compartidosService.iniciar(); }, []);
+    useEffect(() => { compartidosService.iniciar(); cancioneroService.iniciarRefresco(); }, []);
 
     const canciones = useSyncExternalStore(almacenCanciones.suscribir, almacenCanciones.estado);
     const repertorios = useSyncExternalStore(almacenRepertorios.suscribir, almacenRepertorios.estado);
