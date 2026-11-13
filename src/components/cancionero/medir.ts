@@ -7,7 +7,7 @@ export interface Encaje { tamano: number; columnas: number; cabe: boolean }
 
 // La copia puede llegar escondida (display: none, clase «hidden»): así no se coloca entera a
 // ancho cero cuando alguien mide la página antes que ella. Se enseña ya con su caja puesta
-export function buscarEncaje(hoja: HTMLElement, ancho: number, alto: number, maxColumnas: number, maxTamano = 44): Encaje {
+export function buscarEncaje(hoja: HTMLElement, ancho: number, alto: number, maxColumnas: number, maxTamano = 44, minTamano = 9): Encaje {
     const s = hoja.style;
     s.width = `${ancho}px`;
     s.height = `${alto}px`;
@@ -18,10 +18,10 @@ export function buscarEncaje(hoja: HTMLElement, ancho: number, alto: number, max
         s.fontSize = `${tamano}px`;
         return hoja.scrollWidth <= hoja.clientWidth + 1 && hoja.scrollHeight <= hoja.clientHeight + 1;
     };
-    let mejor: Encaje = { tamano: 9, columnas: Math.max(1, maxColumnas), cabe: false };
+    let mejor: Encaje = { tamano: minTamano, columnas: Math.max(1, maxColumnas), cabe: false };
     for (let columnas = 1; columnas <= maxColumnas; columnas++) {
         s.columnCount = String(columnas);
-        let bajo = 9, alto_ = maxTamano;
+        let bajo = minTamano, alto_ = maxTamano;
         if (!cabe(bajo)) continue;
         if (cabe(alto_)) bajo = alto_;
         while (alto_ - bajo > 0.25) {
@@ -38,7 +38,12 @@ export function buscarEncaje(hoja: HTMLElement, ancho: number, alto: number, max
 // Columnas que tiene sentido probar según el ancho (una columna de menos de ~260 px no se lee)
 export const columnasPosibles = (ancho: number) => Math.max(1, Math.min(4, Math.floor(ancho / 260)));
 
-// Tope de «que quepa» en pantalla: una chuleta de 3 líneas no debe salir a 60 px. En el móvil
-// 30 px de letra; en tablet y ordenador, 40. Va en el cálculo, no en lo guardado: Aa± y el zoom
-// con dos dedos pueden pasar de aquí si se quiere
-export const topeQueQuepa = () => (typeof window !== 'undefined' && window.innerWidth < 768 ? 30 : 40);
+// Tope de «que quepa» en pantalla: «que quepa» encoge lo que no cabe, pero no agranda una chuleta
+// corta hasta llenar la pantalla. Víctor (13-nov): «en móvil sale gigante… no tiene que salir tan
+// grande de primeras». En el móvil, 19 px de letra (la de entrada es 17); en tablet y ordenador, 28.
+// Va en el cálculo, no en lo guardado: A± y el zoom con dos dedos pueden pasar de aquí
+const esMovil = () => typeof window !== 'undefined' && window.innerWidth < 768;
+export const topeQueQuepa = () => (esMovil() ? 19 : 28);
+// Y el suelo: si para caber hay que bajar de aquí, no se encoge (se lee a su tamaño y se desplaza).
+// En el móvil, una canción larga entraba a 9-11 px y no se podía leer
+export const sueloQueQuepa = () => (esMovil() ? 14 : 12);

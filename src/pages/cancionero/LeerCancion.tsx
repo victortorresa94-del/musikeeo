@@ -18,7 +18,7 @@ import { PortadaMuestra } from '../../components/cancionero/Portada';
 import { BotonBarra, Paso } from '../../components/cancionero/Controles';
 import { AjustesCantante, BotonClaqueta, DameElTono } from '../../components/cancionero/Cantante';
 import { esperaDeIntro, velocidadAlDesplazar } from '../../lib/cantar';
-import { buscarEncaje, topeQueQuepa, columnasPosibles, type Encaje } from '../../components/cancionero/medir';
+import { buscarEncaje, topeQueQuepa, sueloQueQuepa, columnasPosibles, type Encaje } from '../../components/cancionero/medir';
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
 import { cn as unir } from '../../lib/utils';
 import { cejillaDeFicha, versionesDe } from '../../lib/biblioteca';
@@ -130,7 +130,7 @@ function Lector({ cancion }: { cancion: Cancion }) {
         const hoja = medidorRef.current;
         const c = caja();
         if (!hoja || !c || c.alto < 120) return;
-        setEncaje(buscarEncaje(hoja, c.ancho, c.alto, columnasPosibles(c.ancho), topeQueQuepa()));
+        setEncaje(buscarEncaje(hoja, c.ancho, c.alto, columnasPosibles(c.ancho), topeQueQuepa(), sueloQueQuepa()));
     }, [ajustes.ajustar, ajustes.vista, opciones, leida, escenario, medida, caja]);
 
     // Una ficha o una chuleta sin letra: arriba sale «Falta la letra» para pegarla

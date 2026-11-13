@@ -19,7 +19,7 @@ import { bloqueDe, estiloBloque, etiquetasDe, ICONO, pastelCanta, sinLoDeLasPild
 import { tonoDe } from '../../components/cancionero/utilidades';
 import { esperaDeIntro, minutos, RITMO_MAX, RITMO_MIN, segundosAuto, velocidadAlDesplazar, versosDe } from '../../lib/cantar';
 import { aLaGuia, marcar, vecina } from '../../lib/teleprompter';
-import { buscarEncaje, columnasPosibles, topeQueQuepa, type Encaje } from '../../components/cancionero/medir';
+import { buscarEncaje, columnasPosibles, topeQueQuepa, sueloQueQuepa, type Encaje } from '../../components/cancionero/medir';
 import type { AjustesCancion, Cancion } from '../../types/cancionero';
 
 const TAMANO_MIN = 11;
@@ -404,7 +404,7 @@ function Diapositiva({ cancion, n, total, siguiente, onSiguiente, cambiar, edita
         // Arriba y abajo quedan las barras de controles (se esconden, pero mejor que no tapen)
         const alto = caja.clientHeight - zona.offsetTop - 132;
         if (alto < 120) return;
-        const e = buscarEncaje(hoja, zona.clientWidth, alto, columnasPosibles(zona.clientWidth), topeQueQuepa());
+        const e = buscarEncaje(hoja, zona.clientWidth, alto, columnasPosibles(zona.clientWidth), topeQueQuepa(), sueloQueQuepa());
         setEncaje(x => (x && x.tamano === e.tamano && x.columnas === e.columnas && x.cabe === e.cabe ? x : e));
     }, [a.ajustar, a.vista, opciones, lineas, medida]);
 
