@@ -55,7 +55,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     const claveScroll = `musikeeo-cifrado-scroll:${repertorio.id}`;
     const [formas, setFormas] = useFormas();
     const [nombre, setNombre] = useState(repertorio.nombre);
-    const [anadir, setAnadir] = useState(false);
+    const [anadir, setAnadir] = useState<false | 'set' | 'extras'>(false);
     const [compartir, setCompartir] = useState(false);
     const [editandoHoja, setEditandoHoja] = useState(false);
     const [menu, setMenu] = useState(false);
@@ -127,7 +127,10 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
     }, [vista, directo, claveScroll]);
 
     const cambiar = (cambio: Partial<TipoRepertorio>) => guardarRepertorio({ ...repertorio, ...cambio });
-    const quitar = (id: string) => cambiar({ canciones: repertorio.canciones.filter(c => c !== id) });
+    const quitar = (id: string) => {
+        cambiar({ canciones: repertorio.canciones.filter(c => c !== id) });
+        toast(`«${porId.get(id)?.titulo}» fuera del repertorio`, { action: { label: 'Deshacer', onClick: () => guardarRepertorio(repertorio) } });
+    };
     // Extras (la recámara): fuera del orden y de la duración; se pasan al set y vuelven
     const extras = (repertorio.extras ?? []).filter(id => porId.has(id) && !repertorio.canciones.includes(id));
     const aExtras = (id: string) => {
@@ -335,7 +338,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
             )}
 
             <div className="mt-3 flex flex-wrap gap-2">
-                <button onClick={() => setAnadir(true)} className="pulsable h-9 px-4 rounded-full bg-foreground text-background text-[14px] font-semibold flex items-center gap-1.5">
+                <button onClick={() => setAnadir('set')} className="pulsable h-9 px-4 rounded-full bg-foreground text-background text-[14px] font-semibold flex items-center gap-1.5">
                     <Plus className="h-4 w-4" /> Añadir canciones
                 </button>
                 <Link to={`/cancionero/nueva?repertorio=${repertorio.id}`} className="pulsable h-9 px-4 rounded-full bg-fill text-foreground text-[14px] font-semibold flex items-center gap-1.5">
@@ -382,7 +385,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                 ) : (
                     <p className="mt-2 px-1 text-[14px] text-muted-foreground">Las que tienes por si acaso: salen al final en Tocar y en el enlace del grupo.</p>
                 )}
-                <button onClick={() => setAnadir(true)} className="pulsable mt-3 h-9 px-4 rounded-full bg-fill text-foreground text-[14px] font-semibold flex items-center gap-1.5">
+                <button onClick={() => setAnadir('extras')} className="pulsable mt-3 h-9 px-4 rounded-full bg-fill text-foreground text-[14px] font-semibold flex items-center gap-1.5">
                     <Plus className="h-4 w-4" /> Añadir extras
                 </button>
             </section>
@@ -396,7 +399,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                 scrollInicial={(() => { try { return Number(sessionStorage.getItem(`${claveScroll}:directo`)) || 0; } catch { return 0; } })()}
                 onScroll={y => { try { sessionStorage.setItem(`${claveScroll}:directo`, String(Math.round(y))); } catch { /* */ } }} />
             <CompartirGrupo abierta={compartir} onCerrar={() => setCompartir(false)} repertorio={repertorio} canciones={canciones} />
-            <ElegirParaSet abierto={anadir} onCerrar={cerrarAnadir} repertorio={repertorio} />
+            <ElegirParaSet key={anadir || 'cerrado'} abierto={!!anadir} onCerrar={cerrarAnadir} repertorio={repertorio} destinoInicial={anadir || 'set'} />
         </div>
         </ConMenu>
     );
@@ -454,7 +457,8 @@ function Fila({ id, repertorioId, n, cancion, tono, bloque, mismoTono, onQuitar,
                         className="pointer-events-none absolute right-2 top-1/2 -translate-y-1/2 h-[64px] w-[84px] object-contain drop-shadow-[0_6px_8px_rgba(0,0,0,0.16)]" />
                 </div>
             )}
-            <div className="flex items-center gap-1 pl-0 pr-1 min-h-[64px] border-b border-hairline">
+            <div onClick={e => { if (onElegir && !(e.target as HTMLElement).closest('a,button') && window.matchMedia('(min-width: 1280px)').matches) onElegir(); }}
+                className={cn('flex items-center gap-1 pl-0 pr-1 min-h-[64px] border-b border-hairline', elegida && 'xl:bg-fill xl:rounded-xl')}>
             <button onPointerDown={e => arrastre.start(e)} aria-label="Arrastra para ordenar"
                 className="h-11 w-9 shrink-0 flex items-center justify-center text-muted-foreground touch-none cursor-grab">
                 <GripVertical className="h-5 w-5" />
@@ -463,8 +467,7 @@ function Fila({ id, repertorioId, n, cancion, tono, bloque, mismoTono, onQuitar,
             <button onClick={onTocar} aria-label={`Tocar desde ${cancion.titulo}`}
                 className="h-9 w-7 shrink-0 rounded-full text-[13px] font-semibold text-muted-foreground tabular-nums active:bg-fill">{n}</button>
             <Link to={`/cancionero/${cancion.id}?repertorio=${repertorioId}`}
-                onClick={e => { if (onElegir && window.matchMedia('(min-width: 1280px)').matches) { e.preventDefault(); onElegir(); } }}
-                className={cn('flex-1 min-w-0 py-2.5 flex items-center gap-3 active:opacity-60', elegida && 'xl:rounded-xl xl:bg-fill xl:-my-px xl:px-2')}>
+                className="flex-1 min-w-0 py-2.5 flex items-center gap-3 active:opacity-60">
                 {/* En el móvil sin portada: el número ya dice cuál es y el título necesita el sitio */}
                 <span className="hidden sm:block shrink-0"><Portada src={cancion.portada} titulo={cancion.titulo} tamano="fila" /></span>
                 <span className="flex-1 min-w-0">
@@ -490,7 +493,8 @@ function Fila({ id, repertorioId, n, cancion, tono, bloque, mismoTono, onQuitar,
                         mismoTono ? cn(PASTEL.melocoton.fondo, PASTEL.melocoton.tinta) : 'bg-fill-strong text-foreground')}>{tono}</span>
             )}
             <BotonDesplegar abierta={abierta} onClick={() => setAbierta(a => !a)} titulo={cancion.titulo} />
-            <button onClick={onQuitar} aria-label={`Quitar ${cancion.titulo}`} className="hidden sm:flex h-9 w-9 shrink-0 rounded-full items-center justify-center text-muted-foreground active:bg-fill">
+            {/* Quitar, siempre a la vista (13-nov: en el móvil vivía escondida al desplegar y no se encontraba) */}
+            <button onClick={onQuitar} aria-label={`Quitar ${cancion.titulo} del repertorio`} className="flex h-9 w-7 sm:w-9 shrink-0 rounded-full items-center justify-center text-muted-foreground active:bg-fill">
                 <X className="h-4 w-4" />
             </button>
             </div>
@@ -501,8 +505,7 @@ function Fila({ id, repertorioId, n, cancion, tono, bloque, mismoTono, onQuitar,
                         <button onClick={onAExtras} className="h-9 px-3.5 rounded-full bg-pastel-cielo text-pastel-cielo-ink text-[14px] font-semibold flex items-center gap-1.5">
                             <ArrowDownToLine className="h-4 w-4" /> Pasar a extras
                         </button>
-                        {/* En el móvil, la ✕ vive aquí: siempre a la vista robaba el sitio del título */}
-                        <button onClick={onQuitar} className="sm:hidden h-9 px-3.5 rounded-full bg-fill text-[14px] font-semibold text-destructive flex items-center gap-1.5">
+                        <button onClick={onQuitar} className="h-9 px-3.5 rounded-full bg-fill text-[14px] font-semibold text-destructive flex items-center gap-1.5">
                             <X className="h-4 w-4" /> Quitar del repertorio
                         </button>
                     </div>

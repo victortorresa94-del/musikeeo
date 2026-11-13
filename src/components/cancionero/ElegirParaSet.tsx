@@ -36,10 +36,14 @@ function aspectoGrupo(campo: Agrupar, valor: string): { pastel: Pastel; icono: s
     return { pastel: (tipo && pastelValor(tipo, valor)) || pastelDe(`${campo}:${valor}`), icono: campo === 'canta' ? ICONO.canciones : ICONO.repertorios };
 }
 
-export function ElegirParaSet({ abierto, onCerrar, repertorio }: { abierto: boolean; onCerrar: () => void; repertorio: Repertorio }) {
+export function ElegirParaSet({ abierto, onCerrar, repertorio, destinoInicial = 'set' }: {
+    abierto: boolean; onCerrar: () => void; repertorio: Repertorio; destinoInicial?: Destino;
+}) {
     const { canciones, crear, guardarRepertorio } = useCancionero();
     const [q, setQ] = useState('');
-    const [destino, setDestino] = useState<Destino>('set');
+    // Desde «Añadir extras» se entra con «A extras» marcado (13-nov: Víctor entró por ahí y la
+    // canción se fue al set). Quien lo usa le da un `key` por destino, así arranca con el bueno
+    const [destino, setDestino] = useState<Destino>(destinoInicial);
     const [agrupar, setAgruparEstado] = useState<Agrupar>(() => {
         try { const v = localStorage.getItem(CLAVE_AGRUPAR) as Agrupar | null; return v && AGRUPAR.includes(v) ? v : 'estilos'; } catch { return 'estilos'; }
     });
@@ -82,16 +86,18 @@ export function ElegirParaSet({ abierto, onCerrar, repertorio }: { abierto: bool
     const { segundos, estimada } = duracionDe(enSet.map(id => porId.get(id)!).filter(c => !/banquillo|bis/i.test(bloqueDe(c) ?? '')));
     const pasa = !!repertorio.hueco && segundos / 60 > repertorio.hueco + 1;
 
-    // Un toque: entra en el destino (si estaba en el otro, se cambia); otro toque: sale
+    // Un toque: entra (en el set o en extras, según lo marcado arriba); otro toque: sale del
+    // repertorio, esté en el set o en extras. Para pasar de uno a otro, en el repertorio
     const alternar = (c: Cancion) => {
         const set = repertorio.canciones, ext = repertorio.extras ?? [];
-        const yaEnDestino = destino === 'set' ? set.includes(c.id) : ext.includes(c.id);
-        const nuevo: Repertorio = yaEnDestino
+        const dentro = set.includes(c.id) || ext.includes(c.id);
+        const nuevo: Repertorio = dentro
             ? { ...repertorio, canciones: set.filter(x => x !== c.id), extras: ext.filter(x => x !== c.id) }
             : destino === 'set'
-                ? { ...repertorio, canciones: [...set, c.id], extras: ext.filter(x => x !== c.id) }
-                : { ...repertorio, canciones: set.filter(x => x !== c.id), extras: [...ext, c.id] };
+                ? { ...repertorio, canciones: [...set, c.id] }
+                : { ...repertorio, extras: [...ext, c.id] };
         guardarRepertorio(nuevo);
+        if (dentro) toast(`«${c.titulo}» fuera del repertorio`, { action: { label: 'Deshacer', onClick: () => guardarRepertorio(repertorio) } });
     };
     const meter = (c: Cancion) => {
         const set = repertorio.canciones, ext = repertorio.extras ?? [];
@@ -138,7 +144,7 @@ export function ElegirParaSet({ abierto, onCerrar, repertorio }: { abierto: bool
                         </div>
                     </div>
                     <p className="mt-1 text-[12.5px] text-muted-foreground">
-                        {destino === 'set' ? 'Al final del set, en orden; cuentan en la duración.' : 'La recámara: por si acaso, no cuentan en la duración.'}
+                        {destino === 'set' ? 'Las que toques van al final del set y cuentan en la duración.' : 'Las que toques van a la recámara: no cuentan en la duración.'} Otro toque la saca.
                     </p>
 
                     <label className="mt-2 relative block">
