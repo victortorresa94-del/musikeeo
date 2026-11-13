@@ -187,11 +187,12 @@ Project is in active development. Architecture is solid, marketplace sprint in p
   - pegar de Cifra Club en el editor en su sitio entra línea a línea (`handlePaste` en `EditorLetra.tsx`; nunca el HTML de la web);
   - en directo no se recarga ni se sale (`lib/directo.ts`, `DirectoEnVivo.tsx`, `SiFalla.tsx`; el service worker guarda dos versiones; Tocar lleva `?n=` y la app instalada vuelve ahí si el iPhone la cierra);
   - «Concierto» en el horario del bolo con `hasta`, y la página del músico abre con la hora en grande (`cuandoSeToca`).
+  - entre titulares y extras se mueve arrastrando o con la flecha de cada fila; A−/A+ en el editor en su sitio y letra más pequeña de serie;
+  - **Mi perfil** (sueño A, «Baldosas», `pages/profile/Profile.tsx`): baldosa grande del Cancionero con sus números y el próximo bolo, y seis baldosas pastel con objeto 3D (Mensajes, Calendario, Musikeers cerca, Mis bolos, Editar perfil, Ajustes; iconos en `public/images/perfil/` y `public/images/3d/`). «Mis bolos» es su pantalla (`/profile?ver=bolos`: los del Cancionero y los publicados); las pestañas quedan en Publicaciones y Anuncios.
 
 **❌ Pendiente:**
 - Víctor: crear el secreto `FIREBASE_SERVICE_ACCOUNT` en GitHub (clave de la cuenta de servicio de Firebase). Así las reglas se despliegan solas y el enlace sale corto.
 - Después del bolo (Víctor: «lo de feed y eso, lo último»):
-  - Mi perfil en el móvil: iconos 3D, secciones aparte, Cancionero destacado, bolos y Editar perfil como botones;
   - quitar el contenido de demostración;
   - botón «Instala Musikeeo».
 - Víctor:

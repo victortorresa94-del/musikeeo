@@ -2,8 +2,8 @@ import { useEffect, useState } from 'react';
 import { Link, useNavigate, useSearchParams } from 'react-router-dom';
 import { collection, getDocs, limit, query, where } from 'firebase/firestore';
 import {
-    MapPin, Share2, Pencil, MessageCircle, CalendarDays, Settings, LogOut, ChevronRight,
-    Image as ImageIcon, ShoppingBag, Plus, Eye, Sparkles, Play, ListMusic, Map as MapaIcono,
+    MapPin, Share2, CalendarDays, LogOut, ChevronRight, ChevronLeft,
+    Image as ImageIcon, ShoppingBag, Plus, Eye, Sparkles, Play,
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { db } from '../../lib/firebase';
@@ -14,6 +14,8 @@ import { getProviderByUserId } from '../../services/providerService';
 import { eventService } from '../../services/eventService';
 import { postService } from '../../services/postService';
 import type { Artist, Event, Listing, Post, ProviderProfile, UserMode } from '../../types';
+import { useCancionero } from '../../hooks/useCancionero';
+import { ICONO } from '../../components/cancionero/estilo';
 
 const ROLE_LABEL: Record<UserMode, string> = {
     musician: 'Músico · Banda',
@@ -47,7 +49,10 @@ export default function Profile() {
     const [loading, setLoading] = useState(true);
     const [params] = useSearchParams();
     const askedTab = params.get('tab');
-    const [tab, setTab] = useState<'posts' | 'anuncios' | 'bolos'>(askedTab === 'bolos' || askedTab === 'anuncios' ? askedTab : 'posts');
+    // «Mis bolos» va en su propia pantalla (13-nov, Víctor: «lo del bolo ocupa demasiado… otro botón»)
+    const verBolos = params.get('ver') === 'bolos' || askedTab === 'bolos';
+    const [tab, setTab] = useState<'posts' | 'anuncios'>(askedTab === 'anuncios' ? 'anuncios' : 'posts');
+    const { canciones, repertorios, bolos } = useCancionero();
     const [photoBroken, setPhotoBroken] = useState(false);
 
     useEffect(() => {
@@ -75,10 +80,7 @@ export default function Profile() {
             const myPosts = ps.status === 'fulfilled' ? ps.value : [];
             setPosts(myPosts);
             // Abre en la pestaña que tenga algo
-            if (!askedTab && myPosts.length === 0) {
-                if (l.status === 'fulfilled' && !l.value.empty) setTab('anuncios');
-                else if (e.status === 'fulfilled' && e.value.length > 0) setTab('bolos');
-            }
+            if (!askedTab && myPosts.length === 0 && l.status === 'fulfilled' && !l.value.empty) setTab('anuncios');
             setLoading(false);
         })();
         return () => { cancelled = true; };
@@ -98,6 +100,19 @@ export default function Profile() {
     const needsArtist = mode === 'musician' && !artist;
     const needsProvider = mode === 'provider' && !provider;
 
+    // El Cancionero, de un vistazo: cuántas, cuántos repertorios y el próximo bolo
+    const hoy = new Date().toLocaleDateString('sv-SE');
+    const bolosQueVienen = bolos.filter(b => b.fecha && b.fecha >= hoy).sort((a, b) => a.fecha.localeCompare(b.fecha));
+    const proximaFecha = bolosQueVienen[0]?.fecha
+        ?? repertorios.filter(r => r.fecha && r.fecha >= hoy && r.canciones.length).map(r => r.fecha).sort()[0];
+    const resumenCancionero = [
+        `${canciones.length} ${canciones.length === 1 ? 'canción' : 'canciones'}`,
+        repertorios.length > 0 && `${repertorios.length} ${repertorios.length === 1 ? 'repertorio' : 'repertorios'}`,
+        proximaFecha && `próximo bolo ${diaCorto(proximaFecha, hoy)}`,
+    ].filter(Boolean).join(' · ');
+    const eventosQueVienen = events.filter(ev => ev.date && String(ev.date).slice(0, 10) >= hoy).length;
+    const cuantosBolos = bolosQueVienen.length + eventosQueVienen;
+
     const share = async () => {
         const url = `${window.location.origin}${shareUrl}`;
         try {
@@ -110,6 +125,67 @@ export default function Profile() {
         await logout();
         navigate('/home', { replace: true });
     };
+
+    if (verBolos) {
+        return (
+            <div className="max-w-2xl mx-auto px-4 pt-4 pb-10">
+                <Link to="/profile" className="inline-flex items-center gap-0.5 h-9 -ml-1 pr-2 text-[15px] font-semibold text-muted-foreground active:opacity-60">
+                    <ChevronLeft className="h-5 w-5" /> Mi perfil
+                </Link>
+                <h1 className="mt-1 font-heading font-bold text-[28px] leading-tight text-foreground">Mis bolos</h1>
+
+                {/* Los de tu Cancionero: fecha, horario, sets y el enlace para los músicos */}
+                <section className="mt-5" aria-label="Del Cancionero">
+                    <h2 className="text-[13px] font-bold uppercase tracking-[0.08em] text-muted-foreground">Del Cancionero</h2>
+                    <div className="mt-2 space-y-2">
+                        {[...bolos].sort((a, b) => (b.fecha >= hoy ? 1 : 0) - (a.fecha >= hoy ? 1 : 0) || (a.fecha >= hoy ? a.fecha.localeCompare(b.fecha) : b.fecha.localeCompare(a.fecha))).map(b => (
+                            <Link key={b.id} to={`/cancionero/bolo/${b.id}`} className="pulsable flex items-center gap-3 p-2 rounded-2xl bg-fill">
+                                <span className="h-14 w-14 shrink-0 rounded-[14px] bg-pastel-lavanda flex items-center justify-center">
+                                    <img src="/images/3d/escenario.webp" alt="" aria-hidden className="h-11 w-11 object-contain" />
+                                </span>
+                                <span className="min-w-0 flex-1">
+                                    <span className="block text-[16px] font-semibold text-foreground line-clamp-1">{b.titulo || 'Bolo'}</span>
+                                    <span className="block text-[13.5px] text-muted-foreground line-clamp-1">{[b.fecha && diaCorto(b.fecha, hoy, true), b.lugar].filter(Boolean).join(' · ') || 'Sin fecha'}</span>
+                                </span>
+                                <ChevronRight className="h-4 w-4 text-muted-foreground" />
+                            </Link>
+                        ))}
+                        <Link to="/cancionero?ver=bolos" className="h-11 rounded-2xl border border-dashed border-hairline-strong flex items-center justify-center gap-1 text-muted-foreground text-[14px] font-semibold active:opacity-70">
+                            {bolos.length ? 'Ver y crear en el Cancionero' : <><Plus className="h-4 w-4" /> Crear un bolo en el Cancionero</>}
+                        </Link>
+                    </div>
+                </section>
+
+                {/* Los publicados para contratar (salas y promotores) */}
+                <section className="mt-8" aria-label="Publicados">
+                    <h2 className="text-[13px] font-bold uppercase tracking-[0.08em] text-muted-foreground">Publicados para contratar</h2>
+                    <div className="mt-2">
+                        {loading ? <div className="h-20 rounded-2xl bg-fill animate-pulse" /> : events.length === 0 ? (
+                            <Empty icon={CalendarDays} text="¿Buscas banda, DJ o técnico para una fecha? Publícalo y te escriben." cta="Publicar bolo" to="/publicar" />
+                        ) : (
+                            <div className="space-y-2">
+                                {events.map(ev => (
+                                    <Link key={ev.id} to={`/eventos/${ev.id}`} className="flex gap-3 p-2 rounded-2xl bg-fill active:opacity-80">
+                                        <span className="h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-fill">
+                                            {ev.imageUrl && <img src={ev.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />}
+                                        </span>
+                                        <span className="min-w-0 flex-1 py-0.5">
+                                            <span className="block text-[14px] font-semibold text-foreground line-clamp-1">{ev.title}</span>
+                                            <span className="block text-[13px] text-muted-foreground line-clamp-1">{[dateOf(ev.date), ev.location].filter(Boolean).join(' · ')}</span>
+                                        </span>
+                                        <ChevronRight className="h-4 w-4 self-center text-muted-foreground" />
+                                    </Link>
+                                ))}
+                                <Link to="/publicar" className="h-11 rounded-2xl border border-dashed border-hairline-strong flex items-center justify-center gap-1 text-muted-foreground text-[13px] active:opacity-70">
+                                    <Plus className="h-4 w-4" /> Nuevo bolo
+                                </Link>
+                            </div>
+                        )}
+                    </div>
+                </section>
+            </div>
+        );
+    }
 
     return (
         <div className="max-w-2xl mx-auto px-4 pt-4 pb-10">
@@ -140,17 +216,14 @@ export default function Profile() {
                 </div>
             )}
 
-            {/* Acciones */}
-            <div className="mt-5 grid grid-cols-[1fr_1fr_auto] gap-2">
-                <Link to={EDIT_PATH[mode]} className="h-9 rounded-full bg-fill-strong text-foreground text-[14px] font-semibold flex items-center justify-center gap-1.5 active:opacity-70">
-                    <Pencil className="h-4 w-4" /> Editar perfil
-                </Link>
-                <Link to={publicPath} className="h-9 rounded-full bg-fill-strong text-foreground text-[14px] font-semibold flex items-center justify-center gap-1.5 active:opacity-70">
+            {/* Acciones (Editar perfil va en su baldosa) */}
+            <div className="mt-4 flex gap-2">
+                <button onClick={share} className="pulsable h-9 px-4 rounded-full bg-fill-strong text-foreground text-[14px] font-semibold flex items-center gap-1.5">
+                    <Share2 className="h-4 w-4" /> Compartir
+                </button>
+                <Link to={publicPath} className="pulsable h-9 px-4 rounded-full bg-fill-strong text-foreground text-[14px] font-semibold flex items-center gap-1.5">
                     <Eye className="h-4 w-4" /> Ver como público
                 </Link>
-                <button onClick={share} aria-label="Compartir perfil" className="h-9 w-9 rounded-full bg-fill-strong text-foreground flex items-center justify-center active:opacity-70">
-                    <Share2 className="h-4 w-4" />
-                </button>
             </div>
 
             {/* Perfil público pendiente: la acción principal de la pantalla */}
@@ -171,9 +244,30 @@ export default function Profile() {
                 </div>
             )}
 
+            {/* El Cancionero, lo primero (13-nov, Víctor: «el cancionero en móvil quiero destacarlo más») */}
+            <Link to="/cancionero" className="pulsable mt-6 relative block min-h-[150px] rounded-[22px] overflow-hidden bg-pastel-mantequilla p-4 pr-[150px]">
+                <span className="block font-heading text-[26px] font-bold leading-tight text-foreground">Cancionero</span>
+                <span className="mt-1 block text-[14.5px] font-semibold leading-snug text-pastel-mantequilla-ink">{resumenCancionero}</span>
+                <span className="mt-3 inline-flex h-9 px-5 rounded-full bg-foreground text-background text-[14px] font-semibold items-center">Abrir</span>
+                <img src={ICONO.canciones} alt="" aria-hidden draggable={false}
+                    className="pointer-events-none absolute right-[64px] top-1/2 -translate-y-1/2 h-[104px] w-[80px] object-contain drop-shadow-[0_8px_10px_rgba(0,0,0,0.18)]" />
+                <img src={ICONO.repertorios} alt="" aria-hidden draggable={false}
+                    className="pointer-events-none absolute right-2 top-1/2 -translate-y-[42%] h-[96px] w-[76px] object-contain drop-shadow-[0_8px_10px_rgba(0,0,0,0.18)]" />
+            </Link>
+
+            {/* Lo demás, cada cosa en su baldosa con su objeto 3D */}
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-3 gap-x-3 gap-y-4">
+                <Baldosa to="/messages" icono="/images/perfil/mensajes.webp" fondo="bg-pastel-cielo" texto="Mensajes" />
+                <Baldosa to="/panel/calendario" icono="/images/3d/calendario.webp" fondo="bg-pastel-rosa" texto="Calendario" />
+                <Baldosa to="/mapa" icono="/images/perfil/mapa.webp" fondo="bg-pastel-menta" texto="Musikeers cerca" />
+                <Baldosa to="/profile?ver=bolos" icono="/images/3d/escenario.webp" fondo="bg-pastel-lavanda" texto="Mis bolos" numero={cuantosBolos || undefined} />
+                <Baldosa to={EDIT_PATH[mode]} icono="/images/perfil/editar-perfil.webp" fondo="bg-pastel-melocoton" texto="Editar perfil" />
+                <Baldosa to="/panel/ajustes" icono="/images/perfil/ajustes.webp" fondo="bg-fill-strong" texto="Ajustes" />
+            </div>
+
             {/* Lo que he publicado */}
-            <div className="mt-7 flex p-0.5 rounded-[10px] bg-fill">
-                {([['posts', `Publicaciones · ${posts.length}`], ['anuncios', `Anuncios · ${listings.length}`], ['bolos', `Bolos · ${events.length}`]] as const).map(([key, label]) => (
+            <div className="mt-8 flex p-0.5 rounded-[10px] bg-fill">
+                {([['posts', `Publicaciones · ${posts.length}`], ['anuncios', `Anuncios · ${listings.length}`]] as const).map(([key, label]) => (
                     <button
                         key={key}
                         onClick={() => setTab(key)}
@@ -231,43 +325,46 @@ export default function Profile() {
                     </div>
                 ))}
 
-                {!loading && tab === 'bolos' && (events.length === 0 ? (
-                    <Empty icon={CalendarDays} text="No has publicado bolos. ¿Buscas banda, DJ o técnico para una fecha?" cta="Publicar bolo" to="/publicar" />
-                ) : (
-                    <div className="space-y-2">
-                        {events.map(ev => (
-                            <Link key={ev.id} to={`/eventos/${ev.id}`} className="flex gap-3 p-2 rounded-2xl bg-fill active:opacity-80">
-                                <span className="h-16 w-16 shrink-0 rounded-xl overflow-hidden bg-fill">
-                                    {ev.imageUrl && <img src={ev.imageUrl} alt="" loading="lazy" className="h-full w-full object-cover" />}
-                                </span>
-                                <span className="min-w-0 flex-1 py-0.5">
-                                    <span className="block text-[14px] font-semibold text-foreground line-clamp-1">{ev.title}</span>
-                                    <span className="block text-[13px] text-muted-foreground line-clamp-1">{[dateOf(ev.date), ev.location].filter(Boolean).join(' · ')}</span>
-                                </span>
-                                <ChevronRight className="h-4 w-4 self-center text-muted-foreground" />
-                            </Link>
-                        ))}
-                        <Link to="/publicar" className="h-11 rounded-2xl border border-dashed border-hairline-strong flex items-center justify-center gap-1 text-muted-foreground text-[13px] active:opacity-70">
-                            <Plus className="h-4 w-4" /> Nuevo bolo
-                        </Link>
-                    </div>
-                ))}
             </div>
 
-            {/* Accesos */}
-            <div className="mt-8 rounded-2xl bg-fill divide-y divide-hairline overflow-hidden">
-                <Row to="/messages" icon={MessageCircle} label="Mensajes" />
-                <Row to="/panel/calendario" icon={CalendarDays} label="Calendario y disponibilidad" />
-                <Row to="/cancionero" icon={ListMusic} label="Cancionero: letras y acordes" />
-                <Row to="/mapa" icon={MapaIcono} label="Musikeers cerca: el mapa" />
-                {mode === 'musician' && <Row to="/panel/multimedia" icon={ImageIcon} label="Fotos y vídeos" />}
-                <Row to="/panel/ajustes" icon={Settings} label="Ajustes de la cuenta" />
-            </div>
+            {/* Lo que queda: fotos y vídeos del perfil (músico) */}
+            {mode === 'musician' && (
+                <div className="mt-8 rounded-2xl bg-fill overflow-hidden">
+                    <Row to="/panel/multimedia" icon={ImageIcon} label="Fotos y vídeos del perfil" />
+                </div>
+            )}
             <button onClick={handleLogout} className="mt-3 w-full h-12 rounded-2xl bg-fill text-red-400 text-[15px] font-semibold flex items-center justify-center gap-2 active:opacity-70">
                 <LogOut className="h-4 w-4" /> Cerrar sesión
             </button>
         </div>
     );
+}
+
+// Una baldosa pastel con su objeto 3D y el nombre debajo (sueño elegido «Mi perfil · A»)
+function Baldosa({ to, icono, fondo, texto, numero }: { to: string; icono: string; fondo: string; texto: string; numero?: number }) {
+    return (
+        <Link to={to} className="pulsable block">
+            <span className={cn('relative block aspect-[1.9/1] rounded-[20px] overflow-hidden', fondo)}>
+                <img src={icono} alt="" aria-hidden draggable={false} loading="lazy"
+                    className="pointer-events-none absolute inset-0 m-auto h-[78%] w-[78%] object-contain drop-shadow-[0_8px_10px_rgba(0,0,0,0.16)]" />
+                {numero !== undefined && (
+                    <span className="absolute top-2 right-2 min-w-[26px] h-[26px] px-1.5 rounded-full bg-background text-foreground text-[13px] font-bold flex items-center justify-center tabular-nums">{numero}</span>
+                )}
+            </span>
+            <span className="mt-1.5 block text-[16px] font-bold leading-tight text-foreground">{texto}</span>
+        </Link>
+    );
+}
+
+// «2026-11-14» → «sáb 14» (o «hoy», «mañana»); con largo, «sábado 14 nov»
+function diaCorto(fecha: string, hoy: string, largo = false): string {
+    if (fecha === hoy) return 'hoy';
+    const [a, m, d] = fecha.split('-').map(Number);
+    if (!a) return '';
+    const dia = new Date(a, m - 1, d);
+    const manana = new Date(); manana.setDate(manana.getDate() + 1);
+    if (!largo && manana.toLocaleDateString('sv-SE') === fecha) return 'mañana';
+    return dia.toLocaleDateString('es-ES', largo ? { weekday: 'long', day: 'numeric', month: 'short' } : { weekday: 'short', day: 'numeric' }).replace('.', '');
 }
 
 function Row({ to, icon: Icon, label }: { to: string; icon: React.ElementType; label: string }) {

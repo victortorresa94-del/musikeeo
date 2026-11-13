@@ -288,7 +288,7 @@ function App() {
 
                 {/* Organizer Routes */}
                 {/* «Mis bolos» vive en Mi perfil (antes enseñaba los de todo el mundo) */}
-                <Route path="/panel/eventos" element={<Navigate to="/profile?tab=bolos" replace />} />
+                <Route path="/panel/eventos" element={<Navigate to="/profile?ver=bolos" replace />} />
                 <Route path="/panel/perfil-organizador" element={<PanelOrganizerProfilePage />} />
 
                 {/* Provider Routes */}
