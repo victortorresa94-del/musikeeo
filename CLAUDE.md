@@ -138,6 +138,43 @@ Project is in active development. Architecture is solid, marketplace sprint in p
 
 ## SESSION LOG
 
+### 2026-11-13 (Cancionero, víspera del bolo de Pallejà: editar en su sitio, Tocar a mano, su cancionero limpio, a `main`)
+
+> Víctor: *«¿por qué has usado otra sesión? Tienes que hacerlo tú todo»*. Desde el 13-nov a mediodía, una sola sesión hace todo; no se reparte el trabajo en otras.
+
+**✅ Hecho (todo probado en producción con iPhone 13 simulado y sin red):**
+- **Tocar**:
+  - una barra en dos filas: Tono ± · «Dame el tono» pequeño · A− · A+ · que quepa · ⋯ / anterior · Línea · Auto · Bajar · siguiente;
+  - la barra ya no se esconde al bajar;
+  - lápiz arriba para editar la letra sin salir.
+- **Tamaño**: «que quepa» ya no agranda (tope de 19 px en el móvil y 28 en tablet/PC) ni baja de 14 px en el móvil, en la canción y en Tocar (`components/cancionero/medir.ts`: `topeQueQuepa`, `sueloQueQuepa`).
+- **Editar en su sitio** (`EditarEnSitio.tsx`): tocar la letra la edita ahí mismo. «Listo» pregunta «Guardar» (sustituye) o «Guardar como canción nueva». La nueva es una versión que, desde un repertorio (`?repertorio=` o Tocar), ocupa el sitio de la original.
+- **La ficha en su sitio** (`FichaEnSitio.tsx`):
+  - cada píldora lleva su icono y abre un desplegable;
+  - Tono mueve los acordes con `ajustes.semitonos`; para corregir solo el nombre, el lápiz de la ficha.
+- **Importar** (`ImportarCanciones.tsx`):
+  - el orden de un repertorio que ya tienes manda y, si el fichero trae otro, deja elegir;
+  - «Solo el orden de los repertorios» reordena desde una copia sin tocar canciones ni fichas.
+- **Canciones**:
+  - «Elegir» → Seleccionar todas · Poner o quitar un grupo · Borrar en lote, con aviso si están en un repertorio y con Deshacer;
+  - las listas de grupo llevan su número y ⊖ por fila;
+  - nueva lista «Sin grupo».
+- **Lector** (`lib/acordes.ts`):
+  - «Rueda 2: G – C» y «Estrofa 2: …» se leen como parte con acordes;
+  - una fila de acordes con guiones o barras es el resumen de la parte y no se reparte sobre la letra.
+- **Su cancionero, limpio** (`Mi-cancionero.json`, mandado en el chat; no va al repo):
+  - 396 canciones: Lady Jarana 33 · Cataleya 116 · Víctor Luna 164 (él solo, acústico) · El Juergueo 83 (la recámara);
+  - «Orgullo» se juntó con «Los Barrieros», que va con formato (partes de color, una fila de acordes por parte, `> aviso`, `==coros==`, `**negrita**`) y en A;
+  - lleva los dos sets de Pallejà.
+- **Página de revisión** (https://claude.ai/artifact/4GKkapTqsopXqJ825N2eJf): ya no hace falta, porque prefirió el JSON entero.
+
+**❌ Pendiente:**
+- Víctor:
+  - borrar todo e importar `Mi-cancionero.json`; recuperar el orden de los sets con «Solo el orden» desde la copia de «Borrar todo»;
+  - desplegar las reglas (`listas` incluidas);
+  - probar el pedal y el sonido en el iPhone de verdad.
+- Duración de la versión «midiendo grabándote» (abrir `microphone=(self)` en `vercel.json`); reordenar las listas arrastrando; un icono por lista.
+
 ### 2026-11-12 (Cancionero, sesión 1: papeles en su tono, pegar bien y rediseño, a `main`)
 
 **✅ Hecho:**
