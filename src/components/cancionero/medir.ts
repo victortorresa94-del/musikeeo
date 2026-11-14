@@ -36,7 +36,12 @@ export function buscarEncaje(hoja: HTMLElement, ancho: number, alto: number, max
 }
 
 // Columnas que tiene sentido probar según el ancho (una columna de menos de ~260 px no se lee)
-export const columnasPosibles = (ancho: number) => Math.max(1, Math.min(4, Math.floor(ancho / 260)));
+// En un teléfono, como mucho 2 columnas aunque la canción se guardara con más en el PC (14-nov,
+// Víctor, en el bolo: «en móvil no deberían ponerse todas así… máximo 2 columnas»). Por la pantalla
+// del aparato, no por la ventana: tumbado sigue siendo un teléfono
+export const esTelefono = () => typeof window !== 'undefined' && Math.min(window.screen?.width || window.innerWidth, window.screen?.height || window.innerHeight) < 600;
+export const topeColumnas = () => (esTelefono() ? 2 : 4);
+export const columnasPosibles = (ancho: number) => Math.max(1, Math.min(topeColumnas(), Math.floor(ancho / 260)));
 
 // Tope de «que quepa» en pantalla: «que quepa» encoge lo que no cabe, pero no agranda una chuleta
 // corta hasta llenar la pantalla. Víctor (13-nov): «en móvil sale gigante… no tiene que salir tan

@@ -1,4 +1,5 @@
 import { forwardRef, useMemo } from 'react';
+import { topeColumnas } from './medir';
 import { cn } from '../../lib/utils';
 import { enEstrofas, enPalabras, formatear, formatearTrozos, llevaFormato, nombreAcorde, nombreMarca, type EstadoFormato, type Pedazo, type Linea, type Marca, type OpcionesNombre, type Trozo } from '../../lib/acordes';
 import type { AjustesCancion } from '../../types/cancionero';
@@ -62,7 +63,7 @@ export const HojaCancion = forwardRef<HTMLDivElement, Props>(({ lineas, opciones
         );
     }), [estrofas, opciones]);
     return (
-        <div ref={ref} data-hoja-cancion="" onClick={alTocar} className={cn('text-foreground gap-x-10', className)} style={{ fontSize: tamano, columnCount: columnas }}>
+        <div ref={ref} data-hoja-cancion="" onClick={alTocar} className={cn('text-foreground gap-x-10', className)} style={{ fontSize: tamano, columnCount: Math.max(1, Math.min(columnas, topeColumnas())) }}>
             {contenido}
         </div>
     );
