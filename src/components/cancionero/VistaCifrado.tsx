@@ -19,7 +19,7 @@ import { estiloBloque, sinLoDeLasPildoras } from './estilo';
 // detalle: la canción entera (con la letra si la trae); si no, la chuleta rápida: cada parte en
 // una línea con sus acordes y el orden (lib/estructura.ts)
 export const TemaCifrado = memo(function Tema({ tema, n, tamano, onAbrir, sinBorde, sinCabecera, formas, detalle }: { tema: TemaCompartido; n: number; tamano: number; onAbrir?: () => void; sinBorde?: boolean; sinCabecera?: boolean; formas?: boolean; detalle?: boolean }) {
-    const leida = useMemo(() => leerCancion(detalle ? tema.x : cifradoRapido(tema.x)), [tema.x, detalle]);
+    const leida = useMemo(() => leerCancion(detalle ? tema.x : tema.r ?? cifradoRapido(tema.x)), [tema.x, tema.r, detalle]);
     const lineas = useMemo(() => sinLoDeLasPildoras(leida.lineas, tema.g ?? null), [leida.lineas, tema.g]);
     const opciones: OpcionesNombre = useMemo(() => {
         // «Formas»: con la cejilla puesta, los acordes que se tocan; si no, los que suenan

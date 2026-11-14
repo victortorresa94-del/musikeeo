@@ -20,8 +20,9 @@ export const OnboardingGuide = () => {
             setIsVisible(false);
             if (!user || !userProfile) return;
 
-            // Don't show on specific pages (e.g., initial onboarding)
-            if (location.pathname === '/onboarding') {
+            // Don't show on specific pages (e.g., initial onboarding). Tampoco en el Cancionero: tapaba la
+            // letra en mitad del bolo (14-nov, víspera de Pallejà)
+            if (location.pathname === '/onboarding' || location.pathname.startsWith('/cancionero')) {
                 setIsVisible(false);
                 return;
             }

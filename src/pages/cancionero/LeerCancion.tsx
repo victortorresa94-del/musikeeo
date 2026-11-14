@@ -319,7 +319,8 @@ function Lector({ cancion }: { cancion: Cancion }) {
     };
     const guardarTexto = (texto: string) => {
         const antes = { ...cancion, ajustes };
-        guardar({ ...cancion, texto, ajustes });
+        // Solo la letra: no devuelve el tono ni el tamaño a lo que tuviera este aparato
+        guardar({ ...cancion, texto, ajustes }, { campos: ['texto'] });
         toast.success('Canción guardada', { action: { label: 'Deshacer', onClick: () => guardar(antes) } });
     };
     const cerrarEdicion = () => {

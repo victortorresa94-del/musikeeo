@@ -194,7 +194,7 @@ function ListaSet({ datos, setKey, onAbrir, onVolver, volver }: { datos: Compart
     // Cifrado: la chuleta rápida (cada parte con sus acordes y el orden); Detalle: la canción entera
     // con la letra, solo si el enlace la trae. Se recuerda en el móvil
     const [elegida, setVista] = useState<Vista>(() => { try { const v = localStorage.getItem('musikeeo-grupo-vista'); return v === 'cifrado' || v === 'detalle' ? v : 'lista'; } catch { return 'lista'; } });
-    const vista: Vista = elegida === 'detalle' && !datos.l ? 'cifrado' : elegida;
+    const vista: Vista = elegida;
     const enHoja = vista === 'cifrado' || vista === 'detalle';
     const [tamano] = useState(() => leerTamano(false));
     const [formas, setFormas] = useFormas();
@@ -238,7 +238,7 @@ function ListaSet({ datos, setKey, onAbrir, onVolver, volver }: { datos: Compart
                 )}
 
                 <div className="mt-5 flex flex-wrap items-center gap-2">
-                    <SelectorVista valor={vista} onCambio={cambiarVista} opciones={datos.l ? ['lista', 'cifrado', 'detalle'] : ['lista', 'cifrado']} />
+                    <SelectorVista valor={vista} onCambio={cambiarVista} opciones={['lista', 'cifrado', 'detalle']} />
                     {enHoja && datos.c.some(t => t.m) && <SuenaFormas formas={formas} onCambio={setFormas} />}
                 </div>
                 {enHoja && <HojaSet className="mt-2" temas={conExtras(datos).map(ver)} tamano={Math.min(tamano, 22)} formas={formas} detalle={vista === 'detalle'} onAbrir={onAbrir} />}

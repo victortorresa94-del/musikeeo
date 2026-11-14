@@ -344,7 +344,7 @@ function Editor({ repertorio }: { repertorio: TipoRepertorio }) {
                     <SelectorVista valor={vista} onCambio={v => cambiarParams({ vista: v === 'lista' ? null : v })} opciones={['lista', 'cifrado', 'detalle', 'bloques', 'tabla']} />
                     {enHoja && temasCifrado.some(t => t.m) && <SuenaFormas formas={formas} onCambio={setFormas} />}
                     {enHoja && (
-                        <button onClick={() => cambiarParams({ directo: '1' })} className="pulsable ml-auto h-9 px-3.5 rounded-full bg-foreground text-background text-[14px] font-semibold">
+                        <button onClick={() => cambiarParams({ directo: '1' })} className="pulsable ml-auto h-9 px-3.5 shrink-0 whitespace-nowrap rounded-full bg-foreground text-background text-[14px] font-semibold">
                             En directo
                         </button>
                     )}

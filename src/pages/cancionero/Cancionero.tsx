@@ -412,7 +412,7 @@ export default function Cancionero() {
                                     <SelectorVista valor={vista} onCambio={v => cambiarParam('vista', v === (ancho ? 'tabla' : 'lista') ? null : v)} />
                                     {vista === 'cifrado' && temasCifrado.some(t => t.m) && <SuenaFormas formas={formas} onCambio={setFormas} />}
                                     {vista === 'cifrado' && (
-                                        <button onClick={() => cambiarParam('directo', '1')} className="pulsable ml-auto h-9 px-3.5 rounded-full bg-foreground text-background text-[14px] font-semibold">En directo</button>
+                                        <button onClick={() => cambiarParam('directo', '1')} className="pulsable ml-auto h-9 px-3.5 shrink-0 whitespace-nowrap rounded-full bg-foreground text-background text-[14px] font-semibold">En directo</button>
                                     )}
                                 </div>
                             )}

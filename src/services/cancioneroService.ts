@@ -186,6 +186,8 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
     // Lo que espera para subir ENTERO (un cambio sin `campos` todavía sin subir): un ajuste que
     // llegue después no puede subir solo su campo, o ese cambio se quedaría sin subir
     const pendienteEntero = new Set<string>();
+    // Los campos sueltos que esperan para subir (un ajuste y luego la letra): se suben juntos
+    const camposPendientes = new Map<string, Set<string>>();
 
     // campos: lo que cambia (p. ej. ['ajustes']): a la cuenta sube solo eso, sobre lo que ya hay
     function guardar(x: T, opciones: { esperar?: boolean; campos?: string[] } = {}): T {
@@ -199,11 +201,18 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
         if (!esUid(duenio)) return actual;
         clearTimeout(esperando.get(x.id));
         esperando.delete(x.id);
-        const campos = opciones.campos && !pendienteEntero.has(x.id) ? opciones.campos : undefined;
-        if (!campos) pendienteEntero.add(x.id);
+        let campos: string[] | undefined;
+        if (opciones.campos && !pendienteEntero.has(x.id)) {
+            const juntos = new Set([...(camposPendientes.get(x.id) ?? []), ...opciones.campos]);
+            camposPendientes.set(x.id, juntos);
+            campos = [...juntos];
+        } else {
+            pendienteEntero.add(x.id);
+            camposPendientes.delete(x.id);
+        }
         // Al subir, lo que haya en ese momento (no la copia de cuando se tocó)
         const subida = () => {
-            if (!campos) pendienteEntero.delete(x.id);
+            if (campos) camposPendientes.delete(x.id); else pendienteEntero.delete(x.id);
             void subir(duenio, estado.items.find(y => y.id === x.id) ?? actual, campos);
         };
         // Los ajustes cambian a cada toque: a la cuenta se sube cuando la persona para
@@ -225,7 +234,7 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
             reemplazar(antes.get(x.id), x, 'importar');
             borradas.delete(x.id);
             // Lo que esperaba para subir ya va en esta subida (el temporizador subiría lo de antes)
-            clearTimeout(esperando.get(x.id)); esperando.delete(x.id); pendienteEntero.delete(x.id);
+            clearTimeout(esperando.get(x.id)); esperando.delete(x.id); pendienteEntero.delete(x.id); camposPendientes.delete(x.id);
         });
         const ids = new Set(nuevos.map(x => x.id));
         const lista = ordenar([...nuevos, ...estado.items.filter(y => !ids.has(y.id))]);
@@ -257,6 +266,7 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
         clearTimeout(esperando.get(id));
         esperando.delete(id);
         pendienteEntero.delete(id);
+        camposPendientes.delete(id);
         borradas.add(id);
         const lista = estado.items.filter(x => x.id !== id);
         escribirLocal(duenio, lista);
@@ -271,7 +281,7 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
         if (!ids.length) return;
         const duenio = estado.duenio || INVITADO;
         const fuera = new Set(ids);
-        fuera.forEach(id => { clearTimeout(esperando.get(id)); esperando.delete(id); pendienteEntero.delete(id); borradas.add(id); });
+        fuera.forEach(id => { clearTimeout(esperando.get(id)); esperando.delete(id); pendienteEntero.delete(id); camposPendientes.delete(id); borradas.add(id); });
         const lista = estado.items.filter(x => !fuera.has(x.id));
         escribirLocal(duenio, lista);
         avisar({ items: lista });
@@ -289,6 +299,7 @@ function crearAlmacen<T extends Documento>(clave: string, subcoleccion: string, 
         esperando.forEach(t => clearTimeout(t));
         esperando.clear();
         pendienteEntero.clear();
+        camposPendientes.clear();
         const antes = estado.items.map(x => x.id);
         antes.forEach(id => borradas.add(id));
         escribirLocal(duenio, []);

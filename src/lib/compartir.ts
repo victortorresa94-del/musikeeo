@@ -7,6 +7,7 @@
 // red: sirve si aún no hay reglas desplegadas, si no hay cobertura o si el id no existe.
 // Sin React: lo usa la hoja de compartir, la página del músico y services/compartidosService.
 import { deflateSync, inflateSync, strFromU8, strToU8 } from 'fflate';
+import { cifradoRapido } from './estructura';
 import { esApunte, leerCancion, type Linea } from './acordes';
 import { cejillaDeFicha, tonoMostrado } from './biblioteca';
 import { notasVacias } from './notas';
@@ -30,6 +31,7 @@ export interface TemaCompartido {
     v?: string;             // versión
     m?: number;             // cejilla con la que lo toca quien comparte
     sp?: string;            // la pista en Spotify (solo open.spotify.com)
+    r?: string;             // sin letra: la chuleta rápida (partes, acordes y orden) sacada con la letra en el móvil de quien comparte
 }
 
 export interface Compartido {
@@ -119,6 +121,10 @@ export function temaDe(c: Cancion, conLetra: boolean): TemaCompartido {
     const canta = c.ficha?.canta?.trim() || etiquetasDe(c).find(e => /^canta /i.test(e.texto))?.texto.replace(/^canta /i, '');
     const limpio = sinApuntes(c.texto);
     const texto = sinCejillaEscrita(conLetra ? limpio : soloCifrado(limpio));
+    // Sin letra, la estructura (qué parte es el estribillo, el orden) solo se puede sacar aquí, con
+    // la letra delante: va hecha. Nunca lleva letra (lib/estructura.ts)
+    const rapido = conLetra ? null : cifradoRapido(limpio);
+    const r = rapido && rapido !== limpio ? sinCejillaEscrita(rapido) : undefined;
     const quitarVacios = (o: Partial<TemaCompartido>) => Object.fromEntries(Object.entries(o).filter(([, v]) => v !== undefined && v !== null && v !== '' && v !== 0));
     return {
         t: c.titulo,
@@ -126,7 +132,7 @@ export function temaDe(c: Cancion, conLetra: boolean): TemaCompartido {
         ...quitarVacios({
             a: c.artista, s, k: tonoMostrado(c, tonoDe(c)) ?? undefined, p: c.ficha?.capo, c: canta, e: c.ficha?.estilo,
             b: c.bpm, d: c.duracion, o: notasVacias(c.notas) ? undefined : c.notas, g: bloqueDe(c) ?? undefined, v: c.version,
-            m: c.ajustes.cejilla || c.ajustes.cejillaGuardada || cejillaDeFicha(c), sp: enlaceSpotify(c.spotify),
+            m: c.ajustes.cejilla || c.ajustes.cejillaGuardada || cejillaDeFicha(c), sp: enlaceSpotify(c.spotify), r,
         }),
     };
 }
@@ -204,7 +210,7 @@ export function sanear(dato: unknown): Compartido | null {
         p.sp = enlaceSpotify(p.sp);
         if (!p.sp) delete p.sp;
         const temas = (l: TemaCompartido[]) => l.filter(t => t && typeof t.t === 'string' && typeof t.x === 'string').map(t => ({
-            t: t.t, x: t.x, a: texto(t.a), k: texto(t.k), p: texto(t.p), c: texto(t.c), e: texto(t.e), o: texto(t.o), g: texto(t.g), v: texto(t.v),
+            t: t.t, x: t.x, a: texto(t.a), k: texto(t.k), p: texto(t.p), c: texto(t.c), e: texto(t.e), o: texto(t.o), g: texto(t.g), v: texto(t.v), r: texto(t.r),
             s: typeof t.s === 'number' ? Math.max(-24, Math.min(24, Math.round(t.s))) : undefined,
             b: typeof t.b === 'number' ? t.b : undefined,
             d: typeof t.d === 'number' ? t.d : undefined,

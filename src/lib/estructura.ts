@@ -21,14 +21,25 @@ interface Bloque {
 
 const clave = (s: string) => s.toLowerCase().normalize('NFD').replace(/[̀-ͯ]/g, '').replace(/[^a-zñ ]/g, '').replace(/\s+/g, ' ').trim().slice(0, 40);
 
-// D7M Bm F#m D7M Bm F#m → «D7M – Bm – F#m (x2)»; sin repetir el mismo acorde seguido
-export function progresion(acordes: string[]): string {
-    const seq = acordes.filter((a, i) => a && a !== acordes[i - 1]);
-    if (!seq.length) return '';
+// D7M Bm F#m D7M Bm F#m → «D7M – Bm – F#m (x2)»; sin repetir el mismo acorde seguido. Primero se
+// busca el dibujo tal cual (G C D G | G C D G: una vuelta acaba y la otra empieza con G, y quitando
+// el repetido ya no se vería que son dos vueltas) y si no, sin los repetidos seguidos
+const sinSeguidos = (xs: string[]) => xs.filter((a, i) => a !== xs[i - 1]);
+function periodo(seq: string[]): number {
     for (let p = 1; p <= seq.length / 2; p++) {
         if (seq.length % p) continue;
-        if (seq.every((a, i) => a === seq[i % p])) return `${seq.slice(0, p).join(' – ')}  (x${seq.length / p})`;
+        if (seq.every((a, i) => a === seq[i % p])) return p;
     }
+    return 0;
+}
+export function progresion(acordes: string[]): string {
+    const crudo = acordes.filter(Boolean);
+    if (!crudo.length) return '';
+    let p = periodo(crudo);
+    if (p > 1) return `${sinSeguidos(crudo.slice(0, p)).join(' – ')}  (x${crudo.length / p})`;
+    const seq = sinSeguidos(crudo);
+    p = periodo(seq);
+    if (p) return `${seq.slice(0, p).join(' – ')}  (x${seq.length / p})`;
     return seq.join(' – ');
 }
 
@@ -104,10 +115,12 @@ function nombrar(bloques: Bloque[]): string[] {
     });
 }
 
-// Si casi no tiene letra (una chuleta ya hecha a mano), se deja como está
-// (cuenta la letra suelta y la que lleva los acordes encima)
-const esChuleta = (lineas: Linea[]) => lineas
-    .filter(l => l.tipo === 'letra' || (l.tipo === 'mixta' && l.trozos.some(t => t.texto.trim()))).length < 8;
+// Una chuleta ya hecha a mano («Estrofa: Dm – C», indicaciones sueltas) se deja como está. Una
+// canción con la letra debajo de los acordes nunca lo es, por corta que sea (si no, el Cifrado
+// enseñaba la letra entera de Bamboléo o de Djobi Djoba)
+const esChuleta = (lineas: Linea[]) =>
+    !lineas.some(l => l.tipo === 'mixta' && l.trozos.some(t => t.texto.trim()))
+    && lineas.filter(l => l.tipo === 'letra').length < 8;
 
 export function cifradoRapido(texto: string): string {
     if (!texto.trim()) return texto;

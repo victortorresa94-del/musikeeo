@@ -94,6 +94,12 @@ export function EditarEnSitio({ cancion, onGuardar, onCerrar, lineaInicial, yIni
                     <div className="flex-1 min-w-0 flex items-center gap-0.5 overflow-x-auto hide-scrollbar" role="toolbar" aria-label="Formato">
                         <button onMouseDown={ev => ev.preventDefault()} onClick={() => e()?.chain().focus().undo().run()} aria-label="Deshacer" className={boton}><Undo2 className="h-4 w-4" /></button>
                         <button onMouseDown={ev => ev.preventDefault()} onClick={() => e()?.chain().focus().redo().run()} aria-label="Rehacer" className={boton}><Redo2 className="h-4 w-4" /></button>
+                        {/* El tamaño de la letra, ahí mismo (13-nov, Víctor: «poder hacer más pequeña la letra desde aquí»), lo primero: en el móvil la barra no cabe entera */}
+                        {onTamano && <>
+                            <span className="mx-0.5 h-5 w-px bg-hairline-strong shrink-0" aria-hidden />
+                            <button onMouseDown={ev => ev.preventDefault()} onClick={() => onTamano(-1)} aria-label="Letra más pequeña" className={boton}><span className="text-[13px] font-bold">A−</span></button>
+                            <button onMouseDown={ev => ev.preventDefault()} onClick={() => onTamano(1)} aria-label="Letra más grande" className={boton}><span className="text-[17px] font-bold">A+</span></button>
+                        </>}
                         <span className="mx-0.5 h-5 w-px bg-hairline-strong shrink-0" aria-hidden />
                         <button onMouseDown={ev => ev.preventDefault()} onClick={() => e()?.chain().focus().toggleBold().run()} aria-label="Negrita" className={boton}><Bold className="h-4 w-4" /><span className="hidden sm:inline">Negrita</span></button>
                         <button onMouseDown={ev => ev.preventDefault()} onClick={() => e()?.chain().focus().toggleHighlight().run()} aria-label="Resaltar" className={boton}><Highlighter className="h-4 w-4" /><span className="hidden sm:inline">Resaltar</span></button>
@@ -101,12 +107,6 @@ export function EditarEnSitio({ cancion, onGuardar, onCerrar, lineaInicial, yIni
                         <button onMouseDown={ev => ev.preventDefault()} onClick={() => api.current?.alternarPrefijo('> ')} aria-label="Aviso" className={boton}><Megaphone className="h-4 w-4" /><span className="hidden sm:inline">Aviso</span></button>
                         <button onMouseDown={ev => ev.preventDefault()} onClick={cambiarAlinear} aria-pressed={alinear} aria-label="Alinear acordes con letra de máquina"
                             className={cn(boton, alinear && 'bg-foreground text-background hover:bg-foreground')}><AlignLeft className="h-4 w-4" /><span className="hidden sm:inline">Alinear</span></button>
-                        {/* El tamaño de la letra, ahí mismo (13-nov, Víctor: «poder hacer más pequeña la letra desde aquí») */}
-                        {onTamano && <>
-                            <span className="mx-0.5 h-5 w-px bg-hairline-strong shrink-0" aria-hidden />
-                            <button onMouseDown={ev => ev.preventDefault()} onClick={() => onTamano(-1)} aria-label="Letra más pequeña" className={boton}><span className="text-[13px] font-bold">A−</span></button>
-                            <button onMouseDown={ev => ev.preventDefault()} onClick={() => onTamano(1)} aria-label="Letra más grande" className={boton}><span className="text-[17px] font-bold">A+</span></button>
-                        </>}
                     </div>
                     <div className="relative shrink-0">
                         <button onClick={() => setMenu(m => !m)} aria-expanded={menu} aria-label="Más: guardar como versión nueva o descartar" className={boton}><MoreHorizontal className="h-5 w-5" /></button>
@@ -143,7 +143,7 @@ export function EditarEnSitioHoja({ abierta, onCerrar, cancion, repertorioId }: 
     if (!abierta) return null;
     const alGuardar = (texto: string) => {
         const antes = cancion;
-        guardar({ ...cancion, texto });
+        guardar({ ...cancion, texto }, { campos: ['texto'] });
         toast.success('Canción guardada', { action: { label: 'Deshacer', onClick: () => guardar(antes) } });
     };
     return createPortal(

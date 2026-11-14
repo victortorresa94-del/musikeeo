@@ -20,6 +20,7 @@ import { precargarEditorLetra } from '../../components/cancionero/cargarEditorLe
 import { Pildora } from '../../components/cancionero/Baldosas';
 import { bloqueDe, estiloBloque, etiquetasDe, ICONO, PASTEL, pastelCanta, sinLoDeLasPildoras } from '../../components/cancionero/estilo';
 import { tonoDe } from '../../components/cancionero/utilidades';
+import { tonoMostrado } from '../../lib/biblioteca';
 import { esperaDeIntro, minutos, RITMO_MAX, RITMO_MIN, segundosAuto, velocidadAlDesplazar, versosDe } from '../../lib/cantar';
 import { aLaGuia, marcar, vecina } from '../../lib/teleprompter';
 import { buscarEncaje, columnasPosibles, topeQueQuepa, sueloQueQuepa, type Encaje } from '../../components/cancionero/medir';
@@ -120,7 +121,7 @@ function Escenario({ nombre, repertorioId, canciones, extrasDesde, inicio }: { n
     const editandoRef = useRef(editando);
     useEffect(() => { editandoRef.current = editando; }, [editando]);
     const guardarTexto = (c: Cancion, texto: string) => {
-        guardar({ ...c, texto });
+        guardar({ ...c, texto }, { campos: ['texto'] });
         toast.success('Guardado', { action: { label: 'Deshacer', onClick: () => guardar(c) } });
     };
 
@@ -408,7 +409,8 @@ function Diapositiva({ cancion, n, total, siguiente, extra, onSiguiente, cambiar
         if (extra) e.unshift({ texto: 'Extra', pastel: PASTEL.cielo, icono: ICONO.repertorios });
         return e;
     }, [cancion, extra]);
-    const tonoSiguiente = siguiente ? tonoDe(siguiente) : null;
+    // El de la ficha si lo tiene (el mismo que sale en su pantalla); si no, el de sus acordes
+    const tonoSiguiente = siguiente ? tonoMostrado(siguiente, tonoDe(siguiente)) : null;
     const lineas = useMemo(() => sinLoDeLasPildoras(leida.lineas, bloque), [leida.lineas, bloque]);
 
     const zonaRef = useRef<HTMLDivElement>(null);
